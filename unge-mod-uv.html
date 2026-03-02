@@ -68,6 +68,57 @@
             animation: neonGlow 2s ease-in-out infinite alternate;
         }
 
+        /* Headline with logo */
+        .uv-headline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Pull the logo a bit upwards */
+            margin-top: -140px;
+        }
+        .uv-headline__logo {
+            /* Slightly smaller / narrower */
+            width: min(78vw, 560px);
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.55));
+            /* Cut a little off the LEFT and RIGHT sides */
+            -webkit-clip-path: inset(0 8% 0 5%);
+            clip-path: inset(0 8% 0 5%);
+        }
+        .uv-credit {
+            text-align: center;
+            margin: -148px auto 0.25rem auto; /* pull up close under logo */
+            font-size: 1.1rem;
+            color: #b0e0e6;
+        }
+        .uv-credit a {
+            color: inherit;
+            text-decoration: underline;
+        }
+        .uv-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @media (max-width: 768px) {
+            .uv-headline__logo {
+                width: min(86vw, 520px);
+                height: auto;
+            }
+            .uv-credit {
+                margin: -128px auto 0.25rem auto;
+                font-size: 1.05rem;
+            }
+        }
+
         @keyframes neonGlow {
             from { text-shadow: 0 0 15px #00ffff, 0 0 25px #00ffff, 0 0 35px #00ffff, 0 0 45px #00ffff; }
             to { text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #00ffff, 0 0 50px #00ffff, 0 0 60px #00ffff; }
@@ -592,6 +643,12 @@
                 <li class="nav-item">
                     <a href="about.html" class="nav-link">OM MIG</a>
                 </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
                 <li class="nav-item">
                     <a href="contact.html" class="nav-link">KONTAKT</a>
                 </li>
@@ -602,17 +659,117 @@
         </div>
     </nav>
 
-    <!-- Back Button -->
-    <a href="projects.html" class="back-button">← Tilbage til Projekter</a>
-
         <!-- Page Content -->
     <div class="unge-mod-uv-content">
-        <h1 class="neon-text" style="text-align: center; font-size: 3.5rem; margin-bottom: 2rem; text-shadow: 0 0 5px #00ffff, 0 2px 8px #00ffff;">UNGE MOD UV</h1>
+        <h1 class="neon-text uv-headline" style="text-align: center; margin-bottom: 0.2rem; text-shadow: 0 0 5px #00ffff, 0 2px 8px #00ffff;">
+            <img class="uv-headline__logo" src="assets/unge%20mod%20uv%20logo.png" alt="UNGE MOD UV">
+            <span class="uv-sr-only">UNGE MOD UV</span>
+        </h1>
+        <p class="uv-credit">
+            Lavet med:
+            <a href="https://www.axelkappel.dk" target="_blank" rel="noopener noreferrer">Axel Kappel</a>
+        </p>
         
-        <h4 style="text-align: center; margin-bottom: 0.2rem; font-size: 1.2rem; color: #00ffff;">BRIEF</h4>
-        <p style="text-align: center; margin: 0.2rem auto; font-size: 1.2rem; color: #00ffff;">Få unge mennesker til at stoppe med at gå i solarium</p>
+        <h4 style="text-align: center; margin: 0 0 0.2rem 0; font-size: 1.2rem; color: #00ffff;">BRIEF</h4>
+        <p style="text-align: center; margin: 0.2rem auto 0.8rem auto; font-size: 1.2rem; color: #00ffff;">Få unge mennesker til at stoppe med at gå i solarium</p>
+
+        <!-- 2x2 Grid Layout (same layout as Repop by Depop box under Brief, but styled for this neon theme) -->
+        <div style="background: linear-gradient(135deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 20, 40, 0.62) 100%); border-radius: 15px; padding: 1.5rem; margin: 0.6rem 0 1.2rem 0; color: #b0e0e6; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.25), inset 0 0 20px rgba(0, 255, 255, 0.08);">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0.5rem;">
+                <!-- Problem -->
+                <div style="padding: 0.8rem;">
+                    <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.55);">Problem</h2>
+                    <p style="font-size: 1.02rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%; color: #b0e0e6;">Trods et fald fra 2008 til 2019 i antallet af unge solarieforbrugere ser vi nu igen en stigning – en stigning, der er jævnt voksende.</p>
+                </div>
+
+                <!-- Observation -->
+                <div style="padding: 0.8rem;">
+                    <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.55);">Observation</h2>
+                    <p style="font-size: 1.02rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%; color: #b0e0e6;">Solcentrene har ændret brandingstrategi til noget langt mere wellness- og “sundhedsorienteret”, hvor de fremhæver, at deres rør giver kollagen og D-vitamin, og at det ikke mindst virker afslappende – hvilket også stemmer overens med det, de unge svarer, når de bliver spurgt, hvorfor de bruger solarier.</p>
+                </div>
+                
+                <!-- Observation 2 -->
+                <div style="padding: 0.8rem;">
+                    <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.55);">Observation 2</h2>
+                    <p style="font-size: 1.02rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%; color: #b0e0e6;">44% af solariebrugere ville stoppe, hvis de fik hudskader<br/>eller pigmentforandringer af at gå i solarium.<br/>Og 30% ville stoppe, hvis de fandt ud af, at solariebrug var<br/>farligere end de tror det er.</p>
+                </div>
+
+                <!-- Løsning -->
+                <div style="padding: 0.8rem;">
+                    <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.55);">Løsning</h2>
+                    <p style="font-size: 1.02rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%; color: #b0e0e6;">Vi viser de unge de hudskader, de har, via et specielt UV-kamera. Twistet er, at det er de klassiske klassebilleder samt portrætbilleder, som vi “twister” med dette UV-twist.</p>
+                </div>
+            </div>
+        </div>
         
-        <h4 style="text-align: center; margin: 2rem 0 0.2rem 0; font-size: 1.2rem; color: #00ffff;">ACTIVATION</h4>
+        <div style="background: linear-gradient(135deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 20, 40, 0.62) 100%); border-radius: 15px; padding: 1.5rem; margin: 2rem 0 0; color: #b0e0e6; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.25), inset 0 0 20px rgba(0, 255, 255, 0.08);">
+            <h2 style="font-size: 1.4rem; font-weight: bold; margin: 0 0 0.35rem 0; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.55);">Activation</h2>
+            <p style="font-size: 1.02rem; line-height: 1.45; text-align: center; margin: 0 auto; max-width: 95%; color: #b0e0e6;">
+                Selve kampagnen skydes i gang på skolefotodagen, hvor udvalgte gymnasier som noget nyt får mulighed for at få taget både klassefoto og portrætfoto med et særligt UV-kamera, der kan vise solskader på huden, som ikke kan ses med det blotte øje.
+                <br/><br/>
+                Herefter modtager hver elev, der har takket ja til at deltage i projektet, både klassefotoet og sit personlige portrætfoto. Dette er tænkt som et ekstra tilbud ud over de normale fotos.
+            </p>
+
+            <h2 style="font-size: 1.4rem; font-weight: bold; margin: 1.4rem 0 0.35rem 0; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.55);">Efter activation</h2>
+            <p style="font-size: 1.02rem; line-height: 1.45; text-align: center; margin: 0 auto; max-width: 95%; color: #b0e0e6;">
+                Efter activation bygger vi resten af kampagnen.
+                <br/>
+                En kampagne, der er baseret på rigtige unge og deres udtalelser om deres hud og deres syn på solarier. Ægte fortællinger, ægte mennesker, ægte følelser.
+            </p>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 20, 40, 0.62) 100%); border-radius: 15px; padding: 1.5rem; margin: 1.2rem 0 0; color: #b0e0e6; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.25), inset 0 0 20px rgba(0, 255, 255, 0.08);">
+            <h2 style="font-size: 1.4rem; font-weight: bold; margin: 0 0 0.35rem 0; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.55);">Print</h2>
+            <div style="max-width: 980px; margin: 0.2rem auto 0; color: #b0e0e6;">
+                <p style="font-size: 1.02rem; line-height: 1.45; text-align: center; margin: 0 0 0.6rem 0;">
+                    Alle print med portrætter skal indeholde følgende elementer:
+                </p>
+                <ol style="margin: 0 auto 0.6rem auto; padding-left: 1.2rem; width: fit-content; text-align: left; font-size: 1.02rem; line-height: 1.45;">
+                    <li>Et portrætbillede.</li>
+                    <li>En “undskyldning” for at bruge solarie.</li>
+                    <li>Et svar på undskyldningen, der leder frem til et faktum om, hvor skadeligt solarieforbrug er.</li>
+                </ol>
+                <p style="font-size: 1.02rem; line-height: 1.45; text-align: center; margin: 0;">
+                    Derudover er billederne sat ind i en ramme, som man normalt ville placere et portrætfoto i.
+                </p>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 1.2rem; margin-top: 0.9rem; align-items: start; max-width: 1400px; margin-left: auto; margin-right: auto;">
+                <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.35);">
+                    <img src="assets/Unge%20mod%20UV%20print%203.jpg" alt="Unge mod UV print 3" style="width: 100%; height: auto; display: block;">
+                </div>
+                <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.35);">
+                    <img src="assets/Unge%20mod%20UV%20print%202.jpg" alt="Unge mod UV print 2" style="width: 100%; height: auto; display: block;">
+                </div>
+                <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.35);">
+                    <img src="assets/Unge%20mod%20UV%20print%201.jpg" alt="Unge mod UV print 1" style="width: 100%; height: auto; display: block;">
+                </div>
+            </div>
+
+            <h2 style="font-size: 1.25rem; font-weight: bold; margin: 1.4rem 0 0.6rem 0; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.45); letter-spacing: 0.5px;">Outdoor</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.2rem; margin-top: 1.2rem; align-items: start; max-width: 1400px; margin-left: auto; margin-right: auto;">
+                <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.35);">
+                    <img src="assets/%20Unge%20mod%20UV%20Railboard%20.jpg" alt="Unge mod UV Railboard" style="width: 100%; height: auto; display: block;">
+                </div>
+                <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.35);">
+                    <img src="assets/Unge%20mod%20UV%20Metro%20Takeover.jpg" alt="Unge mod UV Metro Takeover" style="width: 100%; height: auto; display: block;">
+                </div>
+            </div>
+
+            <h2 style="font-size: 1.25rem; font-weight: bold; margin: 1.4rem 0 0.2rem 0; text-align: center; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.45); letter-spacing: 0.5px;">SoMe</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 0.9rem; align-items: start; max-width: 1400px; margin-left: auto; margin-right: auto;">
+                <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.35);">
+                    <img src="assets/Unge%20mod%20UV%20insta%201.png" alt="Unge mod UV Instagram post 1" style="width: 100%; height: auto; display: block;">
+                </div>
+                <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.35);">
+                    <img src="assets/Unge%20mod%20UV%20insta%202.png" alt="Unge mod UV Instagram post 2" style="width: 100%; height: auto; display: block;">
+                </div>
+                <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.35);">
+                    <img src="assets/Unge%20mod%20UV%20insta%203.png" alt="Unge mod UV Instagram post 3" style="width: 100%; height: auto; display: block;">
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>

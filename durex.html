@@ -28,14 +28,14 @@
         
         .durex-page .page-content {
             background: rgba(255, 255, 255, 0.9) !important;
-            backdrop-filter: blur(15px);
+            /* Keep the YouTube iframe 100% clickable: NO backdrop-filter here. */
             border: 3px solid rgba(255, 255, 255, 0.8);
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(25, 118, 210, 0.3), 0 5px 20px rgba(66, 165, 245, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.9);
             position: relative;
             z-index: 1;
-            padding: 2rem;
-            margin-top: 2rem;
+            padding: 1.3rem;
+            margin-top: 0.85rem;
             max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
@@ -46,7 +46,7 @@
             text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
             font-weight: bold;
             font-size: 2.5rem;
-            margin-bottom: 1.5rem;
+            margin: 0 0 0.8rem 0;
         }
         
         .durex-page h2 {
@@ -54,8 +54,8 @@
             text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
             font-weight: bold;
             font-size: 1.8rem;
-            margin-top: 2rem;
-            margin-bottom: 0.5rem;
+            margin-top: 0.7rem;
+            margin-bottom: 0;
         }
         
         .durex-page h3 {
@@ -63,8 +63,14 @@
             text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
             font-weight: 600;
             font-size: 1.4rem;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
+            margin-top: 0.55rem;
+            margin-bottom: 0;
+        }
+
+        /* Keep subtext very close to headings */
+        .durex-page h2 + p,
+        .durex-page h3 + p {
+            margin-top: 0;
         }
         
         .durex-page p {
@@ -72,7 +78,7 @@
             line-height: 1.7;
             text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
             font-size: 1.1rem;
-            margin-bottom: 1rem;
+            margin: 0 0 0.45rem 0;
         }
     </style>
 </head>
@@ -90,6 +96,12 @@
                 <li class="nav-item">
                     <a href="about.html" class="nav-link">OM MIG</a>
                 </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
                 <li class="nav-item">
                     <a href="contact.html" class="nav-link">KONTAKT</a>
                 </li>
@@ -100,81 +112,73 @@
         </div>
     </nav>
 
-    <!-- Back Button -->
-    <a href="projects.html" class="back-button">← Tilbage til Projekter</a>
-
     <!-- Page Content -->
     <div class="page-content">
-        <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="text-align: center; margin-bottom: 0.6rem;">
             <img src="assets/Durex-logo.png" alt="Durex Logo" style="max-width: 300px; height: auto; display: block; margin: 0 auto;">
         </div>
-        <h2>Lavet med:</h2>
-        <p>Caroline Berg Preisler & Laura Høgsbro</p>
+        <h2>Lavet af:</h2>
+        <p>Caroline Berg Preisler &amp; Laura Høgsbro</p>
         
         <h3>Brief</h3>
-        <p>How can Durex help breaking sexual barriers?</p>
+        <p>Hvordan kan Durex hjælpe med at nedbryde seksuelle barrierer?</p>
         
         <h3>Problem</h3>
-        <p>People don't know their way around all the pronouns and the fear of approaching people outside the cis spectrum is combined with fear in lack of confidence.</p>
+        <p>Folk har svært ved at finde rundt i alle pronomenerne, og frygten for at henvende sig til personer uden for det cis-kønnede spektrum kombineres med usikkerhed og manglende selvtillid.</p>
         
-        <h3>Audience insights</h3>
-        <p>Both cis and non-binary wants to be polite and not misgender individuals. Unfortunately this tend to scare off suitors, in fear of accidental discrimination.</p>
+        <h3>Målgruppeindsigter</h3>
+        <p>Både cis og nonbinære personer ønsker at være høflige og undgå at fejlkønne andre. Desværre skræmmer denne usikkerhed ofte personer væk af frygt for utilsigtet diskrimination.</p>
         
-        <h3>Solution</h3>
-        <p>Durex launches a 'Non-binary Edition' of the classic boardgames, Guess Who. The purpose of the game is to make people conversate in non-binary terms in a fun, insightful and safe way.</p>
+        <h3>Løsning</h3>
+        <p>Durex lancerer en “Non-binary udgave” af det klassiske brætspil Hvem er Hvem? Formålet med spillet er at få mennesker til at tale i nonbinære termer på en sjov, indsigtsfuld og tryg måde.</p>
         
-        <div style="text-align: center; margin-top: 2rem;">
-            <h3>Campaign Video</h3>
-            <div style="position: relative; width: 100%; max-width: 800px; margin: 0 auto;">
-                <iframe 
-                    width="100%" 
-                    height="450" 
-                    src="https://www.youtube.com/embed/Tn9514gRLco?rel=0&modestbranding=1" 
-                    title="Durex X Guess Who Campaign Video"
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen
-                    style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);">
-                </iframe>
+        <div style="text-align: center; margin-top: 0.8rem;">
+            <h3>Kampagnevideo</h3>
+            <div class="video-container" style="max-width: 800px;">
+                <video controls playsinline preload="metadata" poster="assets/characters.png">
+                    <source src="assets/Durex%20Case.mp4" type="video/mp4">
+                    Din browser understøtter ikke videoafspilning.
+                </video>
             </div>
         </div>
         
-        <div style="text-align: center; margin-top: 2rem;">
+        <div style="text-align: center; margin-top: 0.8rem;">
             <img src="assets/guess-who-logo.png?v=3" alt="Guess Who Logo" style="max-width: 300px; height: auto; display: block; margin: 0 auto;">
-            <h3>Instructions</h3>
+            <h3>Spilleregler</h3>
         </div>
         
-        <div style="max-width: 900px; margin: 0 auto; padding: 2.5rem; text-align: left;">
-                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-bottom: 0.3rem;">For 2 Players</h4>
+        <div style="max-width: 900px; margin: 0.1rem auto 0 auto; padding: 1.15rem; text-align: left;">
+                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-bottom: 0.3rem;">For 2 spillere</h4>
             
-                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-top: 1.5rem; margin-bottom: 0.3rem;">Object of the game</h4>
-            <p>Guess your opponent's Mystery Person before they guess yours.</p>
+                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-top: 0.9rem; margin-bottom: 0.3rem;">Formål med spillet</h4>
+            <p>Gæt din modstanders hemmelige person, før de gætter din.</p>
             
-                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-top: 1.5rem; margin-bottom: 0.3rem;">Gameplay</h4>
-            <p>Shuffle the mystery cards. Choose one card each at random and fit it into the slot. Ask questions that can only be responded with 'YES or NO'. Continue until you feel confident in guessing your opponent's Mystery Person.</p>
+                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-top: 0.9rem; margin-bottom: 0.3rem;">Spillets gang</h4>
+            <p>Bland personkortene. Træk ét kort hver tilfældigt og sæt det i holderen. Stil spørgsmål, som kun kan besvares med “JA eller NEJ”. Fortsæt, indtil du føler dig sikker nok til at gætte din modstanders hemmelige person.</p>
             
-                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-top: 1.5rem; margin-bottom: 0.3rem;">Non-binary rules</h4>
-            <p>In this 'Non-binary version' you can't ask the usual question of the character being either male or female as all of the characters identify as Non-binary. You may only refer to the characters as they/them (e.g. "Do they have a moustache?" and "No, they haven't").</p>
-            <p>There are no punishments or minus points for misgendering in the game as its purpose and goal is to educate and hopefully gain habits with gender neutral pronouns.</p>
+                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-top: 0.9rem; margin-bottom: 0.3rem;">Nonbinære regler</h4>
+            <p>I denne “nonbinære version” må du ikke stille det sædvanlige spørgsmål om, hvorvidt karakteren er mand eller kvinde, da alle karakterer identificerer sig som nonbinære. Du må kun tiltale karaktererne som de/dem (f.eks. “Har de overskæg?” og “Nej, det har de ikke”).</p>
+            <p>Der gives ingen straf eller minuspoint for at fejlkønne i spillet, da formålet er at oplyse og forhåbentlig skabe gode vaner omkring kønsneutrale pronomener.</p>
             
-                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-top: 1.5rem; margin-bottom: 0.3rem;">Remember:</h4>
-                           <p>In the real world of socialization you don't have to assume individuals as they/them in advance. Simply introduce yourself in your preferred pronouns and ask them what they would like you to refer them as. (e.g. "Hi I'm 'name' and I go by 'preferred pronouns'. How about you?")</p>
+                           <h4 style="color: #1976D2; font-size: 1.3rem; margin-top: 0.9rem; margin-bottom: 0.3rem;">Husk:</h4>
+                           <p>I den virkelige verden behøver du ikke på forhånd at antage, at nogen bruger de/dem. Præsenter dig blot med dine foretrukne pronomener og spørg, hvad de ønsker at blive omtalt som.<br/>
+                           (F.eks. “Hej, jeg hedder ‘navn’, og jeg bruger ‘foretrukne pronomener’. Hvad med dig?”)</p>
           </div>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; max-width: 900px; margin-left: auto; margin-right: auto;">
-              <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px); border: 3px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); padding: 2.5rem; text-align: left;">
-                  <h3 style="color: #1976D2; margin-bottom: 1rem;">Characters design</h3>
-                  <h4 style="color: #1976D2; font-size: 1.1rem; margin-bottom: 0.5rem;">Photo choice</h4>
-                  <p style="color: #333; line-height: 1.6;">We chose to redesign all the characters with pictures of authentic and real people.</p>
-                  <p style="color: #333; line-height: 1.6;">While it might erase some stereotypes like e.g. Guess Who's own design guide where having eyelashes concludes the character being female. And short hair defining males.</p>
-                  <div style="text-align: center; margin-top: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.2rem; max-width: 900px; margin-left: auto; margin-right: auto;">
+              <div style="background: rgba(255, 255, 255, 0.9); border: 3px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); padding: 1.6rem; text-align: left;">
+                  <h3 style="color: #1976D2; margin-bottom: 0.4rem;">Karakterdesign</h3>
+                  <h4 style="color: #1976D2; font-size: 1.1rem; margin-bottom: 0.5rem;">Valg af fotos</h4>
+                  <p style="color: #333; line-height: 1.6;">Vi valgte at redesigne alle karaktererne med billeder af autentiske og virkelige mennesker.</p>
+                  <p style="color: #333; line-height: 1.6;">Samtidig kan det være med til at fjerne nogle stereotyper, såsom i det oprindelige Hvem er Hvem?-design, hvor øjenvipper indikerer, at karakteren er kvinde, og kort hår definerer mænd.</p>
+                  <div style="text-align: center; margin-top: 0.6rem;">
                       <img src="assets/characters.png" alt="Character Design" style="width: 150%; height: auto; border-radius: 10px; margin-left: -25%;">
                   </div>
               </div>
               
-              <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px); border: 3px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); padding: 2.5rem; text-align: center;">
-                  <h3 style="color: #1976D2; margin-bottom: 1rem;">The boardgame</h3>
-                  <div style="text-align: center; margin-top: 1rem;">
+              <div style="background: rgba(255, 255, 255, 0.9); border: 3px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); padding: 1.6rem; text-align: center;">
+                  <h3 style="color: #1976D2; margin-bottom: 0.4rem;">Brætspillet</h3>
+                  <div style="text-align: center; margin-top: 0.6rem;">
                       <img src="assets/board 1.jpg" alt="Board 1" style="max-width: 100%; height: auto; border-radius: 10px; margin-bottom: 1rem;">
                   </div>
                   <div style="text-align: center;">
@@ -183,7 +187,7 @@
               </div>
           </div>
           
-          <div style="text-align: center; margin-top: 3rem; max-width: 900px; margin-left: auto; margin-right: auto;">
+          <div style="text-align: center; margin-top: 1.6rem; max-width: 900px; margin-left: auto; margin-right: auto;">
               <img src="assets/Guess who metro.png" alt="Guess Who Metro" style="max-width: 100%; height: auto; border-radius: 10px;">
           </div>
     </div>

@@ -5,70 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact - Mikkel's Portfolio</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .contact-page {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-        
-        .contact-content {
-            max-width: 600px;
-            margin: 120px auto 40px;
-            padding: 40px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .contact-content h1 {
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-        }
-        
-        .contact-info {
-            margin: 30px 0;
-        }
-        
-        .contact-item {
-            margin: 20px 0;
-            text-align: center;
-            display: block;
-            text-decoration: none;
-            padding: 20px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .contact-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .contact-item h3 {
-            color: #007bff;
-            margin: 0 0 10px 0;
-            font-size: 1.2rem;
-        }
-        
-        .contact-item p {
-            margin: 0;
-            font-size: 1.1rem;
-            color: #555;
-        }
-        
-        .or-divider {
-            margin: 30px 0;
-            font-size: 1.2rem;
-            color: #666;
-            font-weight: 500;
-        }
-    </style>
 </head>
-<body class="contact-page">
+<body class="sketchbook-theme contact-sketchbook-page">
+    <!-- Red margin lines for both pages (match projects.html) -->
+    <div class="left-margin"></div>
+    <div class="right-margin"></div>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
@@ -82,6 +24,12 @@
                 <li class="nav-item">
                     <a href="about.html" class="nav-link">OM MIG</a>
                 </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
                 <li class="nav-item">
                     <a href="contact.html" class="nav-link">KONTAKT</a>
                 </li>
@@ -92,36 +40,36 @@
         </div>
     </nav>
 
-    <!-- Back Button -->
-    <a href="index.html" class="back-button">← Tilbage til Hjem</a>
-
     <!-- Page Content -->
-    <div class="contact-content">
-        <h1>Kontakt mig på</h1>
-        
+    <main class="contact-sketchbook">
+        <h1 class="contact-sketchbook__title">Kontakt mig på</h1>
+
         <div class="contact-info">
-            <a href="mailto:mikkel-sc@hotmail.com" class="contact-item">
-                <h3>E-mail</h3>
-                <p>mikkel-sc@hotmail.com</p>
+            <a href="mailto:mikkel-sc@hotmail.com" class="contact-item contact-item--mail">
+                <img class="contact-item__icon contact-item__icon--mail" src="assets/mail logo.webp" alt="Mail">
+                <div class="contact-item__text">
+                    <h3>E-mail</h3>
+                    <p>mikkel-sc@hotmail.com</p>
+                </div>
             </a>
-            
-            <a href="tel:+4528747475" class="contact-item">
-                <h3>Mobil</h3>
-                <p>+45 28747475</p>
+
+            <a href="tel:+4528747475" class="contact-item contact-item--phone">
+                <img class="contact-item__icon contact-item__icon--phone" src="assets/Telefon logo.webp" alt="Telefon">
+                <div class="contact-item__text">
+                    <h3>Mobil</h3>
+                    <p>+45 28747475</p>
+                </div>
             </a>
-            
-            <div class="or-divider">eller</div>
-            
-            <a href="https://www.linkedin.com/in/mikkel-skrøder-christensen-13a932313/" target="_blank" class="contact-item">
-                <h3>LinkedIn</h3>
-                <p>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;">
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                    </svg>
-                </p>
+
+            <a href="https://www.linkedin.com/in/mikkel-skrøder-christensen-13a932313/" target="_blank" class="contact-item contact-item--linkedin">
+                <img class="contact-item__icon contact-item__icon--linkedin" src="assets/linkedin logo.webp" alt="LinkedIn">
+                <div class="contact-item__text">
+                    <h3>LinkedIn</h3>
+                    <p>Åbn profil</p>
+                </div>
             </a>
         </div>
-    </div>
+    </main>
 
     <script src="script.js"></script>
 </body>
