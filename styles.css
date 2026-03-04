@@ -58,7 +58,7 @@ body.projects-about-flip-active .projects-about-transition {
 }
 
 /* While flipping, hide the real page (menu-click + drag) */
-body.projects-about-flip-active > :not(.projects-about-transition) {
+body.projects-about-flip-active > :not(.projects-about-transition):not(.navbar) {
     opacity: 0;
     pointer-events: none;
 }
@@ -389,7 +389,7 @@ body.home-notebook-page.projects-about-flip-active > :not(.projects-about-transi
 /* Overlay becomes visible before we hide the real page */
 .about-projects-transition.is-ready { opacity: 1; }
 
-body.about-projects-flip-active > :not(.about-projects-transition) {
+body.about-projects-flip-active > :not(.about-projects-transition):not(.navbar) {
     opacity: 0;
     pointer-events: none;
 }
@@ -408,7 +408,7 @@ body.about-projects-flip-active > :not(.about-projects-transition) {
     transition: opacity 90ms ease-out;
 }
 .ai-close-transition.is-ready { opacity: 1; pointer-events: auto; }
-body.ai-close-active > :not(.ai-close-transition) {
+body.ai-close-active > :not(.ai-close-transition):not(.navbar) {
     opacity: 0;
     pointer-events: none;
     transition: opacity 90ms ease-out;
@@ -878,8 +878,8 @@ body.ai-close-active > :not(.ai-close-transition) {
 .about-contact-transition.is-ready,
 .contact-about-transition.is-ready { opacity: 1; }
 
-body.about-contact-flip-active > :not(.about-contact-transition),
-body.contact-about-flip-active > :not(.contact-about-transition) {
+body.about-contact-flip-active > :not(.about-contact-transition):not(.navbar),
+body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     opacity: 0;
     pointer-events: none;
 }
@@ -1114,7 +1114,7 @@ body.contact-about-flip-active > :not(.contact-about-transition) {
 }
 .projects-contact-transition.is-ready { opacity: 1; }
 
-body.projects-contact-flip-active > :not(.projects-contact-transition) {
+body.projects-contact-flip-active > :not(.projects-contact-transition):not(.navbar) {
     opacity: 0;
     pointer-events: none;
 }
@@ -1137,7 +1137,7 @@ body.projects-contact-flip-active > :not(.projects-contact-transition) {
     pointer-events: none !important;
 }
 .projects-contact-double-transition.is-ready { opacity: 1; }
-body.projects-contact-double-active > :not(.projects-contact-double-transition) {
+body.projects-contact-double-active > :not(.projects-contact-double-transition):not(.navbar) {
     opacity: 0;
     pointer-events: none;
 }
@@ -1523,8 +1523,20 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition) 
 }
 .contact-projects-transition.is-ready { opacity: 1; }
 
-body.contact-projects-flip-active > :not(.contact-projects-transition) {
+body.contact-projects-flip-active > :not(.contact-projects-transition):not(.navbar) {
     opacity: 0;
+    pointer-events: none;
+}
+
+/* Keep navbar visible but non-interactive during transitions */
+body.projects-about-flip-active .navbar,
+body.about-projects-flip-active .navbar,
+body.about-contact-flip-active .navbar,
+body.contact-about-flip-active .navbar,
+body.projects-contact-flip-active .navbar,
+body.projects-contact-double-active .navbar,
+body.contact-projects-flip-active .navbar,
+body.ai-close-active .navbar {
     pointer-events: none;
 }
 
