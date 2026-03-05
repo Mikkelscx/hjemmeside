@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSC - Mikkel's Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="home-notebook-page">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">HJEM</a>
+                </li>
+                <li class="nav-item">
+                    <a href="projects.html" class="nav-link">PROJEKTER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html" class="nav-link">OM MIG</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">KONTAKT</a>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-universe.html" class="nav-link">MIN AI UNIVERS</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Frontpage: notebook cover -->
+    <main class="home-notebook" role="main" aria-label="Forside">
+        <div class="home-notebook__pages" aria-hidden="true"></div>
+        <div class="home-notebook__cover" aria-hidden="true">
+            <div class="home-notebook__cover-back" aria-hidden="true"></div>
+        </div>
+        <div class="home-notebook__leaf-fan" aria-hidden="true"></div>
+        <!-- Hidden "inside pages" shown during open animation -->
+        <div class="home-notebook__spread" aria-hidden="true">
+            <!-- Single full Projects preview (easier to make seamless) -->
+            <iframe
+                class="home-notebook__projekter-full"
+                src="projects.html"
+                title="Projekter preview"
+                loading="eager"
+                referrerpolicy="no-referrer"
+                tabindex="-1"
+            ></iframe>
+        </div>
+        <h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html> 

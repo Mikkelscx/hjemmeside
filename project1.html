@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Design Project - Mikkel's Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Override repop-page navbar to match projects page exactly */
+        .repop-page .navbar {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .repop-page .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .repop-page .nav-menu {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0.3rem 0;
+        }
+        
+        .repop-page .nav-item {
+            margin: 0 1.5rem;
+        }
+        
+        .repop-page .nav-link {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: opacity 0.2s ease;
+        }
+        
+        .repop-page .nav-link:hover {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="repop-page">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">HJEM</a>
+                </li>
+                <li class="nav-item">
+                    <a href="projects.html" class="nav-link">PROJEKTER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html" class="nav-link">OM MIG</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">KONTAKT</a>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-universe.html" class="nav-link">MIN AI UNIVERS</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <h1>Digital Design Project</h1>
+        <h2>Innovativt webdesign og brugeroplevelse</h2>
+        
+        <div class="grid-container">
+            <div class="grid-item">
+                <h3>Koncept</h3>
+                <p>Skabe en moderne og brugervenlig digital oplevelse</p>
+            </div>
+            <div class="grid-item">
+                <h3>Design</h3>
+                <p>Fokus på minimalistisk design og funktionalitet</p>
+            </div>
+            <div class="grid-item">
+                <h3>Teknologi</h3>
+                <p>Brug af moderne web-teknologier og frameworks</p>
+            </div>
+            <div class="grid-item">
+                <h3>Resultat</h3>
+                <p>Høj brugerengagement og positiv feedback</p>
+            </div>
+        </div>
+        
+        <div class="project-image">
+            <img src="assets/image-586acc2a-7bad-4335-b874-ef24325e77ef.jpg.webp" alt="Digital Design Project" class="project-visual">
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

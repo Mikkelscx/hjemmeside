@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIT AI UNIVERS - Mikkels Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* AI Universe Theme */
+        .ai-universe-page {
+            /* Start from a dim purple/blue base, then fade in the real gradient layers */
+            background:
+                radial-gradient(circle at 18% 18%, rgba(106, 63, 176, 0.55) 0%, rgba(10, 10, 10, 0.0) 58%),
+                radial-gradient(circle at 82% 78%, rgba(43, 60, 133, 0.58) 0%, rgba(10, 10, 10, 0.0) 62%),
+                linear-gradient(135deg, #0b0f2a 0%, #1a1f55 38%, #1b3a7a 74%, #3d1c6a 100%);
+            min-height: 100vh;
+            color: #00ffff;
+            position: relative;
+            overflow: hidden;
+            /* Let the content box fill to the bottom */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* LITE iframe modes (measure/reveal/preview): disable heavy animations/blur for smooth transitions */
+        .ai-universe-page.is-iframe-lite .neural-network { display: none !important; }
+        .ai-universe-page.is-iframe-lite .page-content { backdrop-filter: none !important; }
+        .ai-universe-page.is-iframe-lite * { animation: none !important; }
+
+        .ai-universe-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0c0f2a 0%, #1a1a3a 22%, #1b2b5a 52%, #2b3c85 78%, #6a3fb0 100%);
+            opacity: 1;
+            transition: opacity 1200ms cubic-bezier(.2,.9,.2,1);
+            will-change: opacity;
+            z-index: 0;
+        }
+
+        /* Extra colored glows layer (kept as separate so it can fade with the gradient) */
+        .ai-universe-page::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 1200ms cubic-bezier(.2,.9,.2,1);
+            will-change: opacity;
+            z-index: 1;
+        }
+
+        /* When arriving from the book transition: fade background in smoothly */
+        .ai-universe-page.ai-enter::before,
+        .ai-universe-page.ai-enter::after {
+            opacity: 0;
+        }
+        .ai-universe-page.ai-enter.ai-enter-active::before,
+        .ai-universe-page.ai-enter.ai-enter-active::after {
+            opacity: 1;
+        }
+
+        .ai-universe-page .page-content {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.3),
+                inset 0 0 30px rgba(0, 255, 255, 0.1);
+            padding: clamp(18px, 3vw, 44px);
+            margin: 0.75rem auto 0;
+            width: min(96vw, var(--infoboxMaxW, 1200px));
+            /* Bigger infobox + internal scroll */
+            flex: 1 1 auto;
+            min-height: 0; /* required for flex children to scroll */
+            height: auto;
+            max-height: none;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            position: relative;
+            z-index: 2; /* above ::before/::after */
+            transition: opacity 900ms ease, transform 900ms ease;
+            will-change: opacity, transform;
+        }
+
+        /* Enter animation (skip when headline was already aligned in transition) */
+        .ai-universe-page.ai-enter:not(.ai-aligned) .page-content {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        .ai-universe-page.ai-enter.ai-enter-active:not(.ai-aligned) .page-content {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 180ms;
+        }
+
+        .ai-universe-page h1 {
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            font-size: 3.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.2rem;
+        }
+
+        .ai-universe-page h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .ai-universe-page h3 {
+            color: #00ff00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .ai-universe-page p {
+            color: #ffffff;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .ai-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .ai-card:hover::before {
+            left: 100%;
+        }
+
+        .ai-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.4);
+            border-color: rgba(0, 255, 255, 0.8);
+        }
+
+        .ai-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .neural-network {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            transition: opacity 900ms ease;
+            will-change: opacity;
+        }
+
+        .ai-universe-page.ai-enter:not(.ai-aligned) .neural-network { opacity: 0; }
+        .ai-universe-page.ai-enter.ai-enter-active:not(.ai-aligned) .neural-network { opacity: 1; transition-delay: 120ms; }
+
+        .neural-node {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .neural-connection {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+            animation: flow 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        @keyframes flow {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Removed "Tilbage til Hjem" button */
+
+        /* Reveal mode (used inside the book transition overlay) */
+        .ai-universe-page.is-reveal #ai-universe-headline {
+            opacity: 0;
+            /* IMPORTANT: keep geometry stable for perfect handoff */
+            transition: none;
+            will-change: opacity;
+        }
+        .ai-universe-page.is-reveal.show-headline #ai-universe-headline {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="ai-universe-page">
+    <!-- Neural Network Background -->
+    <div class="neural-network">
+        <div class="neural-node" style="top: 10%; left: 15%;"></div>
+        <div class="neural-node" style="top: 20%; left: 85%;"></div>
+        <div class="neural-node" style="top: 40%; left: 25%;"></div>
+        <div class="neural-node" style="top: 60%; left: 75%;"></div>
+        <div class="neural-node" style="top: 80%; left: 35%;"></div>
+        <div class="neural-node" style="top: 30%; left: 65%;"></div>
+        
+        <div class="neural-connection" style="top: 12%; left: 15%; width: 70%;"></div>
+        <div class="neural-connection" style="top: 42%; left: 25%; width: 50%;"></div>
+        <div class="neural-connection" style="top: 62%; left: 35%; width: 40%;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">HJEM</a>
+                </li>
+                <li class="nav-item">
+                    <a href="projects.html" class="nav-link">PROJEKTER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html" class="nav-link">OM MIG</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">KONTAKT</a>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-universe.html" class="nav-link">MIN AI UNIVERS</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <h1 id="ai-universe-headline">MIT AI UNIVERS</h1>
+        <p>Jeg har, lige siden generativ AI begyndte at vinde frem, forsøgt at lære så mange former for generativ AI som muligt.</p>
+        <p>Denne hjemmeside er for eksempel lavet i et samspil mellem Cursor AI og Sora.</p>
+        <p>Jeg bruger meget tid på at lære de forskellige modeller at kende for at holde mine evner up to date. Det gælder alt fra kodning til billed- og videogenerativ AI samt 3D-modellering af 2D-objekter og generering af sange og lyd.</p>
+        <p>Mit første store projekt med samspil mellem forskellige AI-modeller har netop været denne hjemmeside.</p>
+        <p>Mit næste mål er at lave en kopi af mig selv – altså en form for avatar, der ligner mig, lyder som mig og ikke mindst tænker som mig.</p>
+        <p>På denne del af hjemmesiden vil jeg løbende dele opdateringer fra mine projekter, eller når jeg bare synes, der er blevet skabt noget fedt ved hjælp af AI.</p>
+    </div>
+
+    <script>
+        // Lightweight URL-param driven modes for iframes used in transitions.
+        (function () {
+            try {
+                const qs = new URLSearchParams(window.location.search || '');
+                const isReveal = qs.get('reveal') === '1';
+                const isMeasure = qs.get('measure') === '1';
+                const isPreview = qs.get('preview') === '1';
+                if (isReveal || isMeasure || isPreview) document.body.classList.add('is-iframe-lite');
+                if (!isReveal) return;
+                document.body.classList.add('is-reveal');
+                const h1 = document.getElementById('ai-universe-headline');
+                if (h1) {
+                    h1.classList.add('matrix-headline');
+                    // Render per-letter spans so spacing matches the moving title exactly.
+                    const text = String(h1.textContent || '');
+                    h1.textContent = '';
+                    for (let i = 0; i < text.length; i++) {
+                        const ch = text[i];
+                        if (ch === ' ') {
+                            const sp = document.createElement('span');
+                            sp.className = 'matrix-space';
+                            sp.textContent = '\u00A0';
+                            h1.appendChild(sp);
+                            continue;
+                        }
+                        const sp = document.createElement('span');
+                        sp.className = 'matrix-char';
+                        sp.textContent = ch;
+                        h1.appendChild(sp);
+                    }
+                }
+                window.addEventListener('message', (e) => {
+                    const d = e && e.data;
+                    if (!d || typeof d !== 'object') return;
+                    if (d.__msk === 'ai_reveal_set_headline_rect') {
+                        try {
+                            const h1 = document.getElementById('ai-universe-headline');
+                            const r = d.rect;
+                            if (!h1 || !r) return;
+                            const chars = Array.from(h1.querySelectorAll('.matrix-char, .matrix-space'));
+                            let curRect = h1.getBoundingClientRect();
+                            if (chars.length) {
+                                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                                let seen = false;
+                                for (const ch of chars) {
+                                    const rr = ch.getBoundingClientRect();
+                                    if (!rr) continue;
+                                    if (!(rr.width > 0 || rr.height > 0)) continue;
+                                    seen = true;
+                                    minX = Math.min(minX, rr.x);
+                                    minY = Math.min(minY, rr.y);
+                                    maxX = Math.max(maxX, rr.x + rr.width);
+                                    maxY = Math.max(maxY, rr.y + rr.height);
+                                }
+                                if (seen) curRect = { x: minX, y: minY, width: (maxX - minX), height: (maxY - minY) };
+                            }
+                            const curCx = curRect.x + curRect.width / 2;
+                            const curCy = curRect.y + curRect.height / 2;
+                            const tgtCx = r.x + r.w / 2;
+                            const tgtCy = r.y + r.h / 2;
+                            const dx = Math.round(tgtCx - curCx);
+                            const dy = Math.round(tgtCy - curCy);
+                            const s = (curRect.width > 1) ? (r.w / curRect.width) : 1;
+                            h1.style.willChange = 'transform';
+                            h1.style.transformOrigin = 'center';
+                            h1.style.transform = `translate(${dx}px, ${dy}px) scale(${Math.max(0.6, Math.min(1.8, s)).toFixed(4)})`;
+
+                            // Acknowledge so parent can fade in at the perfect time.
+                            try {
+                                window.parent && window.parent.postMessage({ __msk: 'ai_reveal_rect_applied' }, '*');
+                            } catch {}
+                        } catch {}
+                        return;
+                    }
+                    if (d.__msk !== 'ai_reveal_show_headline') return;
+                    document.body.classList.add('show-headline');
+                });
+            } catch {}
+        })();
+    </script>
+    <script src="script.js"></script>
+</body>
+</html> 

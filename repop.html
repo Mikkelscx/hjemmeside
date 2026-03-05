@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repop by Depop - Mikkel's Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Small navbar override */
+        .repop-page .navbar {
+            background-color: #fff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            position: fixed !important;
+            top: 0 !important;
+            width: 100% !important;
+            z-index: 1000 !important;
+        }
+        
+        .repop-page .nav-container {
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            padding: 0 20px !important;
+        }
+        
+        .repop-page .nav-menu {
+            display: flex !important;
+            justify-content: center !important;
+            list-style: none !important;
+            padding: 0.3rem 0 !important;
+        }
+        
+        .repop-page .nav-item {
+            margin: 0 1.5rem !important;
+        }
+        
+        .repop-page .nav-link {
+            text-decoration: none !important;
+            color: #333 !important;
+            font-weight: 600 !important;
+            font-size: 0.8rem !important;
+            transition: opacity 0.2s ease !important;
+        }
+        
+        .repop-page .nav-link:hover {
+            opacity: 0.7 !important;
+        }
+    </style>
+
+
+</head>
+<body class="repop-page">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">HJEM</a>
+                </li>
+                <li class="nav-item">
+                    <a href="projects.html" class="nav-link">PROJEKTER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html" class="nav-link">OM MIG</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">KONTAKT</a>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-universe.html" class="nav-link">MIN AI UNIVERS</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <h1>Repop by Depop</h1>
+        <h2>Lavet med: <a href="https://www.axelkappel.dk" target="_blank" style="color: inherit; text-decoration: underline; transition: color 0.3s ease;" onmouseover="this.style.color='#666'" onmouseout="this.style.color='inherit'">Axel Kappel</a></h2>
+        <h3>Nominering: Kravling 2025</h3>
+        
+        <h4 style="text-align: center; margin-bottom: 0.2rem;">Brief</h4>
+        <p style="text-align: center; margin: 0.2rem auto; font-size: 1.2rem;">Få Depop til at blive the talk of town</p>
+        
+        <!-- 2x2 Grid Layout -->
+        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 15px; padding: 1.5rem; margin: 1.5rem 0; color: white;">
+            <h1 style="text-align: center; margin-bottom: 1.5rem; font-size: 2rem; font-weight: bold;">Repop by Depop</h1>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0.5rem;">
+                <!-- Problem -->
+                <div style="padding: 0.8rem;">
+                    <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center;">Problem</h2>
+                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%;">Modeindustriens jagt på nye trends og salg resulterer i 90 millioner ton tekstilaffald årligt.</p>
+                </div>
+                
+                <!-- Observation -->
+                <div style="padding: 0.8rem;">
+                    <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center;">Observation</h2>
+                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%;">Gen Z får inspiration til tøj og accessories via SoMe-posts, outdoor reklamer og influencere.</p>
+                </div>
+                
+                <!-- Indsigt -->
+                <div style="padding: 0.8rem;">
+                    <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center;">Indsigt</h2>
+                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%;">Grundet hverdagens høje tempo, er de blevet vant til at tage billeder og screenshots af de vigtigste ting – også deres modeinspiration.</p>
+                </div>
+                
+                <!-- Løsning -->
+                <div style="padding: 0.8rem;">
+                    <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center;">Løsning</h2>
+                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%;">Vi har lavet en tilføjelse til Depop's app. Appen har allerede adgang til brugernes fotobiblioteker, hvilket vores tilføjelse "Repop by Depop" udnytter sammen med object detection AI til at forvandle inspirationsbilleder til mulige genbrugssalg.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- YouTube Video -->
+        <div style="margin: 2rem 0; text-align: center;">
+            <div style="position: relative; width: 100%; height: 0; padding-bottom: 56.25%; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);">
+                <video controls playsinline preload="metadata" poster="assets/Depop-thumb-51s.jpg"
+                       style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; display: block; object-fit: cover; background: #000;">
+                    <source src="assets/Coming%20soon%20on%20Depop.mp4" type="video/mp4">
+                    Din browser understøtter ikke videoafspilning.
+                </video>
+            </div>
+        </div>
+        
+        <!-- London Fashion Week Section -->
+        <h2 style="text-align: center; margin: 2rem 0 1rem 0; font-size: 2rem; font-weight: bold; color: #333;">London Fashion Week (LFC) Aktiveringer</h2>
+        
+        <!-- London Fashion Week Content -->
+        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <h3 style="color: white; font-size: 2rem; margin: 0 0 1.5rem 0; font-weight: bold; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); text-align: center;">London Fashion Week Aktiveringer</h3>
+            
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <!-- Left Side - Image -->
+                <div style="flex: 1; text-align: center;">
+                    <img src="assets/repop SoMe 1.png" alt="Repop SoMe 1" style="max-width: 80%; height: auto; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">
+                </div>
+                
+                <!-- Right Side - Før LFW Text -->
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 300px;">
+                    <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Før LFW</h4>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Vi bruger SoMe til at kommentere på modehusenes, og store mode-influenceres, opslag og vender opmærksomheden fra fast fashion til genbrugs fashion.</p>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Dette foregår på Instagram og TikTok, da det er der vores målgruppe befinder sig.</p>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Denne kommunikationsstrategi, fortsætter vi gennem hele kampagnen, men Depop kan sagtens fortsætte den efter.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Før LFW Content -->
+        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <!-- Left Side - Text -->
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 200px; padding-left: 0;">
+                    <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Før LFW</h4>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">For at skabe opmærksomhed og danne omtale, vil vi i ugerne op til London Fashion Week (LFW) tage LFWs egne out of home reklamer og gennem guerilla klistermærker forvandle dem til reklamer for Depops genbrugs markedsplads.</p>
+                </div>
+                
+                <!-- Right Side - Før LFW Asset 2 -->
+                <div style="flex: 1; text-align: center;">
+                    <img src="assets/Før LFW asset 2.png" alt="Før LFW Asset 2" style="max-width: 80%; height: auto;">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Under LFW Content -->
+        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <!-- Left Side - LFW Asset 3 -->
+                <div style="flex: 1; text-align: center;">
+                    <img src="assets/LFW asset 3.png" alt="LFW Asset 3" style="max-width: 80%; height: auto;">
+                </div>
+                
+                <!-- Right Side - Under LFW Text -->
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 200px;">
+                    <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Under LFW</h4>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Depop stjæler rampelyset ude foran eksisterende brands shows under LFW.</p>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Så når f. eks. Chanel laver modeshow, så laver Depop et ude foran.</p>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Twistet er: Depops modeller har kun tøj på fra det valgte modehus' forrige kollektioner.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Efter LFW Content -->
+        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <div style="display: flex; gap: 0.2rem; align-items: center;">
+                <!-- Left Side - Efter LFW Text -->
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 200px; padding-right: 0; margin-left: 4rem;">
+                    <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Efter LFW</h4>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">For at holde kampagnen og brandet relevant i længst muligt tid, vælger vi, at kommentere på nøje udvalgte OOHs fra tøj brands.</p>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Vi reagerer altså hurtigt på deres printannoncer, hvis det lægger op til vores platforms tekstbaserede præmisser.</p>
+                </div>
+                
+                <!-- Right Side - LFW Asset 4 -->
+                <div style="flex: 1; text-align: center;">
+                    <img src="assets/LFW asset 4.png" alt="LFW Asset 4" style="max-width: 110%; height: auto;">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Efter LFW Content -->
+        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <!-- Left Side - LFW Asset 5 -->
+                <div style="flex: 1; text-align: center;">
+                    <img src="assets/LFW asset 5.png" alt="LFW Asset 5" style="max-width: 110%; height: auto;">
+                </div>
+                
+                <!-- Right Side - Additional Efter LFW Text -->
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 200px;">
+                    <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Efter LFW</h4>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Efter London Fashion Week udvider vi vores guerilla-kampagne fra kun være på LFWs egne reklamer til alle modehusenes.</p>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Derudover er der nu også en QR kode, som henviser til vores nye "Repop by Depop" feature i appen – eller på hjemmesiden hvis man ikke har appen.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Overview Image Box -->
+        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; color: white; text-align: center; position: relative;">
+            <div style="position: absolute; top: 70%; left: 21%; z-index: 10; text-align: center; transform: translateX(-50%);">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Pre LFW guerilla</p>
+                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 0.5rem;">1–18 September</p>
+            </div>
+            <div style="position: absolute; top: 25%; left: 35%; z-index: 10; text-align: center; transform: translateX(-50%);">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Coming Soon SoMe</p>
+                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 0.5rem;">Fra 1. September og frem</p>
+            </div>
+            <div style="position: absolute; top: 25%; left: 67%; z-index: 10; text-align: center; transform: translateX(-50%);">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap; margin-left: -0.2rem;">Post LFW guerilla</p>
+                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 1.2rem;">22–30 September</p>
+            </div>
+            <img src="assets/LFW asset 6.png" alt="Campaign Overview" style="max-width: 95%; height: auto;">
+            <div style="position: absolute; top: 70%; left: 83%; z-index: 10; text-align: center; transform: translateX(-50%);">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Kontekstuelle OOHs</p>
+                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 0.3rem;">Fra 22. September og frem</p>
+            </div>
+            <div style="position: absolute; top: 70%; left: 51%; z-index: 10; text-align: center; transform: translateX(-50%);">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Pop-up catwalk</p>
+                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 0.8rem;">18–22 September</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

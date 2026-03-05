@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Mikkel's Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="sketchbook-theme">
+    <!-- Red margin lines for both pages -->
+    <div class="left-margin"></div>
+    <div class="right-margin"></div>
+    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">HJEM</a>
+                </li>
+                <li class="nav-item">
+                    <a href="projects.html" class="nav-link">PROJEKTER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html" class="nav-link">OM MIG</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">KONTAKT</a>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-universe.html" class="nav-link">MIN AI UNIVERS</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Brainstorm Container -->
+    <div class="brainstorm-container">
+        <!-- Connecting Lines SVG -->
+        <svg class="connecting-lines" width="100%" height="100%" style="position: absolute; top: 0; left: 0; z-index: 10; pointer-events: none; overflow: visible;">
+            <!-- Charcoal pencil texture filter - no blur for clear lines -->
+            <defs>
+                <filter id="charcoalTexture" x="-50%" y="-50%" width="200%" height="200%">
+                    <feTurbulence baseFrequency="0.8" numOctaves="3" result="noise" type="fractalNoise"/>
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5"/>
+                    <!-- Removed GaussianBlur for clarity -->
+                    <feMerge>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            <!-- Only asset images - no hand-drawn lines -->
+            
+            <!-- BYENS LANDHANDEL line is created dynamically by JavaScript -->
+            
+            
+            <!-- NATURLI' - using image asset linje 1.webp from brain (50%, 50%) to naturli' (top: 20%, right: 15%) - rotated to point toward upper right -->
+            <image href="assets/linje 1.webp" xlink:href="assets/linje 1.webp" x="50%" y="50%" width="30%" height="400" transform="translate(0, -200) rotate(-40.6)" class="mindmap-line" preserveAspectRatio="none" opacity="1" style="display: block !important; visibility: visible !important; image-rendering: crisp-edges; filter: none !important;"></image>
+            
+            <!-- TWISTER line is created dynamically by JavaScript -->
+            
+            <!-- KØ-BAJER line is created dynamically by JavaScript -->
+        </svg>
+        <!-- Effects layer (behind brain) -->
+        <div class="fart-layer" aria-hidden="true"></div>
+        
+        <!-- Brain -->
+        <div class="brain">
+            <svg viewBox="0 0 100 100" width="200" height="200" aria-label="Brain">
+                <image href="assets/brain-cartoon.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
+                <!-- Eyes group for animation -->
+                <g class="eyes-group">
+                    <!-- Eyes (sclera) -->
+                    <circle class="eye sclera left" cx="35" cy="45" r="6" fill="#fff"></circle>
+                    <circle class="eye sclera right" cx="65" cy="45" r="6" fill="#fff"></circle>
+                    <!-- Pupils -->
+                    <circle class="pupil left" cx="35" cy="45" r="2.2" fill="#000"></circle>
+                    <circle class="pupil right" cx="65" cy="45" r="2.2" fill="#000"></circle>
+                </g>
+                <!-- Wider smile -->
+                <path class="brain-mouth" d="M38,58 Q50,61 62,58" stroke="#000" stroke-width="2" fill="transparent"></path>
+            </svg>
+        </div>
+
+        <!-- Project Nodes - Perfect Mathematical Circle - Extended to fit page length -->
+        <!-- 8 nodes evenly spaced at 45° intervals, larger radius to fill page -->
+        <a href="repop.html" class="project-node" data-visual-key="repop" data-hover-key="repop" style="top: 10%; left: 50%; transform: translateX(-50%);">
+            REPOP BY DEPOP
+        </a>
+        
+        <a href="Naturli'.html" class="project-node" style="top: 20%; right: 15%;">
+            NATURLI'
+        </a>
+        
+        <a href="durex.html" class="project-node" style="top: 50%; right: 10%; transform: translateY(-50%);">
+            DUREX X GUESS WHO
+        </a>
+        
+        <a href="unge-mod-uv.html" class="project-node" style="bottom: 20%; right: 15%;">
+            UNGE MOD UV
+        </a>
+        
+        <a href="twister.html" class="project-node" style="bottom: 10%; left: 50%; transform: translateX(-50%);">
+            TWISTER
+        </a>
+        
+        <a href="kobajer.html" class="project-node" style="bottom: 20%; left: 15%;">
+            KØ-BAJER
+        </a>
+        
+        <a href="brainfarts.html" class="project-node" style="top: 50%; left: 10%; transform: translateY(-50%);">
+            BRAINFARTS
+        </a>
+
+        <!-- Under construction note for Brainfarts -->
+        <div class="brainfarts-build" aria-hidden="true">
+            <img class="brainfarts-build__arrow" src="assets/pil fra brainfarts til under ombygning.webp" alt="">
+            <img class="brainfarts-build__sign" src="assets/Under ombygning.webp" alt="">
+        </div>
+        
+        <a href="byens-landhandel.html" class="project-node" data-visual-key="byens-landhandel" data-hover-key="byens-landhandel" style="top: 20%; left: 15%;">
+            Byens Landhandel
+        </a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

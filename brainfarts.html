@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAINFARTS - Mikkel Skrøder-Christensen</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Fart Theme */
+        .brainfarts-page {
+            background: linear-gradient(135deg, #8B4513 0%, #654321 25%, #556B2F 50%, #6B8E23 75%, #9ACD32 100%);
+            min-height: 100vh;
+            color: #2F4F2F;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brainfarts-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="90" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 20s infinite linear;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .brainfarts-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+        }
+
+        .brainfarts-content h1 {
+            color: #8B4513;
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .fart-cloud {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 70%, transparent 100%);
+            border-radius: 50%;
+            animation: fartFloat 4s ease-out forwards;
+            opacity: 0;
+        }
+
+        .fart-cloud.large {
+            width: 80px;
+            height: 60px;
+        }
+
+        .fart-cloud.medium {
+            width: 60px;
+            height: 45px;
+        }
+
+        .fart-cloud.small {
+            width: 40px;
+            height: 30px;
+        }
+
+        @keyframes fartFloat {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) translateY(0);
+            }
+            20% {
+                opacity: 1;
+                transform: scale(1) translateY(-10px);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.2) translateY(-50px);
+            }
+        }
+
+        .brainfarts-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #2F4F2F;
+            margin-bottom: 2rem;
+        }
+
+        .fart-quote {
+            background: linear-gradient(135deg, #F0E68C, #DAA520);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            border-left: 5px solid #8B4513;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: #654321;
+        }
+
+        .fart-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .fart-stat {
+            background: linear-gradient(135deg, #90EE90, #32CD32);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #228B22;
+        }
+
+        .fart-stat h3 {
+            color: #006400;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .fart-stat p {
+            color: #2F4F2F;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .brainfarts-page .navbar {
+            background: linear-gradient(135deg, #8B4513, #654321) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+        }
+
+        .brainfarts-page .nav-link {
+            color: #F0E68C !important;
+        }
+
+        .brainfarts-page .nav-link:hover {
+            color: #FFFFFF !important;
+        }
+
+        .brainfarts-page .back-button {
+            background: linear-gradient(135deg, #8B4513, #654321) !important;
+            color: #F0E68C !important;
+            border: 2px solid #556B2F !important;
+        }
+
+        .brainfarts-page .back-button:hover {
+            background: linear-gradient(135deg, #654321, #8B4513) !important;
+            color: #FFFFFF !important;
+        }
+    </style>
+</head>
+<body class="brainfarts-page">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">HJEM</a>
+                </li>
+                <li class="nav-item">
+                    <a href="projects.html" class="nav-link">PROJEKTER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html" class="nav-link">OM MIG</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">KONTAKT</a>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-universe.html" class="nav-link">MIN AI UNIVERS</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="brainfarts-content">
+        <h1>🧠💨 BRAINFARTS 💨🧠</h1>
+        
+        <div class="brainfarts-text">
+            <p>Velkommen til min samling af kreative "brainfarts" - de idéer der dukker op når man mindst venter det! Her finder du mine mest spontane og humoristiske projekter.</p>
+        </div>
+
+        <div class="fart-quote">
+            "Kreativitet er som en god prut - den kommer når den kommer, og nogle gange er den bare perfekt!" 🎭
+        </div>
+
+        <div class="fart-stats">
+            <div class="fart-stat">
+                <h3>🎯 Brainfarts i alt</h3>
+                <p>42 stk</p>
+            </div>
+            <div class="fart-stat">
+                <h3>💡 Gode idéer</h3>
+                <p>37 stk</p>
+            </div>
+            <div class="fart-stat">
+                <h3>🤔 Under udvikling</h3>
+                <p>5 stk</p>
+            </div>
+        </div>
+
+        <div class="brainfarts-text">
+            <h2>🎪 Kommende Brainfarts</h2>
+            <ul>
+                <li>🎨 En app der oversætter prutter til musik</li>
+                <li>📱 Social media platform kun for dad jokes</li>
+                <li>🎮 Videospil hvor du spiller som en prut</li>
+                <li>🎭 Stand-up comedy show om kreativitet</li>
+                <li>📚 Bog: "Kunsten at have gode idéer på det rigtige tidspunkt"</li>
+            </ul>
+        </div>
+
+        <div class="fart-quote">
+            "Nogle af mine bedste idéer er kommet mens jeg var på toilettet. Der er noget med den ro der giver hjernen frihed til at tænke ud af boksen!" 🚽✨
+        </div>
+
+        <!-- Minigame Section -->
+        <div class="minigame-section">
+            <h2>🎮 Fart Cloud Catcher - Minigame</h2>
+            <p>Styr hjernen med piletasterne og fang de flyvende prutskyer! 🧠💨</p>
+            
+            <div class="game-container">
+                <div class="game-info">
+                    <div class="score">Score: <span id="score">0</span></div>
+                    <div class="lives">Liv: <span id="lives">3</span></div>
+                    <div class="time">Tid: <span id="time">30</span>s</div>
+                </div>
+                
+                <div class="game-area" id="gameArea">
+                    <div class="player" id="player">🧠</div>
+                </div>
+                
+                <div class="game-controls">
+                    <button id="startGame" class="game-btn">Start Spil</button>
+                    <button id="resetGame" class="game-btn">Nulstil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .minigame-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #F0E68C, #DAA520);
+            border-radius: 15px;
+            border: 3px solid #8B4513;
+        }
+
+        .minigame-section h2 {
+            color: #8B4513;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .game-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #654321;
+        }
+
+        .game-area {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #87CEEB, #98FB98);
+            border: 3px solid #8B4513;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .player {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            transition: left 0.1s ease;
+            z-index: 10;
+        }
+
+        .game-cloud {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 70%, transparent 100%);
+            border-radius: 50%;
+            animation: gameCloudFloat 3s linear forwards;
+            z-index: 5;
+        }
+
+        .game-cloud.small {
+            width: 30px;
+            height: 25px;
+        }
+
+        .game-cloud.medium {
+            width: 40px;
+            height: 30px;
+        }
+
+        .game-cloud.large {
+            width: 50px;
+            height: 40px;
+        }
+
+        @keyframes gameCloudFloat {
+            0% {
+                top: -50px;
+                opacity: 1;
+            }
+            100% {
+                top: 300px;
+                opacity: 0;
+            }
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .game-btn {
+            background: linear-gradient(135deg, #8B4513, #654321);
+            color: #F0E68C;
+            border: 2px solid #556B2F;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-btn:hover {
+            background: linear-gradient(135deg, #654321, #8B4513);
+            color: #FFFFFF;
+            transform: scale(1.05);
+        }
+
+        .game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(139, 69, 19, 0.9);
+            color: #F0E68C;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 20;
+        }
+    </style>
+
+    <script>
+        // Create floating fart clouds for background
+        function createFartCloud() {
+            const cloud = document.createElement('div');
+            const sizes = ['small', 'medium', 'large'];
+            const size = sizes[Math.floor(Math.random() * sizes.length)];
+            cloud.className = `fart-cloud ${size}`;
+            
+            // Random position
+            const startX = Math.random() * window.innerWidth;
+            const startY = window.innerHeight + 50;
+            cloud.style.left = `${startX}px`;
+            cloud.style.top = `${startY}px`;
+            
+            document.body.appendChild(cloud);
+            
+            // Remove after animation
+            setTimeout(() => {
+                cloud.remove();
+            }, 4000);
+        }
+
+        // Create fart clouds periodically
+        setInterval(createFartCloud, 3000);
+        
+        // Create initial fart clouds
+        setTimeout(() => {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(createFartCloud, i * 500);
+            }
+        }, 1000);
+
+        // Minigame Code
+        class FartCloudGame {
+            constructor() {
+                this.score = 0;
+                this.lives = 3;
+                this.time = 30;
+                this.gameRunning = false;
+                this.gameInterval = null;
+                this.cloudInterval = null;
+                
+                this.player = document.getElementById('player');
+                this.gameArea = document.getElementById('gameArea');
+                this.scoreElement = document.getElementById('score');
+                this.livesElement = document.getElementById('lives');
+                this.timeElement = document.getElementById('time');
+                this.startBtn = document.getElementById('startGame');
+                this.resetBtn = document.getElementById('resetGame');
+                
+                this.playerX = 50; // Percentage
+                this.keys = {};
+                
+                this.init();
+            }
+            
+            init() {
+                this.startBtn.addEventListener('click', () => this.startGame());
+                this.resetBtn.addEventListener('click', () => this.resetGame());
+                
+                // Keyboard controls
+                document.addEventListener('keydown', (e) => {
+                    this.keys[e.key] = true;
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    this.keys[e.key] = false;
+                });
+                
+                this.gameLoop();
+            }
+            
+            startGame() {
+                if (this.gameRunning) return;
+                
+                this.gameRunning = true;
+                this.startBtn.disabled = true;
+                this.startBtn.textContent = 'Spil kører...';
+                
+                // Start game timer
+                this.gameInterval = setInterval(() => {
+                    this.time--;
+                    this.timeElement.textContent = this.time;
+                    
+                    if (this.time <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+                
+                // Start spawning clouds
+                this.cloudInterval = setInterval(() => {
+                    this.spawnCloud();
+                }, 1500);
+            }
+            
+            resetGame() {
+                this.endGame();
+                this.score = 0;
+                this.lives = 3;
+                this.time = 30;
+                this.updateDisplay();
+                this.startBtn.disabled = false;
+                this.startBtn.textContent = 'Start Spil';
+            }
+            
+            endGame() {
+                this.gameRunning = false;
+                clearInterval(this.gameInterval);
+                clearInterval(this.cloudInterval);
+                this.startBtn.disabled = false;
+                this.startBtn.textContent = 'Start Spil';
+                
+                // Show game over message
+                const gameOver = document.createElement('div');
+                gameOver.className = 'game-over';
+                gameOver.innerHTML = `
+                    Spil Slut!<br>
+                    Din score: ${this.score}<br>
+                    <button onclick="this.parentElement.remove()" class="game-btn">Luk</button>
+                `;
+                this.gameArea.appendChild(gameOver);
+            }
+            
+            spawnCloud() {
+                if (!this.gameRunning) return;
+                
+                const cloud = document.createElement('div');
+                const sizes = ['small', 'medium', 'large'];
+                const size = sizes[Math.floor(Math.random() * sizes.length)];
+                cloud.className = `game-cloud ${size}`;
+                
+                const x = Math.random() * (this.gameArea.offsetWidth - 50);
+                cloud.style.left = `${x}px`;
+                
+                this.gameArea.appendChild(cloud);
+                
+                // Check collision
+                const checkCollision = setInterval(() => {
+                    if (!this.gameRunning) {
+                        clearInterval(checkCollision);
+                        return;
+                    }
+                    
+                    const cloudRect = cloud.getBoundingClientRect();
+                    const playerRect = this.player.getBoundingClientRect();
+                    
+                    if (this.checkCollision(cloudRect, playerRect)) {
+                        this.score += size === 'large' ? 10 : size === 'medium' ? 5 : 3;
+                        this.updateDisplay();
+                        cloud.remove();
+                        clearInterval(checkCollision);
+                    }
+                    
+                    if (cloudRect.top > this.gameArea.offsetHeight) {
+                        this.lives--;
+                        this.updateDisplay();
+                        cloud.remove();
+                        clearInterval(checkCollision);
+                        
+                        if (this.lives <= 0) {
+                            this.endGame();
+                        }
+                    }
+                }, 100);
+                
+                // Remove cloud after animation
+                setTimeout(() => {
+                    cloud.remove();
+                }, 3000);
+            }
+            
+            checkCollision(rect1, rect2) {
+                return !(rect1.right < rect2.left || 
+                        rect1.left > rect2.right || 
+                        rect1.bottom < rect2.top || 
+                        rect1.top > rect2.bottom);
+            }
+            
+            updateDisplay() {
+                this.scoreElement.textContent = this.score;
+                this.livesElement.textContent = this.lives;
+                this.timeElement.textContent = this.time;
+            }
+            
+            gameLoop() {
+                if (this.gameRunning) {
+                    // Move player
+                    if (this.keys['ArrowLeft'] && this.playerX > 5) {
+                        this.playerX -= 3;
+                    }
+                    if (this.keys['ArrowRight'] && this.playerX < 95) {
+                        this.playerX += 3;
+                    }
+                    
+                    this.player.style.left = `${this.playerX}%`;
+                }
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new FartCloudGame();
+        });
+    </script>
+</body>
+</html> 
