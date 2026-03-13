@@ -101,6 +101,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	console.log('Portfolio website loaded successfully!');
 
+	function closeMobileBurgerMenu() {
+		try { document.body.classList.remove('nav-open'); } catch {}
+		try {
+			const btn = document.querySelector('.nav-toggle');
+			if (btn) {
+				btn.setAttribute('aria-expanded', 'false');
+				btn.setAttribute('aria-label', 'Åbn menu');
+			}
+		} catch {}
+	}
+
 	function getPageFlipMs(fallbackMs) {
 		try {
 			const root = document.documentElement;
@@ -117,6 +128,41 @@ document.addEventListener('DOMContentLoaded', function() {
 			return fallbackMs;
 		}
 	}
+
+	// DUREX page: on phones the 2-column infobox grid gets squeezed.
+	// Merge "Brætspillet" into "Karakterdesign" on mobile so it reads as one box.
+	(function mergeDurexInfoboxesOnMobile() {
+		try {
+			if (!document.body || !document.body.classList.contains('durex-page')) return;
+			if (!window.matchMedia || !window.matchMedia('(max-width: 640px)').matches) return;
+
+			const grid = document.querySelector('.durex-infobox-grid');
+			if (!grid || grid.dataset.merged === '1') return;
+
+			const characterBox = grid.querySelector('.durex-infobox--character');
+			const boardBox = grid.querySelector('.durex-infobox--board');
+			if (!characterBox || !boardBox) return;
+
+			const section = document.createElement('div');
+			section.className = 'durex-board-section';
+
+			while (boardBox.firstChild) {
+				section.appendChild(boardBox.firstChild);
+			}
+
+			characterBox.appendChild(section);
+			try { boardBox.remove(); } catch { boardBox.parentNode && boardBox.parentNode.removeChild(boardBox); }
+
+			// Avoid grid spacing on mobile after merge
+			try {
+				grid.style.display = 'block';
+				grid.style.gridTemplateColumns = '1fr';
+				grid.style.gap = '0';
+			} catch {}
+
+			grid.dataset.merged = '1';
+		} catch {}
+	})();
 
 	function getCssVarMsFromEl(el, varName, fallbackMs) {
 		try {
@@ -357,6 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefLower = hrefAttr.toLowerCase();
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu();
 			e.preventDefault();
 			try { e.stopImmediatePropagation(); } catch {}
 			startFlipToAbout(a.href);
@@ -862,6 +909,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu();
 			e.preventDefault();
 			startDoubleFlipToContact(a.href);
 		}, true);
@@ -1105,6 +1153,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'projects.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu();
 			e.preventDefault();
 			startFlipToProjects(a.href);
 		}, true);
@@ -1466,6 +1515,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu();
 			e.preventDefault();
 			startFlipToContact(a.href);
 		}, true);
@@ -1788,6 +1838,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefLower = hrefAttr.toLowerCase();
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu();
 			e.preventDefault();
 			startFlipToAbout(a.href);
 		}, true);
@@ -2537,6 +2588,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (path.endsWith('/ai-universe.html') || path.endsWith('ai-universe.html')) return;
 			} catch {}
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu();
 			e.preventDefault();
 			try { e.stopImmediatePropagation(); } catch {}
 			startAiClose(a.href);
@@ -2924,6 +2976,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'projects.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu();
 			e.preventDefault();
 			// Prevent other "to projects" transitions from also running.
 			try { e.stopImmediatePropagation(); } catch {}
@@ -3024,6 +3077,85 @@ document.addEventListener('DOMContentLoaded', function() {
 		nav.addEventListener('focusin', () => setOpen(true));
 		nav.addEventListener('focusout', (e) => {
 			if (!nav.contains(e.relatedTarget)) scheduleClose();
+		});
+	})();
+
+	// Mobile burger menu (phones only; desktop/tablet unchanged via CSS media query)
+	(function initMobileBurgerMenu() {
+		try {
+			if (document.documentElement && document.documentElement.classList.contains('transition-preview')) return;
+		} catch {}
+
+		const nav = document.querySelector('.navbar');
+		if (!nav) return;
+		const container = nav.querySelector('.nav-container') || nav;
+		const menu = nav.querySelector('.nav-menu');
+		if (!menu) return;
+
+		// Avoid double-mounting across navigation / re-renders.
+		if (nav.querySelector('.nav-toggle')) return;
+
+		// Ensure we have a scrim element for outside-click close.
+		let scrim = document.querySelector('.nav-scrim');
+		if (!scrim) {
+			scrim = document.createElement('div');
+			scrim.className = 'nav-scrim';
+			scrim.setAttribute('aria-hidden', 'true');
+			document.body.appendChild(scrim);
+		}
+
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'nav-toggle';
+		button.setAttribute('aria-label', 'Åbn menu');
+		button.setAttribute('aria-expanded', 'false');
+
+		const menuId = (menu.getAttribute('id') || '').trim() || 'site-nav-menu';
+		menu.setAttribute('id', menuId);
+		button.setAttribute('aria-controls', menuId);
+
+		const bars = document.createElement('span');
+		bars.className = 'nav-toggle__bars';
+		const mid = document.createElement('span');
+		bars.appendChild(mid);
+
+		const label = document.createElement('span');
+		label.className = 'nav-toggle__label';
+		label.textContent = 'Menu';
+
+		button.appendChild(bars);
+		button.appendChild(label);
+
+		container.insertBefore(button, container.firstChild);
+
+		function setOpen(nextOpen) {
+			document.body.classList.toggle('nav-open', !!nextOpen);
+			button.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+			button.setAttribute('aria-label', nextOpen ? 'Luk menu' : 'Åbn menu');
+		}
+
+		function isOpen() {
+			return document.body.classList.contains('nav-open');
+		}
+
+		button.addEventListener('click', () => setOpen(!isOpen()));
+		scrim.addEventListener('click', () => setOpen(false));
+
+		// Close when selecting a link.
+		menu.addEventListener('click', (e) => {
+			const a = e.target && e.target.closest ? e.target.closest('a') : null;
+			if (!a) return;
+			setOpen(false);
+		});
+
+		// Close on ESC.
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') setOpen(false);
+		});
+
+		// If user rotates / grows window, ensure menu closes when leaving phone breakpoint.
+		window.addEventListener('resize', () => {
+			if (window.innerWidth > 640) setOpen(false);
 		});
 	})();
 
@@ -3185,6 +3317,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			// Allow normal browser behaviors (new tab, etc.)
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu();
 			e.preventDefault();
 			startProjectsTransition(a.href);
 		}, true);
@@ -3225,11 +3358,73 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
+		// Projects page: compute a global scale factor so *all* assets can shrink with the viewport.
+		// We use container size (not window size) because the projects page can be shown inside iframes.
+		function projectsScaleFromRect(containerRect) {
+			// Keep this as a "layout scale" (most layout math assumes base sizes).
+			// We squeeze the whole mindmap independently in X/Y using --projectsSx/--projectsSy.
+			return 1;
+		}
+
+		function unwrapProjectsStage(container) {
+			if (!container) return;
+			// If an older build wrapped all content in .brainstorm-stage, unwrap it so layout + Safari rendering stay stable.
+			while (true) {
+				const directStage = Array.from(container.children).find((el) => el.classList && el.classList.contains('brainstorm-stage'));
+				if (!directStage) break;
+				while (directStage.firstChild) container.insertBefore(directStage.firstChild, directStage);
+				directStage.remove();
+			}
+		}
+
+		function applyProjectsStageScale() {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container) return;
+			unwrapProjectsStage(container);
+
+			const r = container.getBoundingClientRect();
+			const cs = window.getComputedStyle(container);
+			const baseW = Number.parseFloat(cs.getPropertyValue('--projectsScaleBaseW')) || 1280;
+			const baseH = Number.parseFloat(cs.getPropertyValue('--projectsScaleBaseH')) || 860;
+			const exp = Number.parseFloat(cs.getPropertyValue('--projectsScaleExp')) || 2.2;
+			const minS = Number.parseFloat(cs.getPropertyValue('--projectsScaleMin')) || 0.18;
+			const uniform = Number.parseFloat(cs.getPropertyValue('--projectsScaleUniform')) || 0;
+
+			const rawX = Math.min(r.width / baseW, 1);
+			const rawY = Math.min(r.height / baseH, 1);
+
+			// Drastic + early shrink: exponent makes it drop faster as soon as the window gets smaller.
+			let sx = Math.max(minS, Math.pow(Math.max(0, rawX), exp));
+			let sy = Math.max(minS, Math.pow(Math.max(0, rawY), exp));
+
+			// Optional: keep proportions (used for mobile projects so it doesn't become a thin strip).
+			if (uniform > 0.5) {
+				const raw = Math.min(rawX, rawY);
+				const s = Math.max(minS, Math.pow(Math.max(0, raw), exp));
+				sx = s;
+				sy = s;
+			}
+
+			container.style.setProperty('--projectsSx', sx.toFixed(4));
+			container.style.setProperty('--projectsSy', sy.toFixed(4));
+		}
+
+		function resetProjectsStageScale() {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container) return;
+			unwrapProjectsStage(container);
+			container.style.setProperty('--projectsSx', '1');
+			container.style.setProperty('--projectsSy', '1');
+		}
+
 		// If we've already bound listeners once, just re-position/redraw.
 		if (brain.dataset.animInit === '1') {
 			try {
+				// Compute layout in "base" coords, then squeeze as a final step.
+				resetProjectsStageScale();
 				// Refresh pass to ensure custom assets are present after navigation.
 				positionNodesPerfectCircle();
+				positionBrainfartsBuild();
 				createAndPositionDandDLogo();
 				createAndPositionTwisterDandDLine();
 				createAndPositionRepopKravlingLine();
@@ -3237,6 +3432,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				createAndPositionKobajerArrow();
 				createConnectingLines();
 				createHandDrawnFrames();
+				applyProjectsStageScale();
 			} catch {}
 			if (isPreview) {
 				try {
@@ -3254,19 +3450,342 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!container) return;
 
 			const containerRect = container.getBoundingClientRect();
+			const scale = projectsScaleFromRect(containerRect);
 			const brainRect = brain.getBoundingClientRect();
 			const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
 			const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
 
-			// Use an ellipse ring (rx > ry) to fill more horizontal space without pushing tabs off-screen vertically.
-			const paddingX = 210; // keep horizontal size
-			const paddingY = 215; // base vertical padding
-			const rx = Math.max(200, (containerRect.width / 2) - paddingX);
-			let ry = Math.max(170, (containerRect.height / 2) - paddingY);
-			// Make it bigger VERTICALLY only (do not change rx)
-			ry = ry + 120;
-
 			const nodeArray = Array.from(nodes);
+
+			// Mobile Projects: avoid overlaps (do NOT force a perfect circle).
+			// Lay nodes out in 5 rows (2+2+brain+2+2) like the sketch.
+			try {
+				if (document.body &&
+					document.body.classList.contains('projects-page') &&
+					window.matchMedia &&
+					window.matchMedia('(max-width: 640px)').matches) {
+					const NAV_H = 52;
+					const safeTop = NAV_H + Math.round(6 * scale);
+					const safeBottom = containerRect.height - Math.round(8 * scale);
+					const minX = 78;
+					const maxX = containerRect.width - 78;
+					const baseLeft = Math.max(minX, Math.min(maxX, containerRect.width * 0.28));
+					const baseRight = Math.max(minX, Math.min(maxX, containerRect.width * 0.72));
+					const maxW = Math.max(120, Math.floor(containerRect.width * 0.46));
+					const tilts = [-1, 1, -2, 0.5, -1.5, 2, -0.5, 1.5];
+
+					// Row staggering (negative => wider separation, positive => tighter).
+					// Row 2 (Durex/Unge) needs more separation to prevent circle overlap.
+					const rowOffsets = [
+						Math.round(-14 * scale), // row 1
+						Math.round(-14 * scale), // row 2 (wider)
+						0,                       // row 3 (brain only)
+						Math.round(-10 * scale), // row 4
+						Math.round(-14 * scale), // row 5
+					];
+
+					function rowXs(rowIndex) {
+						const off = rowOffsets[rowIndex - 1] ?? 0;
+						let lx = baseLeft + off;
+						let rx = baseRight - off;
+						lx = Math.max(minX, Math.min(maxX, lx));
+						rx = Math.max(minX, Math.min(maxX, rx));
+						if (rx - lx < 150) {
+							const mid = (lx + rx) / 2;
+							lx = Math.max(minX, mid - 75);
+							rx = Math.min(maxX, mid + 75);
+						}
+						return { lx, rx };
+					}
+
+					function rowY(rowIndex) {
+						const avail = Math.max(220, safeBottom - safeTop);
+						const pad = Math.round(10 * scale);
+						const y1 = safeTop + pad;
+						const y5 = safeBottom - pad;
+						const step = (y5 - y1) / 4;
+						return y1 + (rowIndex - 1) * step;
+					}
+
+					function styleNode(node, tiltIndex) {
+						node.style.setProperty('position', 'absolute', 'important');
+						node.style.setProperty('right', 'auto', 'important');
+						node.style.setProperty('bottom', 'auto', 'important');
+						node.style.setProperty('margin-left', '0', 'important');
+						node.style.setProperty('margin-top', '0', 'important');
+						node.style.setProperty('max-width', `${maxW}px`, 'important');
+						node.style.setProperty('text-align', 'center', 'important');
+						node.style.setProperty('white-space', 'normal', 'important');
+						node.style.setProperty('line-height', '1.05', 'important');
+						node.style.setProperty(
+							'transform',
+							`translate(-50%, -50%) rotate(${tilts[tiltIndex % tilts.length] ?? 0}deg)`,
+							'important'
+						);
+					}
+
+					const plan = [
+						{ key: 'repop', row: 1, side: 'left', match: (h) => h.includes('repop') },
+						{ key: 'naturli', row: 1, side: 'right', match: (h) => h.includes('naturli') },
+						{ key: 'durex', row: 2, side: 'left', match: (h) => h.includes('durex') },
+						{ key: 'unge', row: 2, side: 'right', match: (h) => h.includes('unge-mod-uv') },
+						{ key: 'twister', row: 4, side: 'left', match: (h) => h.includes('twister') },
+						{ key: 'kobajer', row: 4, side: 'right', match: (h) => h.includes('kobajer') },
+						{ key: 'brainfarts', row: 5, side: 'left', match: (h) => h.includes('brainfarts') },
+						{ key: 'byens', row: 5, side: 'right', match: (h) => h.includes('byens-landhandel') },
+					];
+
+					const placed = [];
+					for (let i = 0; i < plan.length; i++) {
+						const p = plan[i];
+						const node = nodeArray.find((n) => p.match(((n.getAttribute('href') || '').toLowerCase())));
+						if (!node) continue;
+						styleNode(node, i);
+						// Keep "REPOP BY DEPOP" on one line on mobile.
+						if (p.key === 'repop') {
+							// Wrap the title in a span so frame placement stays consistent
+							// even when we add the inline Kravling badge under it.
+							let title = node.querySelector('.project-node__title');
+							if (!title) {
+								node.textContent = '';
+								title = document.createElement('span');
+								title.className = 'project-node__title';
+								title.textContent = 'REPOP BY DEPOP';
+								node.appendChild(title);
+							} else {
+								title.textContent = 'REPOP BY DEPOP';
+							}
+
+							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
+							node.style.setProperty('white-space', 'nowrap', 'important');
+							node.style.setProperty('font-size', `${Math.max(10, fs * 0.92)}px`, 'important');
+							node.style.setProperty('max-width', `${Math.max(160, Math.floor(maxW * 1.05))}px`, 'important');
+							// Add Kravling 2025 as part of the circle (under the REPOP text).
+							node.style.setProperty('display', 'flex', 'important');
+							node.style.setProperty('flex-direction', 'column', 'important');
+							node.style.setProperty('align-items', 'center', 'important');
+							node.style.setProperty('justify-content', 'center', 'important');
+
+							let inline = node.querySelector('.kravling-nomineret-badge--inline');
+							if (!inline) {
+								inline = document.createElement('div');
+								inline.className = 'kravling-nomineret-badge kravling-nomineret-badge--inline';
+								inline.setAttribute('aria-hidden', 'true');
+								inline.innerHTML = `
+									<div class="kravling-line1">KRAVLINGPRISEN</div>
+									<div class="kravling-line2">NOMINERET</div>
+									<div class="kravling-line3">2025</div>
+								`;
+								node.appendChild(inline);
+							}
+						}
+						if (p.key === 'kobajer') {
+							// Wrap the title in a span so the circle stays "the same"
+							// even when we add the inline Kravling badge underneath.
+							let title = node.querySelector('.project-node__title');
+							if (!title) {
+								node.textContent = '';
+								title = document.createElement('span');
+								title.className = 'project-node__title';
+								title.textContent = 'KØ-BAJER';
+								node.appendChild(title);
+							} else {
+								title.textContent = 'KØ-BAJER';
+							}
+
+							// Add Kravling 2024 as part of the circle (under the KØ-BAJER text).
+							node.style.setProperty('display', 'flex', 'important');
+							node.style.setProperty('flex-direction', 'column', 'important');
+							node.style.setProperty('align-items', 'center', 'important');
+							node.style.setProperty('justify-content', 'center', 'important');
+
+							let inline2024 = node.querySelector('.kobajer-kravling-2024-badge--inline');
+							if (!inline2024) {
+								inline2024 = document.createElement('div');
+								inline2024.className = 'kobajer-kravling-2024-badge kobajer-kravling-2024-badge--inline';
+								inline2024.setAttribute('aria-hidden', 'true');
+								inline2024.innerHTML = `
+									<div class="kobajer-kravling-2024-text">
+										<div class="kravling-line1">KRAVLINGPRISEN</div>
+										<div class="kravling-line2">NOMINERET</div>
+										<div class="kravling-line3">2024</div>
+									</div>
+								`;
+								node.appendChild(inline2024);
+							}
+						}
+						if (p.key === 'twister') {
+							// Put D&AD logo + winner inside the TWISTER circle on mobile.
+							let title = node.querySelector('.project-node__title');
+							if (!title) {
+								node.textContent = '';
+								title = document.createElement('span');
+								title.className = 'project-node__title';
+								title.textContent = 'TWISTER';
+								node.appendChild(title);
+							} else {
+								title.textContent = 'TWISTER';
+							}
+
+							node.style.setProperty('display', 'flex', 'important');
+							node.style.setProperty('flex-direction', 'column', 'important');
+							node.style.setProperty('align-items', 'center', 'important');
+							node.style.setProperty('justify-content', 'center', 'important');
+
+							let inlineDandD = node.querySelector('.dandd-badge--inline');
+							if (!inlineDandD) {
+								inlineDandD = document.createElement('div');
+								inlineDandD.className = 'dandd-badge dandd-badge--inline';
+								inlineDandD.setAttribute('aria-hidden', 'true');
+
+								const logo = document.createElement('img');
+								logo.className = 'dandd-logo';
+								logo.alt = 'D&AD';
+								logo.src = "assets/D&AD LOGO.webp";
+								logo.onerror = () => {
+									logo.onerror = null;
+									logo.src = "assets/D&AD logo.webp";
+								};
+
+								const winner = document.createElement('img');
+								winner.className = 'dandd-winner';
+								winner.alt = 'D&AD VINDER';
+								winner.src = 'assets/D&AD VINDER.webp';
+
+								inlineDandD.appendChild(logo);
+								inlineDandD.appendChild(winner);
+								node.appendChild(inlineDandD);
+							}
+						}
+						if (p.key === 'brainfarts') {
+							// Put "Under ombygning" inside the BRAINFARTS circle on mobile.
+							let title = node.querySelector('.project-node__title');
+							if (!title) {
+								node.textContent = '';
+								title = document.createElement('span');
+								title.className = 'project-node__title';
+								title.textContent = 'BRAINFARTS';
+								node.appendChild(title);
+							} else {
+								title.textContent = 'BRAINFARTS';
+							}
+
+							node.style.setProperty('display', 'flex', 'important');
+							node.style.setProperty('flex-direction', 'column', 'important');
+							node.style.setProperty('align-items', 'center', 'important');
+							node.style.setProperty('justify-content', 'center', 'important');
+
+							let inlineSign = node.querySelector('.brainfarts-build__sign--inline');
+							if (!inlineSign) {
+								inlineSign = document.createElement('img');
+								inlineSign.className = 'brainfarts-build__sign brainfarts-build__sign--inline';
+								inlineSign.alt = '';
+								inlineSign.draggable = false;
+								inlineSign.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
+								inlineSign.setAttribute('aria-hidden', 'true');
+								node.appendChild(inlineSign);
+							}
+						}
+						// Row 2 has long labels; make these tabs slightly smaller so the circle frames shrink.
+						if (p.key === 'durex' || p.key === 'unge') {
+							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
+							node.style.setProperty('font-size', `${Math.max(10, fs * 0.86)}px`, 'important');
+							node.style.setProperty('max-width', `${Math.max(110, Math.floor(maxW * 0.88))}px`, 'important');
+						}
+						let y = rowY(p.row);
+						// Make room for the inline Kravling badge under REPOP.
+						if (p.key === 'repop') y -= Math.round(10 * scale);
+						// Make room for the inline Kravling badge under KØ-BAJER.
+						if (p.key === 'kobajer') y -= Math.round(12 * scale);
+						const { lx, rx } = rowXs(p.row);
+						let x = (p.side === 'left') ? lx : rx;
+						// Fine-tune: move KØ-BAJER more down and more right (mobile only)
+						if (p.key === 'kobajer') {
+							x += Math.round(128 * scale);
+							y += Math.round(44 * scale);
+						}
+						// Fine-tune: spread specific nodes further out (mobile only)
+						if (p.key === 'brainfarts') x -= Math.round(18 * scale);
+						if (p.key === 'byens') x += Math.round(18 * scale);
+						if (p.key === 'durex') x -= Math.round(16 * scale);
+						if (p.key === 'unge') x += Math.round(16 * scale);
+						// Keep within bounds
+						x = Math.max(minX, Math.min(maxX, x));
+						node.style.setProperty('left', `${x}px`, 'important');
+						node.style.setProperty('top', `${y}px`, 'important');
+						placed.push(node);
+					}
+
+					// Place the brain in the middle row (row 3).
+					try {
+						const bx = Math.max(minX, Math.min(maxX, containerRect.width * 0.5));
+						const by = rowY(3);
+						brain.style.setProperty('position', 'absolute', 'important');
+						brain.style.setProperty('left', `${bx}px`, 'important');
+						brain.style.setProperty('top', `${by}px`, 'important');
+						brain.style.setProperty('right', 'auto', 'important');
+						brain.style.setProperty('bottom', 'auto', 'important');
+						brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+					} catch {}
+
+					// If any row is too tight, shrink node text a bit so nothing overlaps.
+					try {
+						const y1 = rowY(1);
+						const y2 = rowY(2);
+						const step = Math.max(40, y2 - y1);
+						let maxH = 0;
+						placed.forEach((n) => {
+							const r = n.getBoundingClientRect();
+							if (r && r.height) maxH = Math.max(maxH, r.height);
+						});
+						if (maxH > step * 0.88) {
+							const k = Math.max(0.72, Math.min(1, (step * 0.88) / maxH));
+							placed.forEach((n) => {
+								const fs = parseFloat(window.getComputedStyle(n).fontSize) || 16;
+								n.style.setProperty('font-size', `${Math.max(10, fs * k)}px`, 'important');
+							});
+						}
+					} catch {}
+
+					// Keep the D&AD logo aligned after node layout updates.
+					createAndPositionDandDLogo();
+					createAndPositionTwisterDandDLine();
+					createAndPositionRepopKravlingLine();
+					createAndPositionKravlingNomineretBadge();
+					createAndPositionKobajerArrow();
+					return;
+				}
+			} catch {}
+
+			// Responsive ring sizing:
+			// When the window gets narrow, we want the layout to shrink instead of pushing nodes out of view.
+			let maxTabW = 180;
+			let maxTabH = 80;
+			for (const node of nodeArray) {
+				const r = node.getBoundingClientRect();
+				if (r && r.width) maxTabW = Math.max(maxTabW, r.width);
+				if (r && r.height) maxTabH = Math.max(maxTabH, r.height);
+			}
+
+			// Use an ellipse ring, with padding derived from actual element sizes.
+			// Keep the extra padding smaller on small screens so the ring can shrink more.
+			const extraPadX = Math.max(10 * scale, Math.min(36 * scale, containerRect.width * 0.05));
+			const extraPadY = Math.max(12 * scale, Math.min(56 * scale, containerRect.height * 0.06));
+			const paddingX = (maxTabW / 2) + extraPadX;
+			const paddingY = (maxTabH / 2) + extraPadY;
+
+			let rx = (containerRect.width / 2) - paddingX;
+			let ry = (containerRect.height / 2) - paddingY;
+
+			// Keep a minimum so it doesn't collapse completely (but allow it to shrink a lot).
+			const minRing = Math.max(14, Math.round(45 * scale));
+			rx = Math.max(minRing, rx);
+			ry = Math.max(minRing, ry);
+
+			// Only add extra vertical space if we actually have room.
+			const maxRy = Math.max(minRing, (containerRect.height / 2) - (maxTabH / 2) - (24 * scale));
+			const extraY = Math.min(120 * scale, Math.max(0, containerRect.height - (520 * scale)) * 0.22);
+			ry = Math.min(maxRy, ry + extraY);
 			const n = nodeArray.length || 1;
 			// Start at top (-90deg) and go clockwise.
 			const startAngle = -Math.PI / 2;
@@ -3284,7 +3803,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
-				if (href.includes('repop')) y += 35;
+				if (href.includes('repop')) y += Math.round(35 * (maxTabH / 80));
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -3374,8 +3893,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place D&AD logo to the right of TWISTER tab (projects page)
 		function createAndPositionDandDLogo() {
+			// Mobile Projects uses an inline (inside-circle) D&AD badge instead.
+			if (
+				document.body.classList.contains('projects-page') &&
+				window.matchMedia &&
+				window.matchMedia('(max-width: 640px)').matches
+			) {
+				return;
+			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			const containerRect = container.getBoundingClientRect();
+			const scale = projectsScaleFromRect(containerRect);
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			if (!twisterNode) return;
 
@@ -3466,10 +3995,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				winner.src = 'assets/D&AD VINDER.webp';
 			}
 
-			const containerRect = container.getBoundingClientRect();
 			const r = twisterNode.getBoundingClientRect();
-			const top = (r.top - containerRect.top) + (r.height / 2) + 28; // move more down
-			const left = (r.right - containerRect.left) + 14 + 70; // move a lot more right
+			const top = (r.top - containerRect.top) + (r.height / 2) + (28 * scale); // move more down
+			const left = (r.right - containerRect.left) + (14 * scale) + (70 * scale); // move a lot more right
 
 			badge.style.left = `${left}px`;
 			badge.style.top = `${top}px`;
@@ -3506,6 +4034,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionTwisterDandDLine() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			const containerRect = container.getBoundingClientRect();
+			const scale = projectsScaleFromRect(containerRect);
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			const badge = container.querySelector('.dandd-badge');
 			if (!twisterNode || !badge) return;
@@ -3525,7 +4055,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				container.appendChild(line);
 			}
 
-			const containerRect = container.getBoundingClientRect();
 			const twRect = twisterNode.getBoundingClientRect();
 			const badgeRect = badge.getBoundingClientRect();
 
@@ -3540,20 +4069,20 @@ document.addEventListener('DOMContentLoaded', function() {
 			const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
 			// Make it longer: extend slightly into both ends
-			const gapStart = -28;
-			const gapEnd = -28;
+			const gapStart = -28 * scale;
+			const gapEnd = -28 * scale;
 			const sX = startX + (dx / dist) * gapStart;
 			const sY = startY + (dy / dist) * gapStart;
 			const eX = endX - (dx / dist) * gapEnd;
 			const eY = endY - (dy / dist) * gapEnd;
 
-			const angle = (Math.atan2(eY - sY, eX - sX) * 180 / Math.PI) + 6; // rotate a bit more down
+			const angle = (Math.atan2(eY - sY, eX - sX) * 180 / Math.PI) + (6 * scale); // rotate a bit more down
 			const lineLength = Math.sqrt((eX - sX) ** 2 + (eY - sY) ** 2);
 
 			line.style.left = `${sX}px`;
 			line.style.top = `${sY}px`;
 			line.style.width = `${lineLength}px`;
-			line.style.height = '190px'; // thicker
+			line.style.height = `${190 * scale}px`; // thicker
 			line.style.transformOrigin = '0 50%';
 			line.style.transform = `translateY(-50%) rotate(${angle}deg)`;
 		}
@@ -3562,6 +4091,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionRepopKravlingLine() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			const containerRect = container.getBoundingClientRect();
+			const scale = projectsScaleFromRect(containerRect);
 			const repopNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('repop'));
 			if (!repopNode) return;
 
@@ -3580,16 +4111,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				container.appendChild(line);
 			}
 
-			const containerRect = container.getBoundingClientRect();
 			const r = repopNode.getBoundingClientRect();
 
 			// Size (can be tuned) — keep the right edge anchored to the tab
-			const width = 170; // shorter
-			const height = 80; // slimmer
-			const gap = 10;
+			const width = 170 * scale; // shorter
+			const height = 80 * scale; // slimmer
+			const gap = 10 * scale;
 
-			const top = (r.top - containerRect.top) + (r.height / 2) + 12; // a bit more down
-			const left = (r.left - containerRect.left) - width + gap + 8; // a bit to the right
+			const top = (r.top - containerRect.top) + (r.height / 2) + (12 * scale); // a bit more down
+			const left = (r.left - containerRect.left) - width + gap + (8 * scale); // a bit to the right
 
 			line.style.width = `${width}px`;
 			line.style.height = `${height}px`;
@@ -3649,6 +4179,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionKravlingNomineretBadge() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			const containerRect = container.getBoundingClientRect();
+			const scale = projectsScaleFromRect(containerRect);
 			const arrow = container.querySelector('.repop-kravling-line');
 			if (!arrow) return;
 
@@ -3678,11 +4210,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			fillKravlingStars(sparks, 12);
 
-			const containerRect = container.getBoundingClientRect();
 			const a = arrow.getBoundingClientRect();
 
-			const width = 160;
-			const gap = 12;
+			const width = 160 * scale;
+			const gap = 12 * scale;
 			const left = (a.left - containerRect.left) - width - gap;
 			const top = (a.top - containerRect.top) + (a.height / 2);
 
@@ -3690,13 +4221,115 @@ document.addEventListener('DOMContentLoaded', function() {
 			badge.style.height = 'auto';
 			badge.style.left = `${left}px`;
 			badge.style.top = `${top}px`;
-			badge.style.transform = 'translateY(-50%) translateX(62px) translateY(-12px) rotate(-2deg)'; // 2025 badge slightly left
+			const tx = 62 * scale;
+			const ty = -12 * scale;
+			badge.style.transform = `translateY(-50%) translateX(${tx}px) translateY(${ty}px) rotate(-2deg)`;
+
+			// Collision avoidance on small screens:
+			// - keep the badge visible (not outside the page)
+			// - avoid overlapping BYENS LANDHANDEL on narrow viewports
+			try {
+				const byensNode = Array.from(nodes).find(n => {
+					const href = (n.getAttribute('href') || '').toLowerCase();
+					const key = (n.dataset.visualKey || '').toLowerCase();
+					const txt = (n.textContent || '').toLowerCase();
+					return key.includes('byens') || href.includes('byens-landhandel') || txt.includes('byens');
+				});
+
+				function rectsOverlap(r1, r2) {
+					return !(
+						r2.left >= r1.right ||
+						r2.right <= r1.left ||
+						r2.top >= r1.bottom ||
+						r2.bottom <= r1.top
+					);
+				}
+
+				// Keep within left boundary
+				const br0 = badge.getBoundingClientRect();
+				if (br0.left < containerRect.left + 6) {
+					const delta = (containerRect.left + 6) - br0.left;
+					badge.style.left = `${left + delta}px`;
+				}
+
+				if (byensNode) {
+					let tries = 0;
+					while (tries < 3) {
+						const br = badge.getBoundingClientRect();
+						const yr = byensNode.getBoundingClientRect();
+						if (!rectsOverlap(br, yr)) break;
+						// Push the badge down (and a touch left) to clear the BYENS node.
+						const pushY = (Math.min(br.bottom, yr.bottom) - Math.max(br.top, yr.top)) + (18 * scale);
+						const curTop = parseFloat(badge.style.top || String(top)) || top;
+						badge.style.top = `${curTop + pushY}px`;
+						const curLeft = parseFloat(badge.style.left || String(left)) || left;
+						badge.style.left = `${curLeft - (10 * scale)}px`;
+						tries++;
+					}
+				}
+			} catch {}
+		}
+
+		// Keep the BRAINFARTS "under construction" block near BRAINFARTS (and away from KØ-BAJER) on small screens.
+		function positionBrainfartsBuild() {
+			// Mobile Projects shows the "Under ombygning" sign inside the BRAINFARTS circle instead.
+			if (
+				document.body.classList.contains('projects-page') &&
+				window.matchMedia &&
+				window.matchMedia('(max-width: 640px)').matches
+			) {
+				return;
+			}
+			const container = document.querySelector('.brainstorm-container');
+			if (!container) return;
+			const build = container.querySelector('.brainfarts-build');
+			if (!build) return;
+			const containerRect = container.getBoundingClientRect();
+			const scale = projectsScaleFromRect(containerRect);
+
+			const brainfartsNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('brainfarts'));
+			if (!brainfartsNode) return;
+			const bf = brainfartsNode.getBoundingClientRect();
+
+			let w = 170 * scale;
+			let h = 210 * scale;
+			// Keep a tiny minimum so it doesn't disappear completely
+			w = Math.max(60, w);
+			h = Math.max(72, h);
+
+			let left = (bf.left - containerRect.left) - (w * 0.05);
+			let top = (bf.top - containerRect.top) + (bf.height * 0.55);
+
+			// Clamp into container bounds
+			left = Math.max(0, Math.min(containerRect.width - w, left));
+			top = Math.max(0, Math.min(containerRect.height - h, top));
+
+			build.style.left = `${left}px`;
+			build.style.top = `${top}px`;
+			build.style.width = `${w}px`;
+			build.style.height = `${h}px`;
+
+			// If it collides with KØ-BAJER, push it down.
+			const kobajerNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('kobajer'));
+			if (kobajerNode) {
+				const k = kobajerNode.getBoundingClientRect();
+				const b = build.getBoundingClientRect();
+				const overlaps = !(k.left >= b.right || k.right <= b.left || k.top >= b.bottom || k.bottom <= b.top);
+				if (overlaps) {
+					const push = (Math.min(b.bottom, k.bottom) - Math.max(b.top, k.top)) + (18 * scale);
+					let nextTop = (parseFloat(build.style.top) || top) + push;
+					nextTop = Math.max(0, Math.min(containerRect.height - h, nextTop));
+					build.style.top = `${nextTop}px`;
+				}
+			}
 		}
 
 		// Place arrow asset just under KØ-BAJER
 		function createAndPositionKobajerArrow() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			const containerRect = container.getBoundingClientRect();
+			const scale = projectsScaleFromRect(containerRect);
 
 			const kobajerNode = Array.from(nodes).find(n => {
 				const href = (n.getAttribute('href') || '').toLowerCase();
@@ -3732,12 +4365,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				});
 			}
 
-			const containerRect = container.getBoundingClientRect();
 			const r = kobajerNode.getBoundingClientRect();
 
-			const width = 85; // shorter
-			const gap = -35; // move slightly down
-			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - 42; // more to the right
+			const width = 85 * scale; // shorter
+			const gap = -35 * scale; // move slightly down
+			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - (42 * scale); // more to the right
 			const top = (r.bottom - containerRect.top) + gap;
 
 			arrow.style.setProperty('width', `${width}px`, 'important');
@@ -3761,8 +4393,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Repeat "Kravlingprisen nomineret" with 2024 under the arrow point
 		function createAndPositionKobajerKravling2024Label() {
+			// Mobile Projects uses an inline (inside-circle) badge instead.
+			if (
+				document.body.classList.contains('projects-page') &&
+				window.matchMedia &&
+				window.matchMedia('(max-width: 640px)').matches
+			) {
+				return;
+			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			const containerRect = container.getBoundingClientRect();
+			const scale = projectsScaleFromRect(containerRect);
 			const arrow = container.querySelector('.kobajer-arrow');
 
 			let badge = container.querySelector('.kobajer-kravling-2024-badge');
@@ -3798,12 +4440,11 @@ document.addEventListener('DOMContentLoaded', function() {
 						return href.includes('kobajer') || text.includes('KØ-BAJER');
 					});
 					if (kobajerNode) {
-						const containerRect = container.getBoundingClientRect();
 						const nr = kobajerNode.getBoundingClientRect();
 						const x = (nr.left - containerRect.left) + (nr.width / 2);
 						const y = (nr.bottom - containerRect.top);
-						badge.style.left = `${x - 18}px`;
-						badge.style.top = `${y - 20}px`;
+						badge.style.left = `${x - (18 * scale)}px`;
+						badge.style.top = `${y - (20 * scale)}px`;
 						badge.style.transform = 'translateX(-50%) rotate(-2deg)';
 					}
 				}
@@ -3851,15 +4492,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				badge.appendChild(sparks);
 			}
 
-			const containerRect = container.getBoundingClientRect();
 			const r = arrow.getBoundingClientRect();
 
 			// Arrow tip ≈ bottom-center of its visual bounding box
 			const tipX = (r.left - containerRect.left) + (r.width / 2);
 			const tipY = (r.bottom - containerRect.top);
 
-			badge.style.left = `${tipX - 28}px`; // a bit more to the left
-			badge.style.top = `${tipY - 36}px`;  // slightly more up
+			badge.style.left = `${tipX - (28 * scale)}px`; // a bit more to the left
+			badge.style.top = `${tipY - (36 * scale)}px`;  // slightly more up
 			badge.style.transform = 'translateX(-50%) rotate(-2deg)';
 			badge.dataset.lastLeft = badge.style.left;
 			badge.dataset.lastTop = badge.style.top;
@@ -3873,14 +4513,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			const textCenterY = (textRect.top - badgeRect.top) + (textRect.height / 2);
 
 			// Padding around the text (tune feel here)
-			const padX = 64; // base horizontal padding (ring is stretched via scaleX below)
-			const padY = 40; // slightly bigger at the top (we bias upward below)
-			const ringW = Math.max(120, textRect.width + padX);
-			const ringH = Math.max(90, textRect.height + padY);
+			const padX = 64 * scale; // base horizontal padding (ring is stretched via scaleX below)
+			const padY = 40 * scale; // slightly bigger at the top (we bias upward below)
+			const ringW = Math.max(120 * scale, textRect.width + padX);
+			const ringH = Math.max(90 * scale, textRect.height + padY);
 
-			sparks.style.left = `${textCenterX - 6}px`;
+			sparks.style.left = `${textCenterX - (6 * scale)}px`;
 			// Bias slightly upward, but leave a tiny bit more bottom
-			sparks.style.top = `${textCenterY - 7}px`;
+			sparks.style.top = `${textCenterY - (7 * scale)}px`;
 			sparks.style.width = `${ringW}px`;
 			sparks.style.height = `${ringH}px`;
 			// Make the ring more horizontally long (ellipse)
@@ -3890,8 +4530,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			// Rebuild rays with radius based on the text ring size
 			// Use height as the basis so scaleX turns it into an ellipse (wider without getting taller).
-			const ringR = Math.max(26, (ringH / 2) - 10);
-			const rayH = Math.max(46, Math.round(ringR * 1.25));
+			const ringR = Math.max(26 * scale, (ringH / 2) - (10 * scale));
+			const rayH = Math.max(46 * scale, Math.round(ringR * 1.25));
 			fillCharcoalRays(sparks, 14, { r: ringR, h: rayH });
 		}
 
@@ -3929,6 +4569,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Create asset elements
 		function createAssets() {
 			console.log('Creating assets...');
+			const container = document.querySelector('.brainstorm-container');
+			const scale = container ? projectsScaleFromRect(container.getBoundingClientRect()) : 1;
+			const px = (n) => `${Math.round(n * scale)}px`;
 			
 			// Condom asset for Durex
 			const condomAsset = document.createElement('img');
@@ -3936,7 +4579,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			condomAsset.className = 'condom-asset';
 			condomAsset.style.cssText = `
 				position: absolute;
-				width: 135px;
+				width: ${px(135)};
 				height: auto;
 				top: -22%;
 				left: 42%;
@@ -3954,12 +4597,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			kornAsset.className = 'korn-asset';
 			kornAsset.style.cssText = `
 				position: absolute;
-				width: 440px;
-				height: 380px;
+				width: ${px(440)};
+				height: ${px(380)};
 				top: 50%;
 				left: 50%;
-				margin-top: -190px;
-				margin-left: -220px;
+				margin-top: ${px(-190)};
+				margin-left: ${px(-220)};
 				opacity: 0;
 				display: none;
 				z-index: 25;
@@ -3973,8 +4616,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			kasketAsset.className = 'kasket-asset';
 			kasketAsset.style.cssText = `
 				position: absolute;
-				width: 180px;
-				height: 140px;
+				width: ${px(180)};
+				height: ${px(140)};
 				top: 10%;
 				left: 50%;
 				transform: translate(-50%, -50%);
@@ -3991,7 +4634,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			oldaseAsset.className = 'oldase-asset';
 			oldaseAsset.style.cssText = `
 				position: absolute;
-				width: 110px;
+				width: ${px(110)};
 				height: auto;
 				top: 55%;
 				left: -35%;
@@ -4007,7 +4650,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			naturliAsset.className = 'naturli-asset';
 			naturliAsset.style.cssText = `
 				position: absolute;
-				width: 115px;
+				width: ${px(115)};
 				height: auto;
 				top: -32%;
 				right: -42%;
@@ -4023,7 +4666,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			dropsAsset.className = 'naturli-drops-asset';
 			dropsAsset.style.cssText = `
 				position: absolute;
-				width: 56px;
+				width: ${px(56)};
 				height: auto;
 				top: -38%;
 				right: -27%;
@@ -4039,7 +4682,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			twisterAsset.className = 'twister-asset';
 			twisterAsset.style.cssText = `
 				position: absolute;
-				width: 85px;
+				width: ${px(85)};
 				height: auto;
 				top: 62%;
 				right: 27%;
@@ -4055,7 +4698,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			ungeModUvAsset.className = 'unge-mod-uv-asset';
 			ungeModUvAsset.style.cssText = `
 				position: absolute;
-				width: 160px;
+				width: ${px(160)};
 				height: auto;
 				top: 55%;
 				left: 78%;
@@ -4324,12 +4967,203 @@ document.addEventListener('DOMContentLoaded', function() {
 		const container = document.querySelector('.brainstorm-container');
 		const brainRect = currentBrain.getBoundingClientRect();
 		const containerRect = container.getBoundingClientRect();
+		const scale = projectsScaleFromRect(containerRect);
+		const svgScale = (n) => (n * scale);
 
 		// Note: The TWISTER↔D&AD line is handled as a normal positioned <img> for reliability.
 		
 		// Calculate center of brain relative to container
 		const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
 		const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
+
+		// Mobile Projects: use the sketch-inspired "chain" lines:
+		// row1 -> row2 -> brain -> row4 -> row5 (left & right columns).
+		try {
+			const isMobileProjects =
+				document.body &&
+				document.body.classList.contains('projects-page') &&
+				window.matchMedia &&
+				window.matchMedia('(max-width: 640px)').matches;
+
+			if (isMobileProjects) {
+				// Hide any static mindmap lines (some have inline `display: block !important`).
+				// We only want the sketch-inspired mobile chain lines in this mode.
+				try {
+					currentSvg.querySelectorAll('.mindmap-line:not(.dynamic-mindmap-line)').forEach((el) => {
+						el.dataset.mobileHidden = '1';
+						el.style.setProperty('display', 'none', 'important');
+						el.style.setProperty('opacity', '0', 'important');
+						el.style.setProperty('visibility', 'hidden', 'important');
+					});
+				} catch {}
+
+				const findNode = (hrefPart) =>
+					Array.from(currentNodes).find((n) =>
+						((n.getAttribute('href') || '').toLowerCase()).includes(hrefPart)
+					);
+
+				const repop = findNode('repop');
+				const naturli = findNode('naturli');
+				const durex = findNode('durex');
+				const unge = findNode('unge-mod-uv');
+				const twister = findNode('twister');
+				const kobajer = findNode('kobajer');
+				const brainfarts = findNode('brainfarts');
+				const byens = findNode('byens-landhandel');
+
+				const pt = (rect, kind) => {
+					const x0 = rect.left - containerRect.left;
+					const y0 = rect.top - containerRect.top;
+					const cx = x0 + rect.width / 2;
+					const cy = y0 + rect.height / 2;
+					if (kind === 'top') return { x: cx, y: y0 };
+					if (kind === 'bottom') return { x: cx, y: y0 + rect.height };
+					if (kind === 'left') return { x: x0, y: cy };
+					if (kind === 'right') return { x: x0 + rect.width, y: cy };
+					return { x: cx, y: cy };
+				};
+
+				const lineImg = (assetPath, a, b, heightPx) => {
+					if (!a || !b) return;
+					const ax = a.x, ay = a.y;
+					const bx = b.x, by = b.y;
+					const dx = bx - ax;
+					const dy = by - ay;
+					const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+					const ux = dx / dist;
+					const uy = dy / dist;
+
+					// Keep a small gap so lines don't sit on top of the circles.
+					const gapA = svgScale(8);
+					const gapB = svgScale(8);
+					const sx = ax + ux * gapA;
+					const sy = ay + uy * gapA;
+					const ex = bx - ux * gapB;
+					const ey = by - uy * gapB;
+					const len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2));
+					if (len < 6) return;
+
+					const angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
+
+					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+					img.setAttribute('href', assetPath);
+					img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', assetPath);
+					img.setAttribute('x', String(sx));
+					img.setAttribute('y', String(sy - (heightPx / 2)));
+					img.setAttribute('width', String(len));
+					img.setAttribute('height', String(heightPx));
+					img.setAttribute('opacity', '1');
+					img.setAttribute('preserveAspectRatio', 'none');
+					img.setAttribute('transform', `rotate(${angle} ${sx} ${sy})`);
+					img.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
+					img.style.pointerEvents = 'none';
+					img.style.display = 'block';
+					img.style.visibility = 'visible';
+					img.style.imageRendering = 'crisp-edges';
+					img.style.filter = 'none';
+
+					currentSvg.appendChild(img);
+				};
+
+				const bRect = currentBrain.getBoundingClientRect();
+				const brainTop = pt(bRect, 'top');
+				const brainBottom = pt(bRect, 'bottom');
+				const brainLeft = pt(bRect, 'left');
+				const brainRight = pt(bRect, 'right');
+
+				// Column chain anchors
+				const repRect = repop && repop.getBoundingClientRect();
+				const natRect = naturli && naturli.getBoundingClientRect();
+				const durRect = durex && durex.getBoundingClientRect();
+				const ungRect = unge && unge.getBoundingClientRect();
+				const twiRect = twister && twister.getBoundingClientRect();
+				const kobRect = kobajer && kobajer.getBoundingClientRect();
+				const brfRect = brainfarts && brainfarts.getBoundingClientRect();
+				const byeRect = byens && byens.getBoundingClientRect();
+
+				// Left column: REPOP -> DUREX -> BRAIN -> TWISTER -> BRAINFARTS
+				if (repRect && durRect) {
+					lineImg('assets/Linje 2.webp', pt(repRect, 'bottom'), pt(durRect, 'top'), svgScale(210));
+				}
+				if (durRect) {
+					// Connect inner edge of DUREX into left side of the brain
+					// Turn the DUREX point (not the brain point): slide the anchor down the inner edge
+					// so the line turns more left without moving anything.
+					const a = {
+						// Turn top (DUREX-side) more to the left
+						x: (durRect.right - containerRect.left) - (durRect.width * 0.30),
+						y: (durRect.top - containerRect.top) + (durRect.height * 0.72),
+					};
+					// Turn bottom (brain-side) more to the left
+					// Bottom should point much more to the right (brain-side)
+					const b = { x: brainLeft.x + svgScale(58), y: (brainTop.y + brainBottom.y) / 2 };
+					lineImg('assets/linje 6.webp', a, b, svgScale(220));
+				}
+				if (twiRect) {
+					// Swap placement with KØ-BAJER: use the same brain-side start point.
+					// Make the line a bit smaller and shift it right (no turning: same dx on both endpoints).
+					const shiftX = svgScale(44);
+					const a = { x: brainLeft.x + svgScale(26) + shiftX, y: brainBottom.y - svgScale(14) };
+					const b = { x: pt(twiRect, 'left').x - svgScale(10) + shiftX, y: pt(twiRect, 'top').y + svgScale(8) };
+					lineImg('assets/linje 3.webp', a, b, svgScale(175));
+				}
+				if (twiRect && brfRect) {
+					lineImg('assets/linje 8.webp', pt(twiRect, 'bottom'), pt(brfRect, 'top'), svgScale(210));
+				}
+
+				// Right column: NATURLI -> UNGE -> BRAIN -> KØ-BAJER -> BYENS
+				if (natRect && ungRect) {
+					lineImg('assets/linje 7.webp', pt(natRect, 'bottom'), pt(ungRect, 'top'), svgScale(190));
+				}
+				if (ungRect) {
+					// Turn the UNGE point (not the brain point): slide the anchor down the inner edge
+					// so the line turns more right without moving anything.
+					const a = {
+						// Shift the UNGE endpoint a bit to the right (angle only)
+						x: (ungRect.left - containerRect.left) + (ungRect.width * 0.34),
+						y: (ungRect.top - containerRect.top) + (ungRect.height * 0.62),
+					};
+					// Brain point: more centered (closer to brain middle) but still on the right side,
+					// and slightly biased upward toward the UNGE circle direction.
+					const brainW = (brainRight.x - brainLeft.x) || 1;
+					const brainH = (brainBottom.y - brainTop.y) || 1;
+					const b = {
+						x: centerX + (brainW * 0.26),
+						y: centerY - (brainH * 0.10),
+					};
+					lineImg('assets/linje 5.webp', a, b, svgScale(220));
+				}
+				if (kobRect) {
+					// Brain -> KØ-BAJER:
+					// - top (KØ-BAJER side) should point more LEFT
+					// - bottom (brain side) should point more RIGHT
+					// Swap placement with TWISTER: use the same brain-side start point.
+					// Turn brain-side point more LEFT and KØ-BAJER-side point more RIGHT.
+					const a = { x: brainRight.x - svgScale(42), y: brainBottom.y - svgScale(14) };
+					const b = { x: pt(kobRect, 'left').x + svgScale(72), y: pt(kobRect, 'top').y + svgScale(8) };
+					lineImg('assets/Linje 4.webp', a, b, svgScale(235));
+				}
+				if (kobRect && byeRect) {
+					// Turn KØ-BAJER -> BYENS more to the right (adjust endpoint only).
+					const a = pt(kobRect, 'bottom');
+					const b0 = pt(byeRect, 'top');
+					const b = { x: b0.x + svgScale(34), y: b0.y };
+					lineImg('assets/linje 1.webp', a, b, svgScale(210));
+				}
+
+				return;
+			}
+		} catch {}
+
+		// If we previously hid static lines for mobile, restore them for desktop/tablet.
+		try {
+			currentSvg.querySelectorAll('.mindmap-line[data-mobile-hidden="1"]').forEach((el) => {
+				el.removeAttribute('data-mobile-hidden');
+				el.style.removeProperty('display');
+				el.style.removeProperty('opacity');
+				el.style.removeProperty('visibility');
+			});
+		} catch {}
 		
 		// Calculate brain radius to create gap
 		const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
@@ -4386,9 +5220,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 8.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 195); // Offset by half height (390/2 = 195) to center on rotation point
+				const h8 = svgScale(390);
+				lineImage.setAttribute('y', brainStartY - (h8 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength); // Longer
-				lineImage.setAttribute('height', '390'); // Slightly bigger/thicker line asset
+				lineImage.setAttribute('height', String(h8)); // Slightly bigger/thicker line asset
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -4440,9 +5275,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/Linje 4.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 4.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 200); // Offset by half height (400/2 = 200) to center on rotation point
+				const h4 = svgScale(400);
+				lineImage.setAttribute('y', brainStartY - (h4 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '400');
+				lineImage.setAttribute('height', String(h4));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -4498,9 +5334,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 6.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 6.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
+				const h6 = svgScale(300);
+				lineImage.setAttribute('y', brainStartY - (h6 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
+				lineImage.setAttribute('height', String(h6)); // Reduced height to make line thinner
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -4624,9 +5461,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/linje 1.webp');
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 200); // Center vertically
+				const h1 = svgScale(400);
+				lineImage.setAttribute('y', brainStartY - (h1 / 2)); // Center vertically
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '400');
+				lineImage.setAttribute('height', String(h1));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -4644,43 +5482,40 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeHrefRepop = (node.getAttribute('href') || '').toLowerCase();
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
-				// Start from below the top of the brain, extended backward toward brain
-				const initialBrainStartX = centerX;
-				const initialBrainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
-				
-				// End closer to the tab (smaller gap)
+				// Restore the "classic" REPOP line: same style/size as earlier (thicker, full-height asset).
+				// Start from below the top of the brain
+				const brainStartX = centerX;
+				const brainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
+
+				// End closer to the tab (small gap)
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				const tabGapDistance = nodeRadius * 0.1;
-				const deltaX = nodeX - initialBrainStartX;
-				const deltaY = nodeY - initialBrainStartY;
+				const deltaX = nodeX - brainStartX;
+				const deltaY = nodeY - brainStartY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
 				const lineEndX = nodeX - (deltaX / distance) * tabGapDistance;
 				const lineEndY = nodeY - (deltaY / distance) * tabGapDistance;
-				
-				// Extend backward from brain start point to make line longer toward brain
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-				const brainExtension = brainRadius * 0.32; // Extend further toward brain (longer line)
-				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
-				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
-				
+
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
-				
+
 				// Create image element for the line
+				const height = 400 * scale;
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/Linje 2.webp');
+				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 2.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 22); // Center vertically (even thinner)
-				lineImage.setAttribute('width', lineLength * 0.92); // Slightly shorter
-				lineImage.setAttribute('height', '45'); // Even thinner line
+				lineImage.setAttribute('y', brainStartY - (height / 2)); // Center vertically
+				lineImage.setAttribute('width', lineLength);
+				lineImage.setAttribute('height', String(height));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
 				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
-				
+
 				currentSvg.appendChild(lineImage);
 				console.log(`Line image created for REPOP BY DEPOP`);
 				return; // Skip the hand-drawn line creation for REPOP BY DEPOP
@@ -4722,9 +5557,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 7.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 7.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 100); // Offset by half height (200/2 = 100) to center on rotation point
+				const h7 = svgScale(200);
+				lineImage.setAttribute('y', brainStartY - (h7 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '200'); // Further reduced height to make line thinner
+				lineImage.setAttribute('height', String(h7)); // Further reduced height to make line thinner
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -4775,9 +5611,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 3.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 3.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 300); // Offset by half height (600/2 = 300) to center on rotation point
+				const h3 = svgScale(600);
+				lineImage.setAttribute('y', brainStartY - (h3 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '600');
+				lineImage.setAttribute('height', String(h3));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -4890,6 +5727,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		
 		const containerRect = container.getBoundingClientRect();
+		const scale = projectsScaleFromRect(containerRect);
+		const s = (n) => (n * scale);
 		console.log('Container rect:', containerRect);
 		
 		currentNodes.forEach((node, index) => {
@@ -4897,13 +5736,35 @@ document.addEventListener('DOMContentLoaded', function() {
 			node.dataset.nodeIndex = String(index);
 			const nodeHref = (node.getAttribute('href') || '').toLowerCase();
 			node.dataset.nodeHref = nodeHref;
+			const targetHref = (node.getAttribute('href') || '').trim();
+
+			// Make the SVG frame itself clickable (so tapping the circle stroke navigates too).
+			// This is important on mobile where users tap the circle, not just the text.
+			function wireFrameNavigation(el) {
+				try {
+					if (!el || !targetHref) return;
+					if (nodeHref.includes('brainfarts')) return; // Brainfarts is intentionally not clickable
+					el.style.pointerEvents = 'auto';
+					el.style.cursor = 'pointer';
+					el.addEventListener('click', (e) => {
+						// Allow normal browser behaviors (new tab etc.) when the actual <a> is clicked,
+						// but for SVG images we just navigate on primary activation.
+						try { e.preventDefault(); } catch {}
+						try { e.stopPropagation(); } catch {}
+						try { e.stopImmediatePropagation(); } catch {}
+						window.location.href = targetHref;
+					}, true);
+				} catch {}
+			}
 
 			const nodeRect = node.getBoundingClientRect();
 			const nodeText = node.textContent.trim();
-			
-			// Get the center of the text node
-			const centerX = nodeRect.left - containerRect.left + (nodeRect.width / 2);
-			const centerY = nodeRect.top - containerRect.top + (nodeRect.height / 2);
+
+			// Get the center of the title text (so badges inside the node don't shift the circle)
+			const titleEl = node.querySelector('.project-node__title');
+			const anchorRect = titleEl ? titleEl.getBoundingClientRect() : nodeRect;
+			const centerX = anchorRect.left - containerRect.left + (anchorRect.width / 2);
+			const centerY = anchorRect.top - containerRect.top + (anchorRect.height / 2);
 			
 			console.log(`Processing node ${index}: "${nodeText}" at (${centerX}, ${centerY})`);
 			
@@ -4916,13 +5777,23 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 120); // Center the image (assuming 240px width)
-				image.setAttribute('y', centerY - 100); // Center the image (assuming 200px height)
-				image.setAttribute('width', '240');
-				image.setAttribute('height', '200');
+				const isMobile = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+				// Make room for the inline "Under ombygning" sign on mobile.
+				const baseW = s(240);
+				const baseH = s(200);
+				const padX = s(isMobile ? 90 : 60);
+				const padY = s(isMobile ? 140 : 80);
+				const frameW = Math.max(baseW, nodeRect.width + padX);
+				const frameH = Math.max(baseH, nodeRect.height + padY);
+				image.setAttribute('x', String(centerX - (frameW / 2)));
+				// Bias the frame slightly downward so the sign sits comfortably inside.
+				image.setAttribute('y', String(centerY - (frameH / 2) + s(isMobile ? 20 : 10)));
+				image.setAttribute('width', String(frameW));
+				image.setAttribute('height', String(frameH));
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.style.pointerEvents = 'auto'; // Make image visible
+				image.style.pointerEvents = 'auto'; // Keep hover visuals; navigation is disabled for Brainfarts
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
 				image.style.opacity = '0.8';
@@ -4937,11 +5808,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				// Make it shorter on the RIGHT side only (keep left side roughly the same)
 				// Achieved by shifting left and reducing rx by the same amount.
-				fill.setAttribute('cx', String(centerX - 1)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
+				fill.setAttribute('cx', String(centerX - s(1))); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
 				// Slightly smaller at the bottom: shift up a bit
-				fill.setAttribute('cy', String(centerY - 3)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
-				fill.setAttribute('rx', String(120 * 0.56 + 2)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('ry', String(100 * 0.56 - 1)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
+				fill.setAttribute('cy', String(centerY - s(3))); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
+				fill.setAttribute('rx', String((frameW / 2) * 0.56 + s(2))); // scale with width
+				fill.setAttribute('ry', String((frameH / 2) * 0.56 - s(1))); // scale with height
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -4951,6 +5822,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				else currentSvg.appendChild(fill);
 				
 				currentSvg.appendChild(image);
+				// Intentionally NOT wired for navigation (Brainfarts is not clickable).
 
 				// "Under construction" red line through the circle (use provided asset)
 				try {
@@ -4961,13 +5833,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', linePath);
 
 					// Keep it smaller and within the circle-ish area (circle image is 240x200)
-					const w = 205; // longer (not too big)
-					const h = 160; // extremely thick
+					const w = s(205); // longer (not too big)
+					const h = s(160); // extremely thick
 					lineImg.setAttribute('width', String(w));
 					lineImg.setAttribute('height', String(h));
 					// Place it so it goes from RIGHT side -> down to BOTTOM-LEFT
-					lineImg.setAttribute('x', String(centerX - (w / 2) - 5)); // more to the left
-					lineImg.setAttribute('y', String(centerY - (h / 2) + 4));
+					lineImg.setAttribute('x', String(centerX - (w / 2) - s(5))); // more to the left
+					lineImg.setAttribute('y', String(centerY - (h / 2) + s(4)));
 					lineImg.setAttribute('preserveAspectRatio', 'none');
 					// Slightly see-through so it reads like drawn on paper
 					lineImg.setAttribute('opacity', '0.78');
@@ -4996,10 +5868,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 187); // Slightly slightly move (assuming 380px width)
-				image.setAttribute('y', centerY - 68); // Center the image (assuming 150px height)
-				image.setAttribute('width', '380');
-				image.setAttribute('height', '150');
+				const w = s(380);
+				const h = s(165);
+				image.setAttribute('x', String(centerX - (w / 2) - s( -3 ))); // keep tiny left tweak (~-3px)
+				image.setAttribute('y', String(centerY - (h / 2) + s(10)));     // slight down bias without crossing text
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -5011,12 +5885,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'repop-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
+				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(centerX - 1)); // slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('cy', String(centerY - 2)); // REPOP: slightly bigger at the top
-				fill.setAttribute('rx', String(190 * 0.55 - 7)); // slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('ry', String(75 * 0.68 - 2)); // REPOP: slightly bigger at the top
+				fill.setAttribute('cx', String(centerX - s(1))); // slightly bigger on the left (right edge unchanged)
+				fill.setAttribute('cy', String(centerY - s(2))); // REPOP: slightly bigger at the top
+				fill.setAttribute('rx', String(s(190) * 0.55 - s(7))); // slightly bigger on the left (right edge unchanged)
+				fill.setAttribute('ry', String((h / 2) * 0.68 - s(2))); // match frame height
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5031,7 +5906,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: KØ-BAJER uses the image instead of hand-drawn circle
-			if (nodeText === 'KØ-BAJER') {
+			if (nodeHref.includes('kobajer') || nodeText.toUpperCase().includes('KØ-BAJER')) {
 				console.log('Creating KØ-BAJER circle image...');
 				// Create an image element for KØ-BAJER
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -5039,10 +5914,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 100); // Move slightly to the left (assuming 200px width)
-				image.setAttribute('y', centerY - 90); // Move down (assuming 200px height)
-				image.setAttribute('width', '200');
-				image.setAttribute('height', '200');
+				// Keep original height feel, but allow more width so the whole text fits.
+				const baseW = s(200);
+				const baseH = s(200);
+				const padX = s(56);
+				const padY = s(26);
+				const w = Math.max(baseW, nodeRect.width + padX);
+				const h = Math.max(baseH, nodeRect.height + padY);
+				image.setAttribute('x', String(centerX - (w / 2)));
+				image.setAttribute('y', String(centerY - (h / 2) + s(10))); // keep the old "move down" feel
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
+				image.setAttribute('preserveAspectRatio', 'none'); // allow horizontal stretch (oval) so text fits
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('transform', `rotate(180 ${centerX} ${centerY})`);
@@ -5053,13 +5936,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'kobajer-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
+				wireFrameNavigation(image);
 				
 				// KØ-BAJER: use an ellipse so we can make it smaller at the top/bottom without shrinking the sides too much
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - 5)); // KØ-BAJER: trim bottom (keep top roughly the same)
-				fill.setAttribute('rx', String(100 * 0.56));
-				fill.setAttribute('ry', String(100 * 0.46 - 5)); // KØ-BAJER: less bottom
+				fill.setAttribute('cy', String(centerY - s(5))); // KØ-BAJER: trim bottom (keep top roughly the same)
+				// Scale the hover fill with the circle size
+				fill.setAttribute('rx', String((w / 2) * 0.56));
+				fill.setAttribute('ry', String((h / 2) * 0.46 - s(5))); // slightly less bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5082,10 +5967,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 120); // Center the image (assuming 240px width)
-				image.setAttribute('y', centerY - 65); // Move down slightly (assuming 140px height)
-				image.setAttribute('width', '240');
-				image.setAttribute('height', '140');
+				const w = s(240);
+				const h = s(140);
+				image.setAttribute('x', String(centerX - (w / 2)));
+				image.setAttribute('y', String(centerY - (h / 2) + s(5)));
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none'); // Prevent aspect ratio from scaling width
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -5097,13 +5984,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'naturli-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
+				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				// NATURLI': make the RIGHT side slightly smaller (keep left edge the same)
-				fill.setAttribute('cx', String(centerX + 1));
-				fill.setAttribute('cy', String(centerY - 1));
-				fill.setAttribute('rx', String(120 * 0.50 - 2));
-				fill.setAttribute('ry', String(70 * 0.66));
+				fill.setAttribute('cx', String(centerX + s(1)));
+				fill.setAttribute('cy', String(centerY - s(1)));
+				fill.setAttribute('rx', String(s(120) * 0.50 - s(2)));
+				fill.setAttribute('ry', String(s(70) * 0.66));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5126,10 +6014,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 160); // Center the image (assuming 320px width)
-				image.setAttribute('y', centerY - 75); // Center the image (assuming 150px height)
-				image.setAttribute('width', '320');
-				image.setAttribute('height', '150');
+				const w = s(320);
+				const h = s(150);
+				image.setAttribute('x', String(centerX - (w / 2)));
+				image.setAttribute('y', String(centerY - (h / 2)));
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -5140,12 +6030,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'unge-mod-uv-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
+				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY)); // UNGE MOD UV: keep centered
-				fill.setAttribute('rx', String(160 * 0.54)); // UNGE MOD UV: wider left+right
-				fill.setAttribute('ry', String(75 * 0.51));  // UNGE MOD UV: slightly more top+bottom
+				fill.setAttribute('rx', String(s(160) * 0.54)); // UNGE MOD UV: wider left+right
+				fill.setAttribute('ry', String(s(75) * 0.51));  // UNGE MOD UV: slightly more top+bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5160,7 +6051,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: TWISTER uses the image instead of hand-drawn circle
-			if (nodeText === 'TWISTER') {
+			if (nodeHref.includes('twister') || nodeText.toUpperCase().includes('TWISTER')) {
 				console.log('Creating TWISTER circle image...');
 				// Create an image element for TWISTER
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -5168,10 +6059,20 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 140); // Center the image (assuming 280px width)
-				image.setAttribute('y', centerY - 60); // Center the image (assuming 120px height)
-				image.setAttribute('width', '280');
-				image.setAttribute('height', '120');
+				// Keep original height feel, but grow horizontally to fit D&AD logo/text inside.
+				const isMobile = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+				// Mobile: D&AD is inline (row), so the circle can be smaller again.
+				const baseW = s(isMobile ? 380 : 280);
+				const baseH = s(isMobile ? 170 : 120);
+				const padX = s(isMobile ? 170 : 90);
+				const padY = s(isMobile ? 90 : 44);
+				const w = Math.max(baseW, nodeRect.width + padX);
+				const h = Math.max(baseH, nodeRect.height + padY);
+				image.setAttribute('x', String(centerX - (w / 2)));
+				// Center the frame on the TWISTER title so it sits centered in the circle.
+				image.setAttribute('y', String(centerY - (h / 2)));
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -5182,12 +6083,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'twister-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
+				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(centerX + 4)); // TWISTER: less on the left (right edge unchanged)
-				fill.setAttribute('cy', String(centerY - 2)); // TWISTER: slightly less bottom
-				fill.setAttribute('rx', String(140 * 0.56 - 4)); // TWISTER: less on the left (right edge unchanged)
-				fill.setAttribute('ry', String(60 * 0.68 - 4)); // TWISTER: slightly less bottom
+				fill.setAttribute('cx', String(centerX + s(4))); // TWISTER: less on the left (right edge unchanged)
+				fill.setAttribute('cy', String(centerY - s(2))); // TWISTER: slightly less bottom
+				fill.setAttribute('rx', String((w / 2) * 0.56 - s(4))); // scale with width
+				fill.setAttribute('ry', String((h / 2) * 0.68 - s(4))); // scale with height
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5211,10 +6113,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
 				// Slightly larger + adjusted so the tab text fits better inside the circle
-				image.setAttribute('x', centerX - 220); // Center the image (440px width)
-				image.setAttribute('y', centerY - 85); // Center the image (170px height)
-				image.setAttribute('width', '440');
-				image.setAttribute('height', '170');
+				const w = s(440);
+				const h = s(170);
+				image.setAttribute('x', String(centerX - (w / 2)));
+				image.setAttribute('y', String(centerY - (h / 2)));
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -5225,12 +6129,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'byens-landhandel-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
+				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - 2)); // DUREX: bigger at the top (bottom unchanged)
-				fill.setAttribute('rx', String(220 * 0.50 + 3)); // BYENS: slightly bigger on the right (left edge unchanged)
-				fill.setAttribute('ry', String(85 * 0.58 - 2));  // slightly smaller at the bottom
+				fill.setAttribute('cy', String(centerY - s(2))); // BYENS: bigger at the top (bottom unchanged)
+				fill.setAttribute('rx', String(s(220) * 0.50 + s(3))); // BYENS: slightly bigger on the right (left edge unchanged)
+				fill.setAttribute('ry', String(s(85) * 0.58 - s(2)));  // slightly smaller at the bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5253,10 +6158,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 220); // Center the image (assuming 440px width)
-				image.setAttribute('y', centerY - 75); // Center the image (assuming 150px height)
-				image.setAttribute('width', '440');
-				image.setAttribute('height', '150');
+				const w = s(440);
+				const h = s(150);
+				image.setAttribute('x', String(centerX - (w / 2)));
+				image.setAttribute('y', String(centerY - (h / 2)));
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -5267,12 +6174,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'durex-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
+				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - 3)); // DUREX: keep top, trim bottom
-				fill.setAttribute('rx', String(220 * 0.55)); // DUREX: less horizontal fill
-				fill.setAttribute('ry', String(75 * 0.68 + 1)); // DUREX: keep top, trim bottom
+				fill.setAttribute('cy', String(centerY - s(3))); // DUREX: keep top, trim bottom
+				fill.setAttribute('rx', String(s(220) * 0.55)); // DUREX: less horizontal fill
+				fill.setAttribute('ry', String(s(75) * 0.68 + s(1))); // DUREX: keep top, trim bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5657,7 +6565,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		createTwisterTongues();
 
 		// Ensure nodes are placed before drawing lines/frames.
+		resetProjectsStageScale();
 		positionNodesPerfectCircle();
+		positionBrainfartsBuild();
 		createAndPositionDandDLogo();
 		createAndPositionTwisterDandDLine();
 		createAndPositionRepopKravlingLine();
@@ -5669,13 +6579,16 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Create hand-drawn frames around project tabs
 		createHandDrawnFrames();
+		applyProjectsStageScale();
 		
 		document.addEventListener('mousemove', updatePupilPosition);
 		
 		// Recreate lines and frames on window resize
 		window.addEventListener('resize', function() {
 			setTimeout(() => {
+				resetProjectsStageScale();
 				positionNodesPerfectCircle();
+				positionBrainfartsBuild();
 				createAndPositionDandDLogo();
 				createAndPositionTwisterDandDLine();
 				createAndPositionRepopKravlingLine();
@@ -5683,6 +6596,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				createAndPositionKobajerArrow();
 				createConnectingLines();
 				createHandDrawnFrames();
+				applyProjectsStageScale();
 			}, 100);
 		});
 

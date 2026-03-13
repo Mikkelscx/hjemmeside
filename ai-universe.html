@@ -136,6 +136,27 @@
             font-size: 1.1rem;
         }
 
+        /* Mobile: reduce dead space between lines/paragraphs */
+        @media (max-width: 640px) {
+            .ai-universe-page .page-content {
+                padding: 16px;
+                /* Account for fixed mobile navbar (52px) */
+                margin-top: 64px;
+                width: min(94vw, var(--infoboxMaxW, 1200px));
+            }
+            .ai-universe-page h1 {
+                font-size: clamp(2.1rem, 9vw, 2.8rem);
+                margin-top: 0;
+                margin-bottom: 1rem;
+                letter-spacing: 0.12rem;
+            }
+            .ai-universe-page p {
+                font-size: 1.02rem;
+                line-height: 1.35;
+                margin-bottom: 0.75rem;
+            }
+        }
+
         .ai-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
