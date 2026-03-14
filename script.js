@@ -112,6 +112,49 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {}
 	}
 
+	function isPhoneViewport() {
+		try {
+			return !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
+		} catch {
+			return false;
+		}
+	}
+
+	function currentPageFileLower() {
+		try {
+			let p = (window.location.pathname || '');
+			p = (p.split('?')[0] || '');
+			const parts = p.split('/').filter(Boolean);
+			const last = (parts.length ? parts[parts.length - 1] : '').trim();
+			return (last || 'index.html').toLowerCase();
+		} catch {
+			return '';
+		}
+	}
+
+	// iPhone Safari can crash/reload when we mount multiple iframe-based transition overlays.
+	// On phones (and for reduced-motion users), use direct navigation for navbar/menu clicks.
+	function shouldBypassNavTransitions(e, a) {
+		try {
+			if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+		} catch {}
+
+		// Only bypass on the phone layout.
+		if (!isPhoneViewport()) return false;
+
+		try {
+			// If the mobile menu is open, any click is likely a menu selection.
+			if (document.body && document.body.classList.contains('nav-open')) return true;
+		} catch {}
+
+		try {
+			// If the click came from the navbar (or the edge-nav panel), bypass transitions.
+			if (a && a.closest && (a.closest('.navbar') || a.closest('.edge-nav'))) return true;
+		} catch {}
+
+		return false;
+	}
+
 	function getPageFlipMs(fallbackMs) {
 		try {
 			const root = document.documentElement;
@@ -404,6 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			closeMobileBurgerMenu();
+			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			try { e.stopImmediatePropagation(); } catch {}
 			startFlipToAbout(a.href);
@@ -908,8 +952,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!a) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
+			// Only run this Projekter -> Kontakt double flip when you're actually on Projekter.
+			// Otherwise it can hijack normal nav from project detail pages.
+			if (currentPageFileLower() !== 'projects.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			closeMobileBurgerMenu();
+			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			startDoubleFlipToContact(a.href);
 		}, true);
@@ -917,6 +965,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the double overlay (and its iframes) so the 2nd-half backface isn't blank.
 		(function preloadDoubleOnce() {
 			try {
+				if (isPhoneViewport()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureDoubleOverlay();
 				ov.classList.add('is-preloading');
@@ -1154,6 +1203,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (hrefAttr !== 'projects.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			closeMobileBurgerMenu();
+			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			startFlipToProjects(a.href);
 		}, true);
@@ -1161,6 +1211,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (isPhoneViewport()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -1516,6 +1567,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (hrefAttr !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			closeMobileBurgerMenu();
+			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			startFlipToContact(a.href);
 		}, true);
@@ -1523,6 +1575,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (isPhoneViewport()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -1839,6 +1892,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			closeMobileBurgerMenu();
+			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			startFlipToAbout(a.href);
 		}, true);
@@ -1846,6 +1900,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (isPhoneViewport()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -2589,6 +2644,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			closeMobileBurgerMenu();
+			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			try { e.stopImmediatePropagation(); } catch {}
 			startAiClose(a.href);
@@ -2596,6 +2652,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Prewarm ASAP after load (doesn't show anything, just builds DOM/iframes).
 		try {
+			if (isPhoneViewport()) return;
 			if ('requestIdleCallback' in window) {
 				window.requestIdleCallback(() => prewarmOverlay(), { timeout: 800 });
 			} else {
@@ -2975,8 +3032,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!a) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'projects.html') return;
+			// Only run Kontakt -> Projekter transition when you're actually on Kontakt.
+			// Otherwise it can make navigation from project pages look washed-out + slow.
+			if (currentPageFileLower() !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			closeMobileBurgerMenu();
+			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			// Prevent other "to projects" transitions from also running.
 			try { e.stopImmediatePropagation(); } catch {}
@@ -3318,6 +3379,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Allow normal browser behaviors (new tab, etc.)
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			closeMobileBurgerMenu();
+			if (shouldBypassNavTransitions(e, a)) return;
+			// Only play the special "open book into Projekter" transition from the frontpage.
+			// From project detail pages, navigate normally (avoids washed-out overlay + long wait).
+			try {
+				if (!document.body.classList.contains('home-notebook-page') && currentPageFileLower() !== 'index.html') return;
+			} catch {
+				return;
+			}
 			e.preventDefault();
 			startProjectsTransition(a.href);
 		}, true);
@@ -5744,11 +5813,20 @@ document.addEventListener('DOMContentLoaded', function() {
 				try {
 					if (!el || !targetHref) return;
 					if (nodeHref.includes('brainfarts')) return; // Brainfarts is intentionally not clickable
+					// On desktop, the hover effect should behave like "yesterday":
+					// hover is driven by the underlying `<a.project-node>` mouseenter, not the SVG.
+					// If the SVG captures pointer events, hovering the circle won't trigger the node hover.
+					const isFineHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+					if (isFineHover) {
+						el.style.pointerEvents = 'none';
+						el.style.cursor = 'default';
+						return;
+					}
+
+					// On touch/mobile, enable tapping the circle to navigate.
 					el.style.pointerEvents = 'auto';
 					el.style.cursor = 'pointer';
 					el.addEventListener('click', (e) => {
-						// Allow normal browser behaviors (new tab etc.) when the actual <a> is clicked,
-						// but for SVG images we just navigate on primary activation.
 						try { e.preventDefault(); } catch {}
 						try { e.stopPropagation(); } catch {}
 						try { e.stopImmediatePropagation(); } catch {}
@@ -5808,11 +5886,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				// Make it shorter on the RIGHT side only (keep left side roughly the same)
 				// Achieved by shifting left and reducing rx by the same amount.
-				fill.setAttribute('cx', String(centerX - s(1))); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
+				// BRAINFARTS: slightly smaller on the RIGHT side (keep left edge roughly the same)
+				fill.setAttribute('cx', String(centerX - s(2)));
 				// Slightly smaller at the bottom: shift up a bit
-				fill.setAttribute('cy', String(centerY - s(3))); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
-				fill.setAttribute('rx', String((frameW / 2) * 0.56 + s(2))); // scale with width
-				fill.setAttribute('ry', String((frameH / 2) * 0.56 - s(1))); // scale with height
+				// Make the hover fill bigger towards the bottom, but a touch smaller at the TOP
+				fill.setAttribute('cy', String(centerY + s(6)));
+				fill.setAttribute('rx', String((frameW / 2) * 0.60 + s(3))); // slightly less on the right
+				fill.setAttribute('ry', String((frameH / 2) * 0.64 + s(3))); // keep bottom feel, reduce top reach
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5941,10 +6021,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				// KØ-BAJER: use an ellipse so we can make it smaller at the top/bottom without shrinking the sides too much
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - s(5))); // KØ-BAJER: trim bottom (keep top roughly the same)
+				// KØ-BAJER: keep a touch more fill at the top, but also add a little to the bottom
+				fill.setAttribute('cy', String(centerY - s(1)));
 				// Scale the hover fill with the circle size
 				fill.setAttribute('rx', String((w / 2) * 0.56));
-				fill.setAttribute('ry', String((h / 2) * 0.46 - s(5))); // slightly less bottom
+				fill.setAttribute('ry', String((h / 2) * 0.60)); // slightly bigger top+bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);

@@ -2578,6 +2578,26 @@ body.home-notebook-page.home-opening-projects .home-notebook {
     mix-blend-mode: screen;
 }
 
+/* Frontpage: small test note at bottom of the cover */
+.home-notebook__footer-note {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 3;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(12px, 1.5vw, 14px);
+    letter-spacing: 0.2px;
+    color: rgba(255,255,255,0.88);
+    background: rgba(0,0,0,0.18);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+    pointer-events: none;
+    user-select: none;
+}
+
 /* Inside "projekter" look shown while opening */
 .home-notebook__spread {
     position: absolute;
@@ -5044,11 +5064,13 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleUniform: 1;
         /* Bigger scale on phones to avoid dead space */
         --projectsScaleBaseW: 480;
-        --projectsScaleBaseH: 780;
+        /* Slightly taller base so the full design fits (prevents top/bottom clipping) */
+        --projectsScaleBaseH: 860;
         --projectsScaleExp: 1.10;
-        --projectsScaleMin: 0.62;
+        --projectsScaleMin: 0.56;
         transform-origin: 50% 50%;
-        transform: translateY(-8px) scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
+        /* Move the whole design down a bit so top/bottom are visible on iPhone Safari */
+        transform: translateY(calc(18px + env(safe-area-inset-top))) scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
 
     /* Projects nodes: slightly smaller on phones to avoid overlaps */
@@ -6144,29 +6166,8 @@ body.sketchbook-theme .brainstorm-container .connecting-lines .hand-drawn-frame.
     transform: translateY(-50%);
 }
 
-.project-node:hover {
-    transform: none !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    background-color: transparent !important;
-}
-
-/* Additional override to ensure no white background */
-.project-node:hover,
-.project-node:hover * {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    background-color: transparent !important;
-}
-
-/* Force remove any white background with maximum specificity */
-body .brainstorm-container .project-node:hover,
-body .brainstorm-container .project-node:hover *,
-.project-node:hover,
-.project-node:hover * {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    background-color: transparent !important;
-    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-}
+/* NOTE: hover feedback on Projekter tabs is handled by the SVG circle glow/fill.
+   Avoid painting a gradient background on the `<a>` itself (it overrides the sketchbook look). */
 
 /* Make brain smile when hovering over project nodes */
 .project-node:hover ~ .brain svg path[d*="42,42 Q50,45 58,42"] {
@@ -7818,23 +7819,9 @@ html body a[href="project1.html"]:hover {
     height: auto !important;
 }
 
-/* BRAINFARTS image hover effects - visual feedback but stays still */
-.brainfarts-image:hover {
-    opacity: 1.0 !important;
-    filter: brightness(1.2) !important;
-    transform: none !important;
-    transition: opacity 0.3s ease, filter 0.3s ease !important;
-}
+/* BRAINFARTS circle hover is handled by the shared SVG glow/fill (no special brightness). */
 
-/* BRAINFARTS - Match other tabs hover effects */
-.brainstorm-container a[href="project1.html"]:hover,
-.brainstorm-container a[href="brainfarts.html"]:hover {
-    transform: translateY(-50%) !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    background-color: transparent !important;
-    transition: box-shadow 0.3s ease !important;
-}
+/* BRAINFARTS: keep hover stable (SVG handles glow/fill). */
 
 .contact-item h3 {
     color: #32CD32;
@@ -7899,34 +7886,6 @@ html body a[href="project1.html"]:hover {
     filter: brightness(1.1);
 }
 
-/* BRAINFARTS - Match other tabs hover effects but stay still */
-body .brainstorm-container .project-node[href="brainfarts.html"]:hover,
-body .brainstorm-container a[href="brainfarts.html"]:hover,
-.brainstorm-container a[href="brainfarts.html"]:hover,
-a[href="brainfarts.html"]:hover,
-.project-node[href="brainfarts.html"]:hover {
-    transform: translateY(-50%) !important;
-    position: absolute !important;
-    left: 10% !important;
-    top: 50% !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    background-color: transparent !important;
-    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    transition: box-shadow 0.3s ease !important;
-}
+/* (Removed) Do not override hover background/position for BRAINFARTS. */
 
-body .brainstorm-container .project-node[href="brainfarts.html"]:hover *,
-body .brainstorm-container a[href="brainfarts.html"]:hover *,
-.project-node[href="brainfarts.html"]:hover *,
-a[href="brainfarts.html"]:hover * {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    background-color: transparent !important;
-}
-
-.brainfarts-image:hover {
-    opacity: 1.0 !important;
-    filter: brightness(1.2) !important;
-    transform: none !important;
-    transition: opacity 0.3s ease, filter 0.3s ease !important;
-} 
+ 
