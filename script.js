@@ -1253,15 +1253,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				try {
 					if (overlay) {
-						// Left under-page: show Projekter as soon as the flip begins.
-						if (progress > 0.02) overlay.classList.add('swap-under-left');
-						else overlay.classList.remove('swap-under-left');
-
-						// Flipping page: switch to Projekter exactly once we cross the middle seam while dragging.
-						// This should feel like it changes right as the page passes the center.
-						const cursorPastMiddle = (typeof x !== 'number' || typeof seamX !== 'number') ? (progress >= 0.5) : (x >= seamX);
-						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
+						// Flipping page: switch to Projekter only once we're past the middle AND the drag has
+						// moved a bit further to the right.
+						const passedHalf = progress >= 0.5;
+						const passedSeamToRight = (typeof x === 'number' && typeof seamX === 'number') ? (x >= (seamX + 14)) : (progress >= 0.54);
+						if (passedHalf && passedSeamToRight) overlay.classList.add('swap-flip-mid');
 						else overlay.classList.remove('swap-flip-mid');
+
+						// Left under-page: keep Om mig visible until the turning sheet is past the middle
+						// (otherwise the Projects design appears "too early" during the drag).
+						if (passedHalf && passedSeamToRight) overlay.classList.add('swap-under-left');
+						else overlay.classList.remove('swap-under-left');
 
 						// Swap the right under-page late (matches existing logic).
 						if (progress >= 0.88) overlay.classList.add('swap-under-right');
@@ -1367,6 +1369,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							flipEl.style.transition = `transform ${finishMs}ms ${ease}`;
 							flipEl.style.transform = 'rotateY(180deg)';
 						}
+						// Once committed, ensure under-left is Projekter for the remainder of the flip.
+						overlay.classList.add('swap-under-left');
 						overlay.classList.add('swap-under-right');
 						// Ensure the flipping page design is swapped once we're committed past the middle.
 						overlay.classList.add('swap-flip-mid');

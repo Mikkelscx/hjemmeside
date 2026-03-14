@@ -5062,20 +5062,19 @@ body.sketchbook-theme .brainstorm-container {
         display: block !important;
         /* Mobile fit tuning (JS reads these and sets --projectsSx/--projectsSy) */
         --projectsScaleUniform: 1;
-        /* Bigger scale on phones to avoid dead space */
-        --projectsScaleBaseW: 480;
-        /* Slightly taller base so the full design fits (prevents top/bottom clipping) */
-        --projectsScaleBaseH: 860;
-        --projectsScaleExp: 1.10;
-        --projectsScaleMin: 0.56;
+        /* Slightly more compact on phones so everything fits vertically */
+        --projectsScaleBaseW: 540;
+        --projectsScaleBaseH: 980;
+        --projectsScaleExp: 1.15;
+        --projectsScaleMin: 0.50;
         transform-origin: 50% 50%;
         /* Move the whole design down a bit so top/bottom are visible on iPhone Safari */
-        transform: translateY(calc(18px + env(safe-area-inset-top))) scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
+        transform: translateY(calc(14px + env(safe-area-inset-top))) scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
 
     /* Projects nodes: slightly smaller on phones to avoid overlaps */
     body.projects-page.sketchbook-theme .project-node {
-        font-size: 0.95rem !important;
+        font-size: 0.90rem !important;
         z-index: 3;
     }
 
