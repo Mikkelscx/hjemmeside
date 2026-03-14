@@ -5178,10 +5178,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					const shiftX = svgScale(44);
 					const a = { x: brainLeft.x + svgScale(26) + shiftX, y: brainBottom.y - svgScale(14) };
 					const b = { x: pt(twiRect, 'left').x - svgScale(10) + shiftX, y: pt(twiRect, 'top').y + svgScale(8) };
-					lineImg('assets/linje 3.webp', a, b, svgScale(175));
+					lineImg('assets/linje 8.webp', a, b, svgScale(175));
 				}
 				if (twiRect && brfRect) {
-					lineImg('assets/linje 8.webp', pt(twiRect, 'bottom'), pt(brfRect, 'top'), svgScale(210));
+					lineImg('assets/linje 3.webp', pt(twiRect, 'bottom'), pt(brfRect, 'top'), svgScale(210));
 				}
 
 				// Right column: NATURLI -> UNGE -> BRAIN -> KØ-BAJER -> BYENS
