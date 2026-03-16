@@ -114,7 +114,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function isPhoneViewport() {
 		try {
-			return !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
+			if (!window.matchMedia) return false;
+			// Phone portrait
+			if (window.matchMedia('(max-width: 640px)').matches) return true;
+			// Tablet / big-mobile (iPad etc.) should also use burger menu + mobile nav behavior.
+			if (window.matchMedia('(max-width: 1024px) and (hover: none) and (pointer: coarse)').matches) return true;
+			// Phone landscape (iPhone etc.): wide but short viewport
+			if (window.matchMedia('(max-height: 520px) and (orientation: landscape) and (hover: none) and (pointer: coarse)').matches) return true;
+			return false;
 		} catch {
 			return false;
 		}
@@ -3220,7 +3227,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// If user rotates / grows window, ensure menu closes when leaving phone breakpoint.
 		window.addEventListener('resize', () => {
-			if (window.innerWidth > 640) setOpen(false);
+			if (!isPhoneViewport()) setOpen(false);
 		});
 	})();
 
