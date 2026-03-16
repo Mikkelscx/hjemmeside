@@ -127,6 +127,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 
+	function isTouchLandscapeShort() {
+		try {
+			if (!window.matchMedia) return false;
+			return !!window.matchMedia('(max-width: 1024px) and (max-height: 520px) and (hover: none) and (pointer: coarse)').matches;
+		} catch {
+			return false;
+		}
+	}
+
+	function projectsLandscapeAssetScale() {
+		// Only shrink assets in Projects page short-landscape touch mode.
+		try {
+			if (!document.body || !document.body.classList.contains('projects-page')) return 1;
+		} catch { return 1; }
+		return isTouchLandscapeShort() ? 0.72 : 1;
+	}
+
 	function currentPageFileLower() {
 		try {
 			let p = (window.location.pathname || '');
@@ -4410,6 +4427,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!container) return;
 			const containerRect = container.getBoundingClientRect();
 			const scale = projectsScaleFromRect(containerRect);
+			const assetS = projectsLandscapeAssetScale();
 
 			const kobajerNode = Array.from(nodes).find(n => {
 				const href = (n.getAttribute('href') || '').toLowerCase();
@@ -4447,7 +4465,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const r = kobajerNode.getBoundingClientRect();
 
-			const width = 85 * scale; // shorter
+			const width = 85 * scale * assetS; // shorter (shrink only in landscape touch)
 			const gap = -35 * scale; // move slightly down
 			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - (42 * scale); // more to the right
 			const top = (r.bottom - containerRect.top) + gap;
@@ -4461,7 +4479,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			arrow.style.top = `${top}px`;
 			// Point down, and make it thicker without making it longer
 			arrow.style.transformOrigin = '50% 50%';
-			arrow.style.transform = 'rotate(115deg) scaleY(1.4)'; // rotate more to the right
+			arrow.style.transform = `rotate(115deg) scaleY(${1.4 * assetS})`; // keep feel, but shrink thickness in landscape
 
 			// Position the "Kravlingprisen nomineret 2024" label under the arrow tip
 			createAndPositionKobajerKravling2024Label();
@@ -5049,6 +5067,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const containerRect = container.getBoundingClientRect();
 		const scale = projectsScaleFromRect(containerRect);
 		const svgScale = (n) => (n * scale);
+		const assetS = projectsLandscapeAssetScale();
 
 		// Note: The TWISTER↔D&AD line is handled as a normal positioned <img> for reliability.
 		
@@ -5300,7 +5319,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 8.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h8 = svgScale(390);
+				const h8 = svgScale(390 * assetS);
 				lineImage.setAttribute('y', brainStartY - (h8 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength); // Longer
 				lineImage.setAttribute('height', String(h8)); // Slightly bigger/thicker line asset
@@ -5355,7 +5374,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/Linje 4.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 4.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h4 = svgScale(400);
+				const h4 = svgScale(400 * assetS);
 				lineImage.setAttribute('y', brainStartY - (h4 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h4));
@@ -5414,7 +5433,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 6.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 6.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h6 = svgScale(300);
+				const h6 = svgScale(300 * assetS);
 				lineImage.setAttribute('y', brainStartY - (h6 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h6)); // Reduced height to make line thinner
@@ -5541,7 +5560,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/linje 1.webp');
 				lineImage.setAttribute('x', brainStartX);
-				const h1 = svgScale(400);
+				const h1 = svgScale(400 * assetS);
 				lineImage.setAttribute('y', brainStartY - (h1 / 2)); // Center vertically
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h1));
@@ -5637,7 +5656,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 7.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 7.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h7 = svgScale(200);
+				const h7 = svgScale(200 * assetS);
 				lineImage.setAttribute('y', brainStartY - (h7 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h7)); // Further reduced height to make line thinner
@@ -5691,7 +5710,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 3.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 3.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h3 = svgScale(600);
+				const h3 = svgScale(600 * assetS);
 				lineImage.setAttribute('y', brainStartY - (h3 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h3));
@@ -5809,6 +5828,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const containerRect = container.getBoundingClientRect();
 		const scale = projectsScaleFromRect(containerRect);
 		const s = (n) => (n * scale);
+		const assetS = projectsLandscapeAssetScale();
 		console.log('Container rect:', containerRect);
 		
 		currentNodes.forEach((node, index) => {
@@ -5868,10 +5888,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
 				const isMobile = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
 				// Make room for the inline "Under ombygning" sign on mobile.
-				const baseW = s(240);
-				const baseH = s(200);
-				const padX = s(isMobile ? 90 : 60);
-				const padY = s(isMobile ? 140 : 80);
+				const baseW = s(240) * assetS;
+				const baseH = s(200) * assetS;
+				const padX = s(isMobile ? 90 : 60) * assetS;
+				const padY = s(isMobile ? 140 : 80) * assetS;
 				const frameW = Math.max(baseW, nodeRect.width + padX);
 				const frameH = Math.max(baseH, nodeRect.height + padY);
 				image.setAttribute('x', String(centerX - (frameW / 2)));
@@ -5902,8 +5922,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Slightly smaller at the bottom: shift up a bit
 				// Make the hover fill bigger towards the bottom, but a touch smaller at the TOP
 				fill.setAttribute('cy', String(centerY + s(6)));
-				fill.setAttribute('rx', String((frameW / 2) * 0.60 + s(3))); // slightly less on the right
-				fill.setAttribute('ry', String((frameH / 2) * 0.64 + s(3))); // keep bottom feel, reduce top reach
+				fill.setAttribute('rx', String(((frameW / 2) * 0.60 + s(3)) * assetS));
+				fill.setAttribute('ry', String(((frameH / 2) * 0.64 + s(3)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5959,8 +5979,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const w = s(380);
-				const h = s(165);
+				const w = s(380) * assetS;
+				const h = s(165) * assetS;
 				image.setAttribute('x', String(centerX - (w / 2) - s( -3 ))); // keep tiny left tweak (~-3px)
 				image.setAttribute('y', String(centerY - (h / 2) + s(10)));     // slight down bias without crossing text
 				image.setAttribute('width', String(w));
@@ -5981,8 +6001,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX - s(1))); // slightly bigger on the left (right edge unchanged)
 				fill.setAttribute('cy', String(centerY - s(2))); // REPOP: slightly bigger at the top
-				fill.setAttribute('rx', String(s(190) * 0.55 - s(7))); // slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('ry', String((h / 2) * 0.68 - s(2))); // match frame height
+				fill.setAttribute('rx', String((s(190) * 0.55 - s(7)) * assetS));
+				fill.setAttribute('ry', String(((h / 2) * 0.68 - s(2)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6006,10 +6026,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
 				// Keep original height feel, but allow more width so the whole text fits.
-				const baseW = s(200);
-				const baseH = s(200);
-				const padX = s(56);
-				const padY = s(26);
+				const baseW = s(200) * assetS;
+				const baseH = s(200) * assetS;
+				const padX = s(56) * assetS;
+				const padY = s(26) * assetS;
 				const w = Math.max(baseW, nodeRect.width + padX);
 				const h = Math.max(baseH, nodeRect.height + padY);
 				image.setAttribute('x', String(centerX - (w / 2)));
@@ -6035,8 +6055,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				// KØ-BAJER: keep a touch more fill at the top, but also add a little to the bottom
 				fill.setAttribute('cy', String(centerY - s(1)));
 				// Scale the hover fill with the circle size
-				fill.setAttribute('rx', String((w / 2) * 0.56));
-				fill.setAttribute('ry', String((h / 2) * 0.60)); // slightly bigger top+bottom
+				fill.setAttribute('rx', String(((w / 2) * 0.56) * assetS));
+				fill.setAttribute('ry', String(((h / 2) * 0.60) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6059,8 +6079,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const w = s(240);
-				const h = s(140);
+				const w = s(240) * assetS;
+				const h = s(140) * assetS;
 				image.setAttribute('x', String(centerX - (w / 2)));
 				image.setAttribute('y', String(centerY - (h / 2) + s(5)));
 				image.setAttribute('width', String(w));
@@ -6082,8 +6102,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				// NATURLI': make the RIGHT side slightly smaller (keep left edge the same)
 				fill.setAttribute('cx', String(centerX + s(1)));
 				fill.setAttribute('cy', String(centerY - s(1)));
-				fill.setAttribute('rx', String(s(120) * 0.50 - s(2)));
-				fill.setAttribute('ry', String(s(70) * 0.66));
+				fill.setAttribute('rx', String((s(120) * 0.50 - s(2)) * assetS));
+				fill.setAttribute('ry', String((s(70) * 0.66) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6106,8 +6126,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const w = s(320);
-				const h = s(150);
+				const w = s(320) * assetS;
+				const h = s(150) * assetS;
 				image.setAttribute('x', String(centerX - (w / 2)));
 				image.setAttribute('y', String(centerY - (h / 2)));
 				image.setAttribute('width', String(w));
@@ -6127,8 +6147,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY)); // UNGE MOD UV: keep centered
-				fill.setAttribute('rx', String(s(160) * 0.54)); // UNGE MOD UV: wider left+right
-				fill.setAttribute('ry', String(s(75) * 0.51));  // UNGE MOD UV: slightly more top+bottom
+				fill.setAttribute('rx', String((s(160) * 0.54) * assetS));
+				fill.setAttribute('ry', String((s(75) * 0.51) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6154,10 +6174,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Keep original height feel, but grow horizontally to fit D&AD logo/text inside.
 				const isMobile = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
 				// Mobile: D&AD is inline (row), so the circle can be smaller again.
-				const baseW = s(isMobile ? 380 : 280);
-				const baseH = s(isMobile ? 170 : 120);
-				const padX = s(isMobile ? 170 : 90);
-				const padY = s(isMobile ? 90 : 44);
+				const baseW = s(isMobile ? 380 : 280) * assetS;
+				const baseH = s(isMobile ? 170 : 120) * assetS;
+				const padX = s(isMobile ? 170 : 90) * assetS;
+				const padY = s(isMobile ? 90 : 44) * assetS;
 				const w = Math.max(baseW, nodeRect.width + padX);
 				const h = Math.max(baseH, nodeRect.height + padY);
 				image.setAttribute('x', String(centerX - (w / 2)));
@@ -6180,8 +6200,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX + s(4))); // TWISTER: less on the left (right edge unchanged)
 				fill.setAttribute('cy', String(centerY - s(2))); // TWISTER: slightly less bottom
-				fill.setAttribute('rx', String((w / 2) * 0.56 - s(4))); // scale with width
-				fill.setAttribute('ry', String((h / 2) * 0.68 - s(4))); // scale with height
+				fill.setAttribute('rx', String((((w / 2) * 0.56 - s(4))) * assetS));
+				fill.setAttribute('ry', String((((h / 2) * 0.68 - s(4))) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6205,8 +6225,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
 				// Slightly larger + adjusted so the tab text fits better inside the circle
-				const w = s(440);
-				const h = s(170);
+				const w = s(440) * assetS;
+				const h = s(170) * assetS;
 				image.setAttribute('x', String(centerX - (w / 2)));
 				image.setAttribute('y', String(centerY - (h / 2)));
 				image.setAttribute('width', String(w));
@@ -6226,8 +6246,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY - s(2))); // BYENS: bigger at the top (bottom unchanged)
-				fill.setAttribute('rx', String(s(220) * 0.50 + s(3))); // BYENS: slightly bigger on the right (left edge unchanged)
-				fill.setAttribute('ry', String(s(85) * 0.58 - s(2)));  // slightly smaller at the bottom
+				fill.setAttribute('rx', String((s(220) * 0.50 + s(3)) * assetS));
+				fill.setAttribute('ry', String((s(85) * 0.58 - s(2)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6250,8 +6270,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const w = s(440);
-				const h = s(150);
+				const w = s(440) * assetS;
+				const h = s(150) * assetS;
 				image.setAttribute('x', String(centerX - (w / 2)));
 				image.setAttribute('y', String(centerY - (h / 2)));
 				image.setAttribute('width', String(w));
@@ -6271,8 +6291,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY - s(3))); // DUREX: keep top, trim bottom
-				fill.setAttribute('rx', String(s(220) * 0.55)); // DUREX: less horizontal fill
-				fill.setAttribute('ry', String(s(75) * 0.68 + s(1))); // DUREX: keep top, trim bottom
+				fill.setAttribute('rx', String((s(220) * 0.55) * assetS));
+				fill.setAttribute('ry', String((s(75) * 0.68 + s(1)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
