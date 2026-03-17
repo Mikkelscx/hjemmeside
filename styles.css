@@ -8309,16 +8309,18 @@ html body a[href="project1.html"]:hover {
         --projectsScaleBaseH: 430;
         --projectsScaleExp: 1.00;
         --projectsScaleMin: 0.82;
+        /* Brain size in phone landscape (SVG size, not container transform) */
+        --projectsBrainSize: 74px;
         transform:
             translateX(calc(200px + env(safe-area-inset-left)))
             translateY(calc(-320px + env(safe-area-inset-top)))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy)) !important;
     }
 
-    /* Make the brain smaller in this version (keep same center position) */
-    body.projects-page.sketchbook-theme .brain {
-        transform: translate(-50%, -50%) scale(0.26);
-        transform-origin: 50% 50%;
+    /* JS sets .brain transform inline; shrink the actual SVG instead */
+    body.projects-page.sketchbook-theme .brain svg {
+        width: var(--projectsBrainSize) !important;
+        height: var(--projectsBrainSize) !important;
     }
 
     /* Horizontal mobile: mimic vertical-mobile BRAINFARTS (no arrow, sign inside circle) */
