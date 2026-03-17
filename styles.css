@@ -5796,8 +5796,8 @@ body.sketchbook-theme .brainstorm-container {
         transform-origin: 50% 50%;
         /* Phone landscape: push design up + right so it's fully visible */
         transform:
-            translateX(calc(0px + env(safe-area-inset-left)))
-            translateY(calc(-12px + env(safe-area-inset-top)))
+            translateX(calc(42px + env(safe-area-inset-left)))
+            translateY(calc(-68px + env(safe-area-inset-top)))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
     body.projects-page.sketchbook-theme .project-node {
@@ -8284,8 +8284,8 @@ html body a[href="project1.html"]:hover {
         --projectsScaleExp: 1.00;
         --projectsScaleMin: 0.82;
         transform:
-            translateX(calc(0px + env(safe-area-inset-left)))
-            translateY(calc(-6px + env(safe-area-inset-top)))
+            translateX(calc(120px + env(safe-area-inset-left)))
+            translateY(calc(-190px + env(safe-area-inset-top)))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy)) !important;
     }
 
