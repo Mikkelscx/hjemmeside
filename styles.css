@@ -8304,19 +8304,20 @@ html body a[href="project1.html"]:hover {
            These vars are read by JS (applyProjectsStageScale). Smaller base => larger on-screen scale. */
         --projectsScaleUniform: 1;
         /* Restore the previous "use the whole width" sizing */
-        --projectsScaleBaseW: 980;
+        /* Smaller base => less shrink => uses more horizontal space */
+        --projectsScaleBaseW: 860;
         --projectsScaleBaseH: 430;
         --projectsScaleExp: 1.00;
         --projectsScaleMin: 0.82;
         transform:
-            translateX(calc(180px + env(safe-area-inset-left)))
-            translateY(calc(-260px + env(safe-area-inset-top)))
+            translateX(calc(130px + env(safe-area-inset-left)))
+            translateY(calc(-240px + env(safe-area-inset-top)))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy)) !important;
     }
 
     /* Make the brain smaller in this version (keep same center position) */
     body.projects-page.sketchbook-theme .brain {
-        transform: translate(-50%, -50%) scale(0.66);
+        transform: translate(-50%, -50%) scale(0.48);
         transform-origin: 50% 50%;
     }
 
