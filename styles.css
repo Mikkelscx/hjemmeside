@@ -8317,7 +8317,7 @@ html body a[href="project1.html"]:hover {
 
     /* Make the brain smaller in this version (keep same center position) */
     body.projects-page.sketchbook-theme .brain {
-        transform: translate(-50%, -50%) scale(0.34);
+        transform: translate(-50%, -50%) scale(0.26);
         transform-origin: 50% 50%;
     }
 
