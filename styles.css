@@ -5949,6 +5949,31 @@ body.sketchbook-theme .brainstorm-container {
     }
 }
 
+/* Phone landscape: make burger just a button (no bar) */
+@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape) {
+    body .navbar {
+        height: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        pointer-events: none; /* allow taps on design */
+    }
+    body .nav-container {
+        height: 0 !important;
+        padding: 0 !important;
+        pointer-events: none;
+    }
+    body .nav-toggle {
+        position: fixed;
+        top: calc(8px + env(safe-area-inset-top));
+        left: calc(10px + env(safe-area-inset-left));
+        z-index: 5002;
+        pointer-events: auto;
+    }
+    body .nav-menu {
+        top: calc(52px + env(safe-area-inset-top)) !important;
+    }
+}
+
 /* Touch landscape/tablet: use a single full-screen paper page (removes left/right/down dead space) */
 @media (max-width: 1024px) and (hover: none) and (pointer: coarse) {
     /* Remove the brown "cover" margins on touch devices */
@@ -8284,8 +8309,8 @@ html body a[href="project1.html"]:hover {
         --projectsScaleExp: 1.00;
         --projectsScaleMin: 0.82;
         transform:
-            translateX(calc(120px + env(safe-area-inset-left)))
-            translateY(calc(-190px + env(safe-area-inset-top)))
+            translateX(calc(180px + env(safe-area-inset-left)))
+            translateY(calc(-260px + env(safe-area-inset-top)))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy)) !important;
     }
 
