@@ -135,6 +135,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			return false;
 		}
 	}
+ 
+	function isProjectsPhoneLandscape() {
+		try {
+			if (!window.matchMedia) return false;
+			return !!window.matchMedia('(max-width: 1024px) and (max-height: 520px) and (orientation: landscape)').matches;
+		} catch {
+			return false;
+		}
+	}
+ 
+	function nudgeTwisterTitleDownInLandscape() {
+		try {
+			if (!document.body || !document.body.classList.contains('projects-page')) return;
+			if (!isProjectsPhoneLandscape()) return;
+			const title = document.querySelector('.brainstorm-container .project-node[href*="twister"] .project-node__title');
+			if (!title) return;
+			title.style.setProperty('display', 'inline-block', 'important');
+			// Move ONLY the word "TWISTER" up so it doesn't overlap the D&AD mark.
+			title.style.setProperty('transform', 'translateX(3px) translateY(-8px)', 'important');
+		} catch {}
+	}
 
 	function projectsLandscapeAssetScale() {
 		// Only shrink assets in Projects page short-landscape touch mode.
@@ -3516,21 +3537,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// If we've already bound listeners once, just re-position/redraw.
 		if (brain.dataset.animInit === '1') {
-			try {
-				// Compute layout in "base" coords, then squeeze as a final step.
-				resetProjectsStageScale();
-				// Refresh pass to ensure custom assets are present after navigation.
-				positionNodesPerfectCircle();
-				positionBrainfartsBuild();
-				createAndPositionDandDLogo();
-				createAndPositionTwisterDandDLine();
-				createAndPositionRepopKravlingLine();
-				createAndPositionKravlingNomineretBadge();
-				createAndPositionKobajerArrow();
-				createConnectingLines();
-				createHandDrawnFrames();
-				applyProjectsStageScale();
-			} catch {}
+			// Compute layout in "base" coords, then squeeze as a final step.
+			try { resetProjectsStageScale(); } catch {}
+			// Refresh pass to ensure custom assets are present after navigation.
+			try { positionNodesPerfectCircle(); } catch {}
+			try { positionBrainfartsBuild(); } catch {}
+			try { createAndPositionDandDLogo(); } catch {}
+			try { createAndPositionTwisterDandDLine(); } catch {}
+			try { createAndPositionRepopKravlingLine(); } catch {}
+			try { createAndPositionKravlingNomineretBadge(); } catch {}
+			try { createAndPositionKobajerArrow(); } catch {}
+			try { createConnectingLines(); } catch {}
+			try { createHandDrawnFrames(); } catch {}
+			try { nudgeTwisterTitleDownInLandscape(); } catch {}
+			try { applyProjectsStageScale(); } catch {}
 			if (isPreview) {
 				try {
 					const container = document.querySelector('.brainstorm-container');
@@ -3553,6 +3573,114 @@ document.addEventListener('DOMContentLoaded', function() {
 			const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
 
 			const nodeArray = Array.from(nodes);
+			const touchLandscapeShort = !!(isTouchLandscapeShort && isTouchLandscapeShort());
+			let touchLandscape = touchLandscapeShort;
+			try {
+				if (!touchLandscape && window.matchMedia) {
+					touchLandscape = !!window.matchMedia('(max-width: 1024px) and (orientation: landscape) and (hover: none) and (pointer: coarse)').matches;
+				}
+			} catch {}
+			// Fallback: work in desktop mobile-preview too (Chrome devtools sometimes reports fine pointer).
+			try {
+				if (!touchLandscape) {
+					const w = window.innerWidth || containerRect.width;
+					const h = window.innerHeight || containerRect.height;
+					if (w && h && w <= 1024 && h <= 520 && w > h) touchLandscape = true;
+				}
+			} catch {}
+
+			// Horizontal mobile (touch landscape): keep layout, but mimic vertical-mobile Brainfarts and Twister:
+			// - remove the Brainfarts arrow/build block
+			// - place "Under ombygning" inside the Brainfarts circle with low opacity (CSS).
+			if (touchLandscape && document.body && document.body.classList.contains('projects-page')) {
+				try {
+					container
+						.querySelectorAll('.brainfarts-build__arrow, .brainfarts-build')
+						.forEach((el) => {
+							try { el.remove(); } catch {}
+						});
+				} catch {}
+
+				try {
+					const brainfarts = nodeArray.find((n) => ((n.getAttribute('href') || '').toLowerCase().includes('brainfarts')));
+					if (brainfarts) {
+						// Ensure the title is wrapped (matches vertical mobile expectations).
+						let title = brainfarts.querySelector('.project-node__title');
+						if (!title) {
+							brainfarts.textContent = '';
+							title = document.createElement('span');
+							title.className = 'project-node__title';
+							brainfarts.appendChild(title);
+						}
+						title.textContent = 'BRAINFARTS';
+
+						// Make room and center the inline sign.
+						brainfarts.style.setProperty('display', 'flex', 'important');
+						brainfarts.style.setProperty('flex-direction', 'column', 'important');
+						brainfarts.style.setProperty('align-items', 'center', 'important');
+						brainfarts.style.setProperty('justify-content', 'center', 'important');
+
+						let inlineSign = brainfarts.querySelector('.brainfarts-build__sign--inline');
+						if (!inlineSign) {
+							inlineSign = document.createElement('img');
+							inlineSign.className = 'brainfarts-build__sign brainfarts-build__sign--inline';
+							inlineSign.alt = '';
+							inlineSign.draggable = false;
+							inlineSign.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
+							inlineSign.setAttribute('aria-hidden', 'true');
+							brainfarts.appendChild(inlineSign);
+						}
+					}
+				} catch {}
+
+				// TWISTER: put D&AD logo + winner inside the circle (inline) in landscape too.
+				try {
+					const twister = nodeArray.find((n) => ((n.getAttribute('href') || '').toLowerCase().includes('twister')));
+					if (twister) {
+						let title = twister.querySelector('.project-node__title');
+						if (!title) {
+							const existingText = (twister.textContent || '').trim() || 'TWISTER';
+							twister.textContent = '';
+							title = document.createElement('span');
+							title.className = 'project-node__title';
+							title.textContent = existingText;
+							twister.appendChild(title);
+						} else {
+							title.textContent = 'TWISTER';
+						}
+
+						twister.style.setProperty('display', 'flex', 'important');
+						twister.style.setProperty('flex-direction', 'column', 'important');
+						twister.style.setProperty('align-items', 'center', 'important');
+						twister.style.setProperty('justify-content', 'center', 'important');
+
+						let inlineDandD = twister.querySelector('.dandd-badge--inline');
+						if (!inlineDandD) {
+							inlineDandD = document.createElement('div');
+							inlineDandD.className = 'dandd-badge dandd-badge--inline';
+							inlineDandD.setAttribute('aria-hidden', 'true');
+
+							const logo = document.createElement('img');
+							logo.className = 'dandd-logo';
+							logo.alt = 'D&AD';
+							logo.src = "assets/D&AD LOGO.webp";
+							logo.onerror = () => {
+								logo.onerror = null;
+								logo.src = "assets/D&AD logo.webp";
+							};
+
+							const winner = document.createElement('img');
+							winner.className = 'dandd-winner';
+							winner.alt = 'D&AD VINDER';
+							winner.src = 'assets/D&AD VINDER.webp';
+
+							inlineDandD.appendChild(logo);
+							inlineDandD.appendChild(winner);
+							twister.appendChild(inlineDandD);
+						}
+					}
+				} catch {}
+			}
 
 			// Mobile Projects: avoid overlaps (do NOT force a perfect circle).
 			// Lay nodes out in 5 rows (2+2+brain+2+2) like the sketch.
@@ -3901,6 +4029,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
 				if (href.includes('repop')) y += Math.round(35 * (maxTabH / 80));
+				// Phone landscape: move ONLY KØ-BAJER slightly up so the inline 2024 badge fits inside its circle.
+				if (href.includes('kobajer') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
+					y -= Math.round(14 * (maxTabH / 80));
+				}
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -3919,16 +4051,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				// Move ONLY the word (label) for BRAINFARTS a bit to the right.
 				if (href.includes('brainfarts')) {
-					let label = node.querySelector('.node-label');
-					if (!label) {
-						label = document.createElement('span');
-						label.className = 'node-label';
-						label.textContent = node.textContent;
-						node.textContent = '';
-						node.appendChild(label);
+					// If we have a wrapped title (mobile/inline-sign variants), shift that,
+					// otherwise fall back to the legacy "node-label" wrapper.
+					const title = node.querySelector('.project-node__title');
+					if (title) {
+						title.style.display = 'inline-block';
+						title.style.transform = 'translateX(3px)';
+					} else {
+						let label = node.querySelector('.node-label');
+						if (!label) {
+							label = document.createElement('span');
+							label.className = 'node-label';
+							label.textContent = node.textContent;
+							// IMPORTANT: only clear when we're not using inline assets.
+							node.textContent = '';
+							node.appendChild(label);
+						}
+						label.style.display = 'inline-block';
+						label.style.transform = 'translateX(3px)';
 					}
-					label.style.display = 'inline-block';
-					label.style.transform = 'translateX(3px)';
 				}
 			});
 
@@ -3990,6 +4131,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place D&AD logo to the right of TWISTER tab (projects page)
 		function createAndPositionDandDLogo() {
+			// Phone landscape: use inline D&AD inside TWISTER circle instead.
+			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape()) {
+				try {
+					const container = document.querySelector('.brainstorm-container');
+					const existing = container && container.querySelector('.dandd-badge');
+					if (existing) existing.remove();
+				} catch {}
+				return;
+			}
 			// Mobile Projects uses an inline (inside-circle) D&AD badge instead.
 			if (
 				document.body.classList.contains('projects-page') &&
@@ -4129,6 +4279,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place the line asset between TWISTER and the D&AD badge (more reliable than SVG <image>)
 		function createAndPositionTwisterDandDLine() {
+			// Phone landscape: use inline D&AD inside TWISTER circle instead.
+			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape()) {
+				try {
+					const container = document.querySelector('.brainstorm-container');
+					const existing = container && container.querySelector('.twister-dandd-line');
+					if (existing) existing.remove();
+				} catch {}
+				return;
+			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 			const containerRect = container.getBoundingClientRect();
@@ -4186,6 +4345,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place mirrored line asset on the LEFT side of REPOP BY DEPOP
 		function createAndPositionRepopKravlingLine() {
+			// Phone landscape: use inline Kravling inside REPOP circle instead.
+			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
+				try {
+					const container = document.querySelector('.brainstorm-container');
+					const existing = container && container.querySelector('.repop-kravling-line');
+					if (existing) existing.remove();
+				} catch {}
+				return;
+			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 			const containerRect = container.getBoundingClientRect();
@@ -4274,6 +4442,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place "Kravlinprisen nomineret 2025" badge to the LEFT of the repop-arrow
 		function createAndPositionKravlingNomineretBadge() {
+			// Phone landscape: use inline Kravling inside REPOP circle instead.
+			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
+				try {
+					const container = document.querySelector('.brainstorm-container');
+					const existing = container && container.querySelector('.kravling-nomineret-badge');
+					if (existing) existing.remove();
+				} catch {}
+				return;
+			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 			const containerRect = container.getBoundingClientRect();
@@ -4423,6 +4600,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place arrow asset just under KØ-BAJER
 		function createAndPositionKobajerArrow() {
+			// Phone landscape: use inline Kravling inside KØ-BAJER circle instead.
+			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
+				try {
+					const container = document.querySelector('.brainstorm-container');
+					container && container.querySelectorAll('.kobajer-arrow, .kobajer-kravling-2024-badge').forEach((el) => {
+						try { el.remove(); } catch {}
+					});
+				} catch {}
+				return;
+			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 			const containerRect = container.getBoundingClientRect();
@@ -4491,6 +4678,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Repeat "Kravlingprisen nomineret" with 2024 under the arrow point
 		function createAndPositionKobajerKravling2024Label() {
+			// Phone landscape: use inline Kravling inside KØ-BAJER circle instead.
+			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
+				try {
+					const container = document.querySelector('.brainstorm-container');
+					const existing = container && container.querySelector('.kobajer-kravling-2024-badge');
+					if (existing) existing.remove();
+				} catch {}
+				return;
+			}
 			// Mobile Projects uses an inline (inside-circle) badge instead.
 			if (
 				document.body.classList.contains('projects-page') &&
@@ -5973,22 +6169,84 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: REPOP BY DEPOP uses the image instead of hand-drawn circle
 			if (nodeText === 'REPOP BY DEPOP' || nodeHref.includes('repop')) {
 				console.log('Creating REPOP BY DEPOP circle image...');
+				// Phone landscape: ensure inline Kravling 2025 exists so it can live inside the circle.
+				try {
+					if (document.body && document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
+						let title = node.querySelector('.project-node__title');
+						if (!title) {
+							node.textContent = '';
+							title = document.createElement('span');
+							title.className = 'project-node__title';
+							node.appendChild(title);
+						}
+						title.textContent = 'REPOP BY DEPOP';
+
+						// Keep as a column so the badge sits under the title.
+						node.style.setProperty('display', 'flex', 'important');
+						node.style.setProperty('flex-direction', 'column', 'important');
+						node.style.setProperty('align-items', 'center', 'important');
+						node.style.setProperty('justify-content', 'center', 'important');
+						node.style.setProperty('white-space', 'nowrap', 'important');
+
+						let inline = node.querySelector('.kravling-nomineret-badge--inline');
+						if (!inline) {
+							inline = document.createElement('div');
+							inline.className = 'kravling-nomineret-badge kravling-nomineret-badge--inline';
+							inline.setAttribute('aria-hidden', 'true');
+							inline.innerHTML = `
+								<div class="kravling-line1">KRAVLINGPRISEN</div>
+								<div class="kravling-line2">NOMINERET</div>
+								<div class="kravling-line3">2025</div>
+							`;
+							node.appendChild(inline);
+						}
+					}
+				} catch {}
+
 				// Create an image element for REPOP BY DEPOP
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle around repop by depop.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const w = s(380) * assetS;
-				const h = s(165) * assetS;
-				image.setAttribute('x', String(centerX - (w / 2) - s( -3 ))); // keep tiny left tweak (~-3px)
-				image.setAttribute('y', String(centerY - (h / 2) + s(10)));     // slight down bias without crossing text
+				const isLandscapePhone = !!(isProjectsPhoneLandscape && isProjectsPhoneLandscape());
+				const repTitleEl = node.querySelector('.project-node__title');
+				const repBadgeEl = node.querySelector('.kravling-nomineret-badge--inline');
+				const repTitleRect = repTitleEl ? repTitleEl.getBoundingClientRect() : nodeRect;
+				const repBadgeRect = repBadgeEl ? repBadgeEl.getBoundingClientRect() : null;
+				let unionW = nodeRect.width;
+				let unionH = nodeRect.height;
+				let repCenterX = centerX;
+				let repCenterY = centerY;
+				try {
+					if (repBadgeRect) {
+						const left = Math.min(repTitleRect.left, repBadgeRect.left);
+						const right = Math.max(repTitleRect.right, repBadgeRect.right);
+						const top = Math.min(repTitleRect.top, repBadgeRect.top);
+						const bottom = Math.max(repTitleRect.bottom, repBadgeRect.bottom);
+						unionW = Math.max(1, right - left);
+						unionH = Math.max(1, bottom - top);
+						// Center the circle on the union (so both title + badge are inside).
+						repCenterX = (left - containerRect.left) + (unionW / 2);
+						repCenterY = (top - containerRect.top) + (unionH / 2);
+					}
+				} catch {}
+
+				const baseW = s(380) * assetS;
+				const baseH = s(isLandscapePhone ? 195 : 165) * assetS; // taller in phone landscape to fit both texts
+				const padX = s(40) * assetS;
+				const padY = s(isLandscapePhone ? 70 : 46) * assetS;
+				const w = Math.max(baseW, unionW + padX);
+				const h = Math.max(baseH, unionH + padY);
+
+				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3))); // keep tiny left tweak (~-3px)
+				image.setAttribute('y', String(repCenterY - (h / 2) + s(10))); // slight down bias
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.setAttribute('transform', `rotate(180 ${centerX} ${centerY})`);
+				image.setAttribute('transform', `rotate(180 ${repCenterX} ${repCenterY})`);
 				image.style.pointerEvents = 'auto';
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
@@ -5999,8 +6257,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(centerX - s(1))); // slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('cy', String(centerY - s(2))); // REPOP: slightly bigger at the top
+				fill.setAttribute('cx', String(repCenterX - s(1))); // slightly bigger on the left (right edge unchanged)
+				fill.setAttribute('cy', String(repCenterY - s(2))); // REPOP: slightly bigger at the top
 				fill.setAttribute('rx', String((s(190) * 0.55 - s(7)) * assetS));
 				fill.setAttribute('ry', String(((h / 2) * 0.68 - s(2)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
@@ -6019,27 +6277,83 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: KØ-BAJER uses the image instead of hand-drawn circle
 			if (nodeHref.includes('kobajer') || nodeText.toUpperCase().includes('KØ-BAJER')) {
 				console.log('Creating KØ-BAJER circle image...');
+				// Phone landscape: ensure inline Kravling 2024 exists so it can live inside the circle.
+				try {
+					if (document.body && document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
+						let title = node.querySelector('.project-node__title');
+						if (!title) {
+							node.textContent = '';
+							title = document.createElement('span');
+							title.className = 'project-node__title';
+							node.appendChild(title);
+						}
+						title.textContent = 'KØ-BAJER';
+
+						node.style.setProperty('display', 'flex', 'important');
+						node.style.setProperty('flex-direction', 'column', 'important');
+						node.style.setProperty('align-items', 'center', 'important');
+						node.style.setProperty('justify-content', 'center', 'important');
+
+						let inline = node.querySelector('.kobajer-kravling-2024-badge--inline');
+						if (!inline) {
+							inline = document.createElement('div');
+							inline.className = 'kobajer-kravling-2024-badge kobajer-kravling-2024-badge--inline';
+							inline.setAttribute('aria-hidden', 'true');
+							inline.innerHTML = `
+								<div class="kobajer-kravling-2024-text">
+									<div class="kravling-line1">KRAVLINGPRISEN</div>
+									<div class="kravling-line2">NOMINERET</div>
+									<div class="kravling-line3">2024</div>
+								</div>
+							`;
+							node.appendChild(inline);
+						}
+					}
+				} catch {}
+
 				// Create an image element for KØ-BAJER
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel købajer.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				// Keep original height feel, but allow more width so the whole text fits.
+				// Keep original height feel, but allow more width/height so the title + inline badge can fit.
+				const isLandscapePhone = !!(isProjectsPhoneLandscape && isProjectsPhoneLandscape());
+				const kTitleEl = node.querySelector('.project-node__title');
+				const kBadgeEl = node.querySelector('.kobajer-kravling-2024-badge--inline');
+				const kTitleRect = kTitleEl ? kTitleEl.getBoundingClientRect() : nodeRect;
+				const kBadgeRect = kBadgeEl ? kBadgeEl.getBoundingClientRect() : null;
+				let unionW = nodeRect.width;
+				let unionH = nodeRect.height;
+				let kCenterX = centerX;
+				let kCenterY = centerY;
+				try {
+					if (kBadgeRect) {
+						const left = Math.min(kTitleRect.left, kBadgeRect.left);
+						const right = Math.max(kTitleRect.right, kBadgeRect.right);
+						const top = Math.min(kTitleRect.top, kBadgeRect.top);
+						const bottom = Math.max(kTitleRect.bottom, kBadgeRect.bottom);
+						unionW = Math.max(1, right - left);
+						unionH = Math.max(1, bottom - top);
+						kCenterX = (left - containerRect.left) + (unionW / 2);
+						kCenterY = (top - containerRect.top) + (unionH / 2);
+					}
+				} catch {}
+
 				const baseW = s(200) * assetS;
-				const baseH = s(200) * assetS;
+				const baseH = s(isLandscapePhone ? 230 : 200) * assetS; // taller in phone landscape
 				const padX = s(56) * assetS;
-				const padY = s(26) * assetS;
-				const w = Math.max(baseW, nodeRect.width + padX);
-				const h = Math.max(baseH, nodeRect.height + padY);
+				const padY = s(isLandscapePhone ? 70 : 26) * assetS;
+				const w = Math.max(baseW, unionW + padX);
+				const h = Math.max(baseH, unionH + padY);
 				image.setAttribute('x', String(centerX - (w / 2)));
-				image.setAttribute('y', String(centerY - (h / 2) + s(10))); // keep the old "move down" feel
+				image.setAttribute('y', String(kCenterY - (h / 2) + s(10))); // keep the old "move down" feel
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none'); // allow horizontal stretch (oval) so text fits
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.setAttribute('transform', `rotate(180 ${centerX} ${centerY})`);
+				image.setAttribute('transform', `rotate(180 ${kCenterX} ${kCenterY})`);
 				image.style.pointerEvents = 'auto';
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
@@ -6051,9 +6365,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// KØ-BAJER: use an ellipse so we can make it smaller at the top/bottom without shrinking the sides too much
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(centerX));
+				fill.setAttribute('cx', String(kCenterX));
 				// KØ-BAJER: keep a touch more fill at the top, but also add a little to the bottom
-				fill.setAttribute('cy', String(centerY - s(1)));
+				fill.setAttribute('cy', String(kCenterY - s(1)));
 				// Scale the hover fill with the circle size
 				fill.setAttribute('rx', String(((w / 2) * 0.56) * assetS));
 				fill.setAttribute('ry', String(((h / 2) * 0.60) * assetS));
@@ -6165,24 +6479,86 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: TWISTER uses the image instead of hand-drawn circle
 			if (nodeHref.includes('twister') || nodeText.toUpperCase().includes('TWISTER')) {
 				console.log('Creating TWISTER circle image...');
+				// Phone landscape: ensure inline D&AD exists so it can sit inside the circle.
+				try {
+					if (document.body && document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
+						let title = node.querySelector('.project-node__title');
+						if (!title) {
+							const existingText = (node.textContent || '').trim() || 'TWISTER';
+							node.textContent = '';
+							title = document.createElement('span');
+							title.className = 'project-node__title';
+							title.textContent = existingText;
+							node.appendChild(title);
+						} else {
+							title.textContent = 'TWISTER';
+						}
+
+						let inlineDandD = node.querySelector('.dandd-badge--inline');
+						if (!inlineDandD) {
+							inlineDandD = document.createElement('div');
+							inlineDandD.className = 'dandd-badge dandd-badge--inline';
+							inlineDandD.setAttribute('aria-hidden', 'true');
+
+							const logo = document.createElement('img');
+							logo.className = 'dandd-logo';
+							logo.alt = 'D&AD';
+							logo.src = "assets/D&AD LOGO.webp";
+							logo.onerror = () => {
+								logo.onerror = null;
+								logo.src = "assets/D&AD logo.webp";
+							};
+
+							const winner = document.createElement('img');
+							winner.className = 'dandd-winner';
+							winner.alt = 'D&AD VINDER';
+							winner.src = 'assets/D&AD VINDER.webp';
+
+							inlineDandD.appendChild(logo);
+							inlineDandD.appendChild(winner);
+							node.appendChild(inlineDandD);
+						}
+					}
+				} catch {}
 				// Create an image element for TWISTER
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring twister.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				// Keep original height feel, but grow horizontally to fit D&AD logo/text inside.
+				// Keep original height feel, but grow to fit D&AD logo/text inside.
 				const isMobile = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+				const twTitleEl = node.querySelector('.project-node__title');
+				const twBadgeEl = node.querySelector('.dandd-badge--inline');
+				const twTitleRect = twTitleEl ? twTitleEl.getBoundingClientRect() : nodeRect;
+				const twBadgeRect = twBadgeEl ? twBadgeEl.getBoundingClientRect() : null;
+				// Use the union of title + badge for sizing, but keep the frame centered on the title anchor.
+				let unionW = nodeRect.width;
+				let unionH = nodeRect.height;
+				try {
+					if (twBadgeRect) {
+						const left = Math.min(twTitleRect.left, twBadgeRect.left);
+						const right = Math.max(twTitleRect.right, twBadgeRect.right);
+						const top = Math.min(twTitleRect.top, twBadgeRect.top);
+						const bottom = Math.max(twTitleRect.bottom, twBadgeRect.bottom);
+						unionW = Math.max(1, right - left);
+						unionH = Math.max(1, bottom - top);
+					}
+				} catch {}
 				// Mobile: D&AD is inline (row), so the circle can be smaller again.
 				const baseW = s(isMobile ? 380 : 280) * assetS;
-				const baseH = s(isMobile ? 170 : 120) * assetS;
+				// In phone landscape we want a bit more vertical room for TWISTER + D&AD inside the circle.
+				const isLandscapePhone = !!(isProjectsPhoneLandscape && isProjectsPhoneLandscape());
+				const baseH = s(isMobile ? 170 : (isLandscapePhone ? 150 : 120)) * assetS;
 				const padX = s(isMobile ? 170 : 90) * assetS;
-				const padY = s(isMobile ? 90 : 44) * assetS;
-				const w = Math.max(baseW, nodeRect.width + padX);
-				const h = Math.max(baseH, nodeRect.height + padY);
+				const padY = s(isMobile ? 90 : (isLandscapePhone ? 76 : 44)) * assetS;
+				const w = Math.max(baseW, unionW + padX);
+				const h = Math.max(baseH, unionH + padY);
+				// Phone landscape: move ONLY the circle frame down a bit (do not move text/badge).
+				const circleDy = isLandscapePhone ? s(10) : 0;
 				image.setAttribute('x', String(centerX - (w / 2)));
 				// Center the frame on the TWISTER title so it sits centered in the circle.
-				image.setAttribute('y', String(centerY - (h / 2)));
+				image.setAttribute('y', String(centerY - (h / 2) + circleDy));
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
@@ -6199,7 +6575,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX + s(4))); // TWISTER: less on the left (right edge unchanged)
-				fill.setAttribute('cy', String(centerY - s(2))); // TWISTER: slightly less bottom
+				fill.setAttribute('cy', String(centerY - s(2) + circleDy)); // follow the frame offset
 				fill.setAttribute('rx', String((((w / 2) * 0.56 - s(4))) * assetS));
 				fill.setAttribute('ry', String((((h / 2) * 0.68 - s(4))) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
@@ -6677,38 +7053,40 @@ document.addEventListener('DOMContentLoaded', function() {
 		createTwisterTongues();
 
 		// Ensure nodes are placed before drawing lines/frames.
-		resetProjectsStageScale();
-		positionNodesPerfectCircle();
-		positionBrainfartsBuild();
-		createAndPositionDandDLogo();
-		createAndPositionTwisterDandDLine();
-		createAndPositionRepopKravlingLine();
-		createAndPositionKravlingNomineretBadge();
-		createAndPositionKobajerArrow();
+		try { resetProjectsStageScale(); } catch {}
+		try { positionNodesPerfectCircle(); } catch {}
+		try { positionBrainfartsBuild(); } catch {}
+		try { createAndPositionDandDLogo(); } catch {}
+		try { createAndPositionTwisterDandDLine(); } catch {}
+		try { createAndPositionRepopKravlingLine(); } catch {}
+		try { createAndPositionKravlingNomineretBadge(); } catch {}
+		try { createAndPositionKobajerArrow(); } catch {}
 		
 		// Create connecting lines dynamically
-		createConnectingLines();
+		try { createConnectingLines(); } catch {}
 		
 		// Create hand-drawn frames around project tabs
-		createHandDrawnFrames();
-		applyProjectsStageScale();
+		try { createHandDrawnFrames(); } catch {}
+		try { nudgeTwisterTitleDownInLandscape(); } catch {}
+		try { applyProjectsStageScale(); } catch {}
 		
 		document.addEventListener('mousemove', updatePupilPosition);
 		
 		// Recreate lines and frames on window resize
 		window.addEventListener('resize', function() {
 			setTimeout(() => {
-				resetProjectsStageScale();
-				positionNodesPerfectCircle();
-				positionBrainfartsBuild();
-				createAndPositionDandDLogo();
-				createAndPositionTwisterDandDLine();
-				createAndPositionRepopKravlingLine();
-				createAndPositionKravlingNomineretBadge();
-				createAndPositionKobajerArrow();
-				createConnectingLines();
-				createHandDrawnFrames();
-				applyProjectsStageScale();
+				try { resetProjectsStageScale(); } catch {}
+				try { positionNodesPerfectCircle(); } catch {}
+				try { positionBrainfartsBuild(); } catch {}
+				try { createAndPositionDandDLogo(); } catch {}
+				try { createAndPositionTwisterDandDLine(); } catch {}
+				try { createAndPositionRepopKravlingLine(); } catch {}
+				try { createAndPositionKravlingNomineretBadge(); } catch {}
+				try { createAndPositionKobajerArrow(); } catch {}
+				try { createConnectingLines(); } catch {}
+				try { createHandDrawnFrames(); } catch {}
+				try { nudgeTwisterTitleDownInLandscape(); } catch {}
+				try { applyProjectsStageScale(); } catch {}
 			}, 100);
 		});
 

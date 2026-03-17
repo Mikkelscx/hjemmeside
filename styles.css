@@ -5803,6 +5803,150 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .project-node {
         font-size: 1.00rem !important;
     }
+
+    /* Projects: horizontal mobile BRAINFARTS sign inside circle */
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] {
+        position: relative !important;
+    }
+    body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
+        position: absolute;
+        left: 50%;
+        top: 58%;
+        transform: translate(-50%, -50%) rotate(-1deg);
+        display: block !important;
+        visibility: visible !important;
+        width: 112px;
+        max-width: 78%;
+        height: auto;
+        margin: 0;
+        pointer-events: none;
+        opacity: 0.52 !important;
+        z-index: 0;
+        image-rendering: -webkit-optimize-contrast;
+        filter: none;
+    }
+    body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Projects: horizontal mobile TWISTER has D&AD inside circle */
+    body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge,
+    body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    /* Projects: horizontal mobile REPOP has KRAVLING 2025 inside circle */
+    body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line,
+    body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] {
+        position: relative !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
+        position: absolute !important;
+        left: 50% !important;
+        top: 76% !important;
+        transform: translate(-50%, -50%) scale(0.92) !important;
+        transform-origin: 50% 50% !important;
+        pointer-events: none !important;
+        z-index: 0 !important;
+        text-align: center !important;
+        line-height: 1.03 !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
+        font-size: 9px !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
+        font-size: 13px !important;
+        margin-top: -2px !important;
+    }
+
+    /* Projects: horizontal mobile KØ-BAJER has KRAVLING 2024 inside circle */
+    body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
+    body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] {
+        position: relative !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline {
+        position: absolute !important;
+        left: 50% !important;
+        top: 76% !important;
+        transform: translate(-50%, -50%) scale(0.92) !important;
+        transform-origin: 50% 50% !important;
+        pointer-events: none !important;
+        z-index: 0 !important;
+        text-align: center !important;
+        line-height: 1.03 !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line1,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line1,
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2 {
+        font-size: 9px !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3 {
+        font-size: 13px !important;
+        margin-top: -2px !important;
+    }
+    /* Keep the D&AD mark INSIDE the TWISTER circle (not below) */
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] {
+        position: relative !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
+        position: absolute !important;
+        left: 50% !important;
+        top: 76% !important;
+        transform: translate(-50%, -50%) scale(0.78) !important;
+        transform-origin: 50% 50% !important;
+        width: auto !important;
+        height: auto !important;
+        pointer-events: none !important;
+        z-index: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
+        width: 44px !important;
+        height: auto !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
+        width: 60px !important;
+        height: auto !important;
+        margin: 0 !important;
+    }
 }
 
 /* Touch landscape/tablet: use a single full-screen paper page (removes left/right/down dead space) */
@@ -8147,8 +8291,77 @@ html body a[href="project1.html"]:hover {
 
     /* Make the brain smaller in this version (keep same center position) */
     body.projects-page.sketchbook-theme .brain {
-        transform: translate(-50%, -50%) scale(0.72);
+        transform: translate(-50%, -50%) scale(0.66);
         transform-origin: 50% 50%;
+    }
+
+    /* Horizontal mobile: mimic vertical-mobile BRAINFARTS (no arrow, sign inside circle) */
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    /* Make BRAINFARTS tab a positioning context for the inline sign */
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] {
+        position: relative !important;
+    }
+    body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
+        position: absolute;
+        left: 50%;
+        top: 58%;
+        transform: translate(-50%, -50%) rotate(-1deg);
+        display: block !important;
+        visibility: visible !important;
+        width: 112px;
+        max-width: 78%;
+        height: auto;
+        margin: 0;
+        pointer-events: none;
+        opacity: 0.52 !important;
+        z-index: 0;
+        image-rendering: -webkit-optimize-contrast;
+        filter: none;
+    }
+    body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+/* Also apply the BRAINFARTS "inside sign" in larger landscape touch (e.g. iPad). */
+@media (max-width: 1024px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] {
+        position: relative !important;
+    }
+    body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
+        position: absolute;
+        left: 50%;
+        top: 58%;
+        transform: translate(-50%, -50%) rotate(-1deg);
+        display: block !important;
+        visibility: visible !important;
+        width: 112px;
+        max-width: 78%;
+        height: auto;
+        margin: 0;
+        pointer-events: none;
+        opacity: 0.52 !important;
+        z-index: 0;
+        image-rendering: -webkit-optimize-contrast;
+        filter: none;
+    }
+    body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
+        position: relative;
+        z-index: 1;
     }
 }
 
