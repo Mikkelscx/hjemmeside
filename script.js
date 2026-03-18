@@ -164,7 +164,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 
-			const containerRect = container.getBoundingClientRect();
+			const vv = window.visualViewport;
+			const viewLeft = vv ? vv.offsetLeft : 0;
+			const viewTop = vv ? vv.offsetTop : 0;
+			const viewW = vv ? vv.width : window.innerWidth;
+			const viewH = vv ? vv.height : window.innerHeight;
+
+			if (!viewW || !viewH) return;
+
 			const els = [
 				document.querySelector('.brain'),
 				...Array.from(document.querySelectorAll('.project-node')),
@@ -185,22 +192,40 @@ document.addEventListener('DOMContentLoaded', function() {
 			const boxCx = (minL + maxR) / 2;
 			const boxCy = (minT + maxB) / 2;
 
-			// Target: visual center of the viewport (slightly down to account for the burger button).
-			const targetCx = containerRect.left + (containerRect.width * 0.5);
-			const targetCy = containerRect.top + (containerRect.height * 0.52);
+			// Target: visual center of the *viewport* (slightly down to account for the burger button).
+			const targetCx = viewLeft + (viewW * 0.5);
+			const targetCy = viewTop + (viewH * 0.54);
 
 			const dx = targetCx - boxCx;
 			const dy = targetCy - boxCy;
 
-			// Accumulate offset so it works even if called multiple times.
+			// Clamp shift so we never push the whole mindmap off-screen.
+			const pad = 10;
+			const minDx = (viewLeft + pad) - minL;
+			const maxDx = (viewLeft + viewW - pad) - maxR;
+			const minDy = (viewTop + pad) - minT;
+			const maxDy = (viewTop + viewH - pad) - maxB;
+			const dxClamped = Math.max(minDx, Math.min(maxDx, dx));
+			const dyClamped = Math.max(minDy, Math.min(maxDy, dy));
+
+			// Accumulate offset (stable because dx/dy go to ~0 when centered).
 			const cs = window.getComputedStyle(container);
 			const curX = parseFloat(cs.getPropertyValue('--projectsOffsetX')) || 0;
 			const curY = parseFloat(cs.getPropertyValue('--projectsOffsetY')) || 0;
-			const nextX = Math.max(-520, Math.min(520, curX + dx));
-			const nextY = Math.max(-520, Math.min(520, curY + dy));
+			const nextX = Math.max(-520, Math.min(520, curX + dxClamped));
+			const nextY = Math.max(-520, Math.min(520, curY + dyClamped));
 
 			container.style.setProperty('--projectsOffsetX', `${Math.round(nextX)}px`);
 			container.style.setProperty('--projectsOffsetY', `${Math.round(nextY)}px`);
+
+			// One extra pass (fonts/layout) to settle after navigation/bfcache restore.
+			const pass = Number(container.dataset.centerPass || '0');
+			if (pass < 1) {
+				container.dataset.centerPass = String(pass + 1);
+				requestAnimationFrame(() => {
+					try { autoCenterProjectsLandscape(); } catch {}
+				});
+			}
 		} catch {}
 	}
 
@@ -7171,6 +7196,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!document.body || !document.body.classList.contains('projects-page')) return;
 			// Let the viewport settle, then re-run a centering pass.
 			window.setTimeout(() => {
+				try {
+					const container = document.querySelector('.brainstorm-container');
+					if (container) {
+						// Reset any previous auto-center offsets from bfcache restores.
+						container.style.removeProperty('--projectsOffsetX');
+						container.style.removeProperty('--projectsOffsetY');
+						delete container.dataset.centerPass;
+					}
+				} catch {}
 				try { resetProjectsStageScale(); } catch {}
 				try { positionNodesPerfectCircle(); } catch {}
 				try { createConnectingLines(); } catch {}
