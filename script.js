@@ -4007,14 +4007,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			rx = Math.max(minRing, rx);
 			ry = Math.max(minRing, ry);
 
-			// Phone landscape: pull nodes slightly closer to the brain (tighter ring).
-			try {
-				if (isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-					rx = Math.max(minRing, rx * 0.88);
-					ry = Math.max(minRing, ry * 0.88);
-				}
-			} catch {}
-
 			// Only add extra vertical space if we actually have room.
 			const maxRy = Math.max(minRing, (containerRect.height / 2) - (maxTabH / 2) - (24 * scale));
 			const extraY = Math.min(120 * scale, Math.max(0, containerRect.height - (520 * scale)) * 0.22);
