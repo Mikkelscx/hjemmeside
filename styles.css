@@ -8352,9 +8352,12 @@ html body a[href="project1.html"]:hover {
         --projectsScaleMin: 0.82;
         /* Brain size in phone landscape (SVG size, not container transform) */
         --projectsBrainSize: 96px;
+        /* Base offsets (JS will auto-center by updating these) */
+        --projectsOffsetX: 200px;
+        --projectsOffsetY: -290px;
         transform:
-            translateX(calc(200px + env(safe-area-inset-left)))
-            translateY(calc(-290px + env(safe-area-inset-top)))
+            translateX(calc(var(--projectsOffsetX) + env(safe-area-inset-left)))
+            translateY(calc(var(--projectsOffsetY) + env(safe-area-inset-top)))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy)) !important;
     }
 

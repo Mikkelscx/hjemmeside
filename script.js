@@ -157,6 +157,53 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {}
 	}
 
+	function autoCenterProjectsLandscape() {
+		try {
+			if (!document.body || !document.body.classList.contains('projects-page')) return;
+			if (!isProjectsPhoneLandscape()) return;
+			const container = document.querySelector('.brainstorm-container');
+			if (!container) return;
+
+			const containerRect = container.getBoundingClientRect();
+			const els = [
+				document.querySelector('.brain'),
+				...Array.from(document.querySelectorAll('.project-node')),
+			].filter(Boolean);
+			if (!els.length) return;
+
+			let minL = Infinity, minT = Infinity, maxR = -Infinity, maxB = -Infinity;
+			for (const el of els) {
+				const r = el.getBoundingClientRect();
+				if (!r || !r.width || !r.height) continue;
+				minL = Math.min(minL, r.left);
+				minT = Math.min(minT, r.top);
+				maxR = Math.max(maxR, r.right);
+				maxB = Math.max(maxB, r.bottom);
+			}
+			if (!Number.isFinite(minL) || !Number.isFinite(minT) || !Number.isFinite(maxR) || !Number.isFinite(maxB)) return;
+
+			const boxCx = (minL + maxR) / 2;
+			const boxCy = (minT + maxB) / 2;
+
+			// Target: visual center of the viewport (slightly down to account for the burger button).
+			const targetCx = containerRect.left + (containerRect.width * 0.5);
+			const targetCy = containerRect.top + (containerRect.height * 0.52);
+
+			const dx = targetCx - boxCx;
+			const dy = targetCy - boxCy;
+
+			// Accumulate offset so it works even if called multiple times.
+			const cs = window.getComputedStyle(container);
+			const curX = parseFloat(cs.getPropertyValue('--projectsOffsetX')) || 0;
+			const curY = parseFloat(cs.getPropertyValue('--projectsOffsetY')) || 0;
+			const nextX = Math.max(-520, Math.min(520, curX + dx));
+			const nextY = Math.max(-520, Math.min(520, curY + dy));
+
+			container.style.setProperty('--projectsOffsetX', `${Math.round(nextX)}px`);
+			container.style.setProperty('--projectsOffsetY', `${Math.round(nextY)}px`);
+		} catch {}
+	}
+
 	function projectsLandscapeAssetScale() {
 		// Only shrink assets in Projects page short-landscape touch mode.
 		try {
@@ -3551,6 +3598,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			try { createHandDrawnFrames(); } catch {}
 			try { nudgeTwisterTitleDownInLandscape(); } catch {}
 			try { applyProjectsStageScale(); } catch {}
+			try { autoCenterProjectsLandscape(); } catch {}
 			if (isPreview) {
 				try {
 					const container = document.querySelector('.brainstorm-container');
@@ -7080,6 +7128,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		try { createHandDrawnFrames(); } catch {}
 		try { nudgeTwisterTitleDownInLandscape(); } catch {}
 		try { applyProjectsStageScale(); } catch {}
+		try { autoCenterProjectsLandscape(); } catch {}
 		
 		document.addEventListener('mousemove', updatePupilPosition);
 		
@@ -7098,6 +7147,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				try { createHandDrawnFrames(); } catch {}
 				try { nudgeTwisterTitleDownInLandscape(); } catch {}
 				try { applyProjectsStageScale(); } catch {}
+				try { autoCenterProjectsLandscape(); } catch {}
 			}, 100);
 		});
 
@@ -7113,6 +7163,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Initialize brain animations
 	initBrainAnimations();
+
+	// iOS Safari can restore pages from bfcache without a full reload.
+	// Ensure Projects re-centers when coming back from a project page.
+	window.addEventListener('pageshow', () => {
+		try {
+			if (!document.body || !document.body.classList.contains('projects-page')) return;
+			// Let the viewport settle, then re-run a centering pass.
+			window.setTimeout(() => {
+				try { resetProjectsStageScale(); } catch {}
+				try { positionNodesPerfectCircle(); } catch {}
+				try { createConnectingLines(); } catch {}
+				try { createHandDrawnFrames(); } catch {}
+				try { applyProjectsStageScale(); } catch {}
+				try { autoCenterProjectsLandscape(); } catch {}
+				try { window.scrollTo(0, 0); } catch {}
+			}, 120);
+		} catch {}
+	});
 
 	// Re-run init when navigating to the projects section (e.g. clicking "projekter")
 	window.addEventListener('hashchange', () => setTimeout(initBrainAnimations, 50));
