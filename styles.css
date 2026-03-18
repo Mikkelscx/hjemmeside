@@ -4941,8 +4941,7 @@ body.sketchbook-theme .brainstorm-container {
         left: 0;
         right: 0;
         height: 52px;
-        /* Always stay above page-specific overlays (videos/graphics/etc.) */
-        z-index: 60000;
+        z-index: 5000;
     }
 
     /* Repop has an inline navbar z-index override; ensure burger menu stays clickable */
@@ -4959,10 +4958,6 @@ body.sketchbook-theme .brainstorm-container {
     }
 
     body .nav-toggle {
-        position: relative;
-        z-index: 60003;
-        pointer-events: auto;
-        touch-action: manipulation;
         appearance: none;
         -webkit-appearance: none;
         background: rgba(255, 255, 255, 0.92);
@@ -5046,7 +5041,7 @@ body.sketchbook-theme .brainstorm-container {
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         white-space: normal !important;
-        z-index: 60002;
+        z-index: 5001;
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
@@ -5097,7 +5092,7 @@ body.sketchbook-theme .brainstorm-container {
         inset: 0;
         display: none;
         background: rgba(0, 0, 0, 0.22);
-        z-index: 60001;
+        z-index: 4999;
     }
     body.nav-open .nav-scrim { display: block; }
     body.nav-open { overflow: hidden; }
@@ -6012,7 +6007,7 @@ body.sketchbook-theme .brainstorm-container {
         position: fixed;
         top: calc(8px + env(safe-area-inset-top));
         left: calc(10px + env(safe-area-inset-left));
-        z-index: 60003;
+        z-index: 5002;
         pointer-events: auto;
     }
     body .nav-menu {
@@ -6064,7 +6059,7 @@ body.sketchbook-theme .brainstorm-container {
         left: 0;
         right: 0;
         height: 52px;
-        z-index: 60000;
+        z-index: 5000;
     }
     body .nav-container {
         height: 52px;
@@ -6076,10 +6071,6 @@ body.sketchbook-theme .brainstorm-container {
     }
 
     body .nav-toggle {
-        position: relative;
-        z-index: 60003;
-        pointer-events: auto;
-        touch-action: manipulation;
         appearance: none;
         -webkit-appearance: none;
         background: rgba(255, 255, 255, 0.92);
@@ -6157,7 +6148,7 @@ body.sketchbook-theme .brainstorm-container {
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        z-index: 60002;
+        z-index: 5001;
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
@@ -6198,7 +6189,7 @@ body.sketchbook-theme .brainstorm-container {
         inset: 0;
         display: none;
         background: rgba(0, 0, 0, 0.22);
-        z-index: 60001;
+        z-index: 4999;
     }
     body.nav-open .nav-scrim { display: block; }
     body.nav-open { overflow: hidden; }
