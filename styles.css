@@ -8313,7 +8313,7 @@ html body a[href="project1.html"]:hover {
         --projectsBrainSize: 74px;
         transform:
             translateX(calc(200px + env(safe-area-inset-left)))
-            translateY(calc(-320px + env(safe-area-inset-top)))
+            translateY(calc(-290px + env(safe-area-inset-top)))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy)) !important;
     }
 

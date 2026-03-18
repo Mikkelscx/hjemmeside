@@ -5264,6 +5264,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		const scale = projectsScaleFromRect(containerRect);
 		const svgScale = (n) => (n * scale);
 		const assetS = projectsLandscapeAssetScale();
+		// Phone-landscape: lines are too thick; thin only the line assets (not circles).
+		const lineS = (document.body && document.body.classList.contains('projects-page') && (isProjectsPhoneLandscape && isProjectsPhoneLandscape()))
+			? 0.58
+			: 1;
 
 		// Note: The TWISTER↔D&AD line is handled as a normal positioned <img> for reliability.
 		
@@ -5515,7 +5519,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 8.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h8 = svgScale(390 * assetS);
+				const h8 = svgScale(390 * assetS * lineS);
 				lineImage.setAttribute('y', brainStartY - (h8 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength); // Longer
 				lineImage.setAttribute('height', String(h8)); // Slightly bigger/thicker line asset
@@ -5570,7 +5574,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/Linje 4.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 4.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h4 = svgScale(400 * assetS);
+				const h4 = svgScale(400 * assetS * lineS);
 				lineImage.setAttribute('y', brainStartY - (h4 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h4));
@@ -5629,7 +5633,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 6.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 6.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h6 = svgScale(300 * assetS);
+				const h6 = svgScale(300 * assetS * lineS);
 				lineImage.setAttribute('y', brainStartY - (h6 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h6)); // Reduced height to make line thinner
@@ -5756,7 +5760,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/linje 1.webp');
 				lineImage.setAttribute('x', brainStartX);
-				const h1 = svgScale(400 * assetS);
+				const h1 = svgScale(400 * assetS * lineS);
 				lineImage.setAttribute('y', brainStartY - (h1 / 2)); // Center vertically
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h1));
@@ -5852,7 +5856,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 7.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 7.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h7 = svgScale(200 * assetS);
+				const h7 = svgScale(200 * assetS * lineS);
 				lineImage.setAttribute('y', brainStartY - (h7 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h7)); // Further reduced height to make line thinner
@@ -5906,7 +5910,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 3.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 3.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h3 = svgScale(600 * assetS);
+				const h3 = svgScale(600 * assetS * lineS);
 				lineImage.setAttribute('y', brainStartY - (h3 / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
 				lineImage.setAttribute('height', String(h3));
