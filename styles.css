@@ -8314,7 +8314,8 @@ html body a[href="project1.html"]:hover {
         transform:
             translateX(calc(200px + env(safe-area-inset-left)))
             translateY(calc(-290px + env(safe-area-inset-top)))
-            scaleX(var(--projectsSx)) scaleY(var(--projectsSy)) !important;
+            /* Make whole design smaller, and press vertically */
+            scaleX(calc(var(--projectsSx) * 0.92)) scaleY(calc(var(--projectsSy) * 0.78)) !important;
     }
 
     /* JS sets .brain transform inline; shrink the actual SVG instead */
