@@ -6830,6 +6830,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		// Node hover effects
+		const isFineHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
 		nodes.forEach(node => {
 			// BRAINFARTS is "under construction" on the Projects page: keep hover animations,
 			// but prevent navigation so it is not clickable.
@@ -6841,6 +6842,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				e.preventDefault();
 				e.stopPropagation();
 			});
+
+			// Mobile/touch: no hover-triggered assets/glows/animations.
+			if (!isFineHover) return;
 
 			node.addEventListener('mouseenter', function() {
 				const href = (this.getAttribute('href') || '').toLowerCase();

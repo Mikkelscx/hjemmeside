@@ -3878,6 +3878,47 @@ body.sketchbook-theme .nav-link {
     }
 }
 
+/* Mobile/touch: disable hover-only effects on Projects */
+@media (hover: none) and (pointer: coarse) {
+    body.projects-page.sketchbook-theme .frame-fill.is-hovered {
+        opacity: 0 !important;
+    }
+    body.projects-page.sketchbook-theme .hand-drawn-frame.is-hovered {
+        animation: none !important;
+        filter: none !important;
+    }
+
+    /* Never show hover-only assets on touch */
+    body.projects-page.sketchbook-theme .condom-asset,
+    body.projects-page.sketchbook-theme .korn-asset,
+    body.projects-page.sketchbook-theme .kasket-asset,
+    body.projects-page.sketchbook-theme .oldase-asset,
+    body.projects-page.sketchbook-theme .naturli-asset,
+    body.projects-page.sketchbook-theme .naturli-drops-asset,
+    body.projects-page.sketchbook-theme .twister-asset,
+    body.projects-page.sketchbook-theme .unge-mod-uv-asset {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        animation: none !important;
+    }
+
+    /* Disable spark/star/ray hover layers on touch */
+    body.projects-page.sketchbook-theme .dandd-badge.is-sparking .dandd-sparks,
+    body.projects-page.sketchbook-theme .kravling-nomineret-badge.is-sparking .kravling-sparks,
+    body.projects-page.sketchbook-theme .kobajer-kravling-2024-badge.is-sparking .kobajer-kravling-2024-sparks {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        animation: none !important;
+    }
+
+    /* Disable brain blush on touch */
+    body.projects-page.sketchbook-theme .brain.is-blushing .brain-blush {
+        opacity: 0 !important;
+    }
+}
+
 body.sketchbook-theme .project-node:hover {
     text-decoration: underline;
 }
