@@ -5697,9 +5697,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 5.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 5.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
+				const ungeLineS = lineS * 0.60;
+				const ungeH = 300 * ungeLineS;
+				lineImage.setAttribute('y', brainStartY - (ungeH / 2)); // center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
+				lineImage.setAttribute('height', String(ungeH)); // thinner (phone landscape)
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -5800,7 +5802,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
 
 				// Create image element for the line
-				const height = 400 * scale;
+				const repopLineS = lineS * 0.70;
+				const height = 400 * scale * repopLineS;
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/Linje 2.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 2.webp'); // xlink:href for compatibility

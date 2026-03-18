@@ -8310,7 +8310,7 @@ html body a[href="project1.html"]:hover {
         --projectsScaleExp: 1.00;
         --projectsScaleMin: 0.82;
         /* Brain size in phone landscape (SVG size, not container transform) */
-        --projectsBrainSize: 74px;
+        --projectsBrainSize: 96px;
         transform:
             translateX(calc(200px + env(safe-area-inset-left)))
             translateY(calc(-290px + env(safe-area-inset-top)))
