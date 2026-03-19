@@ -256,6 +256,25 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
 		} catch {}
 
+		// If the burger menu is actually visible (CSS), always bypass transitions for navbar clicks.
+		// This avoids "tap does nothing" on some mobile emulation contexts where matchMedia
+		// doesn't report coarse pointer correctly (so isPhoneViewport() becomes false).
+		try {
+			const btn = document.querySelector('.nav-toggle');
+			if (btn && window.getComputedStyle) {
+				const cs = window.getComputedStyle(btn);
+				const burgerVisible = cs && cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0';
+				if (burgerVisible) {
+					try {
+						if (document.body && document.body.classList.contains('nav-open')) return true;
+					} catch {}
+					try {
+						if (a && a.closest && a.closest('.navbar')) return true;
+					} catch {}
+				}
+			}
+		} catch {}
+
 		// Only bypass on the phone layout.
 		if (!isPhoneViewport()) return false;
 

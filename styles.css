@@ -4944,9 +4944,16 @@ body.sketchbook-theme .brainstorm-container {
         z-index: 5000;
     }
 
-    /* Repop has an inline navbar z-index override; ensure burger menu stays clickable */
-    body.repop-page .navbar {
-        z-index: 5000 !important;
+    /* Repop has inline navbar/menu overrides with `!important` in `repop.html`.
+       Use higher specificity to ensure the burger stays clickable on iOS. */
+    html body.repop-page .navbar {
+        /* Keep above any blur/composited layers on the page */
+        z-index: 20000 !important;
+    }
+    /* iOS Safari: `backdrop-filter` can steal taps above fixed headers. Disable on phones. */
+    html body.repop-page .page-content {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
     }
     body .nav-container {
         height: 52px;
@@ -5051,7 +5058,7 @@ body.sketchbook-theme .brainstorm-container {
     }
 
     /* Repop has inline `.nav-menu` padding/justify overrides; force mobile dropdown layout */
-    body.repop-page .nav-menu {
+    html body.repop-page .nav-menu {
         justify-content: space-evenly !important;
         padding: 0 12px 6px !important;
     }
@@ -5996,7 +6003,7 @@ body.sketchbook-theme .brainstorm-container {
         height: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
-        pointer-events: none; /* allow taps on design */
+        pointer-events: none; /* allow taps on design when menu is closed */
     }
     body .nav-container {
         height: 0 !important;
@@ -6012,6 +6019,13 @@ body.sketchbook-theme .brainstorm-container {
     }
     body .nav-menu {
         top: calc(52px + env(safe-area-inset-top)) !important;
+    }
+
+    /* When the menu is open, the menu list must be clickable.
+       `pointer-events: none` on the navbar/container otherwise blocks ALL taps inside. */
+    body.nav-open .navbar,
+    body.nav-open .nav-container {
+        pointer-events: auto !important;
     }
 }
 
