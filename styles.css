@@ -2578,6 +2578,26 @@ body.home-notebook-page.home-opening-projects .home-notebook {
     mix-blend-mode: screen;
 }
 
+/* Frontpage title as an image (replaces the old "Cursor" style text) */
+.home-notebook__title--image {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    color: transparent !important;
+    text-shadow: none !important;
+}
+.home-notebook__title--image::after { content: none !important; }
+.home-notebook__title--image .home-notebook__title-img {
+    display: block;
+    width: clamp(220px, 55vw, 560px);
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    user-select: none;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+}
+
 /* Frontpage: small test note at bottom of the cover */
 .home-notebook__footer-note {
     position: absolute;
@@ -4068,8 +4088,8 @@ a[href="twister.html"]:hover * {
 
 /* Ultra-specific Durex tab fix - keep original position and allow wider text */
 a[href="durex.html"] {
-    max-width: 300px !important;
-    min-width: 300px !important;
+    max-width: 220px !important;
+    min-width: 220px !important;
     white-space: normal !important;
 }
 
@@ -4085,6 +4105,13 @@ a[href="durex.html"]:hover::after {
     transform: none !important;
     transition: none !important;
     animation: none !important;
+}
+
+/* Unge mod UV — lidt mindre end Durex på Projekter */
+a[href="unge-mod-uv.html"] {
+    max-width: 200px !important;
+    min-width: 200px !important;
+    white-space: normal !important;
 }
 
 /* Ultra-specific BRAINFARTS tab fix - keep original position */
@@ -4534,7 +4561,8 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
 
 /* Placement (replaced by in-flow media blocks on each page) */
 
-@media (max-width: 900px) {
+/* Narrow / phone landscape (e.g. 932px wide): one column, no polaroid over headline */
+@media (max-width: 1024px) {
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv p {
         white-space: normal;
     }
@@ -4548,28 +4576,52 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         grid-template-columns: 1fr;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page {
-        padding: 18px 18px 18px 18px;
+        /* Clear fixed mobile MENU / navbar (~52px) */
+        padding: 64px 18px 24px 44px;
         min-height: auto;
         display: block;
+    }
+    /* Same left edge for CV / Udmærkelser as intro copy */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__right-title,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__right-mid-title {
+        text-align: left;
+        width: 100%;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__right-mid-title {
         position: static;
         transform: rotate(-0.4deg);
-        margin: 18px 0 0 0;
-        text-align: center;
+        margin: 28px 0 0 0;
+        text-align: left;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         position: static;
         transform: none;
-        margin-top: 18px;
+        margin-top: 28px;
+        left: auto;
+        right: auto;
+    }
+    /* Polaroid top-right; headline + copy on the left from the first line (BFC beside float) */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
+        display: flow-root;
     }
     body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
         position: relative;
         top: auto;
         left: auto;
         right: auto;
-        float: none;
-        margin: 8px 0 14px 0;
+        float: right;
+        margin: 0 0 0.75rem 1rem;
+        max-width: min(200px, 42vw);
+    }
+    /* 100% width + flow-root was forcing this block below the float; shrink beside float instead */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
+        display: block;
+        width: auto;
+        max-width: none;
+        overflow: hidden;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
+        margin-top: 0;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
         display: none;
@@ -4715,6 +4767,71 @@ body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
     text-align: center;
 }
 
+/* Contact: phone landscape — full-width paper, three cards in one row (avoid conflicting with @media max-width 640px) */
+@media (max-width: 1024px) and (min-width: 641px) and (orientation: landscape) and (max-height: 520px) {
+    body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook {
+        width: 100% !important;
+        max-width: min(960px, 98vw) !important;
+        margin: 0 auto !important;
+        padding: 48px 12px 14px 32px !important;
+        align-items: center !important;
+        min-height: calc(100svh - 52px) !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook__title {
+        font-size: clamp(1.65rem, 4.2vw, 2.35rem) !important;
+        margin: 0 0 8px 0 !important;
+        flex: 0 0 auto !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-info {
+        width: 100% !important;
+        max-width: min(820px, 95vw) !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        align-items: stretch !important;
+        gap: 16px !important;
+        flex: 0 1 auto !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item {
+        display: flex !important;
+        flex: 1 1 0 !important;
+        max-width: 248px !important;
+        min-width: 0 !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 14px 8px 16px !important;
+        margin: 0 !important;
+        min-height: clamp(200px, 50vh, 310px) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon {
+        position: static !important;
+        width: 68px !important;
+        height: 68px !important;
+        flex: 0 0 auto !important;
+        transform: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--phone,
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--linkedin {
+        transform: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
+        text-align: center !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item h3 {
+        font-size: 1.12rem !important;
+        margin: 0 0 6px 0 !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item p {
+        font-size: 0.95rem !important;
+        line-height: 1.28 !important;
+    }
+}
+
 /* Sketchbook project tabs - no border, will use SVG frames */
 body.sketchbook-theme .project-node {
     background: transparent !important;
@@ -4821,6 +4938,11 @@ body.sketchbook-theme .project-node:nth-child(7) { transform: rotate(-0.5deg) !i
 body.sketchbook-theme .project-node:nth-child(8) { transform: translateX(-50%) rotate(1.5deg) !important; }
 body.sketchbook-theme .project-node:nth-child(9) { transform: rotate(-1deg) !important; }
 
+/* Projekter (desktop/tablet): REPOP er top-center — nth-child(4) fjernede translateX(-50%) fra inline */
+body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] {
+    transform: translateX(-50%) rotate(0.5deg) !important;
+}
+
 /* Ensure tabs stay still on hover in sketchbook theme */
 body.sketchbook-theme .project-node:hover {
     transform: inherit !important;
@@ -4834,9 +4956,245 @@ body.sketchbook-theme .brainstorm-container a.project-node {
     overflow: visible !important;
 }
 
-/* Projects: BRAINFARTS is under construction (not clickable) */
+/* Projekter: allow image-based node titles */
+body.sketchbook-theme .brainstorm-container .project-node__title--image {
+    display: block;
+    line-height: 0;
+}
+body.sketchbook-theme .brainstorm-container .project-node__title-img {
+    display: block;
+    width: min(300px, 98%);
+    height: auto;
+    margin: 0 auto;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Projekter: specific sizing for the Repop title image */
+body.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
+    width: 96%;
+    max-width: 100%;
+}
+
+/* Projekter: Naturli' — image label, moderately larger than tiny em cap (not full billboard) */
+body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
+    width: 78%;
+    max-width: min(142px, 100%);
+    height: auto;
+    object-fit: contain;
+}
+
+/* Projekter: Durex — fill the tab (width matches a[href="durex.html"]) */
+body.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+body.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Projekter: Twister — slightly under default text tab (180px) */
+body.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Projekter: Kø-Bajer — compact image tab; graphic slightly smaller so circle has more air */
+body.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
+    display: block;
+    width: 86%;
+    max-width: 86%;
+    height: auto;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+/* Projekter: Brainfarts — text graphic slightly under full tab; tab + circle footprint stay default-sized */
+body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts {
+    display: block;
+    width: 92%;
+    max-width: 162px;
+    height: auto;
+    margin: 0 auto;
+    object-fit: contain;
+    transform: translateY(16px);
+}
+
+/* Desktop: slightly bigger (without making the node huge) */
+@media (min-width: 1025px) {
+    /* Repop: lift the default 180px cap so the image can fill the circle more */
+    body.sketchbook-theme .brainstorm-container .project-node[href*="repop"],
+    body.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] {
+        width: 245px !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        padding: 6px 10px !important;
+        white-space: normal !important;
+        text-overflow: clip !important;
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
+        width: 92%;
+    }
+}
+
+/* Desktop: make ONLY Byens Landhandel label bigger */
+@media (min-width: 1025px) {
+    body.sketchbook-theme .brainstorm-container .project-node[href*="byens-landhandel"],
+    body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
+        width: clamp(170px, 14vw, 250px) !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        padding: 6px 10px !important;
+        white-space: normal !important;
+        text-overflow: clip !important;
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
+        width: 86%;
+        max-width: none;
+        transform: translateY(6px);
+    }
+}
+
+/* Desktop: Naturli' — compact image label */
+@media (min-width: 1025px) {
+    body.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"],
+    body.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] {
+        width: 172px !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        min-height: 76px !important;
+        max-height: none !important;
+        padding: 5px 7px !important;
+        white-space: normal !important;
+        text-overflow: clip !important;
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
+        width: 78%;
+        max-width: 126px;
+    }
+}
+
+@media (max-width: 640px), (max-width: 1024px) and (max-height: 520px) and (orientation: landscape) {
+    body.sketchbook-theme .brainstorm-container .project-node__title-img {
+        width: min(190px, 92%);
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
+        width: min(190px, 92%);
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
+        width: min(148px, 82%);
+        height: auto;
+        max-width: 82%;
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
+        width: min(220px, 92%);
+        max-width: 100%;
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
+        width: min(200px, 92%);
+        max-width: 100%;
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
+        width: min(165px, 88%);
+        max-width: 100%;
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
+        width: min(134px, 75%);
+        max-width: 86%;
+    }
+    body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts {
+        width: min(162px, 92%);
+        max-width: 92%;
+        transform: translateY(16px);
+    }
+}
+
+/* Projekter (mobile list): allow image labels too */
+.projects-mobile__name--image { line-height: 0; }
+.projects-mobile__name--image .projects-mobile__name-img {
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    margin: 0 auto;
+    user-select: none;
+    pointer-events: none;
+}
+.projects-mobile__name--image .projects-mobile__name-img--repop {
+    max-width: 320px;
+}
+.projects-mobile__name--image .projects-mobile__name-img--naturli {
+    width: 100%;
+    max-width: min(185px, 100%);
+    height: auto;
+}
+.projects-mobile__name--image .projects-mobile__name-img--durex {
+    width: 100%;
+    max-width: min(220px, 100%);
+    height: auto;
+    object-fit: contain;
+}
+.projects-mobile__name--image .projects-mobile__name-img--unge-mod-uv {
+    width: 100%;
+    max-width: min(200px, 100%);
+    height: auto;
+    object-fit: contain;
+}
+.projects-mobile__name--image .projects-mobile__name-img--twister {
+    width: 100%;
+    max-width: min(165px, 100%);
+    height: auto;
+    object-fit: contain;
+}
+.projects-mobile__name--image .projects-mobile__name-img--kobajer {
+    width: 86%;
+    max-width: min(134px, 86%);
+    height: auto;
+    margin: 0 auto;
+    object-fit: contain;
+}
+.projects-mobile__name--image .projects-mobile__name-img--brainfarts {
+    width: 92%;
+    max-width: min(170px, 100%);
+    height: auto;
+    margin-top: 15px;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
+}
+
+/* Repop page: headline as image */
+body.repop-page .repop-headline--image {
+    line-height: 0;
+}
+body.repop-page .repop-headline--image .repop-headline__img {
+    display: block;
+    width: min(840px, 96%);
+    height: auto;
+    margin: 0 auto;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Projects: BRAINFARTS is under construction (not clickable); image label matches default tab width */
 body.sketchbook-theme .brainstorm-container a.project-node[href="brainfarts.html"] {
     cursor: not-allowed !important;
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+    /* Keep tab box same as text nodes so SVG circle sizing stays stable */
+    min-height: 80px !important;
+    max-height: none !important;
+    padding: 6px 10px !important;
+    white-space: normal !important;
 }
 
 /* Remove the rectangular hover background on the tab itself */
@@ -5172,7 +5530,7 @@ body.sketchbook-theme .brainstorm-container {
         /* Center it inside the BRAINFARTS circle */
         position: absolute;
         left: 50%;
-        top: 58%;
+        top: 68%;
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block;
         width: 112px;
@@ -5292,7 +5650,7 @@ body.sketchbook-theme .brainstorm-container {
         grid-template-columns: 1fr;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page {
-        padding: 60px 20px 30px 44px;
+        padding: 72px 20px 30px 44px;
         min-height: auto;
     }
 
@@ -5382,11 +5740,11 @@ body.sketchbook-theme .brainstorm-container {
         overflow: hidden;
         text-overflow: clip;
         letter-spacing: 0 !important;
-        font-size: clamp(14px, 4.8vw, 20px) !important;
+        font-size: clamp(15px, 5.1vw, 22px) !important;
     }
     body.repop-page .repop-brief-subtitle {
         /* Keep it readable but never more than 2 lines */
-        font-size: clamp(14px, 4.4vw, 18px) !important;
+        font-size: clamp(15px, 4.8vw, 20px) !important;
         max-width: 92% !important;
         margin-left: auto !important;
         margin-right: auto !important;
@@ -5406,12 +5764,12 @@ body.sketchbook-theme .brainstorm-container {
         padding: 0.45rem !important;
     }
     body.repop-page .repop-brief-grid h2 {
-        font-size: 1.15rem !important;
+        font-size: 1.22rem !important;
         margin-bottom: 0.25rem !important;
     }
     body.repop-page .repop-brief-grid p {
-        font-size: 0.98rem !important;
-        line-height: 1.25 !important;
+        font-size: 1.18rem !important;
+        line-height: 1.32 !important;
         max-width: 100% !important;
     }
 
@@ -5455,40 +5813,85 @@ body.sketchbook-theme .brainstorm-container {
         height: auto !important;
     }
 
-    /* Repop overview box: show labels as list, and put image last */
+    /* Repop overview: phone portrait — each step = text above its circle (sliced from LFW asset 6) */
     body.repop-page .repop-mobile-overview {
         display: flex;
         flex-direction: column;
         gap: 14px;
-        text-align: left;
+        text-align: center;
         padding: 20px !important;
     }
     body.repop-page .repop-mobile-overview__abslabel {
         display: none !important;
     }
-    body.repop-page .repop-mobile-overview__labels {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
+    body.repop-page .repop-timeline-strip {
+        display: flex !important;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.15rem;
         order: 1;
     }
-    body.repop-page .repop-mobile-overview__label-title {
+    body.repop-page .repop-timeline-item {
+        display: flex;
+        flex-direction: column !important;
+        align-items: center;
+        gap: 0.65rem;
+    }
+    body.repop-page .repop-timeline-item__text {
+        width: 100%;
+        max-width: 22rem;
+    }
+    body.repop-page .repop-timeline-item__title {
         font-weight: 800;
         letter-spacing: 0.2px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        font-size: clamp(0.95rem, 3.9vw, 1.08rem);
+        line-height: 1.2;
     }
-    body.repop-page .repop-mobile-overview__label-sub {
+    body.repop-page .repop-timeline-item__sub {
         opacity: 0.95;
-        margin-top: 2px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        margin-top: 4px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        font-size: 1.02rem !important;
+        line-height: 1.25;
+    }
+    body.repop-page .repop-timeline-item__circle {
+        position: relative;
+        width: min(5.75rem, 28vw);
+        height: min(5.75rem, 28vw);
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+        isolation: isolate;
+    }
+    /* Square crops (repop-timeline-1…5.png) — must fill the round mask (no height:auto letterboxing) */
+    body.repop-page .repop-timeline-item__slice {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 100% !important;
+        min-height: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        object-fit: cover !important;
+        object-position: center center;
+        display: block;
+    }
+    /* First two bubbles: poster + SoMe have more empty margin in-frame — zoom + pan slightly */
+    body.repop-page .repop-timeline-strip .repop-timeline-item:nth-child(1) .repop-timeline-item__slice {
+        object-position: 62% 48% !important;
+        transform: scale(1.14);
+        transform-origin: center center;
+    }
+    body.repop-page .repop-timeline-strip .repop-timeline-item:nth-child(2) .repop-timeline-item__slice {
+        object-position: 52% 46% !important;
+        transform: scale(1.12);
+        transform-origin: center center;
     }
     body.repop-page .repop-mobile-overview__img {
-        order: 2;
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-        display: block;
-        border-radius: 12px;
+        display: none !important;
     }
 
     /* KØ-BAJEREN: push headline slightly down on mobile */
@@ -5498,12 +5901,13 @@ body.sketchbook-theme .brainstorm-container {
 
     /* BYENS LANDHANDEL: headline line breaks + full-width poster on mobile */
     body.byens-landhandel-page .page-content {
-        /* Account for fixed mobile navbar (52px) */
-        padding: 64px 14px 16px !important;
+        /* Navbar + extra clearance so MENU / back button don’t sit over the headline */
+        padding: 88px 14px 16px !important;
         margin: 12px auto 14px !important;
         border-radius: 16px !important;
     }
     body.byens-landhandel-page h1.byens-headline {
+        margin-top: 1.1rem !important;
         margin-bottom: 0.55rem !important;
         line-height: 1.05 !important;
         font-size: clamp(1.45rem, 6.0vw, 2.05rem) !important;
@@ -5516,6 +5920,10 @@ body.sketchbook-theme .brainstorm-container {
     body.byens-landhandel-page .byens-headline__sub {
         display: block;
         font-weight: 900;
+    }
+    body.byens-landhandel-page p {
+        line-height: 1.12 !important;
+        margin: 0 0 0.22rem 0 !important;
     }
 
     body.byens-landhandel-page .poster-container {
@@ -5594,7 +6002,7 @@ body.sketchbook-theme .brainstorm-container {
         border-radius: 16px !important;
     }
     body.naturlig-page .page-content img[alt="Naturli Logo"] {
-        max-width: 220px !important;
+        max-width: 270px !important;
         margin-top: 10px !important;
     }
 
@@ -5604,15 +6012,49 @@ body.sketchbook-theme .brainstorm-container {
         padding-top: 64px !important;
     }
 
-    /* DUREX: reduce dead space between lines on mobile */
+    /* DUREX: tight headline → body copy; spacing between sections from margin-top on headings */
     body.durex-page h2,
     body.durex-page h3 {
-        margin-top: 0.55rem !important;
-        margin-bottom: 0.15rem !important;
+        margin-top: 0.75rem !important;
+        margin-bottom: 0 !important;
+        line-height: 1.08 !important;
+    }
+    body.durex-page h3 {
+        line-height: 1.1 !important;
+    }
+    body.durex-page h2 + p,
+    body.durex-page h3 + p {
+        margin-top: -0.12em !important;
     }
     body.durex-page p {
-        line-height: 1.35 !important;
-        margin: 0 0 0.35rem 0 !important;
+        line-height: 1.3 !important;
+        margin: 0 0 0.38rem 0 !important;
+    }
+    body.durex-page p + p {
+        margin-top: -0.22rem !important;
+    }
+
+    body.durex-page .durex-rules h4 {
+        margin-top: 0.5rem !important;
+        margin-bottom: 0 !important;
+        line-height: 1.08 !important;
+    }
+    body.durex-page .durex-rules h4:first-of-type {
+        margin-top: 0 !important;
+    }
+    body.durex-page .durex-rules h4 + h4 {
+        margin-top: 0.3rem !important;
+    }
+    body.durex-page .durex-rules h4 + p {
+        margin-top: -0.12em !important;
+    }
+    body.durex-page .durex-infobox .durex-infobox__subhead {
+        margin-top: 0.3rem !important;
+        margin-bottom: 0 !important;
+        line-height: 1.08 !important;
+    }
+    body.durex-page .durex-infobox .durex-infobox__subhead + p {
+        margin-top: -0.12em !important;
     }
 
     /* DUREX: ensure infobox layout works even before JS runs */
@@ -5635,24 +6077,29 @@ body.sketchbook-theme .brainstorm-container {
         border-radius: 16px !important;
     }
     body.twister-page .contact-info h3 {
-        margin: 0.42rem 0 0.08rem 0 !important;
-        line-height: 1.15 !important;
+        margin: 0.42rem 0 0 !important;
+        line-height: 1.1 !important;
     }
-    body.twister-page .contact-info p {
-        line-height: 1.25 !important;
-        margin: 0 0 0.22rem 0 !important;
+    body.twister-page .contact-info > p {
+        line-height: 1.12 !important;
+        margin: 0 0 0.18rem 0 !important;
     }
     body.twister-page .contact-info h3 + p {
-        margin-top: 0 !important;
+        margin-top: -0.12em !important;
     }
     body.twister-page .step-column h4 {
-        margin-bottom: 0.15rem !important;
+        margin: 0 0 0.08rem !important;
+        line-height: 1.08 !important;
     }
     body.twister-page .step-column h5 {
-        margin-bottom: 0.35rem !important;
+        margin: 0 0 0.14rem !important;
+        line-height: 1.08 !important;
+    }
+    body.twister-page .step-column h5 + p {
+        margin-top: -0.1em !important;
     }
     body.twister-page .step-column p {
-        line-height: 1.25 !important;
+        line-height: 1.14 !important;
         margin: 0 !important;
     }
 
@@ -5681,40 +6128,48 @@ body.sketchbook-theme .brainstorm-container {
 
     /* Give the main content more horizontal room on phones */
     body.unge-mod-uv-page .unge-mod-uv-content {
-        padding: 0.55rem 1.05rem 1.0rem !important;
+        padding: 0.05rem 1.05rem 1.0rem !important;
         margin: 56px auto 14px !important; /* closer to navbar */
         border-radius: 16px !important;
     }
 
-    /* Fix logo overlapping "Lavet med" on mobile */
-    body.unge-mod-uv-page .uv-headline {
-        margin: 0 auto 0.15rem auto !important;
-    }
+    /* Pull text stack up under logo (must be on h1 — more specific than .uv-headline) */
     body.unge-mod-uv-page .unge-mod-uv-content h1.uv-headline {
+        margin: 0 auto -1.85rem auto !important;
+        line-height: 0 !important;
+    }
+    /* .uv-hero: cancel desktop pull-up; zero gap + pull credit under logo */
+    body.unge-mod-uv-page .uv-hero {
         margin-top: 0 !important;
+        gap: 0 !important;
         margin-bottom: 0.15rem !important;
     }
-    body.unge-mod-uv-page .uv-credit {
-        /* Keep it close without overlapping the logo */
-        margin: -14px auto 0 auto !important;
-        line-height: 1.15 !important;
+
+    body.unge-mod-uv-page .uv-hero .uv-credit {
+        margin-top: -1.65rem !important;
     }
 
-    /* UNGE MOD UV: pull BRIEF text up under the logo */
+    body.unge-mod-uv-page .uv-credit {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        margin-bottom: 0 !important;
+        line-height: 1.1 !important;
+    }
+
     body.unge-mod-uv-page .uv-credit + h4 {
-        margin-top: -6px !important;
-        margin-bottom: 0.05rem !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
     }
     body.unge-mod-uv-page .uv-credit + h4 + p {
-        margin-top: 0 !important;
-        margin-bottom: 0.5rem !important;
+        margin-top: -0.12em !important;
+        margin-bottom: 0.28rem !important;
     }
     body.unge-mod-uv-page .uv-headline__logo {
         width: min(78vw, 360px) !important;
         /* Remove extra transparent padding in the PNG (mobile only) */
-        -webkit-clip-path: inset(14% 8% 20% 5%) !important;
-        clip-path: inset(14% 8% 20% 5%) !important;
-        transform: translateY(-4px);
+        -webkit-clip-path: inset(16% 8% 28% 5%) !important;
+        clip-path: inset(16% 8% 28% 5%) !important;
+        transform: translateY(-14px);
     }
 
     /* UNGE MOD UV: remove the extra inner "infobox" frame on mobile */
@@ -5723,7 +6178,7 @@ body.sketchbook-theme .brainstorm-container {
         border: none !important;
         box-shadow: none !important;
         padding: 0 !important;
-        margin: 0.5rem 0 1rem 0 !important;
+        margin: 0.05rem 0 1rem 0 !important;
     }
 
     /* UNGE MOD UV: remove inner neon section boxes on mobile (use width better) */
@@ -5779,24 +6234,13 @@ body.sketchbook-theme .brainstorm-container {
         margin-bottom: 1rem !important;
     }
     body.naturlig-page .naturli-infobox__assets {
-        display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 10px !important;
+        gap: 12px !important;
         margin-top: 12px !important;
-        width: 100% !important;
-        justify-items: stretch;
-        align-items: stretch;
     }
+
     body.naturlig-page .naturli-infobox__asset {
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
         border-radius: 12px !important;
-        box-shadow: 0 10px 22px rgba(25, 118, 210, 0.18);
-        background: rgba(255,255,255,0.55);
-    }
-    body.naturlig-page .naturli-infobox__asset:last-child {
-        grid-column: 1 / -1;
+        box-shadow: 0 10px 22px rgba(25, 118, 210, 0.18) !important;
     }
 
     /* NATURLI': stack META post + video and push video down */
@@ -5811,6 +6255,32 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.naturlig-page .naturli-meta-video__video {
         margin-top: 8px !important;
+    }
+}
+
+/* Repop: portrait phones — less dead space under nav / between hero headline lines */
+@media (max-width: 640px) and (orientation: portrait) {
+    html body.repop-page .page-content {
+        padding: 48px 14px 14px !important;
+        margin: 8px auto !important;
+    }
+    html body.repop-page .repop-headline {
+        margin-bottom: 0.08rem !important;
+    }
+    html body.repop-page h2 {
+        margin: 0.12rem 0 0 !important;
+    }
+    html body.repop-page .repop-nominering {
+        margin: 0.22rem 0 0 !important;
+    }
+    html body.repop-page h4 {
+        margin: 0.35rem 0 0.1rem !important;
+    }
+    html body.repop-page .repop-brief-subtitle {
+        margin: 0.08rem auto 0 !important;
+    }
+    html body.repop-page .repop-brief-box {
+        margin-top: 0.5rem !important;
     }
 }
 
@@ -5866,7 +6336,7 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
         position: absolute;
         left: 50%;
-        top: 58%;
+        top: 68%;
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block !important;
         visibility: visible !important;
@@ -6026,6 +6496,142 @@ body.sketchbook-theme .brainstorm-container {
     body.nav-open .navbar,
     body.nav-open .nav-container {
         pointer-events: auto !important;
+    }
+
+    /* Repop has inline navbar z-index:1000 !important which can place the whole menu
+       below other composited layers in iOS Safari. Force it above everything here. */
+    html body.repop-page .navbar { z-index: 20000 !important; }
+    html body.repop-page .nav-scrim { z-index: 19999 !important; }
+    html body.repop-page .nav-menu { z-index: 20001 !important; }
+
+    /* Repop background is strong red; make menu less "dark" than other pages */
+    html body.repop-page { --mobileMenuBg: rgba(255, 255, 255, 0.985); }
+
+    /* Repop: less vertical dead space in phone landscape (margins/padding only — no smaller type) */
+    html body.repop-page .page-content {
+        padding: 52px 12px 10px !important;
+        margin: 4px auto 8px !important;
+    }
+    /* Menu stays top-left; back control top-right so it doesn't cover the brief grid */
+    html body.repop-page .back-button {
+        left: auto !important;
+        right: max(12px, env(safe-area-inset-right, 0px)) !important;
+        top: calc(8px + env(safe-area-inset-top, 0px)) !important;
+    }
+    /* Main hero title: mobile rules use nowrap+overflow hidden — can clip in short landscape */
+    html body.repop-page .page-content > .repop-headline:first-of-type {
+        overflow: visible !important;
+        white-space: normal !important;
+        text-overflow: unset !important;
+    }
+    html body.repop-page .repop-headline {
+        margin-bottom: 0.1rem !important;
+    }
+    html body.repop-page h2 {
+        margin: 0.15rem 0 0 !important;
+    }
+    html body.repop-page .repop-nominering {
+        margin: 0.25rem 0 0 !important;
+    }
+    html body.repop-page h4 {
+        margin: 0.35rem 0 0.12rem !important;
+    }
+    html body.repop-page .repop-brief-subtitle {
+        margin: 0.1rem auto 0 !important;
+    }
+    html body.repop-page .repop-brief-box {
+        margin: 0.35rem 0 !important;
+        padding: 0.45rem 0.55rem !important;
+    }
+    html body.repop-page .repop-headline--box {
+        margin-bottom: 0.45rem !important;
+    }
+    /* Brief 2×2 / stacked cells: less empty space between headings and body copy */
+    html body.repop-page .repop-brief-grid {
+        gap: 4px !important;
+    }
+    html body.repop-page .repop-brief-grid > div {
+        padding: 0.3rem 0.35rem !important;
+    }
+    html body.repop-page .repop-brief-grid h2 {
+        margin-bottom: 0.12rem !important;
+    }
+    html body.repop-page .repop-brief-grid p {
+        line-height: 1.22 !important;
+        font-size: 1.18rem !important;
+    }
+
+    /* LFW / SoMe rows: side-by-side in landscape; text uses full width from mid to right */
+    html body.repop-page .repop-mobile-stack {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 1.15rem !important;
+        width: 100% !important;
+    }
+    html body.repop-page .repop-mobile-stack__media,
+    html body.repop-page .repop-mobile-stack__text {
+        order: initial !important;
+    }
+    /* Image column fills more of the row; nudge left + gutter so badges don’t overlap the text */
+    html body.repop-page .repop-mobile-stack__media {
+        flex: 0 0 48% !important;
+        max-width: 48% !important;
+        min-width: 0 !important;
+        margin-right: 0.4rem !important;
+        transform: translateX(-6px) !important;
+    }
+    html body.repop-page .repop-mobile-stack__media img {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+    html body.repop-page .repop-mobile-stack__media img.repop-lfw-img--promo {
+        transform: scale(1.28) !important;
+        transform-origin: center center !important;
+    }
+    html body.repop-page .repop-mobile-stack__text {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    html body.repop-page .repop-mobile-stack__text p {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        text-align: left !important;
+    }
+    /* Slightly tighter horizontal padding in LFW infoboxes → more room for the image column */
+    html body.repop-page .page-content > div[style*="linear-gradient(135deg, #ff4444"]:not(.repop-brief-box):not(.repop-mobile-overview) {
+        padding-left: 0.85rem !important;
+        padding-right: 0.85rem !important;
+    }
+
+    /* Campaign timeline (LFW asset 6): show absolute labels in phone landscape; nudge top row up */
+    html body.repop-page .repop-mobile-overview {
+        display: block !important;
+    }
+    html body.repop-page .repop-timeline-strip {
+        display: none !important;
+    }
+    html body.repop-page .repop-mobile-overview__abslabel {
+        display: block !important;
+    }
+    html body.repop-page .repop-mobile-overview > .repop-mobile-overview__abslabel:nth-child(4),
+    html body.repop-page .repop-mobile-overview > .repop-mobile-overview__abslabel:nth-child(5) {
+        top: 19% !important;
+    }
+    html body.repop-page .repop-mobile-overview__img {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 12px;
     }
 }
 
@@ -6209,8 +6815,8 @@ body.sketchbook-theme .brainstorm-container {
     body.nav-open { overflow: hidden; }
 }
 
-/* Repop overview labels are mobile-only */
-.repop-mobile-overview__labels {
+/* Repop timeline strip: hidden on desktop (phones use it inside max-width:640px rules) */
+.repop-timeline-strip {
     display: none;
 }
 
@@ -6274,6 +6880,44 @@ body.sketchbook-theme .brainstorm-container a.project-node {
     padding: 15px 20px !important;
 }
 
+/* Image headline tabs: override fixed 180×80 cap (higher specificity than rule above) */
+body.sketchbook-theme .brainstorm-container a.project-node[href="durex.html"] {
+    width: 220px !important;
+    min-width: 220px !important;
+    max-width: 220px !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 6px 10px !important;
+    white-space: normal !important;
+}
+body.sketchbook-theme .brainstorm-container a.project-node[href="unge-mod-uv.html"] {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 6px 10px !important;
+    white-space: normal !important;
+}
+body.sketchbook-theme .brainstorm-container a.project-node[href="twister.html"] {
+    width: 165px !important;
+    min-width: 165px !important;
+    max-width: 165px !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 6px 10px !important;
+    white-space: normal !important;
+}
+body.sketchbook-theme .brainstorm-container a.project-node[href="kobajer.html"] {
+    width: 155px !important;
+    min-width: 155px !important;
+    max-width: 155px !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 6px 10px !important;
+    white-space: normal !important;
+}
+
 /* Projects: D&AD badge scales down too */
 body.sketchbook-theme .brainstorm-container .dandd-logo {
     width: 90px;
@@ -6284,7 +6928,7 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build {
     position: absolute;
     /* BRAINFARTS node is at: top 50%, left 10% */
     left: 7.5%;
-    top: 56%;
+    top: 61%;
     width: 170px;
     height: 210px;
     z-index: 12; /* under nodes (15), above paper (1) */
@@ -6313,7 +6957,7 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
 
 body.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
     left: 94%;
-    top: 24px;
+    top: 46px;
     width: 85px;
     transform: translateX(-50%) rotate(var(--brainfartsArrowRot, 112deg));
     transform-origin: 50% 20%;
@@ -6321,7 +6965,7 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
 
 body.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
     left: 56%;
-    top: 66px;
+    top: 100px;
     width: 105px;
     transform: translateX(-50%) rotate(var(--brainfartsSignRot, 0deg));
 }
@@ -6329,7 +6973,7 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
 @media (max-width: 768px) {
     body.sketchbook-theme .brainstorm-container .brainfarts-build {
         left: 9%;
-        top: 58%;
+        top: 63%;
         width: 155px;
         height: 200px;
     }
@@ -6719,6 +7363,76 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     margin-right: auto !important;
 }
 
+/* Unge mod UV: cyan headlines sit closer to paragraph copy (inline margins were loose) */
+body.unge-mod-uv-page .unge-mod-uv-content h4 {
+    margin-bottom: 0 !important;
+    line-height: 1.1 !important;
+}
+
+body.unge-mod-uv-page .unge-mod-uv-content h4 + p {
+    margin-top: -0.12em !important;
+}
+
+body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card h2 {
+    margin-bottom: 0.1rem !important;
+    line-height: 1.12 !important;
+}
+
+body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card h2 + p {
+    margin-top: -0.12em !important;
+}
+
+body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 {
+    margin-bottom: 0.1rem !important;
+    line-height: 1.12 !important;
+}
+
+body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
+    margin-top: -0.12em !important;
+}
+
+/* Phone / tablet landscape: less upward pull so logo clears back button + top chrome */
+@media (max-width: 1024px) and (orientation: landscape) and (max-height: 520px) {
+    body.unge-mod-uv-page .unge-mod-uv-content {
+        padding-top: 0.85rem !important;
+    }
+    body.unge-mod-uv-page .uv-hero {
+        margin-top: -72px !important;
+        gap: 0 !important;
+    }
+    /* Tighten logo → “Lavet med” / BRIEF (wide landscape skips portrait mobile rules) */
+    body.unge-mod-uv-page .unge-mod-uv-content h1.uv-headline {
+        margin: 0 auto -2.15rem auto !important;
+        line-height: 0 !important;
+    }
+    body.unge-mod-uv-page .uv-hero .uv-credit {
+        margin-top: -1.5rem !important;
+    }
+    body.unge-mod-uv-page .uv-credit + h4 + p {
+        margin-top: -0.18em !important;
+    }
+    body.unge-mod-uv-page .uv-headline__logo {
+        -webkit-clip-path: inset(10% 8% 22% 5%) !important;
+        clip-path: inset(10% 8% 22% 5%) !important;
+        transform: translateY(-8px);
+    }
+}
+
+/* SoMe posts: one column (stacked), larger — multi-col auto-fit is too small in landscape */
+@media (orientation: landscape) and (max-width: 1200px) {
+    body.unge-mod-uv-page .uv-assets-grid--some {
+        grid-template-columns: 1fr !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        gap: 1.25rem !important;
+    }
+    body.unge-mod-uv-page .uv-assets-grid--some img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+}
+
 /* Thought Bubble Style for Project Pages */
 .thought-bubble {
     background: white;
@@ -6824,16 +7538,16 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     text-align: center;
 }
 
-/* Back Button */
+/* Back Button (projektsider → projects.html, under navbar) */
 .back-button {
     position: fixed;
-    top: 100px;
-    left: 20px;
+    top: calc(52px + env(safe-area-inset-top, 0px) + 10px);
+    left: max(14px, env(safe-area-inset-left, 0px) + 8px);
     color: white;
     padding: 0.8rem 1.5rem;
     text-decoration: none;
     border-radius: 999px;
-    z-index: 1000;
+    z-index: 1002;
     display: inline-block;
     isolation: isolate; /* keep pseudo-elements layered reliably */
     background: transparent; /* background handled by ::after so circle frame can sit behind */
@@ -6963,9 +7677,17 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     margin: 1rem 0 0.2rem 0;
 }
 
+/* Repop only: slightly larger supporting lines than project1 */
+.repop-page h2 {
+    font-size: 1.62rem;
+}
+.repop-page h3 {
+    font-size: 1.95rem;
+}
+
 .repop-page p {
     color: white;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     line-height: 1.6;
     margin-top: 0;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
@@ -6973,6 +7695,41 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     max-width: 50%;
     margin-left: 0;
     margin-right: auto;
+}
+
+.repop-page p.repop-brief-subtitle {
+    font-size: 1.36rem !important;
+}
+
+.repop-page .repop-mobile-stack__text p {
+    font-size: 1.18rem !important;
+}
+
+/* Brief infobox (Problem / Observation / …): subtext only — larger than inline 1.1rem */
+.repop-page .repop-brief-grid p {
+    font-size: 1.24rem !important;
+    line-height: 1.42 !important;
+    max-width: 100% !important;
+}
+
+/* Efter LFW (asset 4): desktop-only left indent; phones use full width */
+@media (min-width: 1025px) {
+    .repop-page .repop-stack__text--indented-desktop {
+        margin-left: 4rem !important;
+    }
+}
+@media (max-width: 1024px) {
+    .repop-page .repop-stack__text--indented-desktop {
+        margin-left: 0 !important;
+    }
+}
+
+/* LFW asset 4 & 5: larger than other assets — scale up in portrait layouts */
+@media (max-width: 1024px) and (orientation: portrait) {
+    body.repop-page .repop-mobile-stack__media img.repop-lfw-img--promo {
+        transform: scale(1.34) !important;
+        transform-origin: center center;
+    }
 }
 
 .lfw-headline {
@@ -7058,7 +7815,8 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     color: #000;
     text-shadow: none;
     font-size: 2.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.06;
     text-align: center;
     font-weight: bold;
 }
@@ -7088,18 +7846,55 @@ body.unge-mod-uv-page .unge-mod-uv-content {
 .byens-landhandel-page p {
     color: #000;
     font-size: 1.1rem;
-    line-height: 1.22;
-    margin: 0 0 0.4rem 0;
+    line-height: 1.14;
+    margin: 0 0 0.28rem 0;
     text-shadow: none;
 }
 
-/* .byens-landhandel-page .poster-container (custom styling removed) */
+.byens-landhandel-page .poster-container {
+    margin: 1rem 0 0;
+}
 
 .byens-landhandel-page .project-poster {
     /* Removed border for cleaner look */
     width: 100%;
     max-height: none;
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Byens Landhandel: phone landscape — viewport often >640px wide; match tight mobile typography */
+@media (max-width: 1024px) and (orientation: landscape) and (max-height: 520px) {
+    body.byens-landhandel-page .page-content {
+        padding: 88px 14px 16px !important;
+        margin: 12px auto 14px !important;
+        border-radius: 16px !important;
+    }
+    body.byens-landhandel-page h1.byens-headline {
+        margin-top: 0.95rem !important;
+        margin-bottom: 0.4rem !important;
+        line-height: 1.03 !important;
+        font-size: clamp(1.35rem, 4vw, 1.85rem) !important;
+    }
+    body.byens-landhandel-page .byens-headline__top,
+    body.byens-landhandel-page .byens-headline__sub {
+        font-weight: 900;
+    }
+    body.byens-landhandel-page p {
+        line-height: 1.1 !important;
+        margin: 0 0 0.2rem 0 !important;
+    }
+    body.byens-landhandel-page .poster-container {
+        margin: 0.65rem 0 0 !important;
+        width: calc(100% + 28px) !important;
+        margin-left: -14px !important;
+        margin-right: -14px !important;
+    }
+    body.byens-landhandel-page .project-poster {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 0 !important;
+    }
 }
 
 .lfw-content h4 {
@@ -7162,7 +7957,7 @@ body.unge-mod-uv-page .unge-mod-uv-content {
 .repop-page h4 {
     color: #fff8e1;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    font-size: 1.4rem;
+    font-size: 1.52rem;
     margin: 1.5rem 0 0.8rem 0;
 }
 
@@ -7173,7 +7968,7 @@ body.unge-mod-uv-page .unge-mod-uv-content {
 
 .repop-page li {
     color: white;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1.6;
     margin-bottom: 0.5rem;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
@@ -7444,6 +8239,64 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     margin-bottom: 1rem;
 }
 
+/* OUTDOOR / SoMe: stacked — full width each; frame = largest file in set */
+.naturlig-page .naturli-infobox__assets {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    margin-top: 1.5rem;
+    width: 100%;
+    justify-items: stretch;
+    align-items: stretch;
+}
+
+.naturlig-page .naturli-infobox--some .naturli-infobox__assets {
+    margin-top: 0.1rem;
+}
+
+.naturlig-page .naturli-infobox__asset {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(25, 118, 210, 0.15);
+    background: rgba(255, 255, 255, 0.55);
+    object-fit: contain;
+    object-position: center;
+    display: block;
+}
+
+/* Outdoor poster 2 is largest (488×721) */
+.naturlig-page .naturli-infobox--outdoor .naturli-infobox__asset {
+    aspect-ratio: 488 / 721;
+}
+
+/* SoMe assets share 544×762 */
+.naturlig-page .naturli-infobox--some .naturli-infobox__asset {
+    aspect-ratio: 544 / 762;
+}
+
+/* Phone / tablet landscape: use horizontal row of 3 — wider cells = bigger art; still cap height for short viewports */
+@media (max-width: 1024px) and (orientation: landscape) {
+    html body.naturlig-page .naturli-infobox__assets {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        align-items: start !important;
+    }
+    html body.naturlig-page .naturli-infobox--outdoor .naturli-infobox__asset,
+    html body.naturlig-page .naturli-infobox--some .naturli-infobox__asset {
+        aspect-ratio: unset !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: min(68vh, 320px) !important;
+        height: auto !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        object-fit: contain !important;
+    }
+}
+
 /* DUREX X GUESS WHO Page Theme */
 .durex-page {
     background: linear-gradient(135deg, #0066CC 0%, #0099FF 25%, #00CCFF 50%, #33CCFF 75%, #66CCFF 100%) !important;
@@ -7510,8 +8363,9 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
     font-weight: bold;
     font-size: 1.8rem;
-    margin-top: 2rem;
-    margin-bottom: 0.5rem;
+    margin-top: 1.35rem;
+    margin-bottom: 0;
+    line-height: 1.08;
 }
 
 .durex-page h3 {
@@ -7519,16 +8373,74 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
     font-weight: 600;
     font-size: 1.4rem;
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+    margin-bottom: 0;
+    line-height: 1.1;
+}
+
+/* Subtext tucked under headlines (negative margin pulls first line up) */
+.durex-page h2 + p,
+.durex-page h3 + p {
+    margin-top: -0.12em !important;
 }
 
 .durex-page p {
     color: #333333;
-    line-height: 1.7;
+    line-height: 1.48;
     text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
     font-size: 1.1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.45rem;
+}
+
+/* Tighter gap only between back-to-back paragraphs (not before headings) */
+.durex-page p + p {
+    margin-top: -0.28rem;
+}
+
+/* Spilleregler: h4 + body copy matches h3 spacing (inline margins previously overrode this) */
+.durex-page .durex-rules h4 {
+    color: #1976D2;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 0.55rem;
+    margin-bottom: 0;
+    line-height: 1.1;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.durex-page .durex-rules h4:first-of-type {
+    margin-top: 0;
+}
+
+.durex-page .durex-rules h4 + h4 {
+    margin-top: 0.35rem;
+}
+
+.durex-page .durex-rules h4 + p {
+    margin-top: -0.12em !important;
+}
+
+/* Infobox subheads + paragraphs */
+.durex-page .durex-infobox h3 {
+    margin-bottom: 0 !important;
+    line-height: 1.1;
+}
+
+.durex-page .durex-infobox .durex-infobox__subhead {
+    color: #1976D2;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0.35rem;
+    margin-bottom: 0;
+    line-height: 1.1;
+}
+
+.durex-page .durex-infobox h3 + .durex-infobox__subhead {
+    margin-top: 0.25rem;
+}
+
+.durex-page .durex-infobox .durex-infobox__subhead + p {
+    margin-top: -0.12em !important;
 }
 
 /* KØ-BAJER Page Theme */
@@ -7747,6 +8659,39 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     }
 }
 
+/* KØ-BAJER: phone landscape (width > 640px) — stack grids + Anmeld/Boykot/Sig fra full width; matches mobile rules in @media (max-width: 640px) */
+@media (max-width: 1024px) and (orientation: landscape) and (max-height: 520px) {
+    body.kobajer-page .kobajer-info-boxes {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    body.kobajer-page .kobajer-steps {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    body.kobajer-page .kobajer-asset-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 14px !important;
+        margin-top: 1.1rem !important;
+    }
+    body.kobajer-page .kobajer-asset-col {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
+    }
+    body.kobajer-page .kobajer-asset img,
+    body.kobajer-page .kobajer-asset-row img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        object-fit: contain;
+        display: block;
+    }
+}
+
 /* Elements Section */
 .elements-grid {
     display: grid;
@@ -7930,8 +8875,8 @@ body.unge-mod-uv-page .unge-mod-uv-content {
     }
     
     .back-button {
-        top: 80px;
-        left: 10px;
+        top: calc(52px + env(safe-area-inset-top, 0px) + 8px);
+        left: max(10px, env(safe-area-inset-left, 0px) + 6px);
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
     }
@@ -8161,14 +9106,21 @@ a[href="byens-landhandel.html"]:hover {
 
 /* Twister: tighter headline/subtext spacing */
 .twister-page .contact-info h3 {
-    margin: 0.85rem 0 0.2rem 0;
+    margin: 0.85rem 0 0;
+    line-height: 1.12;
 }
 .twister-page .contact-info h3 + p {
-    margin-top: 0;
+    margin-top: -0.12em;
 }
-.twister-page .contact-info p {
-    margin: 0 0 0.6rem 0;
-    line-height: 1.55;
+/* Direct intro paragraphs only (<br/> lines); nested .step-column p keeps .step-column rules */
+.twister-page .contact-info > p {
+    margin: 0 0 0.45rem 0;
+    line-height: 1.26;
+}
+
+.twister-page .contact-info .step-column p {
+    margin: 0;
+    line-height: 1.28;
 }
 
 .twister-page .video-container {
@@ -8180,10 +9132,23 @@ a[href="byens-landhandel.html"]:hover {
     gap: 1.25rem;
 }
 .twister-page .step-column h4 {
-    margin-bottom: 0.25rem;
+    margin: 0 0 0.12rem;
+    line-height: 1.1;
 }
 .twister-page .step-column h5 {
-    margin-bottom: 0.55rem;
+    margin: 0 0 0.2rem;
+    line-height: 1.12;
+}
+.twister-page .step-column h5 + p {
+    margin-top: -0.1em;
+}
+
+/* Twister: step 2 calendar had margin-top: 3rem globally — too much in stacked/mobile layout */
+.twister-page .step-column .step-image {
+    display: block;
+}
+.twister-page .step-column:nth-child(2) .step-image {
+    margin-top: 0.55rem;
 }
 
 .video-container {
@@ -8396,7 +9361,7 @@ html body a[href="project1.html"]:hover {
     body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
         position: absolute;
         left: 50%;
-        top: 58%;
+        top: 68%;
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block !important;
         visibility: visible !important;
@@ -8431,7 +9396,7 @@ html body a[href="project1.html"]:hover {
     body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
         position: absolute;
         left: 50%;
-        top: 58%;
+        top: 68%;
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block !important;
         visibility: visible !important;

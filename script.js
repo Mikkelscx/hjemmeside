@@ -151,9 +151,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!isProjectsPhoneLandscape()) return;
 			const title = document.querySelector('.brainstorm-container .project-node[href*="twister"] .project-node__title');
 			if (!title) return;
-			title.style.setProperty('display', 'inline-block', 'important');
-			// Move ONLY the word "TWISTER" up so it doesn't overlap the D&AD mark.
-			title.style.setProperty('transform', 'translateX(3px) translateY(-8px)', 'important');
+			const hasImg = !!title.querySelector('img');
+			title.style.setProperty('display', hasImg ? 'block' : 'inline-block', 'important');
+			// Move title up so it doesn't overlap the D&AD mark (slightly less for image label).
+			title.style.setProperty('transform', hasImg ? 'translateX(3px) translateY(-6px)' : 'translateX(3px) translateY(-8px)', 'important');
 		} catch {}
 	}
 
@@ -256,23 +257,26 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
 		} catch {}
 
-		// If the burger menu is actually visible (CSS), always bypass transitions for navbar clicks.
-		// This avoids "tap does nothing" on some mobile emulation contexts where matchMedia
-		// doesn't report coarse pointer correctly (so isPhoneViewport() becomes false).
+		// If burger menu is mounted/visible, ALWAYS bypass transitions for clicks inside the nav.
+		// This prevents global flip-handlers from swallowing taps (seen in some landscape cases).
 		try {
 			const btn = document.querySelector('.nav-toggle');
-			if (btn && window.getComputedStyle) {
-				const cs = window.getComputedStyle(btn);
-				const burgerVisible = cs && cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0';
-				if (burgerVisible) {
-					try {
-						if (document.body && document.body.classList.contains('nav-open')) return true;
-					} catch {}
-					try {
-						if (a && a.closest && a.closest('.navbar')) return true;
-					} catch {}
+			const mounted = !!btn;
+			let burgerVisible = false;
+			try {
+				if (btn && window.getComputedStyle) {
+					const cs = window.getComputedStyle(btn);
+					burgerVisible = !!(cs && cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0');
 				}
-			}
+			} catch {}
+
+			const navOpen = !!(document.body && document.body.classList.contains('nav-open'));
+			const inNav = !!(a && a.closest && (a.closest('.nav-menu') || a.closest('.navbar') || a.closest('.nav-toggle')));
+
+			// If the burger UI is in play, treat nav clicks as "direct nav".
+			if (mounted && inNav && (burgerVisible || navOpen)) return true;
+			// If menu is open, any click is likely a menu selection.
+			if (navOpen) return true;
 		} catch {}
 
 		// Only bypass on the phone layout.
@@ -2549,7 +2553,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							</div>
 							<div class="home-notebook__leaf-fan" aria-hidden="true"></div>
 							<div class="home-notebook__spread" aria-hidden="true"></div>
-							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
+							<h1 class="home-notebook__title home-notebook__title--image" aria-label="Mikkels notesbog">
+								<img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" decoding="async">
+							</h1>
 						</main>
 					</div>
 					<div class="ai-close ai-close--closed" aria-hidden="true">
@@ -2559,7 +2565,9 @@ document.addEventListener('DOMContentLoaded', function() {
 								<div class="home-notebook__cover-back" aria-hidden="true"></div>
 							</div>
 							<div class="home-notebook__leaf-fan" aria-hidden="true"></div>
-							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
+							<h1 class="home-notebook__title home-notebook__title--image" aria-label="Mikkels notesbog">
+								<img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" decoding="async">
+							</h1>
 						</main>
 						<div class="ai-back-title" aria-hidden="true">MIT AI UNIVERS</div>
 					</div>
@@ -3335,6 +3343,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			button.setAttribute('aria-label', nextOpen ? 'Luk menu' : 'Åbn menu');
 		}
 
+		function isBurgerVisible() {
+			try {
+				if (!window.getComputedStyle) return false;
+				const cs = window.getComputedStyle(button);
+				return !!(cs && cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0');
+			} catch { return false; }
+		}
+
 		function isOpen() {
 			return document.body.classList.contains('nav-open');
 		}
@@ -3342,8 +3358,40 @@ document.addEventListener('DOMContentLoaded', function() {
 		button.addEventListener('click', () => setOpen(!isOpen()));
 		scrim.addEventListener('click', () => setOpen(false));
 
+		function forceNavigateFromMenuEvent(e) {
+			try {
+				// Only take over when the burger UI is actually active/visible.
+				// (On desktop the button exists in DOM but is display:none via CSS.)
+				if (!isBurgerVisible() && !isOpen()) return false;
+
+				const a = e && e.target && e.target.closest ? e.target.closest('a') : null;
+				if (!a || !menu.contains(a)) return false;
+				const hrefAttr = (a.getAttribute('href') || '').trim();
+				if (!hrefAttr || hrefAttr.startsWith('#')) return false;
+				// Allow normal browser behaviors (new tab, etc.)
+				if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) return false;
+
+				try { e.preventDefault(); } catch {}
+				try { e.stopImmediatePropagation(); } catch {}
+				try { e.stopPropagation(); } catch {}
+				setOpen(false);
+				// Force navigation (fixes iOS landscape cases where click is swallowed).
+				try { window.location.href = a.href; } catch {}
+				return true;
+			} catch {
+				return false;
+			}
+		}
+
+		// iOS Safari landscape: sometimes `click` on fixed/blurred layers doesn't navigate.
+		// Use pointer/touch events as an early, reliable navigation signal.
+		menu.addEventListener('pointerup', (e) => { forceNavigateFromMenuEvent(e); }, true);
+		menu.addEventListener('touchend', (e) => { forceNavigateFromMenuEvent(e); }, { capture: true, passive: false });
+
 		// Close when selecting a link.
 		menu.addEventListener('click', (e) => {
+			// If we already force-navigated, do nothing.
+			if (forceNavigateFromMenuEvent(e)) return;
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
 			setOpen(false);
@@ -3392,7 +3440,9 @@ document.addEventListener('DOMContentLoaded', function() {
 									tabindex="-1"
 								></iframe>
 							</div>
-							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
+							<h1 class="home-notebook__title home-notebook__title--image" aria-label="Mikkels notesbog">
+								<img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" decoding="async">
+							</h1>
 						</main>
 					`;
 					document.body.appendChild(overlay);
@@ -3702,9 +3752,11 @@ document.addEventListener('DOMContentLoaded', function() {
 							brainfarts.textContent = '';
 							title = document.createElement('span');
 							title.className = 'project-node__title';
+							title.textContent = 'BRAINFARTS';
 							brainfarts.appendChild(title);
+						} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
+							title.textContent = 'BRAINFARTS';
 						}
-						title.textContent = 'BRAINFARTS';
 
 						// Make room and center the inline sign.
 						brainfarts.style.setProperty('display', 'flex', 'important');
@@ -3737,7 +3789,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							title.className = 'project-node__title';
 							title.textContent = existingText;
 							twister.appendChild(title);
-						} else {
+						} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
 							title.textContent = 'TWISTER';
 						}
 
@@ -3860,22 +3912,26 @@ document.addEventListener('DOMContentLoaded', function() {
 						styleNode(node, i);
 						// Keep "REPOP BY DEPOP" on one line on mobile.
 						if (p.key === 'repop') {
-							// Wrap the title in a span so frame placement stays consistent
-							// even when we add the inline Kravling badge under it.
+							// Ensure the Repop title is the image (do NOT overwrite it back to text).
 							let title = node.querySelector('.project-node__title');
 							if (!title) {
 								node.textContent = '';
 								title = document.createElement('span');
-								title.className = 'project-node__title';
-								title.textContent = 'REPOP BY DEPOP';
+								title.className = 'project-node__title project-node__title--image';
 								node.appendChild(title);
-							} else {
-								title.textContent = 'REPOP BY DEPOP';
+							}
+							try { title.classList.add('project-node__title--image'); } catch {}
+							let img = title.querySelector('img');
+							if (!img) {
+								title.textContent = '';
+								img = document.createElement('img');
+								img.className = 'project-node__title-img project-node__title-img--repop';
+								img.alt = '';
+								img.decoding = 'async';
+								img.src = 'assets/repop-by-depop-text.png';
+								title.appendChild(img);
 							}
 
-							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
-							node.style.setProperty('white-space', 'nowrap', 'important');
-							node.style.setProperty('font-size', `${Math.max(10, fs * 0.92)}px`, 'important');
 							node.style.setProperty('max-width', `${Math.max(160, Math.floor(maxW * 1.05))}px`, 'important');
 							// Add Kravling 2025 as part of the circle (under the REPOP text).
 							node.style.setProperty('display', 'flex', 'important');
@@ -3906,7 +3962,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								title.className = 'project-node__title';
 								title.textContent = 'KØ-BAJER';
 								node.appendChild(title);
-							} else {
+							} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
 								title.textContent = 'KØ-BAJER';
 							}
 
@@ -3940,7 +3996,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								title.className = 'project-node__title';
 								title.textContent = 'TWISTER';
 								node.appendChild(title);
-							} else {
+							} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
 								title.textContent = 'TWISTER';
 							}
 
@@ -3983,7 +4039,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								title.className = 'project-node__title';
 								title.textContent = 'BRAINFARTS';
 								node.appendChild(title);
-							} else {
+							} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
 								title.textContent = 'BRAINFARTS';
 							}
 
@@ -4587,8 +4643,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			badge.style.height = 'auto';
 			badge.style.left = `${left}px`;
 			badge.style.top = `${top}px`;
-			const tx = 62 * scale;
-			const ty = -12 * scale;
+			// Nudge the label up + further left so it sits next to the arrow (desktop).
+			const tx = 24 * scale;
+			const ty = -22 * scale;
 			badge.style.transform = `translateY(-50%) translateX(${tx}px) translateY(${ty}px) rotate(-2deg)`;
 
 			// Collision avoidance on small screens:
@@ -4618,13 +4675,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					badge.style.left = `${left + delta}px`;
 				}
 
-				if (byensNode) {
+				// På brede skærme: behold “klassisk” layout (Kravling + pil til venstre for REPOP).
+				// Kollisionsskub kun på smalle viewports, hvor Byens og badge overlapper.
+				if (
+					byensNode &&
+					window.matchMedia &&
+					window.matchMedia('(max-width: 900px)').matches
+				) {
 					let tries = 0;
 					while (tries < 3) {
 						const br = badge.getBoundingClientRect();
 						const yr = byensNode.getBoundingClientRect();
 						if (!rectsOverlap(br, yr)) break;
-						// Push the badge down (and a touch left) to clear the BYENS node.
 						const pushY = (Math.min(br.bottom, yr.bottom) - Math.max(br.top, yr.top)) + (18 * scale);
 						const curTop = parseFloat(badge.style.top || String(top)) || top;
 						badge.style.top = `${curTop + pushY}px`;
@@ -4664,7 +4726,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			h = Math.max(72, h);
 
 			let left = (bf.left - containerRect.left) - (w * 0.05);
-			let top = (bf.top - containerRect.top) + (bf.height * 0.55);
+			// Nudge arrow + sign down inside the circle area (matches CSS .brainfarts-build shift)
+			let top = (bf.top - containerRect.top) + (bf.height * 0.62) + (16 * scale);
 
 			// Clamp into container bounds
 			left = Math.max(0, Math.min(containerRect.width - w, left));
@@ -5918,7 +5981,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: NATURLI' - render linje 7.webp asset line from brain center to node
 			const nodeTextNaturli = node.textContent.trim();
 			const nodeHrefNaturli = node.getAttribute('href') || '';
-			if (nodeTextNaturli === 'NATURLI\'' || nodeHrefNaturli.includes('Naturli') || index === 2) {
+			if (nodeTextNaturli === 'NATURLI\'' || nodeHrefNaturli.toLowerCase().includes('naturli') || index === 2) {
 				console.log(`✓ NATURLI' detected at index ${index} - creating linje 7.webp asset line`);
 				
 				// Start from the center of the brain
@@ -6173,7 +6236,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.log(`Processing node ${index}: "${nodeText}" at (${centerX}, ${centerY})`);
 			
 			// Special case: BRAINFARTS uses the image instead of hand-drawn circle
-			if (nodeText === 'BRAINFARTS') {
+			if (nodeHref.includes('brainfarts') || nodeText === 'BRAINFARTS') {
 				console.log('Creating BRAINFARTS circle image...');
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -6275,17 +6338,26 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (!title) {
 							node.textContent = '';
 							title = document.createElement('span');
-							title.className = 'project-node__title';
+							title.className = 'project-node__title project-node__title--image';
 							node.appendChild(title);
 						}
-						title.textContent = 'REPOP BY DEPOP';
+						try { title.classList.add('project-node__title--image'); } catch {}
+						let img = title.querySelector('img');
+						if (!img) {
+							title.textContent = '';
+							img = document.createElement('img');
+							img.className = 'project-node__title-img project-node__title-img--repop';
+							img.alt = '';
+							img.decoding = 'async';
+							img.src = 'assets/repop-by-depop-text.png';
+							title.appendChild(img);
+						}
 
 						// Keep as a column so the badge sits under the title.
 						node.style.setProperty('display', 'flex', 'important');
 						node.style.setProperty('flex-direction', 'column', 'important');
 						node.style.setProperty('align-items', 'center', 'important');
 						node.style.setProperty('justify-content', 'center', 'important');
-						node.style.setProperty('white-space', 'nowrap', 'important');
 
 						let inline = node.querySelector('.kravling-nomineret-badge--inline');
 						if (!inline) {
@@ -6384,9 +6456,11 @@ document.addEventListener('DOMContentLoaded', function() {
 							node.textContent = '';
 							title = document.createElement('span');
 							title.className = 'project-node__title';
+							title.textContent = 'KØ-BAJER';
 							node.appendChild(title);
+						} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
+							title.textContent = 'KØ-BAJER';
 						}
-						title.textContent = 'KØ-BAJER';
 
 						node.style.setProperty('display', 'flex', 'important');
 						node.style.setProperty('flex-direction', 'column', 'important');
@@ -6439,10 +6513,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				} catch {}
 
-				const baseW = s(200) * assetS;
-				const baseH = s(isLandscapePhone ? 230 : 200) * assetS; // taller in phone landscape
-				const padX = s(56) * assetS;
-				const padY = s(isLandscapePhone ? 70 : 26) * assetS;
+				// Extra padding + floor size so label + Kravling badge fill less of the circle frame
+				const baseW = s(232) * assetS;
+				const baseH = s(isLandscapePhone ? 268 : 232) * assetS; // taller in phone landscape
+				const padX = s(80) * assetS;
+				const padY = s(isLandscapePhone ? 92 : 44) * assetS;
 				const w = Math.max(baseW, unionW + padX);
 				const h = Math.max(baseH, unionH + padY);
 				image.setAttribute('x', String(centerX - (w / 2)));
@@ -6484,7 +6559,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: NATURLI' uses the image instead of hand-drawn circle
-			if (nodeText === 'NATURLI\'') {
+			if (nodeText === 'NATURLI\'' || nodeHref.toLowerCase().includes('naturli')) {
 				console.log('Creating NATURLI\' circle image...');
 				// Create an image element for NATURLI'
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -6492,8 +6567,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const w = s(240) * assetS;
-				const h = s(140) * assetS;
+				// Size frame from title/image box so wide "Naturlig" logo fits inside the circle asset
+				const aw = anchorRect.width || nodeRect.width;
+				const ah = anchorRect.height || nodeRect.height;
+				const w0 = Math.max(s(224), aw + s(14));
+				const h0 = Math.max(s(124), ah + s(14));
+				const w = w0 * assetS;
+				const h = h0 * assetS;
 				image.setAttribute('x', String(centerX - (w / 2)));
 				image.setAttribute('y', String(centerY - (h / 2) + s(5)));
 				image.setAttribute('width', String(w));
@@ -6515,8 +6595,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				// NATURLI': make the RIGHT side slightly smaller (keep left edge the same)
 				fill.setAttribute('cx', String(centerX + s(1)));
 				fill.setAttribute('cy', String(centerY - s(1)));
-				fill.setAttribute('rx', String((s(120) * 0.50 - s(2)) * assetS));
-				fill.setAttribute('ry', String((s(70) * 0.66) * assetS));
+				fill.setAttribute('rx', String((w0 * 0.50 - s(2)) * assetS));
+				fill.setAttribute('ry', String((h0 * 0.66) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6531,7 +6611,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: UNGE MOD UV uses the image instead of hand-drawn circle
-			if (nodeText === 'UNGE MOD UV') {
+			if (nodeText === 'UNGE MOD UV' || (nodeHref && nodeHref.includes('unge-mod-uv'))) {
 				console.log('Creating UNGE MOD UV circle image...');
 				// Create an image element for UNGE MOD UV
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -6589,7 +6669,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							title.className = 'project-node__title';
 							title.textContent = existingText;
 							node.appendChild(title);
-						} else {
+						} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
 							title.textContent = 'TWISTER';
 						}
 
@@ -6737,7 +6817,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: DUREX X GUESS WHO uses the image instead of hand-drawn circle
-			if (nodeText === 'DUREX X GUESS WHO') {
+			if (nodeText === 'DUREX X GUESS WHO' || (nodeHref && nodeHref.includes('durex'))) {
 				console.log('Creating DUREX X GUESS WHO circle image...');
 				// Create an image element for DUREX X GUESS WHO
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');

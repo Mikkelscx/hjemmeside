@@ -14,9 +14,12 @@
                 radial-gradient(circle at 82% 78%, rgba(43, 60, 133, 0.58) 0%, rgba(10, 10, 10, 0.0) 62%),
                 linear-gradient(135deg, #0b0f2a 0%, #1a1f55 38%, #1b3a7a 74%, #3d1c6a 100%);
             min-height: 100vh;
+            min-height: 100dvh;
             color: #00ffff;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             /* Let the content box fill to the bottom */
             display: flex;
             flex-direction: column;
@@ -76,16 +79,13 @@
                 0 0 30px rgba(0, 255, 255, 0.3),
                 inset 0 0 30px rgba(0, 255, 255, 0.1);
             padding: clamp(18px, 3vw, 44px);
-            margin: 0.75rem auto 0;
+            margin: 0.75rem auto 1.5rem;
             width: min(96vw, var(--infoboxMaxW, 1200px));
-            /* Bigger infobox + internal scroll */
-            flex: 1 1 auto;
-            min-height: 0; /* required for flex children to scroll */
+            /* Natural height; page scrolls (body overflow-y) — inner flex scroll broke in short landscape viewports */
+            flex: 0 0 auto;
             height: auto;
             max-height: none;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
+            overflow: visible;
             position: relative;
             z-index: 2; /* above ::before/::after */
             transition: opacity 900ms ease, transform 900ms ease;
