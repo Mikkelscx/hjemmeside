@@ -115,11 +115,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	function isPhoneViewport() {
 		try {
 			if (!window.matchMedia) return false;
-			// Phone portrait
 			if (window.matchMedia('(max-width: 640px)').matches) return true;
-			// Tablet / big-mobile (iPad etc.) should also use burger menu + mobile nav behavior.
 			if (window.matchMedia('(max-width: 1024px) and (hover: none) and (pointer: coarse)').matches) return true;
-			// Phone landscape (iPhone etc.): wide but short viewport
 			if (window.matchMedia('(max-height: 520px) and (orientation: landscape) and (hover: none) and (pointer: coarse)').matches) return true;
 			return false;
 		} catch {
@@ -127,173 +124,112 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 
-	function isTouchLandscapeShort() {
+	// Mobile burger menu (phones; CSS shows .nav-toggle + dropdown only under max-width: 640px)
+	(function initMobileBurgerMenu() {
 		try {
-			if (!window.matchMedia) return false;
-			return !!window.matchMedia('(max-width: 1024px) and (max-height: 520px) and (hover: none) and (pointer: coarse)').matches;
-		} catch {
-			return false;
-		}
-	}
- 
-	function isProjectsPhoneLandscape() {
-		try {
-			if (!window.matchMedia) return false;
-			return !!window.matchMedia('(max-width: 1024px) and (max-height: 520px) and (orientation: landscape)').matches;
-		} catch {
-			return false;
-		}
-	}
- 
-	function nudgeTwisterTitleDownInLandscape() {
-		try {
-			if (!document.body || !document.body.classList.contains('projects-page')) return;
-			if (!isProjectsPhoneLandscape()) return;
-			const title = document.querySelector('.brainstorm-container .project-node[href*="twister"] .project-node__title');
-			if (!title) return;
-			const hasImg = !!title.querySelector('img');
-			title.style.setProperty('display', hasImg ? 'block' : 'inline-block', 'important');
-			// Move title up so it doesn't overlap the D&AD mark (slightly less for image label).
-			title.style.setProperty('transform', hasImg ? 'translateX(3px) translateY(-6px)' : 'translateX(3px) translateY(-8px)', 'important');
-		} catch {}
-	}
-
-	function autoCenterProjectsLandscape() {
-		try {
-			if (!document.body || !document.body.classList.contains('projects-page')) return;
-			if (!isProjectsPhoneLandscape()) return;
-			const container = document.querySelector('.brainstorm-container');
-			if (!container) return;
-
-			const vv = window.visualViewport;
-			const viewLeft = vv ? vv.offsetLeft : 0;
-			const viewTop = vv ? vv.offsetTop : 0;
-			const viewW = vv ? vv.width : window.innerWidth;
-			const viewH = vv ? vv.height : window.innerHeight;
-
-			if (!viewW || !viewH) return;
-
-			const els = [
-				document.querySelector('.brain'),
-				...Array.from(document.querySelectorAll('.project-node')),
-			].filter(Boolean);
-			if (!els.length) return;
-
-			let minL = Infinity, minT = Infinity, maxR = -Infinity, maxB = -Infinity;
-			for (const el of els) {
-				const r = el.getBoundingClientRect();
-				if (!r || !r.width || !r.height) continue;
-				minL = Math.min(minL, r.left);
-				minT = Math.min(minT, r.top);
-				maxR = Math.max(maxR, r.right);
-				maxB = Math.max(maxB, r.bottom);
-			}
-			if (!Number.isFinite(minL) || !Number.isFinite(minT) || !Number.isFinite(maxR) || !Number.isFinite(maxB)) return;
-
-			const boxCx = (minL + maxR) / 2;
-			const boxCy = (minT + maxB) / 2;
-
-			// Target: visual center of the *viewport* (slightly down to account for the burger button).
-			const targetCx = viewLeft + (viewW * 0.5);
-			const targetCy = viewTop + (viewH * 0.54);
-
-			const dx = targetCx - boxCx;
-			const dy = targetCy - boxCy;
-
-			// Clamp shift so we never push the whole mindmap off-screen.
-			const pad = 10;
-			const minDx = (viewLeft + pad) - minL;
-			const maxDx = (viewLeft + viewW - pad) - maxR;
-			const minDy = (viewTop + pad) - minT;
-			const maxDy = (viewTop + viewH - pad) - maxB;
-			const dxClamped = Math.max(minDx, Math.min(maxDx, dx));
-			const dyClamped = Math.max(minDy, Math.min(maxDy, dy));
-
-			// Accumulate offset (stable because dx/dy go to ~0 when centered).
-			const cs = window.getComputedStyle(container);
-			const curX = parseFloat(cs.getPropertyValue('--projectsOffsetX')) || 0;
-			const curY = parseFloat(cs.getPropertyValue('--projectsOffsetY')) || 0;
-			const nextX = Math.max(-520, Math.min(520, curX + dxClamped));
-			const nextY = Math.max(-520, Math.min(520, curY + dyClamped));
-
-			container.style.setProperty('--projectsOffsetX', `${Math.round(nextX)}px`);
-			container.style.setProperty('--projectsOffsetY', `${Math.round(nextY)}px`);
-
-			// One extra pass (fonts/layout) to settle after navigation/bfcache restore.
-			const pass = Number(container.dataset.centerPass || '0');
-			if (pass < 1) {
-				container.dataset.centerPass = String(pass + 1);
-				requestAnimationFrame(() => {
-					try { autoCenterProjectsLandscape(); } catch {}
-				});
-			}
-		} catch {}
-	}
-
-	function projectsLandscapeAssetScale() {
-		// Only shrink assets in Projects page short-landscape touch mode.
-		try {
-			if (!document.body || !document.body.classList.contains('projects-page')) return 1;
-		} catch { return 1; }
-		return isTouchLandscapeShort() ? 0.72 : 1;
-	}
-
-	function currentPageFileLower() {
-		try {
-			let p = (window.location.pathname || '');
-			p = (p.split('?')[0] || '');
-			const parts = p.split('/').filter(Boolean);
-			const last = (parts.length ? parts[parts.length - 1] : '').trim();
-			return (last || 'index.html').toLowerCase();
-		} catch {
-			return '';
-		}
-	}
-
-	// iPhone Safari can crash/reload when we mount multiple iframe-based transition overlays.
-	// On phones (and for reduced-motion users), use direct navigation for navbar/menu clicks.
-	function shouldBypassNavTransitions(e, a) {
-		try {
-			if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+			if (document.documentElement && document.documentElement.classList.contains('transition-preview')) return;
 		} catch {}
 
-		// If burger menu is mounted/visible, ALWAYS bypass transitions for clicks inside the nav.
-		// This prevents global flip-handlers from swallowing taps (seen in some landscape cases).
-		try {
-			const btn = document.querySelector('.nav-toggle');
-			const mounted = !!btn;
-			let burgerVisible = false;
+		const nav = document.querySelector('.navbar');
+		if (!nav) return;
+		const container = nav.querySelector('.nav-container') || nav;
+		const menu = nav.querySelector('.nav-menu');
+		if (!menu) return;
+
+		if (nav.querySelector('.nav-toggle')) return;
+
+		let scrim = document.querySelector('.nav-scrim');
+		if (!scrim) {
+			scrim = document.createElement('div');
+			scrim.className = 'nav-scrim';
+			scrim.setAttribute('aria-hidden', 'true');
+			document.body.appendChild(scrim);
+		}
+
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'nav-toggle';
+		button.setAttribute('aria-label', 'Åbn menu');
+		button.setAttribute('aria-expanded', 'false');
+
+		const menuId = (menu.getAttribute('id') || '').trim() || 'site-nav-menu';
+		menu.setAttribute('id', menuId);
+		button.setAttribute('aria-controls', menuId);
+
+		const bars = document.createElement('span');
+		bars.className = 'nav-toggle__bars';
+		const mid = document.createElement('span');
+		bars.appendChild(mid);
+
+		const label = document.createElement('span');
+		label.className = 'nav-toggle__label';
+		label.textContent = 'Menu';
+
+		button.appendChild(bars);
+		button.appendChild(label);
+
+		container.insertBefore(button, container.firstChild);
+
+		function setOpen(nextOpen) {
+			document.body.classList.toggle('nav-open', !!nextOpen);
+			button.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+			button.setAttribute('aria-label', nextOpen ? 'Luk menu' : 'Åbn menu');
+		}
+
+		function isBurgerVisible() {
 			try {
-				if (btn && window.getComputedStyle) {
-					const cs = window.getComputedStyle(btn);
-					burgerVisible = !!(cs && cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0');
-				}
-			} catch {}
+				if (!window.getComputedStyle) return false;
+				const cs = window.getComputedStyle(button);
+				return !!(cs && cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0');
+			} catch { return false; }
+		}
 
-			const navOpen = !!(document.body && document.body.classList.contains('nav-open'));
-			const inNav = !!(a && a.closest && (a.closest('.nav-menu') || a.closest('.navbar') || a.closest('.nav-toggle')));
+		function isOpen() {
+			return document.body.classList.contains('nav-open');
+		}
 
-			// If the burger UI is in play, treat nav clicks as "direct nav".
-			if (mounted && inNav && (burgerVisible || navOpen)) return true;
-			// If menu is open, any click is likely a menu selection.
-			if (navOpen) return true;
-		} catch {}
+		button.addEventListener('click', () => setOpen(!isOpen()));
+		scrim.addEventListener('click', () => setOpen(false));
 
-		// Only bypass on the phone layout.
-		if (!isPhoneViewport()) return false;
+		function forceNavigateFromMenuEvent(e) {
+			try {
+				if (!isBurgerVisible() && !isOpen()) return false;
 
-		try {
-			// If the mobile menu is open, any click is likely a menu selection.
-			if (document.body && document.body.classList.contains('nav-open')) return true;
-		} catch {}
+				const a = e && e.target && e.target.closest ? e.target.closest('a') : null;
+				if (!a || !menu.contains(a)) return false;
+				const hrefAttr = (a.getAttribute('href') || '').trim();
+				if (!hrefAttr || hrefAttr.startsWith('#')) return false;
+				if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) return false;
 
-		try {
-			// If the click came from the navbar (or the edge-nav panel), bypass transitions.
-			if (a && a.closest && (a.closest('.navbar') || a.closest('.edge-nav'))) return true;
-		} catch {}
+				try { e.preventDefault(); } catch {}
+				try { e.stopImmediatePropagation(); } catch {}
+				try { e.stopPropagation(); } catch {}
+				setOpen(false);
+				try { window.location.href = a.href; } catch {}
+				return true;
+			} catch {
+				return false;
+			}
+		}
 
-		return false;
-	}
+		menu.addEventListener('pointerup', (e) => { forceNavigateFromMenuEvent(e); }, true);
+		menu.addEventListener('touchend', (e) => { forceNavigateFromMenuEvent(e); }, { capture: true, passive: false });
+
+		menu.addEventListener('click', (e) => {
+			if (forceNavigateFromMenuEvent(e)) return;
+			const a = e.target && e.target.closest ? e.target.closest('a') : null;
+			if (!a) return;
+			setOpen(false);
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') setOpen(false);
+		});
+
+		window.addEventListener('resize', () => {
+			if (!isPhoneViewport()) setOpen(false);
+		});
+	})();
 
 	function getPageFlipMs(fallbackMs) {
 		try {
@@ -311,41 +247,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			return fallbackMs;
 		}
 	}
-
-	// DUREX page: on phones the 2-column infobox grid gets squeezed.
-	// Merge "Brætspillet" into "Karakterdesign" on mobile so it reads as one box.
-	(function mergeDurexInfoboxesOnMobile() {
-		try {
-			if (!document.body || !document.body.classList.contains('durex-page')) return;
-			if (!window.matchMedia || !window.matchMedia('(max-width: 640px)').matches) return;
-
-			const grid = document.querySelector('.durex-infobox-grid');
-			if (!grid || grid.dataset.merged === '1') return;
-
-			const characterBox = grid.querySelector('.durex-infobox--character');
-			const boardBox = grid.querySelector('.durex-infobox--board');
-			if (!characterBox || !boardBox) return;
-
-			const section = document.createElement('div');
-			section.className = 'durex-board-section';
-
-			while (boardBox.firstChild) {
-				section.appendChild(boardBox.firstChild);
-			}
-
-			characterBox.appendChild(section);
-			try { boardBox.remove(); } catch { boardBox.parentNode && boardBox.parentNode.removeChild(boardBox); }
-
-			// Avoid grid spacing on mobile after merge
-			try {
-				grid.style.display = 'block';
-				grid.style.gridTemplateColumns = '1fr';
-				grid.style.gap = '0';
-			} catch {}
-
-			grid.dataset.merged = '1';
-		} catch {}
-	})();
 
 	function getCssVarMsFromEl(el, varName, fallbackMs) {
 		try {
@@ -586,8 +487,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefLower = hrefAttr.toLowerCase();
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			closeMobileBurgerMenu();
-			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			try { e.stopImmediatePropagation(); } catch {}
 			startFlipToAbout(a.href);
@@ -1092,12 +991,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!a) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
-			// Only run this Projekter -> Kontakt double flip when you're actually on Projekter.
-			// Otherwise it can hijack normal nav from project detail pages.
-			if (currentPageFileLower() !== 'projects.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			closeMobileBurgerMenu();
-			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			startDoubleFlipToContact(a.href);
 		}, true);
@@ -1105,7 +999,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the double overlay (and its iframes) so the 2nd-half backface isn't blank.
 		(function preloadDoubleOnce() {
 			try {
-				if (isPhoneViewport()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureDoubleOverlay();
 				ov.classList.add('is-preloading');
@@ -1342,8 +1235,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'projects.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			closeMobileBurgerMenu();
-			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			startFlipToProjects(a.href);
 		}, true);
@@ -1351,7 +1242,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
-				if (isPhoneViewport()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -1393,17 +1283,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				try {
 					if (overlay) {
-						// Flipping page: switch to Projekter only once we're past the middle AND the drag has
-						// moved a bit further to the right.
-						const passedHalf = progress >= 0.5;
-						const passedSeamToRight = (typeof x === 'number' && typeof seamX === 'number') ? (x >= (seamX + 14)) : (progress >= 0.54);
-						if (passedHalf && passedSeamToRight) overlay.classList.add('swap-flip-mid');
-						else overlay.classList.remove('swap-flip-mid');
-
-						// Left under-page: keep Om mig visible until the turning sheet is past the middle
-						// (otherwise the Projects design appears "too early" during the drag).
-						if (passedHalf && passedSeamToRight) overlay.classList.add('swap-under-left');
+						// Left under-page: show Projekter as soon as the flip begins.
+						if (progress > 0.02) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
+
+						// Flipping page: switch to Projekter exactly once we cross the middle seam while dragging.
+						// This should feel like it changes right as the page passes the center.
+						const cursorPastMiddle = (typeof x !== 'number' || typeof seamX !== 'number') ? (progress >= 0.5) : (x >= seamX);
+						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
+						else overlay.classList.remove('swap-flip-mid');
 
 						// Swap the right under-page late (matches existing logic).
 						if (progress >= 0.88) overlay.classList.add('swap-under-right');
@@ -1509,8 +1397,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							flipEl.style.transition = `transform ${finishMs}ms ${ease}`;
 							flipEl.style.transform = 'rotateY(180deg)';
 						}
-						// Once committed, ensure under-left is Projekter for the remainder of the flip.
-						overlay.classList.add('swap-under-left');
 						overlay.classList.add('swap-under-right');
 						// Ensure the flipping page design is swapped once we're committed past the middle.
 						overlay.classList.add('swap-flip-mid');
@@ -1710,8 +1596,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			closeMobileBurgerMenu();
-			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			startFlipToContact(a.href);
 		}, true);
@@ -1719,7 +1603,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
-				if (isPhoneViewport()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -2035,8 +1918,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hrefLower = hrefAttr.toLowerCase();
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			closeMobileBurgerMenu();
-			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			startFlipToAbout(a.href);
 		}, true);
@@ -2044,7 +1925,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
-				if (isPhoneViewport()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -2553,9 +2433,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							</div>
 							<div class="home-notebook__leaf-fan" aria-hidden="true"></div>
 							<div class="home-notebook__spread" aria-hidden="true"></div>
-							<h1 class="home-notebook__title home-notebook__title--image" aria-label="Mikkels notesbog">
-								<img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" decoding="async">
-							</h1>
+							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
 						</main>
 					</div>
 					<div class="ai-close ai-close--closed" aria-hidden="true">
@@ -2565,9 +2443,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								<div class="home-notebook__cover-back" aria-hidden="true"></div>
 							</div>
 							<div class="home-notebook__leaf-fan" aria-hidden="true"></div>
-							<h1 class="home-notebook__title home-notebook__title--image" aria-label="Mikkels notesbog">
-								<img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" decoding="async">
-							</h1>
+							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
 						</main>
 						<div class="ai-back-title" aria-hidden="true">MIT AI UNIVERS</div>
 					</div>
@@ -2791,8 +2667,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (path.endsWith('/ai-universe.html') || path.endsWith('ai-universe.html')) return;
 			} catch {}
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			closeMobileBurgerMenu();
-			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			try { e.stopImmediatePropagation(); } catch {}
 			startAiClose(a.href);
@@ -2800,7 +2674,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Prewarm ASAP after load (doesn't show anything, just builds DOM/iframes).
 		try {
-			if (isPhoneViewport()) return;
 			if ('requestIdleCallback' in window) {
 				window.requestIdleCallback(() => prewarmOverlay(), { timeout: 800 });
 			} else {
@@ -3180,12 +3053,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!a) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'projects.html') return;
-			// Only run Kontakt -> Projekter transition when you're actually on Kontakt.
-			// Otherwise it can make navigation from project pages look washed-out + slow.
-			if (currentPageFileLower() !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			closeMobileBurgerMenu();
-			if (shouldBypassNavTransitions(e, a)) return;
 			e.preventDefault();
 			// Prevent other "to projects" transitions from also running.
 			try { e.stopImmediatePropagation(); } catch {}
@@ -3289,125 +3157,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	})();
 
-	// Mobile burger menu (phones only; desktop/tablet unchanged via CSS media query)
-	(function initMobileBurgerMenu() {
-		try {
-			if (document.documentElement && document.documentElement.classList.contains('transition-preview')) return;
-		} catch {}
-
-		const nav = document.querySelector('.navbar');
-		if (!nav) return;
-		const container = nav.querySelector('.nav-container') || nav;
-		const menu = nav.querySelector('.nav-menu');
-		if (!menu) return;
-
-		// Avoid double-mounting across navigation / re-renders.
-		if (nav.querySelector('.nav-toggle')) return;
-
-		// Ensure we have a scrim element for outside-click close.
-		let scrim = document.querySelector('.nav-scrim');
-		if (!scrim) {
-			scrim = document.createElement('div');
-			scrim.className = 'nav-scrim';
-			scrim.setAttribute('aria-hidden', 'true');
-			document.body.appendChild(scrim);
-		}
-
-		const button = document.createElement('button');
-		button.type = 'button';
-		button.className = 'nav-toggle';
-		button.setAttribute('aria-label', 'Åbn menu');
-		button.setAttribute('aria-expanded', 'false');
-
-		const menuId = (menu.getAttribute('id') || '').trim() || 'site-nav-menu';
-		menu.setAttribute('id', menuId);
-		button.setAttribute('aria-controls', menuId);
-
-		const bars = document.createElement('span');
-		bars.className = 'nav-toggle__bars';
-		const mid = document.createElement('span');
-		bars.appendChild(mid);
-
-		const label = document.createElement('span');
-		label.className = 'nav-toggle__label';
-		label.textContent = 'Menu';
-
-		button.appendChild(bars);
-		button.appendChild(label);
-
-		container.insertBefore(button, container.firstChild);
-
-		function setOpen(nextOpen) {
-			document.body.classList.toggle('nav-open', !!nextOpen);
-			button.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
-			button.setAttribute('aria-label', nextOpen ? 'Luk menu' : 'Åbn menu');
-		}
-
-		function isBurgerVisible() {
-			try {
-				if (!window.getComputedStyle) return false;
-				const cs = window.getComputedStyle(button);
-				return !!(cs && cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0');
-			} catch { return false; }
-		}
-
-		function isOpen() {
-			return document.body.classList.contains('nav-open');
-		}
-
-		button.addEventListener('click', () => setOpen(!isOpen()));
-		scrim.addEventListener('click', () => setOpen(false));
-
-		function forceNavigateFromMenuEvent(e) {
-			try {
-				// Only take over when the burger UI is actually active/visible.
-				// (On desktop the button exists in DOM but is display:none via CSS.)
-				if (!isBurgerVisible() && !isOpen()) return false;
-
-				const a = e && e.target && e.target.closest ? e.target.closest('a') : null;
-				if (!a || !menu.contains(a)) return false;
-				const hrefAttr = (a.getAttribute('href') || '').trim();
-				if (!hrefAttr || hrefAttr.startsWith('#')) return false;
-				// Allow normal browser behaviors (new tab, etc.)
-				if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) return false;
-
-				try { e.preventDefault(); } catch {}
-				try { e.stopImmediatePropagation(); } catch {}
-				try { e.stopPropagation(); } catch {}
-				setOpen(false);
-				// Force navigation (fixes iOS landscape cases where click is swallowed).
-				try { window.location.href = a.href; } catch {}
-				return true;
-			} catch {
-				return false;
-			}
-		}
-
-		// iOS Safari landscape: sometimes `click` on fixed/blurred layers doesn't navigate.
-		// Use pointer/touch events as an early, reliable navigation signal.
-		menu.addEventListener('pointerup', (e) => { forceNavigateFromMenuEvent(e); }, true);
-		menu.addEventListener('touchend', (e) => { forceNavigateFromMenuEvent(e); }, { capture: true, passive: false });
-
-		// Close when selecting a link.
-		menu.addEventListener('click', (e) => {
-			// If we already force-navigated, do nothing.
-			if (forceNavigateFromMenuEvent(e)) return;
-			const a = e.target && e.target.closest ? e.target.closest('a') : null;
-			if (!a) return;
-			setOpen(false);
-		});
-
-		// Close on ESC.
-		window.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape') setOpen(false);
-		});
-
-		// If user rotates / grows window, ensure menu closes when leaving phone breakpoint.
-		window.addEventListener('resize', () => {
-			if (!isPhoneViewport()) setOpen(false);
-		});
-	})();
-
 	// Projects book-flip transition (works from ALL pages).
 	(function initProjectsFlipTransition() {
 		const body = document.body;
@@ -3440,9 +3189,7 @@ document.addEventListener('DOMContentLoaded', function() {
 									tabindex="-1"
 								></iframe>
 							</div>
-							<h1 class="home-notebook__title home-notebook__title--image" aria-label="Mikkels notesbog">
-								<img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" decoding="async">
-							</h1>
+							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
 						</main>
 					`;
 					document.body.appendChild(overlay);
@@ -3568,15 +3315,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			// Allow normal browser behaviors (new tab, etc.)
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			closeMobileBurgerMenu();
-			if (shouldBypassNavTransitions(e, a)) return;
-			// Only play the special "open book into Projekter" transition from the frontpage.
-			// From project detail pages, navigate normally (avoids washed-out overlay + long wait).
-			try {
-				if (!document.body.classList.contains('home-notebook-page') && currentPageFileLower() !== 'index.html') return;
-			} catch {
-				return;
-			}
 			e.preventDefault();
 			startProjectsTransition(a.href);
 		}, true);
@@ -3593,6 +3331,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Brain animations and connecting lines
 	function initBrainAnimations() {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
 		const isPreview = document.documentElement.classList.contains('transition-preview');
 		const brain = document.querySelector('.brain');
 		const nodes = document.querySelectorAll('.project-node');
@@ -3617,82 +3356,20 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
-		// Projects page: compute a global scale factor so *all* assets can shrink with the viewport.
-		// We use container size (not window size) because the projects page can be shown inside iframes.
-		function projectsScaleFromRect(containerRect) {
-			// Keep this as a "layout scale" (most layout math assumes base sizes).
-			// We squeeze the whole mindmap independently in X/Y using --projectsSx/--projectsSy.
-			return 1;
-		}
-
-		function unwrapProjectsStage(container) {
-			if (!container) return;
-			// If an older build wrapped all content in .brainstorm-stage, unwrap it so layout + Safari rendering stay stable.
-			while (true) {
-				const directStage = Array.from(container.children).find((el) => el.classList && el.classList.contains('brainstorm-stage'));
-				if (!directStage) break;
-				while (directStage.firstChild) container.insertBefore(directStage.firstChild, directStage);
-				directStage.remove();
-			}
-		}
-
-		function applyProjectsStageScale() {
-			const container = document.querySelector('.brainstorm-container');
-			if (!container) return;
-			unwrapProjectsStage(container);
-
-			const r = container.getBoundingClientRect();
-			const cs = window.getComputedStyle(container);
-			const baseW = Number.parseFloat(cs.getPropertyValue('--projectsScaleBaseW')) || 1280;
-			const baseH = Number.parseFloat(cs.getPropertyValue('--projectsScaleBaseH')) || 860;
-			const exp = Number.parseFloat(cs.getPropertyValue('--projectsScaleExp')) || 2.2;
-			const minS = Number.parseFloat(cs.getPropertyValue('--projectsScaleMin')) || 0.18;
-			const uniform = Number.parseFloat(cs.getPropertyValue('--projectsScaleUniform')) || 0;
-
-			const rawX = Math.min(r.width / baseW, 1);
-			const rawY = Math.min(r.height / baseH, 1);
-
-			// Drastic + early shrink: exponent makes it drop faster as soon as the window gets smaller.
-			let sx = Math.max(minS, Math.pow(Math.max(0, rawX), exp));
-			let sy = Math.max(minS, Math.pow(Math.max(0, rawY), exp));
-
-			// Optional: keep proportions (used for mobile projects so it doesn't become a thin strip).
-			if (uniform > 0.5) {
-				const raw = Math.min(rawX, rawY);
-				const s = Math.max(minS, Math.pow(Math.max(0, raw), exp));
-				sx = s;
-				sy = s;
-			}
-
-			container.style.setProperty('--projectsSx', sx.toFixed(4));
-			container.style.setProperty('--projectsSy', sy.toFixed(4));
-		}
-
-		function resetProjectsStageScale() {
-			const container = document.querySelector('.brainstorm-container');
-			if (!container) return;
-			unwrapProjectsStage(container);
-			container.style.setProperty('--projectsSx', '1');
-			container.style.setProperty('--projectsSy', '1');
-		}
-
 		// If we've already bound listeners once, just re-position/redraw.
 		if (brain.dataset.animInit === '1') {
-			// Compute layout in "base" coords, then squeeze as a final step.
-			try { resetProjectsStageScale(); } catch {}
-			// Refresh pass to ensure custom assets are present after navigation.
-			try { positionNodesPerfectCircle(); } catch {}
-			try { positionBrainfartsBuild(); } catch {}
-			try { createAndPositionDandDLogo(); } catch {}
-			try { createAndPositionTwisterDandDLine(); } catch {}
-			try { createAndPositionRepopKravlingLine(); } catch {}
-			try { createAndPositionKravlingNomineretBadge(); } catch {}
-			try { createAndPositionKobajerArrow(); } catch {}
-			try { createConnectingLines(); } catch {}
-			try { createHandDrawnFrames(); } catch {}
-			try { nudgeTwisterTitleDownInLandscape(); } catch {}
-			try { applyProjectsStageScale(); } catch {}
-			try { autoCenterProjectsLandscape(); } catch {}
+			try {
+				// Refresh pass to ensure custom assets are present after navigation.
+				positionNodesPerfectCircle();
+				createAndPositionDandDLogo();
+				createAndPositionTwisterDandDLine();
+				createAndPositionRepopKravlingLine();
+				createAndPositionKravlingNomineretBadge();
+				createAndPositionKobajerArrow();
+				ensureProjectsMobileInlineBadges();
+				createConnectingLines();
+				createHandDrawnFrames();
+			} catch {}
 			if (isPreview) {
 				try {
 					const container = document.querySelector('.brainstorm-container');
@@ -3709,148 +3386,65 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!container) return;
 
 			const containerRect = container.getBoundingClientRect();
-			const scale = projectsScaleFromRect(containerRect);
 			const brainRect = brain.getBoundingClientRect();
 			const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
 			const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
 
-			const nodeArray = Array.from(nodes);
-			const touchLandscapeShort = !!(isTouchLandscapeShort && isTouchLandscapeShort());
-			let touchLandscape = touchLandscapeShort;
+			const w = containerRect.width;
+			const h = containerRect.height;
+			let narrow = false;
 			try {
-				if (!touchLandscape && window.matchMedia) {
+				narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches) || (w > 0 && w <= 640);
+			} catch {}
+
+			let touchLandscape = false;
+			try {
+				if (window.matchMedia) {
 					touchLandscape = !!window.matchMedia('(max-width: 1024px) and (orientation: landscape) and (hover: none) and (pointer: coarse)').matches;
 				}
 			} catch {}
-			// Fallback: work in desktop mobile-preview too (Chrome devtools sometimes reports fine pointer).
 			try {
-				if (!touchLandscape) {
-					const w = window.innerWidth || containerRect.width;
-					const h = window.innerHeight || containerRect.height;
-					if (w && h && w <= 1024 && h <= 520 && w > h) touchLandscape = true;
-				}
+				if (!touchLandscape && w && h && w <= 1024 && h <= 520 && w > h) touchLandscape = true;
 			} catch {}
 
-			// Horizontal mobile (touch landscape): keep layout, but mimic vertical-mobile Brainfarts and Twister:
-			// - remove the Brainfarts arrow/build block
-			// - place "Under ombygning" inside the Brainfarts circle with low opacity (CSS).
-			if (touchLandscape && document.body && document.body.classList.contains('projects-page')) {
-				try {
-					container
-						.querySelectorAll('.brainfarts-build__arrow, .brainfarts-build')
-						.forEach((el) => {
-							try { el.remove(); } catch {}
-						});
-				} catch {}
+			const nodeArray = Array.from(nodes);
+			const scale = 1;
 
-				try {
-					const brainfarts = nodeArray.find((n) => ((n.getAttribute('href') || '').toLowerCase().includes('brainfarts')));
-					if (brainfarts) {
-						// Ensure the title is wrapped (matches vertical mobile expectations).
-						let title = brainfarts.querySelector('.project-node__title');
-						if (!title) {
-							brainfarts.textContent = '';
-							title = document.createElement('span');
-							title.className = 'project-node__title';
-							title.textContent = 'BRAINFARTS';
-							brainfarts.appendChild(title);
-						} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
-							title.textContent = 'BRAINFARTS';
-						}
+			const iw = window.innerWidth || w;
+			const ih = window.innerHeight || h;
+			const cw = (containerRect.width > 0 ? containerRect.width : iw) || iw;
+			const usePortraitSketchGrid =
+				document.body &&
+				document.body.classList.contains('projects-page') &&
+				cw <= 640 &&
+				ih >= iw;
 
-						// Make room and center the inline sign.
-						brainfarts.style.setProperty('display', 'flex', 'important');
-						brainfarts.style.setProperty('flex-direction', 'column', 'important');
-						brainfarts.style.setProperty('align-items', 'center', 'important');
-						brainfarts.style.setProperty('justify-content', 'center', 'important');
-
-						let inlineSign = brainfarts.querySelector('.brainfarts-build__sign--inline');
-						if (!inlineSign) {
-							inlineSign = document.createElement('img');
-							inlineSign.className = 'brainfarts-build__sign brainfarts-build__sign--inline';
-							inlineSign.alt = '';
-							inlineSign.draggable = false;
-							inlineSign.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
-							inlineSign.setAttribute('aria-hidden', 'true');
-							brainfarts.appendChild(inlineSign);
-						}
-					}
-				} catch {}
-
-				// TWISTER: put D&AD logo + winner inside the circle (inline) in landscape too.
-				try {
-					const twister = nodeArray.find((n) => ((n.getAttribute('href') || '').toLowerCase().includes('twister')));
-					if (twister) {
-						let title = twister.querySelector('.project-node__title');
-						if (!title) {
-							const existingText = (twister.textContent || '').trim() || 'TWISTER';
-							twister.textContent = '';
-							title = document.createElement('span');
-							title.className = 'project-node__title';
-							title.textContent = existingText;
-							twister.appendChild(title);
-						} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
-							title.textContent = 'TWISTER';
-						}
-
-						twister.style.setProperty('display', 'flex', 'important');
-						twister.style.setProperty('flex-direction', 'column', 'important');
-						twister.style.setProperty('align-items', 'center', 'important');
-						twister.style.setProperty('justify-content', 'center', 'important');
-
-						let inlineDandD = twister.querySelector('.dandd-badge--inline');
-						if (!inlineDandD) {
-							inlineDandD = document.createElement('div');
-							inlineDandD.className = 'dandd-badge dandd-badge--inline';
-							inlineDandD.setAttribute('aria-hidden', 'true');
-
-							const logo = document.createElement('img');
-							logo.className = 'dandd-logo';
-							logo.alt = 'D&AD';
-							logo.src = "assets/D&AD LOGO.webp";
-							logo.onerror = () => {
-								logo.onerror = null;
-								logo.src = "assets/D&AD logo.webp";
-							};
-
-							const winner = document.createElement('img');
-							winner.className = 'dandd-winner';
-							winner.alt = 'D&AD VINDER';
-							winner.src = 'assets/D&AD VINDER.webp';
-
-							inlineDandD.appendChild(logo);
-							inlineDandD.appendChild(winner);
-							twister.appendChild(inlineDandD);
-						}
-					}
-				} catch {}
-			}
-
-			// Mobile Projects: avoid overlaps (do NOT force a perfect circle).
-			// Lay nodes out in 5 rows (2+2+brain+2+2) like the sketch.
+			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) like the live site; ellipse for landscape / wide.
 			try {
-				if (document.body &&
-					document.body.classList.contains('projects-page') &&
-					window.matchMedia &&
-					window.matchMedia('(max-width: 640px)').matches) {
+				if (usePortraitSketchGrid) {
+					try { container.classList.add('projects-mindmap--portrait'); } catch {}
 					const NAV_H = 52;
-					const safeTop = NAV_H + Math.round(6 * scale);
-					const safeBottom = containerRect.height - Math.round(8 * scale);
-					const minX = 78;
-					const maxX = containerRect.width - 78;
-					const baseLeft = Math.max(minX, Math.min(maxX, containerRect.width * 0.28));
-					const baseRight = Math.max(minX, Math.min(maxX, containerRect.width * 0.72));
-					const maxW = Math.max(120, Math.floor(containerRect.width * 0.46));
+					const layoutH = Math.max(
+						containerRect.height,
+						window.innerHeight || 0,
+						(window.visualViewport && window.visualViewport.height) || 0
+					);
+					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
+					const safeTop = NAV_H + Math.round(36 * scale);
+					const safeBottom = layoutH - Math.round(40 * scale);
+					const minX = 52;
+					const maxX = containerRect.width - 52;
+					const baseLeft = Math.max(minX, Math.min(maxX, containerRect.width * 0.22));
+					const baseRight = Math.max(minX, Math.min(maxX, containerRect.width * 0.78));
+					const maxW = Math.max(120, Math.floor(containerRect.width * 0.48));
 					const tilts = [-1, 1, -2, 0.5, -1.5, 2, -0.5, 1.5];
 
-					// Row staggering (negative => wider separation, positive => tighter).
-					// Row 2 (Durex/Unge) needs more separation to prevent circle overlap.
 					const rowOffsets = [
-						Math.round(-14 * scale), // row 1
-						Math.round(-14 * scale), // row 2 (wider)
-						0,                       // row 3 (brain only)
-						Math.round(-10 * scale), // row 4
-						Math.round(-14 * scale), // row 5
+						Math.round(-14 * scale),
+						Math.round(-14 * scale),
+						0,
+						Math.round(-10 * scale),
+						Math.round(-14 * scale),
 					];
 
 					function rowXs(rowIndex) {
@@ -3868,12 +3462,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 
 					function rowY(rowIndex) {
-						const avail = Math.max(220, safeBottom - safeTop);
-						const pad = Math.round(10 * scale);
+						const pad = Math.round(4 * scale);
 						const y1 = safeTop + pad;
 						const y5 = safeBottom - pad;
-						const step = (y5 - y1) / 4;
-						return y1 + (rowIndex - 1) * step;
+						const full = y5 - y1;
+						const span = full * 0.88;
+						const mid = (y1 + y5) / 2;
+						const y1c = mid - span / 2;
+						const step = span / 4;
+						return y1c + (rowIndex - 1) * step;
 					}
 
 					function styleNode(node, tiltIndex) {
@@ -3907,189 +3504,54 @@ document.addEventListener('DOMContentLoaded', function() {
 					const placed = [];
 					for (let i = 0; i < plan.length; i++) {
 						const p = plan[i];
-						const node = nodeArray.find((n) => p.match(((n.getAttribute('href') || '').toLowerCase())));
+						const node = nodeArray.find((n) => p.match((n.getAttribute('href') || '').toLowerCase()));
 						if (!node) continue;
 						styleNode(node, i);
-						// Keep "REPOP BY DEPOP" on one line on mobile.
-						if (p.key === 'repop') {
-							// Ensure the Repop title is the image (do NOT overwrite it back to text).
-							let title = node.querySelector('.project-node__title');
-							if (!title) {
-								node.textContent = '';
-								title = document.createElement('span');
-								title.className = 'project-node__title project-node__title--image';
-								node.appendChild(title);
-							}
-							try { title.classList.add('project-node__title--image'); } catch {}
-							let img = title.querySelector('img');
-							if (!img) {
-								title.textContent = '';
-								img = document.createElement('img');
-								img.className = 'project-node__title-img project-node__title-img--repop';
-								img.alt = '';
-								img.decoding = 'async';
-								img.src = 'assets/repop-by-depop-text.png';
-								title.appendChild(img);
-							}
-
-							node.style.setProperty('max-width', `${Math.max(160, Math.floor(maxW * 1.05))}px`, 'important');
-							// Add Kravling 2025 as part of the circle (under the REPOP text).
-							node.style.setProperty('display', 'flex', 'important');
-							node.style.setProperty('flex-direction', 'column', 'important');
-							node.style.setProperty('align-items', 'center', 'important');
-							node.style.setProperty('justify-content', 'center', 'important');
-
-							let inline = node.querySelector('.kravling-nomineret-badge--inline');
-							if (!inline) {
-								inline = document.createElement('div');
-								inline.className = 'kravling-nomineret-badge kravling-nomineret-badge--inline';
-								inline.setAttribute('aria-hidden', 'true');
-								inline.innerHTML = `
-									<div class="kravling-line1">KRAVLINGPRISEN</div>
-									<div class="kravling-line2">NOMINERET</div>
-									<div class="kravling-line3">2025</div>
-								`;
-								node.appendChild(inline);
-							}
-						}
-						if (p.key === 'kobajer') {
-							// Wrap the title in a span so the circle stays "the same"
-							// even when we add the inline Kravling badge underneath.
-							let title = node.querySelector('.project-node__title');
-							if (!title) {
-								node.textContent = '';
-								title = document.createElement('span');
-								title.className = 'project-node__title';
-								title.textContent = 'KØ-BAJER';
-								node.appendChild(title);
-							} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
-								title.textContent = 'KØ-BAJER';
-							}
-
-							// Add Kravling 2024 as part of the circle (under the KØ-BAJER text).
-							node.style.setProperty('display', 'flex', 'important');
-							node.style.setProperty('flex-direction', 'column', 'important');
-							node.style.setProperty('align-items', 'center', 'important');
-							node.style.setProperty('justify-content', 'center', 'important');
-
-							let inline2024 = node.querySelector('.kobajer-kravling-2024-badge--inline');
-							if (!inline2024) {
-								inline2024 = document.createElement('div');
-								inline2024.className = 'kobajer-kravling-2024-badge kobajer-kravling-2024-badge--inline';
-								inline2024.setAttribute('aria-hidden', 'true');
-								inline2024.innerHTML = `
-									<div class="kobajer-kravling-2024-text">
-										<div class="kravling-line1">KRAVLINGPRISEN</div>
-										<div class="kravling-line2">NOMINERET</div>
-										<div class="kravling-line3">2024</div>
-									</div>
-								`;
-								node.appendChild(inline2024);
-							}
-						}
-						if (p.key === 'twister') {
-							// Put D&AD logo + winner inside the TWISTER circle on mobile.
-							let title = node.querySelector('.project-node__title');
-							if (!title) {
-								node.textContent = '';
-								title = document.createElement('span');
-								title.className = 'project-node__title';
-								title.textContent = 'TWISTER';
-								node.appendChild(title);
-							} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
-								title.textContent = 'TWISTER';
-							}
-
-							node.style.setProperty('display', 'flex', 'important');
-							node.style.setProperty('flex-direction', 'column', 'important');
-							node.style.setProperty('align-items', 'center', 'important');
-							node.style.setProperty('justify-content', 'center', 'important');
-
-							let inlineDandD = node.querySelector('.dandd-badge--inline');
-							if (!inlineDandD) {
-								inlineDandD = document.createElement('div');
-								inlineDandD.className = 'dandd-badge dandd-badge--inline';
-								inlineDandD.setAttribute('aria-hidden', 'true');
-
-								const logo = document.createElement('img');
-								logo.className = 'dandd-logo';
-								logo.alt = 'D&AD';
-								logo.src = "assets/D&AD LOGO.webp";
-								logo.onerror = () => {
-									logo.onerror = null;
-									logo.src = "assets/D&AD logo.webp";
-								};
-
-								const winner = document.createElement('img');
-								winner.className = 'dandd-winner';
-								winner.alt = 'D&AD VINDER';
-								winner.src = 'assets/D&AD VINDER.webp';
-
-								inlineDandD.appendChild(logo);
-								inlineDandD.appendChild(winner);
-								node.appendChild(inlineDandD);
-							}
-						}
-						if (p.key === 'brainfarts') {
-							// Put "Under ombygning" inside the BRAINFARTS circle on mobile.
-							let title = node.querySelector('.project-node__title');
-							if (!title) {
-								node.textContent = '';
-								title = document.createElement('span');
-								title.className = 'project-node__title';
-								title.textContent = 'BRAINFARTS';
-								node.appendChild(title);
-							} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
-								title.textContent = 'BRAINFARTS';
-							}
-
-							node.style.setProperty('display', 'flex', 'important');
-							node.style.setProperty('flex-direction', 'column', 'important');
-							node.style.setProperty('align-items', 'center', 'important');
-							node.style.setProperty('justify-content', 'center', 'important');
-
-							let inlineSign = node.querySelector('.brainfarts-build__sign--inline');
-							if (!inlineSign) {
-								inlineSign = document.createElement('img');
-								inlineSign.className = 'brainfarts-build__sign brainfarts-build__sign--inline';
-								inlineSign.alt = '';
-								inlineSign.draggable = false;
-								inlineSign.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
-								inlineSign.setAttribute('aria-hidden', 'true');
-								node.appendChild(inlineSign);
-							}
-						}
-						// Row 2 has long labels; make these tabs slightly smaller so the circle frames shrink.
 						if (p.key === 'durex' || p.key === 'unge') {
 							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
 							node.style.setProperty('font-size', `${Math.max(10, fs * 0.86)}px`, 'important');
+						}
+						// Durex: slightly narrower tab. UNGE: wider tab so the title image reads larger.
+						if (p.key === 'durex') {
 							node.style.setProperty('max-width', `${Math.max(110, Math.floor(maxW * 0.88))}px`, 'important');
+						} else if (p.key === 'unge') {
+							const ungeTabW = Math.min(
+								300,
+								Math.floor(containerRect.width * 0.58)
+							);
+							node.style.setProperty('max-width', `${Math.max(maxW + 32, ungeTabW)}px`, 'important');
+						} else if (p.key === 'byens') {
+							node.style.setProperty(
+								'max-width',
+								`${Math.max(100, Math.floor(maxW * 0.95))}px`,
+								'important'
+							);
 						}
 						let y = rowY(p.row);
-						// Make room for the inline Kravling badge under REPOP.
-						if (p.key === 'repop') y -= Math.round(10 * scale);
-						// Make room for the inline Kravling badge under KØ-BAJER.
-						if (p.key === 'kobajer') y -= Math.round(12 * scale);
+						if (p.key === 'repop') y -= Math.round(8 * scale);
+						if (p.key === 'kobajer') y -= Math.round(6 * scale);
 						const { lx, rx } = rowXs(p.row);
 						let x = (p.side === 'left') ? lx : rx;
-						// Fine-tune: move KØ-BAJER more down and more right (mobile only)
-						if (p.key === 'kobajer') {
-							x += Math.round(128 * scale);
-							y += Math.round(44 * scale);
-						}
-						// Fine-tune: spread specific nodes further out (mobile only)
-						if (p.key === 'brainfarts') x -= Math.round(18 * scale);
-						if (p.key === 'byens') x += Math.round(18 * scale);
-						if (p.key === 'durex') x -= Math.round(16 * scale);
-						if (p.key === 'unge') x += Math.round(16 * scale);
-						// Keep within bounds
+						if (p.key === 'kobajer') y += Math.round(38 * scale);
+						/* Brainfarts: lidt mod højre så boblen ikke klipper i venstre kant */
+						if (p.key === 'brainfarts') x += Math.round(32 * scale);
+						/* Twister: mod højre så cirkel + D&AD ikke sidder for tæt på venstre margin */
+						if (p.key === 'twister') x += Math.round(28 * scale);
+						/* Repop: mod højre så boblen + Kravling ikke klipper i venstre kant */
+						if (p.key === 'repop') x += Math.round(28 * scale);
+						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
+						if (p.key === 'byens') x -= Math.round(38 * scale);
+						if (p.key === 'byens') y += Math.round(14 * scale);
+						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
+						if (p.key === 'durex') x += Math.round(38 * scale);
+						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
+						if (p.key === 'unge') x -= Math.round(28 * scale);
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
 						node.style.setProperty('top', `${y}px`, 'important');
 						placed.push(node);
 					}
 
-					// Place the brain in the middle row (row 3).
 					try {
 						const bx = Math.max(minX, Math.min(maxX, containerRect.width * 0.5));
 						const by = rowY(3);
@@ -4101,7 +3563,6 @@ document.addEventListener('DOMContentLoaded', function() {
 						brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
 					} catch {}
 
-					// If any row is too tight, shrink node text a bit so nothing overlaps.
 					try {
 						const y1 = rowY(1);
 						const y2 = rowY(2);
@@ -4111,8 +3572,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							const r = n.getBoundingClientRect();
 							if (r && r.height) maxH = Math.max(maxH, r.height);
 						});
-						if (maxH > step * 0.88) {
-							const k = Math.max(0.72, Math.min(1, (step * 0.88) / maxH));
+						if (maxH > step * 0.92) {
+							const k = Math.max(0.82, Math.min(1, (step * 0.92) / maxH));
 							placed.forEach((n) => {
 								const fs = parseFloat(window.getComputedStyle(n).fontSize) || 16;
 								n.style.setProperty('font-size', `${Math.max(10, fs * k)}px`, 'important');
@@ -4120,45 +3581,38 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch {}
 
-					// Keep the D&AD logo aligned after node layout updates.
 					createAndPositionDandDLogo();
 					createAndPositionTwisterDandDLine();
 					createAndPositionRepopKravlingLine();
 					createAndPositionKravlingNomineretBadge();
 					createAndPositionKobajerArrow();
+					ensureProjectsMobileInlineBadges();
 					return;
 				}
 			} catch {}
+			try { container.classList.remove('projects-mindmap--portrait'); } catch {}
 
-			// Responsive ring sizing:
-			// When the window gets narrow, we want the layout to shrink instead of pushing nodes out of view.
-			let maxTabW = 180;
-			let maxTabH = 80;
-			for (const node of nodeArray) {
-				const r = node.getBoundingClientRect();
-				if (r && r.width) maxTabW = Math.max(maxTabW, r.width);
-				if (r && r.height) maxTabH = Math.max(maxTabH, r.height);
+			// Use an ellipse ring (rx > ry). On phones, drop the desktop min radius (200px) or left/right nodes clip off-screen.
+			let paddingX = 210;
+			let paddingY = 215;
+			let extraRy = 120;
+			let minRx = 200;
+			let minRy = 170;
+			if (narrow) {
+				paddingX = Math.max(36, w * 0.10);
+				paddingY = Math.max(42, h * 0.09);
+				extraRy = 0;
+				minRx = 48;
+				minRy = 48;
 			}
-
-			// Use an ellipse ring, with padding derived from actual element sizes.
-			// Keep the extra padding smaller on small screens so the ring can shrink more.
-			const extraPadX = Math.max(10 * scale, Math.min(36 * scale, containerRect.width * 0.05));
-			const extraPadY = Math.max(12 * scale, Math.min(56 * scale, containerRect.height * 0.06));
-			const paddingX = (maxTabW / 2) + extraPadX;
-			const paddingY = (maxTabH / 2) + extraPadY;
-
-			let rx = (containerRect.width / 2) - paddingX;
-			let ry = (containerRect.height / 2) - paddingY;
-
-			// Keep a minimum so it doesn't collapse completely (but allow it to shrink a lot).
-			const minRing = Math.max(14, Math.round(45 * scale));
-			rx = Math.max(minRing, rx);
-			ry = Math.max(minRing, ry);
-
-			// Only add extra vertical space if we actually have room.
-			const maxRy = Math.max(minRing, (containerRect.height / 2) - (maxTabH / 2) - (24 * scale));
-			const extraY = Math.min(120 * scale, Math.max(0, containerRect.height - (520 * scale)) * 0.22);
-			ry = Math.min(maxRy, ry + extraY);
+			let rx = Math.max(minRx, (w / 2) - paddingX);
+			let ry = Math.max(minRy, (h / 2) - paddingY) + extraRy;
+			if (narrow) {
+				const capX = Math.max(64, w * 0.36);
+				const capY = Math.max(72, h * 0.36);
+				rx = Math.min(rx, capX);
+				ry = Math.min(ry, capY);
+			}
 			const n = nodeArray.length || 1;
 			// Start at top (-90deg) and go clockwise.
 			const startAngle = -Math.PI / 2;
@@ -4176,11 +3630,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
-				if (href.includes('repop')) y += Math.round(35 * (maxTabH / 80));
-				// Phone landscape: move ONLY KØ-BAJER slightly up so the inline 2024 badge fits inside its circle.
-				if (href.includes('kobajer') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-					y -= Math.round(14 * (maxTabH / 80));
-				}
+				if (href.includes('repop')) y += 35;
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -4197,10 +3647,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					'important'
 				);
 
-				// Move ONLY the word (label) for BRAINFARTS a bit to the right.
+				// Move ONLY the label for BRAINFARTS a bit to the right (do not wipe image titles).
 				if (href.includes('brainfarts')) {
-					// If we have a wrapped title (mobile/inline-sign variants), shift that,
-					// otherwise fall back to the legacy "node-label" wrapper.
 					const title = node.querySelector('.project-node__title');
 					if (title) {
 						title.style.display = 'inline-block';
@@ -4211,7 +3659,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							label = document.createElement('span');
 							label.className = 'node-label';
 							label.textContent = node.textContent;
-							// IMPORTANT: only clear when we're not using inline assets.
 							node.textContent = '';
 							node.appendChild(label);
 						}
@@ -4227,6 +3674,95 @@ document.addEventListener('DOMContentLoaded', function() {
 			createAndPositionRepopKravlingLine();
 			createAndPositionKravlingNomineretBadge();
 			createAndPositionKobajerArrow();
+			ensureProjectsMobileInlineBadges();
+		}
+
+		/** Mobile CSS hides standalone Kravling/D&AD badges; show copies inside REPOP / KØ-BAJER / TWISTER / BRAINFARTS nodes. */
+		function ensureProjectsMobileInlineBadges() {
+			try {
+				if (!document.body || !document.body.classList.contains('projects-page')) return;
+				const container = document.querySelector('.brainstorm-container');
+				if (!container) return;
+				let narrow = false;
+				try {
+					narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
+				} catch {}
+				const cw = container.getBoundingClientRect().width;
+				if (!(narrow || cw <= 640)) return;
+
+				function stackNode(el) {
+					if (!el) return;
+					el.style.setProperty('display', 'flex', 'important');
+					el.style.setProperty('flex-direction', 'column', 'important');
+					el.style.setProperty('align-items', 'center', 'important');
+					el.style.setProperty('justify-content', 'center', 'important');
+				}
+
+				const repop = container.querySelector('a[href*="repop"]');
+				stackNode(repop);
+				if (repop && !repop.querySelector('.kravling-nomineret-badge--inline')) {
+					const el = document.createElement('div');
+					el.className = 'kravling-nomineret-badge kravling-nomineret-badge--inline';
+					el.setAttribute('aria-hidden', 'true');
+					el.innerHTML = `
+						<div class="kravling-line1">KRAVLINGPRISEN</div>
+						<div class="kravling-line2">NOMINERET</div>
+						<div class="kravling-line3">2025</div>
+					`;
+					repop.appendChild(el);
+				}
+
+				const kob = container.querySelector('a[href*="kobajer"]');
+				stackNode(kob);
+				if (kob && !kob.querySelector('.kobajer-kravling-2024-badge--inline')) {
+					const el = document.createElement('div');
+					el.className = 'kobajer-kravling-2024-badge kobajer-kravling-2024-badge--inline';
+					el.setAttribute('aria-hidden', 'true');
+					el.innerHTML = `
+						<div class="kobajer-kravling-2024-text">
+							<div class="kravling-line1">KRAVLINGPRISEN</div>
+							<div class="kravling-line2">NOMINERET</div>
+							<div class="kravling-line3">2024</div>
+						</div>
+					`;
+					kob.appendChild(el);
+				}
+
+				const tw = container.querySelector('a[href*="twister"]');
+				stackNode(tw);
+				if (tw && !tw.querySelector('.dandd-badge--inline')) {
+					const el = document.createElement('div');
+					el.className = 'dandd-badge dandd-badge--inline';
+					el.setAttribute('aria-hidden', 'true');
+					const logo = document.createElement('img');
+					logo.className = 'dandd-logo';
+					logo.alt = 'D&AD';
+					logo.src = 'assets/D&AD LOGO.webp';
+					logo.onerror = () => {
+						logo.onerror = null;
+						logo.src = 'assets/D&AD logo.webp';
+					};
+					const winner = document.createElement('img');
+					winner.className = 'dandd-winner';
+					winner.alt = 'D&AD VINDER';
+					winner.src = 'assets/D&AD VINDER.webp';
+					el.appendChild(logo);
+					el.appendChild(winner);
+					tw.appendChild(el);
+				}
+
+				const bf = container.querySelector('a[href*="brainfarts"]');
+				stackNode(bf);
+				if (bf && !bf.querySelector('.brainfarts-build__sign--inline')) {
+					const img = document.createElement('img');
+					img.className = 'brainfarts-build__sign brainfarts-build__sign--inline';
+					img.alt = '';
+					img.draggable = false;
+					img.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
+					img.setAttribute('aria-hidden', 'true');
+					bf.appendChild(img);
+				}
+			} catch {}
 		}
 
 		// Create fart clouds
@@ -4279,27 +3815,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place D&AD logo to the right of TWISTER tab (projects page)
 		function createAndPositionDandDLogo() {
-			// Phone landscape: use inline D&AD inside TWISTER circle instead.
-			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape()) {
-				try {
-					const container = document.querySelector('.brainstorm-container');
-					const existing = container && container.querySelector('.dandd-badge');
-					if (existing) existing.remove();
-				} catch {}
-				return;
-			}
-			// Mobile Projects uses an inline (inside-circle) D&AD badge instead.
-			if (
-				document.body.classList.contains('projects-page') &&
-				window.matchMedia &&
-				window.matchMedia('(max-width: 640px)').matches
-			) {
-				return;
-			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
-			const containerRect = container.getBoundingClientRect();
-			const scale = projectsScaleFromRect(containerRect);
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			if (!twisterNode) return;
 
@@ -4390,9 +3907,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				winner.src = 'assets/D&AD VINDER.webp';
 			}
 
+			const containerRect = container.getBoundingClientRect();
 			const r = twisterNode.getBoundingClientRect();
-			const top = (r.top - containerRect.top) + (r.height / 2) + (28 * scale); // move more down
-			const left = (r.right - containerRect.left) + (14 * scale) + (70 * scale); // move a lot more right
+			const top = (r.top - containerRect.top) + (r.height / 2) + 28; // move more down
+			const left = (r.right - containerRect.left) + 14 + 70; // move a lot more right
 
 			badge.style.left = `${left}px`;
 			badge.style.top = `${top}px`;
@@ -4427,19 +3945,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place the line asset between TWISTER and the D&AD badge (more reliable than SVG <image>)
 		function createAndPositionTwisterDandDLine() {
-			// Phone landscape: use inline D&AD inside TWISTER circle instead.
-			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape()) {
-				try {
-					const container = document.querySelector('.brainstorm-container');
-					const existing = container && container.querySelector('.twister-dandd-line');
-					if (existing) existing.remove();
-				} catch {}
-				return;
-			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
-			const containerRect = container.getBoundingClientRect();
-			const scale = projectsScaleFromRect(containerRect);
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			const badge = container.querySelector('.dandd-badge');
 			if (!twisterNode || !badge) return;
@@ -4459,6 +3966,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				container.appendChild(line);
 			}
 
+			const containerRect = container.getBoundingClientRect();
 			const twRect = twisterNode.getBoundingClientRect();
 			const badgeRect = badge.getBoundingClientRect();
 
@@ -4473,39 +3981,28 @@ document.addEventListener('DOMContentLoaded', function() {
 			const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
 			// Make it longer: extend slightly into both ends
-			const gapStart = -28 * scale;
-			const gapEnd = -28 * scale;
+			const gapStart = -28;
+			const gapEnd = -28;
 			const sX = startX + (dx / dist) * gapStart;
 			const sY = startY + (dy / dist) * gapStart;
 			const eX = endX - (dx / dist) * gapEnd;
 			const eY = endY - (dy / dist) * gapEnd;
 
-			const angle = (Math.atan2(eY - sY, eX - sX) * 180 / Math.PI) + (6 * scale); // rotate a bit more down
+			const angle = (Math.atan2(eY - sY, eX - sX) * 180 / Math.PI) + 6; // rotate a bit more down
 			const lineLength = Math.sqrt((eX - sX) ** 2 + (eY - sY) ** 2);
 
 			line.style.left = `${sX}px`;
 			line.style.top = `${sY}px`;
 			line.style.width = `${lineLength}px`;
-			line.style.height = `${190 * scale}px`; // thicker
+			line.style.height = '190px'; // thicker
 			line.style.transformOrigin = '0 50%';
 			line.style.transform = `translateY(-50%) rotate(${angle}deg)`;
 		}
 
 		// Place mirrored line asset on the LEFT side of REPOP BY DEPOP
 		function createAndPositionRepopKravlingLine() {
-			// Phone landscape: use inline Kravling inside REPOP circle instead.
-			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-				try {
-					const container = document.querySelector('.brainstorm-container');
-					const existing = container && container.querySelector('.repop-kravling-line');
-					if (existing) existing.remove();
-				} catch {}
-				return;
-			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
-			const containerRect = container.getBoundingClientRect();
-			const scale = projectsScaleFromRect(containerRect);
 			const repopNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('repop'));
 			if (!repopNode) return;
 
@@ -4524,15 +4021,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				container.appendChild(line);
 			}
 
+			const containerRect = container.getBoundingClientRect();
 			const r = repopNode.getBoundingClientRect();
 
 			// Size (can be tuned) — keep the right edge anchored to the tab
-			const width = 170 * scale; // shorter
-			const height = 80 * scale; // slimmer
-			const gap = 10 * scale;
+			const width = 170; // shorter
+			const height = 80; // slimmer
+			const gap = 10;
 
-			const top = (r.top - containerRect.top) + (r.height / 2) + (12 * scale); // a bit more down
-			const left = (r.left - containerRect.left) - width + gap + (8 * scale); // a bit to the right
+			const top = (r.top - containerRect.top) + (r.height / 2) + 12; // a bit more down
+			const left = (r.left - containerRect.left) - width + gap + 8; // a bit to the right
 
 			line.style.width = `${width}px`;
 			line.style.height = `${height}px`;
@@ -4590,19 +4088,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Place "Kravlinprisen nomineret 2025" badge to the LEFT of the repop-arrow
 		function createAndPositionKravlingNomineretBadge() {
-			// Phone landscape: use inline Kravling inside REPOP circle instead.
-			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-				try {
-					const container = document.querySelector('.brainstorm-container');
-					const existing = container && container.querySelector('.kravling-nomineret-badge');
-					if (existing) existing.remove();
-				} catch {}
-				return;
-			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
-			const containerRect = container.getBoundingClientRect();
-			const scale = projectsScaleFromRect(containerRect);
 			const arrow = container.querySelector('.repop-kravling-line');
 			if (!arrow) return;
 
@@ -4632,10 +4119,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			fillKravlingStars(sparks, 12);
 
+			const containerRect = container.getBoundingClientRect();
 			const a = arrow.getBoundingClientRect();
 
-			const width = 160 * scale;
-			const gap = 12 * scale;
+			const width = 160;
+			const gap = 12;
 			const left = (a.left - containerRect.left) - width - gap;
 			const top = (a.top - containerRect.top) + (a.height / 2);
 
@@ -4643,133 +4131,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			badge.style.height = 'auto';
 			badge.style.left = `${left}px`;
 			badge.style.top = `${top}px`;
-			// Nudge the label up + further left so it sits next to the arrow (desktop).
-			const tx = 24 * scale;
-			const ty = -22 * scale;
-			badge.style.transform = `translateY(-50%) translateX(${tx}px) translateY(${ty}px) rotate(-2deg)`;
-
-			// Collision avoidance on small screens:
-			// - keep the badge visible (not outside the page)
-			// - avoid overlapping BYENS LANDHANDEL on narrow viewports
-			try {
-				const byensNode = Array.from(nodes).find(n => {
-					const href = (n.getAttribute('href') || '').toLowerCase();
-					const key = (n.dataset.visualKey || '').toLowerCase();
-					const txt = (n.textContent || '').toLowerCase();
-					return key.includes('byens') || href.includes('byens-landhandel') || txt.includes('byens');
-				});
-
-				function rectsOverlap(r1, r2) {
-					return !(
-						r2.left >= r1.right ||
-						r2.right <= r1.left ||
-						r2.top >= r1.bottom ||
-						r2.bottom <= r1.top
-					);
-				}
-
-				// Keep within left boundary
-				const br0 = badge.getBoundingClientRect();
-				if (br0.left < containerRect.left + 6) {
-					const delta = (containerRect.left + 6) - br0.left;
-					badge.style.left = `${left + delta}px`;
-				}
-
-				// På brede skærme: behold “klassisk” layout (Kravling + pil til venstre for REPOP).
-				// Kollisionsskub kun på smalle viewports, hvor Byens og badge overlapper.
-				if (
-					byensNode &&
-					window.matchMedia &&
-					window.matchMedia('(max-width: 900px)').matches
-				) {
-					let tries = 0;
-					while (tries < 3) {
-						const br = badge.getBoundingClientRect();
-						const yr = byensNode.getBoundingClientRect();
-						if (!rectsOverlap(br, yr)) break;
-						const pushY = (Math.min(br.bottom, yr.bottom) - Math.max(br.top, yr.top)) + (18 * scale);
-						const curTop = parseFloat(badge.style.top || String(top)) || top;
-						badge.style.top = `${curTop + pushY}px`;
-						const curLeft = parseFloat(badge.style.left || String(left)) || left;
-						badge.style.left = `${curLeft - (10 * scale)}px`;
-						tries++;
-					}
-				}
-			} catch {}
-		}
-
-		// Keep the BRAINFARTS "under construction" block near BRAINFARTS (and away from KØ-BAJER) on small screens.
-		function positionBrainfartsBuild() {
-			// Mobile Projects shows the "Under ombygning" sign inside the BRAINFARTS circle instead.
-			if (
-				document.body.classList.contains('projects-page') &&
-				window.matchMedia &&
-				window.matchMedia('(max-width: 640px)').matches
-			) {
-				return;
-			}
-			const container = document.querySelector('.brainstorm-container');
-			if (!container) return;
-			const build = container.querySelector('.brainfarts-build');
-			if (!build) return;
-			const containerRect = container.getBoundingClientRect();
-			const scale = projectsScaleFromRect(containerRect);
-
-			const brainfartsNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('brainfarts'));
-			if (!brainfartsNode) return;
-			const bf = brainfartsNode.getBoundingClientRect();
-
-			let w = 170 * scale;
-			let h = 210 * scale;
-			// Keep a tiny minimum so it doesn't disappear completely
-			w = Math.max(60, w);
-			h = Math.max(72, h);
-
-			let left = (bf.left - containerRect.left) - (w * 0.05);
-			// Nudge arrow + sign down inside the circle area (matches CSS .brainfarts-build shift)
-			let top = (bf.top - containerRect.top) + (bf.height * 0.62) + (16 * scale);
-
-			// Clamp into container bounds
-			left = Math.max(0, Math.min(containerRect.width - w, left));
-			top = Math.max(0, Math.min(containerRect.height - h, top));
-
-			build.style.left = `${left}px`;
-			build.style.top = `${top}px`;
-			build.style.width = `${w}px`;
-			build.style.height = `${h}px`;
-
-			// If it collides with KØ-BAJER, push it down.
-			const kobajerNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('kobajer'));
-			if (kobajerNode) {
-				const k = kobajerNode.getBoundingClientRect();
-				const b = build.getBoundingClientRect();
-				const overlaps = !(k.left >= b.right || k.right <= b.left || k.top >= b.bottom || k.bottom <= b.top);
-				if (overlaps) {
-					const push = (Math.min(b.bottom, k.bottom) - Math.max(b.top, k.top)) + (18 * scale);
-					let nextTop = (parseFloat(build.style.top) || top) + push;
-					nextTop = Math.max(0, Math.min(containerRect.height - h, nextTop));
-					build.style.top = `${nextTop}px`;
-				}
-			}
+			badge.style.transform = 'translateY(-50%) translateX(62px) translateY(-12px) rotate(-2deg)'; // 2025 badge slightly left
 		}
 
 		// Place arrow asset just under KØ-BAJER
 		function createAndPositionKobajerArrow() {
-			// Phone landscape: use inline Kravling inside KØ-BAJER circle instead.
-			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-				try {
-					const container = document.querySelector('.brainstorm-container');
-					container && container.querySelectorAll('.kobajer-arrow, .kobajer-kravling-2024-badge').forEach((el) => {
-						try { el.remove(); } catch {}
-					});
-				} catch {}
-				return;
-			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
-			const containerRect = container.getBoundingClientRect();
-			const scale = projectsScaleFromRect(containerRect);
-			const assetS = projectsLandscapeAssetScale();
 
 			const kobajerNode = Array.from(nodes).find(n => {
 				const href = (n.getAttribute('href') || '').toLowerCase();
@@ -4805,11 +4173,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				});
 			}
 
+			const containerRect = container.getBoundingClientRect();
 			const r = kobajerNode.getBoundingClientRect();
 
-			const width = 85 * scale * assetS; // shorter (shrink only in landscape touch)
-			const gap = -35 * scale; // move slightly down
-			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - (42 * scale); // more to the right
+			const width = 85; // shorter
+			const gap = -35; // move slightly down
+			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - 42; // more to the right
 			const top = (r.bottom - containerRect.top) + gap;
 
 			arrow.style.setProperty('width', `${width}px`, 'important');
@@ -4821,7 +4190,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			arrow.style.top = `${top}px`;
 			// Point down, and make it thicker without making it longer
 			arrow.style.transformOrigin = '50% 50%';
-			arrow.style.transform = `rotate(115deg) scaleY(${1.4 * assetS})`; // keep feel, but shrink thickness in landscape
+			arrow.style.transform = 'rotate(115deg) scaleY(1.4)'; // rotate more to the right
 
 			// Position the "Kravlingprisen nomineret 2024" label under the arrow tip
 			createAndPositionKobajerKravling2024Label();
@@ -4833,27 +4202,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Repeat "Kravlingprisen nomineret" with 2024 under the arrow point
 		function createAndPositionKobajerKravling2024Label() {
-			// Phone landscape: use inline Kravling inside KØ-BAJER circle instead.
-			if (document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-				try {
-					const container = document.querySelector('.brainstorm-container');
-					const existing = container && container.querySelector('.kobajer-kravling-2024-badge');
-					if (existing) existing.remove();
-				} catch {}
-				return;
-			}
-			// Mobile Projects uses an inline (inside-circle) badge instead.
-			if (
-				document.body.classList.contains('projects-page') &&
-				window.matchMedia &&
-				window.matchMedia('(max-width: 640px)').matches
-			) {
-				return;
-			}
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
-			const containerRect = container.getBoundingClientRect();
-			const scale = projectsScaleFromRect(containerRect);
 			const arrow = container.querySelector('.kobajer-arrow');
 
 			let badge = container.querySelector('.kobajer-kravling-2024-badge');
@@ -4889,11 +4239,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						return href.includes('kobajer') || text.includes('KØ-BAJER');
 					});
 					if (kobajerNode) {
+						const containerRect = container.getBoundingClientRect();
 						const nr = kobajerNode.getBoundingClientRect();
 						const x = (nr.left - containerRect.left) + (nr.width / 2);
 						const y = (nr.bottom - containerRect.top);
-						badge.style.left = `${x - (18 * scale)}px`;
-						badge.style.top = `${y - (20 * scale)}px`;
+						badge.style.left = `${x - 18}px`;
+						badge.style.top = `${y - 20}px`;
 						badge.style.transform = 'translateX(-50%) rotate(-2deg)';
 					}
 				}
@@ -4941,14 +4292,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				badge.appendChild(sparks);
 			}
 
+			const containerRect = container.getBoundingClientRect();
 			const r = arrow.getBoundingClientRect();
 
 			// Arrow tip ≈ bottom-center of its visual bounding box
 			const tipX = (r.left - containerRect.left) + (r.width / 2);
 			const tipY = (r.bottom - containerRect.top);
 
-			badge.style.left = `${tipX - (28 * scale)}px`; // a bit more to the left
-			badge.style.top = `${tipY - (36 * scale)}px`;  // slightly more up
+			badge.style.left = `${tipX - 28}px`; // a bit more to the left
+			badge.style.top = `${tipY - 36}px`;  // slightly more up
 			badge.style.transform = 'translateX(-50%) rotate(-2deg)';
 			badge.dataset.lastLeft = badge.style.left;
 			badge.dataset.lastTop = badge.style.top;
@@ -4962,14 +4314,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			const textCenterY = (textRect.top - badgeRect.top) + (textRect.height / 2);
 
 			// Padding around the text (tune feel here)
-			const padX = 64 * scale; // base horizontal padding (ring is stretched via scaleX below)
-			const padY = 40 * scale; // slightly bigger at the top (we bias upward below)
-			const ringW = Math.max(120 * scale, textRect.width + padX);
-			const ringH = Math.max(90 * scale, textRect.height + padY);
+			const padX = 64; // base horizontal padding (ring is stretched via scaleX below)
+			const padY = 40; // slightly bigger at the top (we bias upward below)
+			const ringW = Math.max(120, textRect.width + padX);
+			const ringH = Math.max(90, textRect.height + padY);
 
-			sparks.style.left = `${textCenterX - (6 * scale)}px`;
+			sparks.style.left = `${textCenterX - 6}px`;
 			// Bias slightly upward, but leave a tiny bit more bottom
-			sparks.style.top = `${textCenterY - (7 * scale)}px`;
+			sparks.style.top = `${textCenterY - 7}px`;
 			sparks.style.width = `${ringW}px`;
 			sparks.style.height = `${ringH}px`;
 			// Make the ring more horizontally long (ellipse)
@@ -4979,8 +4331,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			// Rebuild rays with radius based on the text ring size
 			// Use height as the basis so scaleX turns it into an ellipse (wider without getting taller).
-			const ringR = Math.max(26 * scale, (ringH / 2) - (10 * scale));
-			const rayH = Math.max(46 * scale, Math.round(ringR * 1.25));
+			const ringR = Math.max(26, (ringH / 2) - 10);
+			const rayH = Math.max(46, Math.round(ringR * 1.25));
 			fillCharcoalRays(sparks, 14, { r: ringR, h: rayH });
 		}
 
@@ -5018,9 +4370,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Create asset elements
 		function createAssets() {
 			console.log('Creating assets...');
-			const container = document.querySelector('.brainstorm-container');
-			const scale = container ? projectsScaleFromRect(container.getBoundingClientRect()) : 1;
-			const px = (n) => `${Math.round(n * scale)}px`;
 			
 			// Condom asset for Durex
 			const condomAsset = document.createElement('img');
@@ -5028,7 +4377,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			condomAsset.className = 'condom-asset';
 			condomAsset.style.cssText = `
 				position: absolute;
-				width: ${px(135)};
+				width: 135px;
 				height: auto;
 				top: -22%;
 				left: 42%;
@@ -5046,12 +4395,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			kornAsset.className = 'korn-asset';
 			kornAsset.style.cssText = `
 				position: absolute;
-				width: ${px(440)};
-				height: ${px(380)};
+				width: 440px;
+				height: 380px;
 				top: 50%;
 				left: 50%;
-				margin-top: ${px(-190)};
-				margin-left: ${px(-220)};
+				margin-top: -190px;
+				margin-left: -220px;
 				opacity: 0;
 				display: none;
 				z-index: 25;
@@ -5065,8 +4414,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			kasketAsset.className = 'kasket-asset';
 			kasketAsset.style.cssText = `
 				position: absolute;
-				width: ${px(180)};
-				height: ${px(140)};
+				width: 180px;
+				height: 140px;
 				top: 10%;
 				left: 50%;
 				transform: translate(-50%, -50%);
@@ -5083,7 +4432,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			oldaseAsset.className = 'oldase-asset';
 			oldaseAsset.style.cssText = `
 				position: absolute;
-				width: ${px(110)};
+				width: 110px;
 				height: auto;
 				top: 55%;
 				left: -35%;
@@ -5099,7 +4448,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			naturliAsset.className = 'naturli-asset';
 			naturliAsset.style.cssText = `
 				position: absolute;
-				width: ${px(115)};
+				width: 115px;
 				height: auto;
 				top: -32%;
 				right: -42%;
@@ -5115,7 +4464,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			dropsAsset.className = 'naturli-drops-asset';
 			dropsAsset.style.cssText = `
 				position: absolute;
-				width: ${px(56)};
+				width: 56px;
 				height: auto;
 				top: -38%;
 				right: -27%;
@@ -5131,7 +4480,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			twisterAsset.className = 'twister-asset';
 			twisterAsset.style.cssText = `
 				position: absolute;
-				width: ${px(85)};
+				width: 85px;
 				height: auto;
 				top: 62%;
 				right: 27%;
@@ -5147,7 +4496,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			ungeModUvAsset.className = 'unge-mod-uv-asset';
 			ungeModUvAsset.style.cssText = `
 				position: absolute;
-				width: ${px(160)};
+				width: 160px;
 				height: auto;
 				top: 55%;
 				left: 78%;
@@ -5416,32 +4765,29 @@ document.addEventListener('DOMContentLoaded', function() {
 		const container = document.querySelector('.brainstorm-container');
 		const brainRect = currentBrain.getBoundingClientRect();
 		const containerRect = container.getBoundingClientRect();
-		const scale = projectsScaleFromRect(containerRect);
-		const svgScale = (n) => (n * scale);
-		const assetS = projectsLandscapeAssetScale();
-		// Phone-landscape: lines are too thick; thin only the line assets (not circles).
-		const lineS = (document.body && document.body.classList.contains('projects-page') && (isProjectsPhoneLandscape && isProjectsPhoneLandscape()))
-			? 0.58
-			: 1;
 
 		// Note: The TWISTER↔D&AD line is handled as a normal positioned <img> for reliability.
 		
 		// Calculate center of brain relative to container
 		const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
 		const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
+		
+		// Calculate brain radius to create gap
+		const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+		const gapDistance = brainRadius * 1.0; // 100% of brain radius as gap - balanced gap
 
-		// Mobile Projects: use the sketch-inspired "chain" lines:
-		// row1 -> row2 -> brain -> row4 -> row5 (left & right columns).
+		// Portrait mobile: same sketch chain as hjemmesiden / live site (columns + brain), not radial spokes.
 		try {
+			const iw = window.innerWidth || 0;
+			const ih = window.innerHeight || 0;
 			const isMobileProjects =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
-				window.matchMedia &&
-				window.matchMedia('(max-width: 640px)').matches;
-
+				iw <= 640 &&
+				ih >= iw;
 			if (isMobileProjects) {
-				// Hide any static mindmap lines (some have inline `display: block !important`).
-				// We only want the sketch-inspired mobile chain lines in this mode.
+				const scale = 1;
+				const svgScale = (n) => n * scale;
 				try {
 					currentSvg.querySelectorAll('.mindmap-line:not(.dynamic-mindmap-line)').forEach((el) => {
 						el.dataset.mobileHidden = '1';
@@ -5477,8 +4823,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					return { x: cx, y: cy };
 				};
 
-				const lineImg = (assetPath, a, b, heightPx) => {
+				const lineImg = (assetPath, a, b, heightPx, opts) => {
 					if (!a || !b) return;
+					opts = opts || {};
+					const gapA = opts.gapA !== undefined ? opts.gapA : svgScale(8);
+					const gapB = opts.gapB !== undefined ? opts.gapB : svgScale(8);
+					const lenMul = opts.lenMul != null ? opts.lenMul : 1;
 					const ax = a.x, ay = a.y;
 					const bx = b.x, by = b.y;
 					const dx = bx - ax;
@@ -5486,19 +4836,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 					const ux = dx / dist;
 					const uy = dy / dist;
-
-					// Keep a small gap so lines don't sit on top of the circles.
-					const gapA = svgScale(8);
-					const gapB = svgScale(8);
 					const sx = ax + ux * gapA;
 					const sy = ay + uy * gapA;
 					const ex = bx - ux * gapB;
 					const ey = by - uy * gapB;
-					const len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2));
+					let len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2)) * lenMul;
 					if (len < 6) return;
-
 					const angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
-
 					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 					img.setAttribute('href', assetPath);
 					img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', assetPath);
@@ -5515,7 +4859,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					img.style.visibility = 'visible';
 					img.style.imageRendering = 'crisp-edges';
 					img.style.filter = 'none';
-
 					currentSvg.appendChild(img);
 				};
 
@@ -5525,7 +4868,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brainLeft = pt(bRect, 'left');
 				const brainRight = pt(bRect, 'right');
 
-				// Column chain anchors
 				const repRect = repop && repop.getBoundingClientRect();
 				const natRect = naturli && naturli.getBoundingClientRect();
 				const durRect = durex && durex.getBoundingClientRect();
@@ -5535,74 +4877,82 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brfRect = brainfarts && brainfarts.getBoundingClientRect();
 				const byeRect = byens && byens.getBoundingClientRect();
 
-				// Left column: REPOP -> DUREX -> BRAIN -> TWISTER -> BRAINFARTS
 				if (repRect && durRect) {
-					lineImg('assets/Linje 2.webp', pt(repRect, 'bottom'), pt(durRect, 'top'), svgScale(210));
+					lineImg('assets/Linje 2.webp', pt(repRect, 'bottom'), pt(durRect, 'top'), svgScale(210), {
+						gapA: 0,
+						gapB: 0,
+						lenMul: 1.38,
+					});
 				}
 				if (durRect) {
-					// Connect inner edge of DUREX into left side of the brain
-					// Turn the DUREX point (not the brain point): slide the anchor down the inner edge
-					// so the line turns more left without moving anything.
 					const a = {
-						// Turn top (DUREX-side) more to the left
 						x: (durRect.right - containerRect.left) - (durRect.width * 0.30),
 						y: (durRect.top - containerRect.top) + (durRect.height * 0.72),
 					};
-					// Turn bottom (brain-side) more to the left
-					// Bottom should point much more to the right (brain-side)
-					const b = { x: brainLeft.x + svgScale(58), y: (brainTop.y + brainBottom.y) / 2 };
-					lineImg('assets/linje 6.webp', a, b, svgScale(220));
+					const bh = (brainBottom.y - brainTop.y) || 1;
+					const b = { x: brainLeft.x + svgScale(52), y: brainTop.y + bh * 0.30 };
+					lineImg('assets/linje 6.webp', a, b, svgScale(220), {
+						gapA: -svgScale(14),
+						gapB: svgScale(8),
+					});
 				}
 				if (twiRect) {
-					// Swap placement with KØ-BAJER: use the same brain-side start point.
-					// Make the line a bit smaller and shift it right (no turning: same dx on both endpoints).
-					const shiftX = svgScale(44);
-					const a = { x: brainLeft.x + svgScale(26) + shiftX, y: brainBottom.y - svgScale(14) };
-					const b = { x: pt(twiRect, 'left').x - svgScale(10) + shiftX, y: pt(twiRect, 'top').y + svgScale(8) };
-					lineImg('assets/linje 8.webp', a, b, svgScale(175));
+					const shiftX = svgScale(36);
+					const a = { x: brainLeft.x + svgScale(22) + shiftX, y: brainBottom.y - svgScale(12) };
+					const b = { x: pt(twiRect, 'left').x - svgScale(8) + shiftX, y: pt(twiRect, 'top').y + svgScale(8) };
+					lineImg('assets/linje 8.webp', a, b, svgScale(175), {
+						gapA: -svgScale(14),
+						gapB: svgScale(8),
+					});
 				}
 				if (twiRect && brfRect) {
-					lineImg('assets/linje 3.webp', pt(twiRect, 'bottom'), pt(brfRect, 'top'), svgScale(210));
+					const twBrfDown = svgScale(8);
+					const twBot = pt(twiRect, 'bottom');
+					const bfTop = pt(brfRect, 'top');
+					lineImg(
+						'assets/linje 3.webp',
+						{ x: twBot.x, y: twBot.y + twBrfDown },
+						{ x: bfTop.x, y: bfTop.y + twBrfDown },
+						svgScale(210),
+						{ gapA: svgScale(4), gapB: svgScale(4), lenMul: 1.1 }
+					);
 				}
 
-				// Right column: NATURLI -> UNGE -> BRAIN -> KØ-BAJER -> BYENS
 				if (natRect && ungRect) {
-					lineImg('assets/linje 7.webp', pt(natRect, 'bottom'), pt(ungRect, 'top'), svgScale(190));
+					lineImg('assets/linje 7.webp', pt(natRect, 'bottom'), pt(ungRect, 'top'), svgScale(190), {
+						gapA: -svgScale(16),
+						gapB: svgScale(8),
+					});
 				}
 				if (ungRect) {
-					// Turn the UNGE point (not the brain point): slide the anchor down the inner edge
-					// so the line turns more right without moving anything.
 					const a = {
-						// Shift the UNGE endpoint a bit to the right (angle only)
 						x: (ungRect.left - containerRect.left) + (ungRect.width * 0.34),
 						y: (ungRect.top - containerRect.top) + (ungRect.height * 0.62),
 					};
-					// Brain point: more centered (closer to brain middle) but still on the right side,
-					// and slightly biased upward toward the UNGE circle direction.
-					const brainW = (brainRight.x - brainLeft.x) || 1;
-					const brainH = (brainBottom.y - brainTop.y) || 1;
-					const b = {
-						x: centerX + (brainW * 0.26),
-						y: centerY - (brainH * 0.10),
-					};
+					const bh = (brainBottom.y - brainTop.y) || 1;
+					const b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 };
 					lineImg('assets/linje 5.webp', a, b, svgScale(220));
 				}
 				if (kobRect) {
-					// Brain -> KØ-BAJER:
-					// - top (KØ-BAJER side) should point more LEFT
-					// - bottom (brain side) should point more RIGHT
-					// Swap placement with TWISTER: use the same brain-side start point.
-					// Turn brain-side point more LEFT and KØ-BAJER-side point more RIGHT.
-					const a = { x: brainRight.x - svgScale(42), y: brainBottom.y - svgScale(14) };
-					const b = { x: pt(kobRect, 'left').x + svgScale(72), y: pt(kobRect, 'top').y + svgScale(8) };
-					lineImg('assets/Linje 4.webp', a, b, svgScale(235));
+					const a = { x: brainRight.x - svgScale(40), y: brainBottom.y - svgScale(12) };
+					const kcx = (kobRect.left - containerRect.left) + kobRect.width * 0.38;
+					const b = { x: kcx, y: pt(kobRect, 'top').y + svgScale(8) };
+					lineImg('assets/Linje 4.webp', a, b, svgScale(235), {
+						gapA: -svgScale(14),
+						gapB: svgScale(8),
+					});
 				}
 				if (kobRect && byeRect) {
-					// Turn KØ-BAJER -> BYENS more to the right (adjust endpoint only).
-					const a = pt(kobRect, 'bottom');
+					const kobByeDown = svgScale(22);
+					const a0 = pt(kobRect, 'bottom');
 					const b0 = pt(byeRect, 'top');
-					const b = { x: b0.x + svgScale(34), y: b0.y };
-					lineImg('assets/linje 1.webp', a, b, svgScale(210));
+					const a = { x: a0.x, y: a0.y + kobByeDown };
+					const b = { x: b0.x + svgScale(34), y: b0.y + kobByeDown };
+					lineImg('assets/linje 1.webp', a, b, svgScale(210), {
+						gapA: svgScale(4),
+						gapB: svgScale(4),
+						lenMul: 1.1,
+					});
 				}
 
 				return;
@@ -5618,10 +4968,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				el.style.removeProperty('visibility');
 			});
 		} catch {}
-		
-		// Calculate brain radius to create gap
-		const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-		const gapDistance = brainRadius * 1.0; // 100% of brain radius as gap - balanced gap
 		
 		console.log('Brain center:', centerX, centerY);
 		console.log('Container dimensions:', containerRect.width, containerRect.height);
@@ -5674,14 +5020,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 8.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h8 = svgScale(390 * assetS * lineS);
-				lineImage.setAttribute('y', brainStartY - (h8 / 2)); // center on rotation point
+				lineImage.setAttribute('y', brainStartY - 195); // Offset by half height (390/2 = 195) to center on rotation point
 				lineImage.setAttribute('width', lineLength); // Longer
-				lineImage.setAttribute('height', String(h8)); // Slightly bigger/thicker line asset
+				lineImage.setAttribute('height', '390'); // Slightly bigger/thicker line asset
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -5729,14 +5074,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/Linje 4.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 4.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h4 = svgScale(400 * assetS * lineS);
-				lineImage.setAttribute('y', brainStartY - (h4 / 2)); // center on rotation point
+				lineImage.setAttribute('y', brainStartY - 200); // Offset by half height (400/2 = 200) to center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', String(h4));
+				lineImage.setAttribute('height', '400');
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -5788,14 +5132,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 6.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 6.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h6 = svgScale(300 * assetS * lineS);
-				lineImage.setAttribute('y', brainStartY - (h6 / 2)); // center on rotation point
+				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', String(h6)); // Reduced height to make line thinner
+				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -5852,15 +5195,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 5.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 5.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const ungeLineS = lineS * 0.60;
-				const ungeH = 300 * ungeLineS;
-				lineImage.setAttribute('y', brainStartY - (ungeH / 2)); // center on rotation point
+				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', String(ungeH)); // thinner (phone landscape)
+				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -5917,14 +5258,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/linje 1.webp');
 				lineImage.setAttribute('x', brainStartX);
-				const h1 = svgScale(400 * assetS * lineS);
-				lineImage.setAttribute('y', brainStartY - (h1 / 2)); // Center vertically
+				lineImage.setAttribute('y', brainStartY - 200); // Center vertically
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', String(h1));
+				lineImage.setAttribute('height', '400');
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -5938,41 +5278,43 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeHrefRepop = (node.getAttribute('href') || '').toLowerCase();
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
-				// Restore the "classic" REPOP line: same style/size as earlier (thicker, full-height asset).
-				// Start from below the top of the brain
-				const brainStartX = centerX;
-				const brainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
-
-				// End closer to the tab (small gap)
+				// Start from below the top of the brain, extended backward toward brain
+				const initialBrainStartX = centerX;
+				const initialBrainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
+				
+				// End closer to the tab (smaller gap)
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				const tabGapDistance = nodeRadius * 0.1;
-				const deltaX = nodeX - brainStartX;
-				const deltaY = nodeY - brainStartY;
+				const deltaX = nodeX - initialBrainStartX;
+				const deltaY = nodeY - initialBrainStartY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
 				const lineEndX = nodeX - (deltaX / distance) * tabGapDistance;
 				const lineEndY = nodeY - (deltaY / distance) * tabGapDistance;
-
+				
+				// Extend backward from brain start point to make line longer toward brain
+				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+				const brainExtension = brainRadius * 0.32; // Extend further toward brain (longer line)
+				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
+				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
-
+				
 				// Create image element for the line
-				const repopLineS = lineS * 0.70;
-				const height = 400 * scale * repopLineS;
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/Linje 2.webp');
-				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 2.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - (height / 2)); // Center vertically
-				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', String(height));
+				lineImage.setAttribute('y', brainStartY - 22); // Center vertically (even thinner)
+				lineImage.setAttribute('width', lineLength * 0.92); // Slightly shorter
+				lineImage.setAttribute('height', '45'); // Even thinner line
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
-
+				
 				currentSvg.appendChild(lineImage);
 				console.log(`Line image created for REPOP BY DEPOP`);
 				return; // Skip the hand-drawn line creation for REPOP BY DEPOP
@@ -5981,7 +5323,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: NATURLI' - render linje 7.webp asset line from brain center to node
 			const nodeTextNaturli = node.textContent.trim();
 			const nodeHrefNaturli = node.getAttribute('href') || '';
-			if (nodeTextNaturli === 'NATURLI\'' || nodeHrefNaturli.toLowerCase().includes('naturli') || index === 2) {
+			if (nodeTextNaturli === 'NATURLI\'' || nodeHrefNaturli.includes('Naturli') || index === 2) {
 				console.log(`✓ NATURLI' detected at index ${index} - creating linje 7.webp asset line`);
 				
 				// Start from the center of the brain
@@ -6014,14 +5356,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 7.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 7.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h7 = svgScale(200 * assetS * lineS);
-				lineImage.setAttribute('y', brainStartY - (h7 / 2)); // center on rotation point
+				lineImage.setAttribute('y', brainStartY - 100); // Offset by half height (200/2 = 100) to center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', String(h7)); // Further reduced height to make line thinner
+				lineImage.setAttribute('height', '200'); // Further reduced height to make line thinner
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -6068,14 +5409,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 3.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 3.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				const h3 = svgScale(600 * assetS * lineS);
-				lineImage.setAttribute('y', brainStartY - (h3 / 2)); // center on rotation point
+				lineImage.setAttribute('y', brainStartY - 300); // Offset by half height (600/2 = 300) to center on rotation point
 				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', String(h3));
+				lineImage.setAttribute('height', '600');
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.style.pointerEvents = 'auto';
 				lineImage.style.display = 'block';
 				lineImage.style.visibility = 'visible';
@@ -6118,7 +5458,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				path.setAttribute('fill', 'none');
 				path.setAttribute('stroke-linecap', 'round');
 				path.setAttribute('stroke-linejoin', 'round');
-				path.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				path.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 			path.dataset.nodeIndex = String(index);
 			path.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -6144,7 +5484,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				roughPath.setAttribute('stroke-linecap', 'round');
 				roughPath.setAttribute('stroke-linejoin', 'round');
 				roughPath.setAttribute('filter', 'url(#roughEdges)');
-				roughPath.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				roughPath.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 			roughPath.dataset.nodeIndex = String(index);
 			roughPath.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -6184,11 +5524,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		
 		const containerRect = container.getBoundingClientRect();
-		const scale = projectsScaleFromRect(containerRect);
-		const s = (n) => (n * scale);
-		const assetS = projectsLandscapeAssetScale();
 		console.log('Container rect:', containerRect);
-		
+		try { void container.offsetHeight; } catch {}
+		const scale = 1;
+		const s = (n) => n * scale;
+		const assetS = 1;
+		function isProjectsPhoneLandscape() {
+			try {
+				return window.innerWidth <= 640 && window.innerHeight < window.innerWidth;
+			} catch (_) {
+				return false;
+			}
+		}
+
 		currentNodes.forEach((node, index) => {
 			// Used to map hover -> matching frame element
 			node.dataset.nodeIndex = String(index);
@@ -6196,23 +5544,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			node.dataset.nodeHref = nodeHref;
 			const targetHref = (node.getAttribute('href') || '').trim();
 
-			// Make the SVG frame itself clickable (so tapping the circle stroke navigates too).
-			// This is important on mobile where users tap the circle, not just the text.
 			function wireFrameNavigation(el) {
 				try {
 					if (!el || !targetHref) return;
-					if (nodeHref.includes('brainfarts')) return; // Brainfarts is intentionally not clickable
-					// On desktop, the hover effect should behave like "yesterday":
-					// hover is driven by the underlying `<a.project-node>` mouseenter, not the SVG.
-					// If the SVG captures pointer events, hovering the circle won't trigger the node hover.
+					if (nodeHref.includes('brainfarts')) return;
 					const isFineHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
 					if (isFineHover) {
 						el.style.pointerEvents = 'none';
 						el.style.cursor = 'default';
 						return;
 					}
-
-					// On touch/mobile, enable tapping the circle to navigate.
 					el.style.pointerEvents = 'auto';
 					el.style.cursor = 'pointer';
 					el.addEventListener('click', (e) => {
@@ -6227,16 +5568,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeRect = node.getBoundingClientRect();
 			const nodeText = node.textContent.trim();
 
-			// Get the center of the title text (so badges inside the node don't shift the circle)
 			const titleEl = node.querySelector('.project-node__title');
 			const anchorRect = titleEl ? titleEl.getBoundingClientRect() : nodeRect;
 			const centerX = anchorRect.left - containerRect.left + (anchorRect.width / 2);
 			const centerY = anchorRect.top - containerRect.top + (anchorRect.height / 2);
-			
+
 			console.log(`Processing node ${index}: "${nodeText}" at (${centerX}, ${centerY})`);
 			
 			// Special case: BRAINFARTS uses the image instead of hand-drawn circle
-			if (nodeHref.includes('brainfarts') || nodeText === 'BRAINFARTS') {
+			// (Titles are often image-only; match href so we always use your asset.)
+			if (nodeText === 'BRAINFARTS' || nodeHref.includes('brainfarts')) {
 				console.log('Creating BRAINFARTS circle image...');
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -6244,23 +5585,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const isMobile = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
-				// Make room for the inline "Under ombygning" sign on mobile.
-				const baseW = s(240) * assetS;
-				const baseH = s(200) * assetS;
-				const padX = s(isMobile ? 90 : 60) * assetS;
-				const padY = s(isMobile ? 140 : 80) * assetS;
-				const frameW = Math.max(baseW, nodeRect.width + padX);
-				const frameH = Math.max(baseH, nodeRect.height + padY);
-				image.setAttribute('x', String(centerX - (frameW / 2)));
-				// Bias the frame slightly downward so the sign sits comfortably inside.
-				image.setAttribute('y', String(centerY - (frameH / 2) + s(isMobile ? 20 : 10)));
-				image.setAttribute('width', String(frameW));
-				image.setAttribute('height', String(frameH));
-				image.setAttribute('preserveAspectRatio', 'none');
+				image.setAttribute('x', centerX - 120); // Center the image (assuming 240px width)
+				image.setAttribute('y', centerY - 100); // Center the image (assuming 200px height)
+				image.setAttribute('width', '240');
+				image.setAttribute('height', '200');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.style.pointerEvents = 'auto'; // Keep hover visuals; navigation is disabled for Brainfarts
+				image.style.pointerEvents = 'auto'; // Make image visible
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
 				image.style.opacity = '0.8';
@@ -6275,13 +5606,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				// Make it shorter on the RIGHT side only (keep left side roughly the same)
 				// Achieved by shifting left and reducing rx by the same amount.
-				// BRAINFARTS: slightly smaller on the RIGHT side (keep left edge roughly the same)
-				fill.setAttribute('cx', String(centerX - s(2)));
+				fill.setAttribute('cx', String(centerX - 1)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
 				// Slightly smaller at the bottom: shift up a bit
-				// Make the hover fill bigger towards the bottom, but a touch smaller at the TOP
-				fill.setAttribute('cy', String(centerY + s(6)));
-				fill.setAttribute('rx', String(((frameW / 2) * 0.60 + s(3)) * assetS));
-				fill.setAttribute('ry', String(((frameH / 2) * 0.64 + s(3)) * assetS));
+				fill.setAttribute('cy', String(centerY - 3)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
+				fill.setAttribute('rx', String(120 * 0.56 + 2)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
+				fill.setAttribute('ry', String(100 * 0.56 - 1)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6291,7 +5620,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				else currentSvg.appendChild(fill);
 				
 				currentSvg.appendChild(image);
-				// Intentionally NOT wired for navigation (Brainfarts is not clickable).
 
 				// "Under construction" red line through the circle (use provided asset)
 				try {
@@ -6302,13 +5630,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', linePath);
 
 					// Keep it smaller and within the circle-ish area (circle image is 240x200)
-					const w = s(205); // longer (not too big)
-					const h = s(160); // extremely thick
+					const w = 205; // longer (not too big)
+					const h = 160; // extremely thick
 					lineImg.setAttribute('width', String(w));
 					lineImg.setAttribute('height', String(h));
 					// Place it so it goes from RIGHT side -> down to BOTTOM-LEFT
-					lineImg.setAttribute('x', String(centerX - (w / 2) - s(5))); // more to the left
-					lineImg.setAttribute('y', String(centerY - (h / 2) + s(4)));
+					lineImg.setAttribute('x', String(centerX - (w / 2) - 5)); // more to the left
+					lineImg.setAttribute('y', String(centerY - (h / 2) + 4));
 					lineImg.setAttribute('preserveAspectRatio', 'none');
 					// Slightly see-through so it reads like drawn on paper
 					lineImg.setAttribute('opacity', '0.78');
@@ -6331,56 +5659,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: REPOP BY DEPOP uses the image instead of hand-drawn circle
 			if (nodeText === 'REPOP BY DEPOP' || nodeHref.includes('repop')) {
 				console.log('Creating REPOP BY DEPOP circle image...');
-				// Phone landscape: ensure inline Kravling 2025 exists so it can live inside the circle.
-				try {
-					if (document.body && document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-						let title = node.querySelector('.project-node__title');
-						if (!title) {
-							node.textContent = '';
-							title = document.createElement('span');
-							title.className = 'project-node__title project-node__title--image';
-							node.appendChild(title);
-						}
-						try { title.classList.add('project-node__title--image'); } catch {}
-						let img = title.querySelector('img');
-						if (!img) {
-							title.textContent = '';
-							img = document.createElement('img');
-							img.className = 'project-node__title-img project-node__title-img--repop';
-							img.alt = '';
-							img.decoding = 'async';
-							img.src = 'assets/repop-by-depop-text.png';
-							title.appendChild(img);
-						}
-
-						// Keep as a column so the badge sits under the title.
-						node.style.setProperty('display', 'flex', 'important');
-						node.style.setProperty('flex-direction', 'column', 'important');
-						node.style.setProperty('align-items', 'center', 'important');
-						node.style.setProperty('justify-content', 'center', 'important');
-
-						let inline = node.querySelector('.kravling-nomineret-badge--inline');
-						if (!inline) {
-							inline = document.createElement('div');
-							inline.className = 'kravling-nomineret-badge kravling-nomineret-badge--inline';
-							inline.setAttribute('aria-hidden', 'true');
-							inline.innerHTML = `
-								<div class="kravling-line1">KRAVLINGPRISEN</div>
-								<div class="kravling-line2">NOMINERET</div>
-								<div class="kravling-line3">2025</div>
-							`;
-							node.appendChild(inline);
-						}
-					}
-				} catch {}
-
-				// Create an image element for REPOP BY DEPOP
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle around repop by depop.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const isLandscapePhone = !!(isProjectsPhoneLandscape && isProjectsPhoneLandscape());
+				const isLandscapePhone = isProjectsPhoneLandscape();
 				const repTitleEl = node.querySelector('.project-node__title');
 				const repBadgeEl = node.querySelector('.kravling-nomineret-badge--inline');
 				const repTitleRect = repTitleEl ? repTitleEl.getBoundingClientRect() : nodeRect;
@@ -6397,24 +5681,24 @@ document.addEventListener('DOMContentLoaded', function() {
 						const bottom = Math.max(repTitleRect.bottom, repBadgeRect.bottom);
 						unionW = Math.max(1, right - left);
 						unionH = Math.max(1, bottom - top);
-						// Center the circle on the union (so both title + badge are inside).
 						repCenterX = (left - containerRect.left) + (unionW / 2);
 						repCenterY = (top - containerRect.top) + (unionH / 2);
 					}
 				} catch {}
 
 				const baseW = s(380) * assetS;
-				const baseH = s(isLandscapePhone ? 195 : 165) * assetS; // taller in phone landscape to fit both texts
+				const baseH = s(isLandscapePhone ? 195 : 165) * assetS;
 				const padX = s(40) * assetS;
-				const padY = s(isLandscapePhone ? 70 : 46) * assetS;
+				const padYPortrait = repBadgeRect ? 58 : 46;
+				const padY = s(isLandscapePhone ? 70 : padYPortrait) * assetS;
 				const w = Math.max(baseW, unionW + padX);
 				const h = Math.max(baseH, unionH + padY);
 
-				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3))); // keep tiny left tweak (~-3px)
-				image.setAttribute('y', String(repCenterY - (h / 2) + s(10))); // slight down bias
+				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
+				image.setAttribute('y', String(repCenterY - (h / 2)));
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
-				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('transform', `rotate(180 ${repCenterX} ${repCenterY})`);
@@ -6426,10 +5710,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
 				wireFrameNavigation(image);
-				
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(repCenterX - s(1))); // slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('cy', String(repCenterY - s(2))); // REPOP: slightly bigger at the top
+				fill.setAttribute('cx', String(repCenterX - s(1)));
+				fill.setAttribute('cy', String(repCenterY - s(2)));
 				fill.setAttribute('rx', String((s(190) * 0.55 - s(7)) * assetS));
 				fill.setAttribute('ry', String(((h / 2) * 0.68 - s(2)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
@@ -6442,56 +5726,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				currentSvg.appendChild(image);
 				console.log(`✓ REPOP BY DEPOP circle image appended to SVG`);
-				return; // Skip the hand-drawn circle creation for REPOP BY DEPOP
+				return;
 			}
 			
 			// Special case: KØ-BAJER uses the image instead of hand-drawn circle
-			if (nodeHref.includes('kobajer') || nodeText.toUpperCase().includes('KØ-BAJER')) {
+			if (nodeText === 'KØ-BAJER' || nodeHref.includes('kobajer')) {
 				console.log('Creating KØ-BAJER circle image...');
-				// Phone landscape: ensure inline Kravling 2024 exists so it can live inside the circle.
-				try {
-					if (document.body && document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-						let title = node.querySelector('.project-node__title');
-						if (!title) {
-							node.textContent = '';
-							title = document.createElement('span');
-							title.className = 'project-node__title';
-							title.textContent = 'KØ-BAJER';
-							node.appendChild(title);
-						} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
-							title.textContent = 'KØ-BAJER';
-						}
-
-						node.style.setProperty('display', 'flex', 'important');
-						node.style.setProperty('flex-direction', 'column', 'important');
-						node.style.setProperty('align-items', 'center', 'important');
-						node.style.setProperty('justify-content', 'center', 'important');
-
-						let inline = node.querySelector('.kobajer-kravling-2024-badge--inline');
-						if (!inline) {
-							inline = document.createElement('div');
-							inline.className = 'kobajer-kravling-2024-badge kobajer-kravling-2024-badge--inline';
-							inline.setAttribute('aria-hidden', 'true');
-							inline.innerHTML = `
-								<div class="kobajer-kravling-2024-text">
-									<div class="kravling-line1">KRAVLINGPRISEN</div>
-									<div class="kravling-line2">NOMINERET</div>
-									<div class="kravling-line3">2024</div>
-								</div>
-							`;
-							node.appendChild(inline);
-						}
-					}
-				} catch {}
-
-				// Create an image element for KØ-BAJER
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel købajer.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				// Keep original height feel, but allow more width/height so the title + inline badge can fit.
-				const isLandscapePhone = !!(isProjectsPhoneLandscape && isProjectsPhoneLandscape());
+				const isLandscapePhone = isProjectsPhoneLandscape();
 				const kTitleEl = node.querySelector('.project-node__title');
 				const kBadgeEl = node.querySelector('.kobajer-kravling-2024-badge--inline');
 				const kTitleRect = kTitleEl ? kTitleEl.getBoundingClientRect() : nodeRect;
@@ -6513,18 +5759,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				} catch {}
 
-				// Extra padding + floor size so label + Kravling badge fill less of the circle frame
 				const baseW = s(232) * assetS;
-				const baseH = s(isLandscapePhone ? 268 : 232) * assetS; // taller in phone landscape
+				const baseH = s(isLandscapePhone ? 268 : 232) * assetS;
 				const padX = s(80) * assetS;
-				const padY = s(isLandscapePhone ? 92 : 44) * assetS;
+				const padYPortrait = kBadgeRect ? 58 : 44;
+				const padY = s(isLandscapePhone ? 92 : padYPortrait) * assetS;
 				const w = Math.max(baseW, unionW + padX);
 				const h = Math.max(baseH, unionH + padY);
-				image.setAttribute('x', String(centerX - (w / 2)));
-				image.setAttribute('y', String(kCenterY - (h / 2) + s(10))); // keep the old "move down" feel
+				image.setAttribute('x', String(kCenterX - (w / 2)));
+				image.setAttribute('y', String(kCenterY - (h / 2) + s(10)));
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
-				image.setAttribute('preserveAspectRatio', 'none'); // allow horizontal stretch (oval) so text fits
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('transform', `rotate(180 ${kCenterX} ${kCenterY})`);
@@ -6536,13 +5782,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
 				wireFrameNavigation(image);
-				
-				// KØ-BAJER: use an ellipse so we can make it smaller at the top/bottom without shrinking the sides too much
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(kCenterX));
-				// KØ-BAJER: keep a touch more fill at the top, but also add a little to the bottom
 				fill.setAttribute('cy', String(kCenterY - s(1)));
-				// Scale the hover fill with the circle size
 				fill.setAttribute('rx', String(((w / 2) * 0.56) * assetS));
 				fill.setAttribute('ry', String(((h / 2) * 0.60) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
@@ -6555,11 +5798,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				currentSvg.appendChild(image);
 				console.log(`✓ KØ-BAJER circle image appended to SVG`);
-				return; // Skip the hand-drawn circle creation for KØ-BAJER
+				return;
 			}
 			
 			// Special case: NATURLI' uses the image instead of hand-drawn circle
-			if (nodeText === 'NATURLI\'' || nodeHref.toLowerCase().includes('naturli')) {
+			if (nodeText === 'NATURLI\'' || nodeHref.includes('naturli')) {
 				console.log('Creating NATURLI\' circle image...');
 				// Create an image element for NATURLI'
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -6567,17 +5810,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				// Size frame from title/image box so wide "Naturlig" logo fits inside the circle asset
-				const aw = anchorRect.width || nodeRect.width;
-				const ah = anchorRect.height || nodeRect.height;
-				const w0 = Math.max(s(224), aw + s(14));
-				const h0 = Math.max(s(124), ah + s(14));
-				const w = w0 * assetS;
-				const h = h0 * assetS;
-				image.setAttribute('x', String(centerX - (w / 2)));
-				image.setAttribute('y', String(centerY - (h / 2) + s(5)));
-				image.setAttribute('width', String(w));
-				image.setAttribute('height', String(h));
+				image.setAttribute('x', centerX - 120); // Center the image (assuming 240px width)
+				image.setAttribute('y', centerY - 65); // Move down slightly (assuming 140px height)
+				image.setAttribute('width', '240');
+				image.setAttribute('height', '140');
 				image.setAttribute('preserveAspectRatio', 'none'); // Prevent aspect ratio from scaling width
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -6589,14 +5825,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'naturli-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				// NATURLI': make the RIGHT side slightly smaller (keep left edge the same)
-				fill.setAttribute('cx', String(centerX + s(1)));
-				fill.setAttribute('cy', String(centerY - s(1)));
-				fill.setAttribute('rx', String((w0 * 0.50 - s(2)) * assetS));
-				fill.setAttribute('ry', String((h0 * 0.66) * assetS));
+				fill.setAttribute('cx', String(centerX + 1));
+				fill.setAttribute('cy', String(centerY - 1));
+				fill.setAttribute('rx', String(120 * 0.50 - 2));
+				fill.setAttribute('ry', String(70 * 0.66));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6611,7 +5846,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: UNGE MOD UV uses the image instead of hand-drawn circle
-			if (nodeText === 'UNGE MOD UV' || (nodeHref && nodeHref.includes('unge-mod-uv'))) {
+			if (nodeText === 'UNGE MOD UV' || nodeHref.includes('unge-mod-uv')) {
 				console.log('Creating UNGE MOD UV circle image...');
 				// Create an image element for UNGE MOD UV
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -6619,12 +5854,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const w = s(320) * assetS;
-				const h = s(150) * assetS;
-				image.setAttribute('x', String(centerX - (w / 2)));
-				image.setAttribute('y', String(centerY - (h / 2)));
-				image.setAttribute('width', String(w));
-				image.setAttribute('height', String(h));
+				let ungeMul = 1;
+				try {
+					const ih = window.innerHeight || 0;
+					const iw = window.innerWidth || 1;
+					const ctr = container && container.classList ? container : null;
+					const portrait =
+						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
+						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
+					if (portrait) ungeMul = 0.84;
+				} catch {}
+				const uw = 320 * ungeMul;
+				const uh = 150 * ungeMul;
+				image.setAttribute('x', centerX - uw / 2);
+				image.setAttribute('y', centerY - uh / 2);
+				image.setAttribute('width', String(uw));
+				image.setAttribute('height', String(uh));
 				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -6635,13 +5880,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'unge-mod-uv-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY)); // UNGE MOD UV: keep centered
-				fill.setAttribute('rx', String((s(160) * 0.54) * assetS));
-				fill.setAttribute('ry', String((s(75) * 0.51) * assetS));
+				fill.setAttribute('rx', String(160 * ungeMul * 0.54)); // UNGE MOD UV: wider left+right
+				fill.setAttribute('ry', String(75 * ungeMul * 0.51));  // UNGE MOD UV: slightly more top+bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6656,64 +5900,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: TWISTER uses the image instead of hand-drawn circle
-			if (nodeHref.includes('twister') || nodeText.toUpperCase().includes('TWISTER')) {
+			if (nodeText === 'TWISTER' || nodeHref.includes('twister')) {
 				console.log('Creating TWISTER circle image...');
-				// Phone landscape: ensure inline D&AD exists so it can sit inside the circle.
-				try {
-					if (document.body && document.body.classList.contains('projects-page') && isProjectsPhoneLandscape && isProjectsPhoneLandscape()) {
-						let title = node.querySelector('.project-node__title');
-						if (!title) {
-							const existingText = (node.textContent || '').trim() || 'TWISTER';
-							node.textContent = '';
-							title = document.createElement('span');
-							title.className = 'project-node__title';
-							title.textContent = existingText;
-							node.appendChild(title);
-						} else if (!title.classList.contains('project-node__title--image') && !title.querySelector('img')) {
-							title.textContent = 'TWISTER';
-						}
-
-						let inlineDandD = node.querySelector('.dandd-badge--inline');
-						if (!inlineDandD) {
-							inlineDandD = document.createElement('div');
-							inlineDandD.className = 'dandd-badge dandd-badge--inline';
-							inlineDandD.setAttribute('aria-hidden', 'true');
-
-							const logo = document.createElement('img');
-							logo.className = 'dandd-logo';
-							logo.alt = 'D&AD';
-							logo.src = "assets/D&AD LOGO.webp";
-							logo.onerror = () => {
-								logo.onerror = null;
-								logo.src = "assets/D&AD logo.webp";
-							};
-
-							const winner = document.createElement('img');
-							winner.className = 'dandd-winner';
-							winner.alt = 'D&AD VINDER';
-							winner.src = 'assets/D&AD VINDER.webp';
-
-							inlineDandD.appendChild(logo);
-							inlineDandD.appendChild(winner);
-							node.appendChild(inlineDandD);
-						}
-					}
-				} catch {}
-				// Create an image element for TWISTER
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring twister.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				// Keep original height feel, but grow to fit D&AD logo/text inside.
 				const isMobile = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
 				const twTitleEl = node.querySelector('.project-node__title');
 				const twBadgeEl = node.querySelector('.dandd-badge--inline');
 				const twTitleRect = twTitleEl ? twTitleEl.getBoundingClientRect() : nodeRect;
 				const twBadgeRect = twBadgeEl ? twBadgeEl.getBoundingClientRect() : null;
-				// Use the union of title + badge for sizing, but keep the frame centered on the title anchor.
 				let unionW = nodeRect.width;
 				let unionH = nodeRect.height;
+				let twCenterX = centerX;
+				let twCenterY = centerY;
 				try {
 					if (twBadgeRect) {
 						const left = Math.min(twTitleRect.left, twBadgeRect.left);
@@ -6722,25 +5924,23 @@ document.addEventListener('DOMContentLoaded', function() {
 						const bottom = Math.max(twTitleRect.bottom, twBadgeRect.bottom);
 						unionW = Math.max(1, right - left);
 						unionH = Math.max(1, bottom - top);
+						twCenterX = (left - containerRect.left) + (unionW / 2);
+						twCenterY = (top - containerRect.top) + (unionH / 2);
 					}
 				} catch {}
-				// Mobile: D&AD is inline (row), so the circle can be smaller again.
+				const isLandscapePhone = isProjectsPhoneLandscape();
 				const baseW = s(isMobile ? 380 : 280) * assetS;
-				// In phone landscape we want a bit more vertical room for TWISTER + D&AD inside the circle.
-				const isLandscapePhone = !!(isProjectsPhoneLandscape && isProjectsPhoneLandscape());
 				const baseH = s(isMobile ? 170 : (isLandscapePhone ? 150 : 120)) * assetS;
 				const padX = s(isMobile ? 170 : 90) * assetS;
 				const padY = s(isMobile ? 90 : (isLandscapePhone ? 76 : 44)) * assetS;
 				const w = Math.max(baseW, unionW + padX);
 				const h = Math.max(baseH, unionH + padY);
-				// Phone landscape: move ONLY the circle frame down a bit (do not move text/badge).
 				const circleDy = isLandscapePhone ? s(10) : 0;
-				image.setAttribute('x', String(centerX - (w / 2)));
-				// Center the frame on the TWISTER title so it sits centered in the circle.
-				image.setAttribute('y', String(centerY - (h / 2) + circleDy));
+				image.setAttribute('x', String(twCenterX - (w / 2)));
+				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
-				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.style.pointerEvents = 'auto';
@@ -6751,10 +5951,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
 				wireFrameNavigation(image);
-				
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(centerX + s(4))); // TWISTER: less on the left (right edge unchanged)
-				fill.setAttribute('cy', String(centerY - s(2) + circleDy)); // follow the frame offset
+				fill.setAttribute('cx', String(twCenterX + s(4)));
+				fill.setAttribute('cy', String(twCenterY - s(2) + circleDy));
 				fill.setAttribute('rx', String((((w / 2) * 0.56 - s(4))) * assetS));
 				fill.setAttribute('ry', String((((h / 2) * 0.68 - s(4))) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
@@ -6767,25 +5967,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				currentSvg.appendChild(image);
 				console.log(`✓ TWISTER circle image appended to SVG`);
-				return; // Skip the hand-drawn circle creation for TWISTER
+				return;
 			}
 			
 			// Special case: BYENS LANDHANDEL uses the image instead of hand-drawn circle
 			if (nodeText === 'Byens Landhandel' || nodeHref.includes('byens-landhandel')) {
 				console.log('Creating Byens Landhandel circle image...');
+				let byensMul = 1;
+				try {
+					const ih = window.innerHeight || 0;
+					const iw = window.innerWidth || 1;
+					const portrait =
+						(container && container.classList && container.classList.contains('projects-mindmap--portrait')) ||
+						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
+					if (portrait) byensMul = 0.88;
+				} catch {}
+				const bw = 440 * byensMul;
+				const bh = 170 * byensMul;
 				// Create an image element for BYENS LANDHANDEL
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle omkring byens landhandel.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				// Slightly larger + adjusted so the tab text fits better inside the circle
-				const w = s(440) * assetS;
-				const h = s(170) * assetS;
-				image.setAttribute('x', String(centerX - (w / 2)));
-				image.setAttribute('y', String(centerY - (h / 2)));
-				image.setAttribute('width', String(w));
-				image.setAttribute('height', String(h));
+				image.setAttribute('x', String(centerX - bw / 2));
+				image.setAttribute('y', String(centerY - bh / 2));
+				image.setAttribute('width', String(bw));
+				image.setAttribute('height', String(bh));
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -6797,12 +6005,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
 				wireFrameNavigation(image);
-				
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - s(2))); // BYENS: bigger at the top (bottom unchanged)
-				fill.setAttribute('rx', String((s(220) * 0.50 + s(3)) * assetS));
-				fill.setAttribute('ry', String((s(85) * 0.58 - s(2)) * assetS));
+				fill.setAttribute('cy', String(centerY - 2));
+				fill.setAttribute('rx', String((220 * 0.50 + 3) * byensMul));
+				fill.setAttribute('ry', String((85 * 0.58 - 2) * byensMul));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6817,7 +6025,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: DUREX X GUESS WHO uses the image instead of hand-drawn circle
-			if (nodeText === 'DUREX X GUESS WHO' || (nodeHref && nodeHref.includes('durex'))) {
+			if (nodeText === 'DUREX X GUESS WHO' || nodeHref.includes('durex')) {
 				console.log('Creating DUREX X GUESS WHO circle image...');
 				// Create an image element for DUREX X GUESS WHO
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -6825,12 +6033,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const w = s(440) * assetS;
-				const h = s(150) * assetS;
-				image.setAttribute('x', String(centerX - (w / 2)));
-				image.setAttribute('y', String(centerY - (h / 2)));
-				image.setAttribute('width', String(w));
-				image.setAttribute('height', String(h));
+				let durexMul = 1;
+				try {
+					const ih = window.innerHeight || 0;
+					const iw = window.innerWidth || 1;
+					const ctr = container && container.classList ? container : null;
+					const portrait =
+						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
+						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
+					if (portrait) durexMul = 0.84;
+				} catch {}
+				const dw = 440 * durexMul;
+				const dh = 150 * durexMul;
+				image.setAttribute('x', centerX - dw / 2);
+				image.setAttribute('y', centerY - dh / 2);
+				image.setAttribute('width', String(dw));
+				image.setAttribute('height', String(dh));
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -6841,13 +6059,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'durex-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				wireFrameNavigation(image);
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - s(3))); // DUREX: keep top, trim bottom
-				fill.setAttribute('rx', String((s(220) * 0.55) * assetS));
-				fill.setAttribute('ry', String((s(75) * 0.68 + s(1)) * assetS));
+				fill.setAttribute('cy', String(centerY - 3)); // DUREX: keep top, trim bottom
+				fill.setAttribute('rx', String(220 * durexMul * 0.55)); // DUREX: less horizontal fill
+				fill.setAttribute('ry', String(75 * durexMul * 0.68 + 1)); // DUREX: keep top, trim bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -7002,7 +6219,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		// Node hover effects
-		const isFineHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
 		nodes.forEach(node => {
 			// BRAINFARTS is "under construction" on the Projects page: keep hover animations,
 			// but prevent navigation so it is not clickable.
@@ -7014,9 +6230,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				e.preventDefault();
 				e.stopPropagation();
 			});
-
-			// Mobile/touch: no hover-triggered assets/glows/animations.
-			if (!isFineHover) return;
 
 			node.addEventListener('mouseenter', function() {
 				const href = (this.getAttribute('href') || '').toLowerCase();
@@ -7236,42 +6449,34 @@ document.addEventListener('DOMContentLoaded', function() {
 		createTwisterTongues();
 
 		// Ensure nodes are placed before drawing lines/frames.
-		try { resetProjectsStageScale(); } catch {}
-		try { positionNodesPerfectCircle(); } catch {}
-		try { positionBrainfartsBuild(); } catch {}
-		try { createAndPositionDandDLogo(); } catch {}
-		try { createAndPositionTwisterDandDLine(); } catch {}
-		try { createAndPositionRepopKravlingLine(); } catch {}
-		try { createAndPositionKravlingNomineretBadge(); } catch {}
-		try { createAndPositionKobajerArrow(); } catch {}
+		positionNodesPerfectCircle();
+		createAndPositionDandDLogo();
+		createAndPositionTwisterDandDLine();
+		createAndPositionRepopKravlingLine();
+		createAndPositionKravlingNomineretBadge();
+		createAndPositionKobajerArrow();
+		ensureProjectsMobileInlineBadges();
 		
 		// Create connecting lines dynamically
-		try { createConnectingLines(); } catch {}
+		createConnectingLines();
 		
 		// Create hand-drawn frames around project tabs
-		try { createHandDrawnFrames(); } catch {}
-		try { nudgeTwisterTitleDownInLandscape(); } catch {}
-		try { applyProjectsStageScale(); } catch {}
-		try { autoCenterProjectsLandscape(); } catch {}
+		createHandDrawnFrames();
 		
 		document.addEventListener('mousemove', updatePupilPosition);
 		
 		// Recreate lines and frames on window resize
 		window.addEventListener('resize', function() {
 			setTimeout(() => {
-				try { resetProjectsStageScale(); } catch {}
-				try { positionNodesPerfectCircle(); } catch {}
-				try { positionBrainfartsBuild(); } catch {}
-				try { createAndPositionDandDLogo(); } catch {}
-				try { createAndPositionTwisterDandDLine(); } catch {}
-				try { createAndPositionRepopKravlingLine(); } catch {}
-				try { createAndPositionKravlingNomineretBadge(); } catch {}
-				try { createAndPositionKobajerArrow(); } catch {}
-				try { createConnectingLines(); } catch {}
-				try { createHandDrawnFrames(); } catch {}
-				try { nudgeTwisterTitleDownInLandscape(); } catch {}
-				try { applyProjectsStageScale(); } catch {}
-				try { autoCenterProjectsLandscape(); } catch {}
+				positionNodesPerfectCircle();
+				createAndPositionDandDLogo();
+				createAndPositionTwisterDandDLine();
+				createAndPositionRepopKravlingLine();
+				createAndPositionKravlingNomineretBadge();
+				createAndPositionKobajerArrow();
+				ensureProjectsMobileInlineBadges();
+				createConnectingLines();
+				createHandDrawnFrames();
 			}, 100);
 		});
 
@@ -7287,33 +6492,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Initialize brain animations
 	initBrainAnimations();
-
-	// iOS Safari can restore pages from bfcache without a full reload.
-	// Ensure Projects re-centers when coming back from a project page.
-	window.addEventListener('pageshow', () => {
-		try {
-			if (!document.body || !document.body.classList.contains('projects-page')) return;
-			// Let the viewport settle, then re-run a centering pass.
-			window.setTimeout(() => {
-				try {
-					const container = document.querySelector('.brainstorm-container');
-					if (container) {
-						// Reset any previous auto-center offsets from bfcache restores.
-						container.style.removeProperty('--projectsOffsetX');
-						container.style.removeProperty('--projectsOffsetY');
-						delete container.dataset.centerPass;
-					}
-				} catch {}
-				try { resetProjectsStageScale(); } catch {}
-				try { positionNodesPerfectCircle(); } catch {}
-				try { createConnectingLines(); } catch {}
-				try { createHandDrawnFrames(); } catch {}
-				try { applyProjectsStageScale(); } catch {}
-				try { autoCenterProjectsLandscape(); } catch {}
-				try { window.scrollTo(0, 0); } catch {}
-			}, 120);
-		} catch {}
-	});
 
 	// Re-run init when navigating to the projects section (e.g. clicking "projekter")
 	window.addEventListener('hashchange', () => setTimeout(initBrainAnimations, 50));
