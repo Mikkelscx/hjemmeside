@@ -3513,7 +3513,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						// Durex: slightly narrower tab. UNGE: wider tab so the title image reads larger.
 						if (p.key === 'durex') {
-							node.style.setProperty('max-width', `${Math.max(110, Math.floor(maxW * 0.88))}px`, 'important');
+							node.style.setProperty('max-width', `${Math.max(100, Math.floor(maxW * 0.75))}px`, 'important');
 						} else if (p.key === 'unge') {
 							const ungeTabW = Math.min(
 								300,
@@ -3548,6 +3548,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'durex') x += Math.round(38 * scale);
 						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
 						if (p.key === 'unge') x -= Math.round(28 * scale);
+						/* Øverste rækker (over hjernen): pres lidt ned mod hjernen */
+						if (p.row <= 2) y += Math.round(26 * scale);
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
 						node.style.setProperty('top', `${y}px`, 'important');
@@ -3629,6 +3631,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const x = centerX + rx * Math.cos(angle);
 				let y = centerY + ry * Math.sin(angle);
 				const href = (node.getAttribute('href') || '').toLowerCase();
+
+				/* Øvre bue (over hjernen): pres lidt ned mod centrum */
+				if (Math.sin(angle) < -0.12) y += Math.round(26 * scale);
 
 				/* Nederste bue af ellipsen (under hjernen): lidt op */
 				if (Math.sin(angle) > 0.38) y -= 38;
@@ -4781,7 +4786,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
 		const gapDistance = brainRadius * 1.0; // 100% of brain radius as gap - balanced gap
 		/* Linjer under hjernen (TWISTER, KØ-BAJER, BRAINFARTS, KØ→Byens): lidt kortere */
-		const underBrainLineLenMul = 0.88;
+		const underBrainLineLenMul = 0.77;
+		/* Hjernen ↔ cirkler: alle segmenter lidt kortere (tykkelse uændret) */
+		const mindmapLineLenMul = 0.92;
 
 		// Portrait mobile: same sketch chain as hjemmesiden / live site (columns + brain), not radial spokes.
 		try {
@@ -4795,6 +4802,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (isMobileProjects) {
 				const scale = 1;
 				const svgScale = (n) => n * scale;
+				/* Øvre kæde (Rep↔Dur, Dur↔hjerne, Nat↔Ung, Ung↔hjerne): ekstra forkortelse */
+				const portraitUpperLineMul = 0.88;
 				try {
 					currentSvg.querySelectorAll('.mindmap-line:not(.dynamic-mindmap-line)').forEach((el) => {
 						el.dataset.mobileHidden = '1';
@@ -4847,7 +4856,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					const sy = ay + uy * gapA;
 					const ex = bx - ux * gapB;
 					const ey = by - uy * gapB;
-					let len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2)) * lenMul;
+					let len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2)) * lenMul * mindmapLineLenMul;
 					if (len < 6) return;
 					const angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
 					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -4886,9 +4895,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				if (repRect && durRect) {
 					lineImg('assets/Linje 2.webp', pt(repRect, 'bottom'), pt(durRect, 'top'), svgScale(210), {
-						gapA: 0,
-						gapB: 0,
-						lenMul: 1.38,
+						gapA: svgScale(2),
+						gapB: svgScale(2),
+						lenMul: 1.04 * portraitUpperLineMul,
 					});
 				}
 				if (durRect) {
@@ -4899,8 +4908,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					const bh = (brainBottom.y - brainTop.y) || 1;
 					const b = { x: brainLeft.x + svgScale(52), y: brainTop.y + bh * 0.30 };
 					lineImg('assets/linje 6.webp', a, b, svgScale(220), {
-						gapA: -svgScale(14),
-						gapB: svgScale(8),
+						gapA: svgScale(8),
+						gapB: svgScale(13),
+						lenMul: portraitUpperLineMul,
 					});
 				}
 				if (twiRect) {
@@ -4928,18 +4938,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				if (natRect && ungRect) {
 					lineImg('assets/linje 7.webp', pt(natRect, 'bottom'), pt(ungRect, 'top'), svgScale(190), {
-						gapA: -svgScale(16),
-						gapB: svgScale(8),
+						gapA: svgScale(8),
+						gapB: svgScale(12),
+						lenMul: portraitUpperLineMul,
 					});
 				}
 				if (ungRect) {
+					const ungeLineDy = svgScale(16);
 					const a = {
 						x: (ungRect.left - containerRect.left) + (ungRect.width * 0.34),
-						y: (ungRect.top - containerRect.top) + (ungRect.height * 0.62),
+						y: (ungRect.top - containerRect.top) + (ungRect.height * 0.62) + ungeLineDy,
 					};
 					const bh = (brainBottom.y - brainTop.y) || 1;
-					const b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 };
-					lineImg('assets/linje 5.webp', a, b, svgScale(220));
+					const b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 + ungeLineDy };
+					lineImg('assets/linje 5.webp', a, b, svgScale(220), {
+						gapA: svgScale(6),
+						gapB: svgScale(13),
+						lenMul: portraitUpperLineMul,
+					});
 				}
 				if (kobRect) {
 					const a = { x: brainRight.x - svgScale(40), y: brainBottom.y - svgScale(12) };
@@ -5030,7 +5046,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', brainStartY - 195); // Offset by half height (390/2 = 195) to center on rotation point
-				lineImage.setAttribute('width', lineLength); // Longer
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul); // Longer
 				lineImage.setAttribute('height', '390'); // Slightly bigger/thicker line asset
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -5084,7 +5100,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 4.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', brainStartY - 200); // Offset by half height (400/2 = 200) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
 				lineImage.setAttribute('height', '400');
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -5142,7 +5158,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 6.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
 				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -5192,24 +5208,28 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brainExtension = brainRadius * 0.1; // Extend 10% of brain radius backward (slightly longer)
 				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
 				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				/* Hele segmentet lidt ned (samme offset i begge ender → samme vinkel) */
+				const ungeLinePressDown = 16;
+				const lineEndYAdj = lineEndY + ungeLinePressDown;
+				const brainStartYAdj = brainStartY + ungeLinePressDown;
 				
 				// Calculate rotation and length for the image asset
-				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const angle = Math.atan2(lineEndYAdj - brainStartYAdj, lineEndX - brainStartX) * 180 / Math.PI;
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndYAdj - brainStartYAdj) ** 2);
 				
-				console.log('UNGE MOD UV linje 5 details (from center, down to the right):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
+				console.log('UNGE MOD UV linje 5 details (from center, down to the right):', { brainStartX, brainStartY: brainStartYAdj, lineEndX, lineEndY: lineEndYAdj, angle, lineLength });
 				
 				// Create image element for the line - use same pattern as KØ-BAJER
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/linje 5.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 5.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
+				lineImage.setAttribute('y', brainStartYAdj - 150); // Offset by half height (300/2 = 150) to center on rotation point
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
 				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
-				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
+				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartYAdj})`);
 				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
@@ -5268,7 +5288,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 1.webp');
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', brainStartY - 200); // Center vertically
-				lineImage.setAttribute('width', lineLength);
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
 				lineImage.setAttribute('height', '400');
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -5315,7 +5335,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/Linje 2.webp');
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', brainStartY - 22); // Center vertically (even thinner)
-				lineImage.setAttribute('width', lineLength * 0.92); // Slightly shorter
+				lineImage.setAttribute('width', lineLength * 0.92 * mindmapLineLenMul); // Slightly shorter
 				lineImage.setAttribute('height', '45'); // Even thinner line
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -5366,7 +5386,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 7.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', brainStartY - 100); // Offset by half height (200/2 = 100) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
 				lineImage.setAttribute('height', '200'); // Further reduced height to make line thinner
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -5419,7 +5439,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 3.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', brainStartY - 300); // Offset by half height (600/2 = 300) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
 				lineImage.setAttribute('height', '600');
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -5698,13 +5718,20 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				} catch {}
 
+				let repopMul = 0.88;
+				try {
+					if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) repopMul = 0.82;
+				} catch {}
+
 				const baseW = s(380) * assetS;
 				const baseH = s(isLandscapePhone ? 195 : 165) * assetS;
 				const padX = s(40) * assetS;
 				const padYPortrait = repBadgeRect ? 58 : 46;
 				const padY = s(isLandscapePhone ? 70 : padYPortrait) * assetS;
-				const w = Math.max(baseW, unionW + padX);
-				const h = Math.max(baseH, unionH + padY);
+				let w = Math.max(baseW, unionW + padX);
+				let h = Math.max(baseH, unionH + padY);
+				w *= repopMul;
+				h *= repopMul;
 
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
 				image.setAttribute('y', String(repCenterY - (h / 2)));
@@ -5726,7 +5753,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(repCenterX - s(1)));
 				fill.setAttribute('cy', String(repCenterY - s(2)));
-				fill.setAttribute('rx', String((s(190) * 0.55 - s(7)) * assetS));
+				fill.setAttribute('rx', String(((s(190) * 0.55 - s(7)) * assetS) * repopMul));
 				fill.setAttribute('ry', String(((h / 2) * 0.68 - s(2)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
@@ -5819,16 +5846,28 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: NATURLI' uses the image instead of hand-drawn circle
 			if (nodeText === 'NATURLI\'' || nodeHref.includes('naturli')) {
 				console.log('Creating NATURLI\' circle image...');
+				let naturliMul = 0.82;
+				try {
+					const ih = window.innerHeight || 0;
+					const iw = window.innerWidth || 1;
+					const ctr = container && container.classList ? container : null;
+					const portrait =
+						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
+						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
+					if (portrait) naturliMul = 0.78;
+				} catch {}
+				const nW = 240 * naturliMul;
+				const nH = 140 * naturliMul;
 				// Create an image element for NATURLI'
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring naturli'.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 120); // Center the image (assuming 240px width)
-				image.setAttribute('y', centerY - 65); // Move down slightly (assuming 140px height)
-				image.setAttribute('width', '240');
-				image.setAttribute('height', '140');
+				image.setAttribute('x', centerX - nW / 2);
+				image.setAttribute('y', centerY - nH * (65 / 140));
+				image.setAttribute('width', String(nW));
+				image.setAttribute('height', String(nH));
 				image.setAttribute('preserveAspectRatio', 'none'); // Prevent aspect ratio from scaling width
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -5845,8 +5884,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				// NATURLI': make the RIGHT side slightly smaller (keep left edge the same)
 				fill.setAttribute('cx', String(centerX + 1));
 				fill.setAttribute('cy', String(centerY - 1));
-				fill.setAttribute('rx', String(120 * 0.50 - 2));
-				fill.setAttribute('ry', String(70 * 0.66));
+				fill.setAttribute('rx', String((120 * 0.50 - 2) * naturliMul));
+				fill.setAttribute('ry', String(70 * 0.66 * naturliMul));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6062,6 +6101,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					if (portrait) durexMul = 0.84;
 				} catch {}
+				durexMul *= 0.805; /* cirkel + fill matcher Durex tekst-asset + tab */
 				const dw = 440 * durexMul;
 				const dh = 150 * durexMul;
 				image.setAttribute('x', centerX - dw / 2);

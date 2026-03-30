@@ -4108,8 +4108,8 @@ a[href="twister.html"]:hover * {
 
 /* Ultra-specific Durex tab fix - keep original position and allow wider text */
 a[href="durex.html"] {
-    max-width: 220px !important;
-    min-width: 220px !important;
+    max-width: 164px !important;
+    min-width: 164px !important;
     white-space: normal !important;
 }
 
@@ -5030,21 +5030,39 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img {
 body.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
     width: 96%;
     max-width: 100%;
+    filter:
+        contrast(1.32)
+        drop-shadow(0.95px 0 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(-0.95px 0 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0 0.82px 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0 -0.82px 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0.52px 0 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(-0.52px 0 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0 0.45px 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0 -0.45px 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0.78px 0.78px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(-0.78px 0.78px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(0.78px -0.78px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(-0.78px -0.78px 0 rgba(26, 26, 26, 0.84));
 }
 
-/* Projekter: Naturli' — image label, moderately larger than tiny em cap (not full billboard) */
+/* Projekter: Naturli' — tekst-webp + mindre fane (matcher mindre cirkel) */
 body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
-    width: 78%;
-    max-width: min(142px, 100%);
+    display: block;
+    width: 72%;
+    max-width: min(124px, 100%);
     height: auto;
+    margin: 0 auto;
     object-fit: contain;
 }
 
-/* Projekter: Durex — fill the tab (width matches a[href="durex.html"]) */
+/* Projekter: Durex — tekst-asset (webp) mindre end fanen */
 body.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
-    width: 100%;
-    max-width: 100%;
+    display: block;
+    width: 86%;
+    max-width: 152px;
     height: auto;
+    margin: 0 auto;
     object-fit: contain;
 }
 
@@ -5123,18 +5141,18 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
 @media (min-width: 1025px) {
     body.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"],
     body.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] {
-        width: 172px !important;
+        width: 154px !important;
         max-width: none !important;
         min-width: 0 !important;
-        min-height: 76px !important;
+        min-height: 68px !important;
         max-height: none !important;
         padding: 5px 7px !important;
         white-space: normal !important;
         text-overflow: clip !important;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
-        width: 78%;
-        max-width: 126px;
+        width: 72%;
+        max-width: 112px;
     }
 }
 
@@ -5146,13 +5164,13 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         width: min(190px, 92%);
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
-        width: min(148px, 82%);
+        width: min(128px, 76%);
         height: auto;
-        max-width: 82%;
+        max-width: 76%;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
-        width: min(220px, 92%);
-        max-width: 100%;
+        width: min(152px, 80%);
+        max-width: 80%;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
         width: min(158px, 78%);
@@ -5236,15 +5254,29 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
 }
 .projects-mobile__name--image .projects-mobile__name-img--repop {
     max-width: 320px;
+    filter:
+        contrast(1.32)
+        drop-shadow(0.95px 0 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(-0.95px 0 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0 0.82px 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0 -0.82px 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0.52px 0 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(-0.52px 0 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0 0.45px 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0 -0.45px 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0.78px 0.78px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(-0.78px 0.78px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(0.78px -0.78px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(-0.78px -0.78px 0 rgba(26, 26, 26, 0.84));
 }
 .projects-mobile__name--image .projects-mobile__name-img--naturli {
     width: 100%;
-    max-width: min(185px, 100%);
+    max-width: min(158px, 92%);
     height: auto;
 }
 .projects-mobile__name--image .projects-mobile__name-img--durex {
     width: 100%;
-    max-width: min(220px, 100%);
+    max-width: min(152px, 92%);
     height: auto;
     object-fit: contain;
 }
@@ -5697,53 +5729,53 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.projects-page.sketchbook-theme .project-node .kravling-nomineret-badge--inline .kravling-line1 {
         font-size: 12px;
-        font-weight: 900;
-        -webkit-text-stroke: 0.45px #1a1a1a;
+        font-weight: 600;
+        -webkit-text-stroke: 0.24px #1a1a1a;
         paint-order: stroke fill;
         text-shadow:
-            0.85px 0 0 #1a1a1a,
-            -0.85px 0 0 #1a1a1a,
-            0 0.7px 0 #1a1a1a,
-            0 -0.7px 0 #1a1a1a;
+            0.52px 0 0 #1a1a1a,
+            -0.52px 0 0 #1a1a1a,
+            0 0.42px 0 #1a1a1a,
+            0 -0.42px 0 #1a1a1a;
     }
     body.projects-page.sketchbook-theme .project-node .kravling-nomineret-badge--inline .kravling-line2 {
         font-size: 12px;
         margin-top: -1px;
-        font-weight: 900;
-        -webkit-text-stroke: 0.45px #1a1a1a;
+        font-weight: 600;
+        -webkit-text-stroke: 0.24px #1a1a1a;
         paint-order: stroke fill;
         text-shadow:
-            0.85px 0 0 #1a1a1a,
-            -0.85px 0 0 #1a1a1a,
-            0 0.7px 0 #1a1a1a,
-            0 -0.7px 0 #1a1a1a;
+            0.52px 0 0 #1a1a1a,
+            -0.52px 0 0 #1a1a1a,
+            0 0.42px 0 #1a1a1a,
+            0 -0.42px 0 #1a1a1a;
     }
     body.projects-page.sketchbook-theme .project-node .kravling-nomineret-badge--inline .kravling-line3 {
         font-size: 18px !important;
         margin-top: -2px;
-        font-weight: 900;
-        -webkit-text-stroke: 0.6px #1a1a1a;
+        font-weight: 600;
+        -webkit-text-stroke: 0.34px #1a1a1a;
         paint-order: stroke fill;
         text-shadow:
-            1.05px 0 0 #1a1a1a,
-            -1.05px 0 0 #1a1a1a,
-            0 0.9px 0 #1a1a1a,
-            0 -0.9px 0 #1a1a1a;
+            0.66px 0 0 #1a1a1a,
+            -0.66px 0 0 #1a1a1a,
+            0 0.54px 0 #1a1a1a,
+            0 -0.54px 0 #1a1a1a;
     }
 
     /* REPOP / Kravling 2025: pull nomination block up in portrait (class + orientation so it always wins over generic inline badge rules) */
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline,
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
-        margin-top: -10px !important;
+        margin-top: -15px !important;
         /* ~match Kø-Bajer 2024 block (10/10/14 + scale 0.93) → ca. samme visuelle vægt som 2024 i cirklen */
-        transform: translateY(-22px) scale(1.06) !important;
+        transform: translateY(-30px) scale(1.06) !important;
         transform-origin: center center !important;
     }
     @media (orientation: portrait) {
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
-            margin-top: -10px !important;
-            transform: translateY(-22px) scale(1.06) !important;
+            margin-top: -15px !important;
+            transform: translateY(-30px) scale(1.06) !important;
             transform-origin: center center !important;
         }
     }
@@ -6620,7 +6652,7 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 76% !important;
+        top: 71% !important;
         /* Lidt større end før, tættere på Kø-Bajer 2024 (vandret mobil) */
         transform: translate(-50%, -50%) scale(0.96) !important;
         transform-origin: 50% 50% !important;
@@ -6634,27 +6666,27 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
         font-size: 11px !important;
-        font-weight: 900 !important;
-        -webkit-text-stroke: 0.45px #1a1a1a !important;
+        font-weight: 600 !important;
+        -webkit-text-stroke: 0.24px #1a1a1a !important;
         paint-order: stroke fill;
         text-shadow:
-            0.85px 0 0 #1a1a1a,
-            -0.85px 0 0 #1a1a1a,
-            0 0.7px 0 #1a1a1a,
-            0 -0.7px 0 #1a1a1a !important;
+            0.52px 0 0 #1a1a1a,
+            -0.52px 0 0 #1a1a1a,
+            0 0.42px 0 #1a1a1a,
+            0 -0.42px 0 #1a1a1a !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
         font-size: 17px !important;
         margin-top: -2px !important;
-        font-weight: 900 !important;
-        -webkit-text-stroke: 0.6px #1a1a1a !important;
+        font-weight: 600 !important;
+        -webkit-text-stroke: 0.34px #1a1a1a !important;
         paint-order: stroke fill;
         text-shadow:
-            1.05px 0 0 #1a1a1a,
-            -1.05px 0 0 #1a1a1a,
-            0 0.9px 0 #1a1a1a,
-            0 -0.9px 0 #1a1a1a !important;
+            0.66px 0 0 #1a1a1a,
+            -0.66px 0 0 #1a1a1a,
+            0 0.54px 0 #1a1a1a,
+            0 -0.54px 0 #1a1a1a !important;
     }
 
     /* Projects: horizontal mobile KØ-BAJER has KRAVLING 2024 inside circle */
@@ -7142,9 +7174,9 @@ body.sketchbook-theme .brainstorm-container a.project-node {
 
 /* Image headline tabs: override fixed 180×80 cap (higher specificity than rule above) */
 body.sketchbook-theme .brainstorm-container a.project-node[href="durex.html"] {
-    width: 220px !important;
-    min-width: 220px !important;
-    max-width: 220px !important;
+    width: 164px !important;
+    min-width: 164px !important;
+    max-width: 164px !important;
     min-height: auto !important;
     max-height: none !important;
     padding: 6px 10px !important;
