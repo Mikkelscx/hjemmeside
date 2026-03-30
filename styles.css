@@ -5058,7 +5058,7 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-u
 /* Projekter: Twister — slightly under default text tab (180px) */
 body.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
     width: 100%;
-    max-width: 100%;
+    max-width: 129px;
     height: auto;
     object-fit: contain;
 }
@@ -5066,8 +5066,8 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
 /* Projekter: Kø-Bajer — compact image tab; graphic slightly smaller so circle has more air */
 body.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
     display: block;
-    width: 86%;
-    max-width: 86%;
+    width: 80%;
+    max-width: 121px;
     height: auto;
     margin: 0 auto;
     object-fit: contain;
@@ -5077,7 +5077,7 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
 body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts {
     display: block;
     width: 92%;
-    max-width: 162px;
+    max-width: 126px;
     height: auto;
     margin: 0 auto;
     object-fit: contain;
@@ -5105,7 +5105,7 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
 @media (min-width: 1025px) {
     body.sketchbook-theme .brainstorm-container .project-node[href*="byens-landhandel"],
     body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
-        width: clamp(170px, 14vw, 250px) !important;
+        width: clamp(133px, 11vw, 195px) !important;
         max-width: none !important;
         min-width: 0 !important;
         padding: 6px 10px !important;
@@ -5196,29 +5196,29 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         }
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
-        width: min(165px, 88%);
+        width: min(129px, 88%);
         max-width: 100%;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
-        width: min(134px, 75%);
+        width: min(105px, 75%);
         max-width: 86%;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts {
-        width: min(162px, 92%);
+        width: min(126px, 92%);
         max-width: 92%;
         transform: translateY(16px);
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
-        width: min(200px, 90%);
+        width: min(156px, 90%);
         max-width: 100%;
         transform: translateY(4px);
     }
     @media (orientation: portrait) {
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="byens-landhandel"],
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
-            width: min(200px, 50vw) !important;
+            width: min(156px, 39vw) !important;
             min-width: 0 !important;
-            max-width: min(200px, 50vw) !important;
+            max-width: min(156px, 39vw) !important;
         }
     }
 }
@@ -5256,22 +5256,32 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
 }
 .projects-mobile__name--image .projects-mobile__name-img--twister {
     width: 100%;
-    max-width: min(165px, 100%);
+    max-width: min(129px, 100%);
     height: auto;
     object-fit: contain;
 }
 .projects-mobile__name--image .projects-mobile__name-img--kobajer {
     width: 86%;
-    max-width: min(134px, 86%);
+    max-width: min(105px, 86%);
     height: auto;
     margin: 0 auto;
     object-fit: contain;
 }
 .projects-mobile__name--image .projects-mobile__name-img--brainfarts {
     width: 92%;
-    max-width: min(170px, 100%);
+    max-width: min(132px, 100%);
     height: auto;
     margin-top: 15px;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
+}
+
+.projects-mobile__item[href*="byens-landhandel"] .projects-mobile__name-img {
+    display: block;
+    width: 92%;
+    max-width: min(156px, 100%);
+    height: auto;
     margin-left: auto;
     margin-right: auto;
     object-fit: contain;
@@ -5293,9 +5303,9 @@ body.repop-page .repop-headline--image .repop-headline__img {
 /* Projects: BRAINFARTS is under construction (not clickable); image label matches default tab width */
 body.sketchbook-theme .brainstorm-container a.project-node[href="brainfarts.html"] {
     cursor: not-allowed !important;
-    width: 180px !important;
-    min-width: 180px !important;
-    max-width: 180px !important;
+    width: 140px !important;
+    min-width: 140px !important;
+    max-width: 140px !important;
     /* Keep tab box same as text nodes so SVG circle sizing stays stable */
     min-height: 80px !important;
     max-height: none !important;
@@ -5343,7 +5353,7 @@ body.sketchbook-theme .brainstorm-container {
     text-align: initial;
 
     /* Base sizes (the "big version"). We squeeze the whole mindmap via .brainstorm-stage. */
-    --projectsBrainSize: 200px;
+    --projectsBrainSize: 180px;
     --projectsTabW: 180px;
     --projectsTabH: 80px;
     --projectsTabFont: 1.2rem;
@@ -5578,6 +5588,8 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;
+        /* One uniform scale for phone: mindmap + lines + brain shrink together; more top/bottom margin */
+        --projectsMobileVisScale: 0.88;
         /* Mobile fit tuning (JS reads these and sets --projectsSx/--projectsSy) */
         --projectsScaleUniform: 1;
         /* Portrait: bases near typical phone viewport so the mind map stays large and airy (like live) */
@@ -5596,7 +5608,7 @@ body.sketchbook-theme .brainstorm-container {
         body.projects-page.sketchbook-theme .brainstorm-container {
             --projectsSx: 1 !important;
             --projectsSy: 1 !important;
-            --projectsBrainSize: 168px;
+            --projectsBrainSize: 152px;
         }
     }
 
@@ -5648,7 +5660,7 @@ body.sketchbook-theme .brainstorm-container {
         top: 52%;
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block;
-        width: 112px;
+        width: 87px;
         max-width: 78%;
         height: auto;
         margin: 0;
@@ -5736,19 +5748,19 @@ body.sketchbook-theme .brainstorm-container {
         }
     }
 
-    /* TWISTER / D&AD: pull badge row up in portrait (title img uses translateY; re-centres stack in oval) */
+    /* TWISTER / D&AD: portrait — D&AD i ovalen (lidt højere end “press ned”-version) */
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .dandd-badge--inline,
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .dandd-badge--inline {
-        margin-top: -5px !important;
-        transform: translateY(-17px) !important;
+        margin-top: 0 !important;
+        transform: translateY(-9px) !important;
         gap: 0 !important;
         justify-content: center !important;
     }
     @media (orientation: portrait) {
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
-            margin-top: -5px !important;
-            transform: translateY(-17px) !important;
+            margin-top: 0 !important;
+            transform: translateY(-9px) !important;
             gap: 0 !important;
             justify-content: center !important;
         }
@@ -5756,7 +5768,7 @@ body.sketchbook-theme .brainstorm-container {
     /* TWISTER: pencil + winner tættere mod midten */
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
-        margin-left: -8px !important;
+        margin-left: -6px !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
@@ -5831,13 +5843,13 @@ body.sketchbook-theme .brainstorm-container {
         align-items: center !important;
         justify-content: center !important;
         line-height: 1.02 !important;
-        transform: scale(0.93) !important;
+        transform: scale(0.725) !important;
         transform-origin: center center !important;
     }
     @media (orientation: portrait) {
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"],
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] {
-            transform: translateY(8px);
+            transform: translateY(0);
         }
     }
 
@@ -5856,19 +5868,19 @@ body.sketchbook-theme .brainstorm-container {
         height: auto !important;
         pointer-events: none !important;
         z-index: 0 !important;
-        margin-top: 6px;
+        margin-top: 8px;
         /* Make it a compact row so the TWISTER circle can be smaller */
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 6px;
     }
     body.projects-page.sketchbook-theme .project-node .dandd-badge--inline .dandd-logo {
-        width: 54px;
+        width: 33px;
         height: auto;
     }
     body.projects-page.sketchbook-theme .project-node .dandd-badge--inline .dandd-winner {
-        width: 74px;
+        width: 45px;
         height: auto;
         /* No overlap in the inline version */
         margin-top: 0;
@@ -6570,7 +6582,7 @@ body.sketchbook-theme .brainstorm-container {
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block !important;
         visibility: visible !important;
-        width: 112px;
+        width: 87px;
         max-width: 78%;
         height: auto;
         margin: 0;
@@ -6661,7 +6673,7 @@ body.sketchbook-theme .brainstorm-container {
         position: absolute !important;
         left: 50% !important;
         top: 76% !important;
-        transform: translate(-50%, -50%) scale(0.92) !important;
+        transform: translate(-50%, -50%) scale(0.72) !important;
         transform-origin: 50% 50% !important;
         pointer-events: none !important;
         z-index: 0 !important;
@@ -6688,8 +6700,8 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 76% !important;
-        transform: translate(-50%, -50%) scale(0.78) !important;
+        top: 78% !important;
+        transform: translate(-50%, calc(-50% + 3px)) scale(0.48) !important;
         transform-origin: 50% 50% !important;
         width: auto !important;
         height: auto !important;
@@ -6703,15 +6715,15 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-        width: 44px !important;
+        width: 27px !important;
         height: auto !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
-        width: 60px !important;
+        width: 37px !important;
         height: auto !important;
         margin: 0 !important;
-        margin-left: -8px !important;
+        margin-left: -6px !important;
     }
 }
 
@@ -7148,18 +7160,18 @@ body.sketchbook-theme .brainstorm-container a.project-node[href="unge-mod-uv.htm
     white-space: normal !important;
 }
 body.sketchbook-theme .brainstorm-container a.project-node[href="twister.html"] {
-    width: 165px !important;
-    min-width: 165px !important;
-    max-width: 165px !important;
+    width: 129px !important;
+    min-width: 129px !important;
+    max-width: 129px !important;
     min-height: auto !important;
     max-height: none !important;
     padding: 6px 10px !important;
     white-space: normal !important;
 }
 body.sketchbook-theme .brainstorm-container a.project-node[href="kobajer.html"] {
-    width: 155px !important;
-    min-width: 155px !important;
-    max-width: 155px !important;
+    width: 121px !important;
+    min-width: 121px !important;
+    max-width: 121px !important;
     min-height: auto !important;
     max-height: none !important;
     padding: 6px 10px !important;
@@ -7167,9 +7179,9 @@ body.sketchbook-theme .brainstorm-container a.project-node[href="kobajer.html"] 
 }
 body.sketchbook-theme .brainstorm-container a.project-node[href="byens-landhandel.html"],
 body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
-    width: 220px !important;
-    min-width: 220px !important;
-    max-width: 220px !important;
+    width: 172px !important;
+    min-width: 172px !important;
+    max-width: 172px !important;
     min-height: auto !important;
     max-height: none !important;
     padding: 6px 10px !important;
@@ -7179,15 +7191,24 @@ body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhand
 @media (max-width: 640px) {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href="byens-landhandel.html"],
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
-        width: min(200px, 50vw) !important;
+        width: min(156px, 39vw) !important;
         min-width: 0 !important;
-        max-width: min(200px, 50vw) !important;
+        max-width: min(156px, 39vw) !important;
     }
 }
 
-/* Projects: D&AD badge scales down too */
+/* Projects: D&AD assets (logo + VINDER + spark ring) smaller on mind map */
 body.sketchbook-theme .brainstorm-container .dandd-logo {
-    width: 90px;
+    width: 55px;
+}
+body.sketchbook-theme .brainstorm-container > .dandd-badge .dandd-winner {
+    width: clamp(21px, 4.8vmin, 55px);
+    margin-top: clamp(-21px, -2.1vmin, -11px);
+    margin-left: clamp(2px, 0.8vmin, 4px);
+}
+body.projects-page.sketchbook-theme .brainstorm-container .dandd-sparks {
+    width: calc(100% + 28px);
+    height: calc(100% + 28px);
 }
 
 /* Projects: Brainfarts -> Under ombygning arrow + sign */
@@ -7196,8 +7217,8 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build {
     /* BRAINFARTS node is at: top 50%, left 10% */
     left: 7.5%;
     top: 61%;
-    width: 170px;
-    height: 210px;
+    width: 132px;
+    height: 164px;
     z-index: 12; /* under nodes (15), above paper (1) */
     pointer-events: none;
 }
@@ -7225,7 +7246,7 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
 body.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
     left: 94%;
     top: 46px;
-    width: 85px;
+    width: 66px;
     transform: translateX(-50%) rotate(var(--brainfartsArrowRot, 112deg));
     transform-origin: 50% 20%;
 }
@@ -7233,7 +7254,7 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
 body.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
     left: 56%;
     top: 100px;
-    width: 105px;
+    width: 81px;
     transform: translateX(-50%) rotate(var(--brainfartsSignRot, 0deg));
 }
 
@@ -7241,8 +7262,8 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
     body.sketchbook-theme .brainstorm-container .brainfarts-build {
         left: 9%;
         top: 63%;
-        width: 155px;
-        height: 200px;
+        width: 121px;
+        height: 156px;
     }
     /* Arrow/sign already use clamp(...) above */
 }
@@ -9589,7 +9610,7 @@ html body a[href="project1.html"]:hover {
         --projectsScaleExp: 1.00;
         --projectsScaleMin: 0.82;
         /* Brain size in phone landscape (SVG size, not container transform) */
-        --projectsBrainSize: 96px;
+        --projectsBrainSize: 86px;
         /* Base offsets (JS will auto-center by updating these) */
         --projectsOffsetX: 200px;
         --projectsOffsetY: -290px;
@@ -9624,7 +9645,7 @@ html body a[href="project1.html"]:hover {
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block !important;
         visibility: visible !important;
-        width: 112px;
+        width: 87px;
         max-width: 78%;
         height: auto;
         margin: 0;
@@ -9659,7 +9680,7 @@ html body a[href="project1.html"]:hover {
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block !important;
         visibility: visible !important;
-        width: 112px;
+        width: 87px;
         max-width: 78%;
         height: auto;
         margin: 0;

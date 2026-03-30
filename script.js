@@ -3542,6 +3542,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
 						if (p.key === 'byens') x -= Math.round(38 * scale);
 						if (p.key === 'byens') y += Math.round(14 * scale);
+						/* Alt under hjernen (række 4–5): lidt op */
+						if (p.row >= 4) y -= Math.round(32 * scale);
 						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
 						if (p.key === 'durex') x += Math.round(38 * scale);
 						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
@@ -3627,6 +3629,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const x = centerX + rx * Math.cos(angle);
 				let y = centerY + ry * Math.sin(angle);
 				const href = (node.getAttribute('href') || '').toLowerCase();
+
+				/* Nederste bue af ellipsen (under hjernen): lidt op */
+				if (Math.sin(angle) > 0.38) y -= 38;
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
@@ -3833,8 +3838,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					const delay = (i % 10) * 0.06;
 					const w = (i % 3 === 0) ? 4 : 3;
 					// Perfect round ring: ALL rays start from the same radius.
-					const r = 56;
-					let h = 78;
+					const r = 34;
+					let h = 48;
 					// Every second ray is half as long (but starts at the same ring)
 					if (i % 2 === 1) h = Math.round(h * 0.5);
 					s.style.setProperty('--rot', `${rot}deg`);
@@ -3909,7 +3914,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const containerRect = container.getBoundingClientRect();
 			const r = twisterNode.getBoundingClientRect();
-			const top = (r.top - containerRect.top) + (r.height / 2) + 28; // move more down
+			const top = (r.top - containerRect.top) + (r.height / 2) + 34; // D&AD badge: under TWISTER-rækken (mellem +28 og +40)
 			const left = (r.right - containerRect.left) + 14 + 70; // move a lot more right
 
 			badge.style.left = `${left}px`;
@@ -3994,7 +3999,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			line.style.left = `${sX}px`;
 			line.style.top = `${sY}px`;
 			line.style.width = `${lineLength}px`;
-			line.style.height = '190px'; // thicker
+			line.style.height = '115px'; // thicker (D&AD line asset scaled with badge)
 			line.style.transformOrigin = '0 50%';
 			line.style.transform = `translateY(-50%) rotate(${angle}deg)`;
 		}
@@ -4176,7 +4181,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const containerRect = container.getBoundingClientRect();
 			const r = kobajerNode.getBoundingClientRect();
 
-			const width = 85; // shorter
+			const width = 66; // shorter (scaled with KØ-BAJER ring ~0.78)
 			const gap = -35; // move slightly down
 			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - 42; // more to the right
 			const top = (r.bottom - containerRect.top) + gap;
@@ -4480,7 +4485,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			twisterAsset.className = 'twister-asset';
 			twisterAsset.style.cssText = `
 				position: absolute;
-				width: 85px;
+				width: 51px;
 				height: auto;
 				top: 62%;
 				right: 27%;
@@ -4775,6 +4780,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Calculate brain radius to create gap
 		const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
 		const gapDistance = brainRadius * 1.0; // 100% of brain radius as gap - balanced gap
+		/* Linjer under hjernen (TWISTER, KØ-BAJER, BRAINFARTS, KØ→Byens): lidt kortere */
+		const underBrainLineLenMul = 0.88;
 
 		// Portrait mobile: same sketch chain as hjemmesiden / live site (columns + brain), not radial spokes.
 		try {
@@ -4903,6 +4910,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg('assets/linje 8.webp', a, b, svgScale(175), {
 						gapA: -svgScale(14),
 						gapB: svgScale(8),
+						lenMul: underBrainLineLenMul,
 					});
 				}
 				if (twiRect && brfRect) {
@@ -4914,7 +4922,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						{ x: twBot.x, y: twBot.y + twBrfDown },
 						{ x: bfTop.x, y: bfTop.y + twBrfDown },
 						svgScale(210),
-						{ gapA: svgScale(4), gapB: svgScale(4), lenMul: 1.1 }
+						{ gapA: svgScale(4), gapB: svgScale(4), lenMul: 1.1 * underBrainLineLenMul }
 					);
 				}
 
@@ -4940,6 +4948,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg('assets/Linje 4.webp', a, b, svgScale(235), {
 						gapA: -svgScale(14),
 						gapB: svgScale(8),
+						lenMul: underBrainLineLenMul,
 					});
 				}
 				if (kobRect && byeRect) {
@@ -4951,7 +4960,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg('assets/linje 1.webp', a, b, svgScale(210), {
 						gapA: svgScale(4),
 						gapB: svgScale(4),
-						lenMul: 1.1,
+						lenMul: 1.1 * underBrainLineLenMul,
 					});
 				}
 
@@ -5011,7 +5020,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
 				
 				console.log('BRAINFARTS Linje 8 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -5065,7 +5074,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
 				
 				console.log('KØ-BAJER Linje 4 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -5250,7 +5259,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
 				
 				console.log('Line details:', {brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength});
 				
@@ -5400,7 +5409,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
 				
 				console.log('TWISTER Linje 3 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -5579,16 +5588,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			// (Titles are often image-only; match href so we always use your asset.)
 			if (nodeText === 'BRAINFARTS' || nodeHref.includes('brainfarts')) {
 				console.log('Creating BRAINFARTS circle image...');
+				const brainfartsRingScale = 0.78;
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 120); // Center the image (assuming 240px width)
-				image.setAttribute('y', centerY - 100); // Center the image (assuming 200px height)
-				image.setAttribute('width', '240');
-				image.setAttribute('height', '200');
+				const bw = 240 * brainfartsRingScale;
+				const bh = 200 * brainfartsRingScale;
+				image.setAttribute('x', String(centerX - bw / 2));
+				image.setAttribute('y', String(centerY - bh / 2));
+				image.setAttribute('width', String(bw));
+				image.setAttribute('height', String(bh));
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.style.pointerEvents = 'auto'; // Make image visible
@@ -5609,8 +5621,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				fill.setAttribute('cx', String(centerX - 1)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
 				// Slightly smaller at the bottom: shift up a bit
 				fill.setAttribute('cy', String(centerY - 3)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
-				fill.setAttribute('rx', String(120 * 0.56 + 2)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('ry', String(100 * 0.56 - 1)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
+				fill.setAttribute('rx', String((120 * 0.56 + 2) * brainfartsRingScale));
+				fill.setAttribute('ry', String((100 * 0.56 - 1) * brainfartsRingScale));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5629,14 +5641,14 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg.setAttribute('href', linePath);
 					lineImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', linePath);
 
-					// Keep it smaller and within the circle-ish area (circle image is 240x200)
-					const w = 205; // longer (not too big)
-					const h = 160; // extremely thick
+					// Keep it smaller and within the circle-ish area (circle image is 240x200, scaled by brainfartsRingScale)
+					const w = 205 * brainfartsRingScale;
+					const h = 160 * brainfartsRingScale;
 					lineImg.setAttribute('width', String(w));
 					lineImg.setAttribute('height', String(h));
 					// Place it so it goes from RIGHT side -> down to BOTTOM-LEFT
-					lineImg.setAttribute('x', String(centerX - (w / 2) - 5)); // more to the left
-					lineImg.setAttribute('y', String(centerY - (h / 2) + 4));
+					lineImg.setAttribute('x', String(centerX - (w / 2) - 5 * brainfartsRingScale));
+					lineImg.setAttribute('y', String(centerY - (h / 2) + 4 * brainfartsRingScale));
 					lineImg.setAttribute('preserveAspectRatio', 'none');
 					// Slightly see-through so it reads like drawn on paper
 					lineImg.setAttribute('opacity', '0.78');
@@ -5764,8 +5776,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const padX = s(80) * assetS;
 				const padYPortrait = kBadgeRect ? 58 : 44;
 				const padY = s(isLandscapePhone ? 92 : padYPortrait) * assetS;
-				const w = Math.max(baseW, unionW + padX);
-				const h = Math.max(baseH, unionH + padY);
+				let w = Math.max(baseW, unionW + padX);
+				let h = Math.max(baseH, unionH + padY);
+				const kobajerRingScale = 0.78;
+				w *= kobajerRingScale;
+				h *= kobajerRingScale;
 				image.setAttribute('x', String(kCenterX - (w / 2)));
 				image.setAttribute('y', String(kCenterY - (h / 2) + s(10)));
 				image.setAttribute('width', String(w));
@@ -5933,8 +5948,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const baseH = s(isMobile ? 170 : (isLandscapePhone ? 150 : 120)) * assetS;
 				const padX = s(isMobile ? 170 : 90) * assetS;
 				const padY = s(isMobile ? 90 : (isLandscapePhone ? 76 : 44)) * assetS;
-				const w = Math.max(baseW, unionW + padX);
-				const h = Math.max(baseH, unionH + padY);
+				let w = Math.max(baseW, unionW + padX);
+				let h = Math.max(baseH, unionH + padY);
+				const twisterRingScale = 0.78;
+				w *= twisterRingScale;
+				h *= twisterRingScale;
 				const circleDy = isLandscapePhone ? s(10) : 0;
 				image.setAttribute('x', String(twCenterX - (w / 2)));
 				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
@@ -5973,6 +5991,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: BYENS LANDHANDEL uses the image instead of hand-drawn circle
 			if (nodeText === 'Byens Landhandel' || nodeHref.includes('byens-landhandel')) {
 				console.log('Creating Byens Landhandel circle image...');
+				const byensLandhandelRingScale = 0.78;
 				let byensMul = 1;
 				try {
 					const ih = window.innerHeight || 0;
@@ -5982,8 +6001,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					if (portrait) byensMul = 0.88;
 				} catch {}
-				const bw = 440 * byensMul;
-				const bh = 170 * byensMul;
+				const bw = 440 * byensMul * byensLandhandelRingScale;
+				const bh = 170 * byensMul * byensLandhandelRingScale;
 				// Create an image element for BYENS LANDHANDEL
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle omkring byens landhandel.webp";
@@ -6009,8 +6028,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY - 2));
-				fill.setAttribute('rx', String((220 * 0.50 + 3) * byensMul));
-				fill.setAttribute('ry', String((85 * 0.58 - 2) * byensMul));
+				fill.setAttribute('rx', String((220 * 0.50 + 3) * byensMul * byensLandhandelRingScale));
+				fill.setAttribute('ry', String((85 * 0.58 - 2) * byensMul * byensLandhandelRingScale));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
