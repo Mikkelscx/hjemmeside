@@ -5203,13 +5203,13 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
             transform-origin: center center !important;
         }
     }
-    /* Portrait: TWISTER — nudge text graphic down in oval (D&AD badge stays absolute) */
+    /* Portrait: TWISTER — titel + badge længere op i ovalen */
     @media (orientation: portrait) {
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .project-node__title-img--twister,
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .project-node__title-img--twister,
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title-img--twister,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-            transform: translateY(24px);
+            transform: translateY(8px);
             transform-origin: center center;
         }
     }
@@ -5385,6 +5385,7 @@ body.sketchbook-theme .brainstorm-container {
     text-align: initial;
 
     /* Base sizes (the "big version"). We squeeze the whole mindmap via .brainstorm-stage. */
+    /* Desktop + tablet: fuld størrelse; kun telefon (≤640px) overskriver --projectsBrainSize */
     --projectsBrainSize: 180px;
     --projectsTabW: 180px;
     --projectsTabH: 80px;
@@ -5640,7 +5641,8 @@ body.sketchbook-theme .brainstorm-container {
         body.projects-page.sketchbook-theme .brainstorm-container {
             --projectsSx: 1 !important;
             --projectsSy: 1 !important;
-            --projectsBrainSize: 152px;
+            /* Kun mobil: mindre hjerne end desktop/tablet (180px) */
+            --projectsBrainSize: 118px;
         }
     }
 
@@ -5780,11 +5782,11 @@ body.sketchbook-theme .brainstorm-container {
         }
     }
 
-    /* TWISTER / D&AD: portrait — D&AD i ovalen (lidt højere end “press ned”-version) */
+    /* TWISTER / D&AD: portrait — D&AD i ovalen, højere op sammen med titel */
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .dandd-badge--inline,
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .dandd-badge--inline {
         margin-top: 0 !important;
-        transform: translateY(-9px) !important;
+        transform: translateY(-20px) !important;
         gap: 0 !important;
         justify-content: center !important;
     }
@@ -5792,7 +5794,7 @@ body.sketchbook-theme .brainstorm-container {
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
             margin-top: 0 !important;
-            transform: translateY(-9px) !important;
+            transform: translateY(-20px) !important;
             gap: 0 !important;
             justify-content: center !important;
         }
@@ -5848,7 +5850,7 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3 {
-        margin-top: -5px !important;
+        margin-top: -1px !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text > div + div,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text > div + div {
@@ -5879,9 +5881,15 @@ body.sketchbook-theme .brainstorm-container {
         transform-origin: center center !important;
     }
     @media (orientation: portrait) {
-        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"],
-        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] {
-            transform: translateY(0);
+        /* Kø-Bajer: titel + Kravling lidt op/venstre i cirklen (union → ring i JS) */
+        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .project-node__title,
+        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .project-node__title {
+            transform: translate(-14px, -50px) !important;
+        }
+        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline,
+        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline {
+            transform: translate(-14px, -44px) !important;
+            margin-top: -24px !important;
         }
     }
 
@@ -9641,8 +9649,8 @@ html body a[href="project1.html"]:hover {
         --projectsScaleBaseH: 430;
         --projectsScaleExp: 1.00;
         --projectsScaleMin: 0.82;
-        /* Brain size in phone landscape (SVG size, not container transform) */
-        --projectsBrainSize: 86px;
+        /* Brain size in phone landscape (SVG size, not container transform); kun mobil */
+        --projectsBrainSize: 68px;
         /* Base offsets (JS will auto-center by updating these) */
         --projectsOffsetX: 200px;
         --projectsOffsetY: -290px;

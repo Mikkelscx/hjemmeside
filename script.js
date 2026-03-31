@@ -3537,6 +3537,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'brainfarts') x += Math.round(32 * scale);
 						/* Twister: mod højre så cirkel + D&AD ikke sidder for tæt på venstre margin */
 						if (p.key === 'twister') x += Math.round(28 * scale);
+						/* Twister: pres hele cirklen + indhold op */
+						if (p.key === 'twister') y -= Math.round(38 * scale);
 						/* Repop: mod højre så boblen + Kravling ikke klipper i venstre kant */
 						if (p.key === 'repop') x += Math.round(28 * scale);
 						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
@@ -3544,6 +3546,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'byens') y += Math.round(14 * scale);
 						/* Alt under hjernen (række 4–5): lidt op */
 						if (p.row >= 4) y -= Math.round(32 * scale);
+						/* Række 5 (under Kø-Bajer-cirklen): ekstra op */
+						if (p.row === 5) y -= Math.round(40 * scale);
 						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
 						if (p.key === 'durex') x += Math.round(38 * scale);
 						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
@@ -3557,11 +3561,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 
 					try {
-						const bx = Math.max(minX, Math.min(maxX, containerRect.width * 0.5));
-						const by = rowY(3);
+						/* Lidt mod højre + ned fra center (mobil portrait) */
 						brain.style.setProperty('position', 'absolute', 'important');
-						brain.style.setProperty('left', `${bx}px`, 'important');
-						brain.style.setProperty('top', `${by}px`, 'important');
+						brain.style.setProperty('left', 'calc(50% + 30px)', 'important');
+						brain.style.setProperty('top', 'calc(50% + 42px)', 'important');
 						brain.style.setProperty('right', 'auto', 'important');
 						brain.style.setProperty('bottom', 'auto', 'important');
 						brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
@@ -4794,11 +4797,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		try {
 			const iw = window.innerWidth || 0;
 			const ih = window.innerHeight || 0;
+			/* Samme som portrait-grid: ellers kan innerWidth afvige og kæden (bl.a. Kø-Bajer→Byens) bruger forkert gren */
+			const isPortraitMindmap =
+				!!(container && container.classList && container.classList.contains('projects-mindmap--portrait'));
 			const isMobileProjects =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
-				iw <= 640 &&
-				ih >= iw;
+				(isPortraitMindmap || (iw <= 640 && ih >= iw));
 			if (isMobileProjects) {
 				const scale = 1;
 				const svgScale = (n) => n * scale;
@@ -4845,6 +4850,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					const gapA = opts.gapA !== undefined ? opts.gapA : svgScale(8);
 					const gapB = opts.gapB !== undefined ? opts.gapB : svgScale(8);
 					const lenMul = opts.lenMul != null ? opts.lenMul : 1;
+					const angleOffsetDeg = opts.angleOffsetDeg != null ? opts.angleOffsetDeg : 0;
 					const ax = a.x, ay = a.y;
 					const bx = b.x, by = b.y;
 					const dx = bx - ax;
@@ -4858,7 +4864,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					const ey = by - uy * gapB;
 					let len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2)) * lenMul * mindmapLineLenMul;
 					if (len < 6) return;
-					const angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
+					let angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI + angleOffsetDeg;
 					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 					img.setAttribute('href', assetPath);
 					img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', assetPath);
@@ -4915,24 +4921,33 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				if (twiRect) {
 					const shiftX = svgScale(36);
-					const a = { x: brainLeft.x + svgScale(22) + shiftX, y: brainBottom.y - svgScale(12) };
-					const b = { x: pt(twiRect, 'left').x - svgScale(8) + shiftX, y: pt(twiRect, 'top').y + svgScale(8) };
+					const a = {
+						x: brainLeft.x - svgScale(6) + shiftX,
+						y: brainBottom.y - svgScale(58),
+					};
+					const b = {
+						x: pt(twiRect, 'left').x - svgScale(52) + shiftX,
+						y: pt(twiRect, 'top').y - svgScale(26),
+					};
+					/* Ren rotation set ovenfra (ikke flytte ankre); negativ grader = mod venstre i SVG */
 					lineImg('assets/linje 8.webp', a, b, svgScale(175), {
 						gapA: -svgScale(14),
 						gapB: svgScale(8),
-						lenMul: underBrainLineLenMul,
+						lenMul: underBrainLineLenMul * 0.66,
+						angleOffsetDeg: -34,
 					});
 				}
 				if (twiRect && brfRect) {
 					const twBrfDown = svgScale(8);
+					const twBrfShiftUp = svgScale(14);
 					const twBot = pt(twiRect, 'bottom');
 					const bfTop = pt(brfRect, 'top');
 					lineImg(
 						'assets/linje 3.webp',
-						{ x: twBot.x, y: twBot.y + twBrfDown },
-						{ x: bfTop.x, y: bfTop.y + twBrfDown },
-						svgScale(210),
-						{ gapA: svgScale(4), gapB: svgScale(4), lenMul: 1.1 * underBrainLineLenMul }
+						{ x: twBot.x, y: twBot.y + twBrfDown - twBrfShiftUp },
+						{ x: bfTop.x, y: bfTop.y + twBrfDown - twBrfShiftUp },
+						svgScale(232),
+						{ gapA: svgScale(4), gapB: svgScale(4), lenMul: 1.32 }
 					);
 				}
 
@@ -4958,25 +4973,29 @@ document.addEventListener('DOMContentLoaded', function() {
 					});
 				}
 				if (kobRect) {
-					const a = { x: brainRight.x - svgScale(40), y: brainBottom.y - svgScale(12) };
-					const kcx = (kobRect.left - containerRect.left) + kobRect.width * 0.38;
-					const b = { x: kcx, y: pt(kobRect, 'top').y + svgScale(8) };
+					const a = { x: brainRight.x - svgScale(52), y: brainBottom.y - svgScale(58) };
+					const kcx = (kobRect.left - containerRect.left) + kobRect.width * 0.32 - svgScale(4);
+					const b = { x: kcx, y: pt(kobRect, 'top').y - svgScale(14) };
 					lineImg('assets/Linje 4.webp', a, b, svgScale(235), {
 						gapA: -svgScale(14),
 						gapB: svgScale(8),
-						lenMul: underBrainLineLenMul,
+						lenMul: underBrainLineLenMul * 1.18,
 					});
 				}
 				if (kobRect && byeRect) {
 					const kobByeDown = svgScale(22);
+					/* Samme længde/vinkel — parallelforskydning op + mod venstre */
+					const kobByeShiftUp = svgScale(54);
+					const kobByeShiftLeft = svgScale(18);
 					const a0 = pt(kobRect, 'bottom');
 					const b0 = pt(byeRect, 'top');
-					const a = { x: a0.x, y: a0.y + kobByeDown };
-					const b = { x: b0.x + svgScale(34), y: b0.y + kobByeDown };
-					lineImg('assets/linje 1.webp', a, b, svgScale(210), {
-						gapA: svgScale(4),
-						gapB: svgScale(4),
-						lenMul: 1.1 * underBrainLineLenMul,
+					const a = { x: a0.x - kobByeShiftLeft, y: a0.y + kobByeDown - kobByeShiftUp };
+					const b = { x: b0.x + svgScale(34) - kobByeShiftLeft, y: b0.y + kobByeDown - kobByeShiftUp };
+					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
+					lineImg('assets/linje 1.webp', a, b, svgScale(220), {
+						gapA: -svgScale(8),
+						gapB: -svgScale(8),
+						lenMul: 1.88,
 					});
 				}
 
@@ -5565,6 +5584,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				return false;
 			}
 		}
+		/** Projects på smal skærm (≤640px): Twister/Kø-Bajer lodrette ring-juster — portrait og phone landscape */
+		function isProjectsPhoneWidth() {
+			try {
+				const iw = window.innerWidth || 0;
+				if (!document.body || !document.body.classList.contains('projects-page')) return false;
+				return iw <= 640;
+			} catch (_) {
+				return false;
+			}
+		}
 
 		currentNodes.forEach((node, index) => {
 			// Used to map hover -> matching frame element
@@ -5806,16 +5835,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
 				const kobajerRingScale = 0.78;
+				const kobajerRingVertMul = isProjectsPhoneWidth() ? 0.74 : 1;
 				w *= kobajerRingScale;
-				h *= kobajerRingScale;
+				h *= kobajerRingScale * kobajerRingVertMul;
+				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
+				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
 				image.setAttribute('x', String(kCenterX - (w / 2)));
-				image.setAttribute('y', String(kCenterY - (h / 2) + s(10)));
+				image.setAttribute('y', String(drawCy - (h / 2) + s(10)));
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.setAttribute('transform', `rotate(180 ${kCenterX} ${kCenterY})`);
+				image.setAttribute('transform', `rotate(180 ${kCenterX} ${drawCy})`);
 				image.style.pointerEvents = 'auto';
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
@@ -5827,7 +5859,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(kCenterX));
-				fill.setAttribute('cy', String(kCenterY - s(1)));
+				fill.setAttribute('cy', String(drawCy - s(1)));
 				fill.setAttribute('rx', String(((w / 2) * 0.56) * assetS));
 				fill.setAttribute('ry', String(((h / 2) * 0.60) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
@@ -5990,8 +6022,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
 				const twisterRingScale = 0.78;
+				const twisterRingVertMul = isProjectsPhoneWidth() ? 0.66 : 1;
 				w *= twisterRingScale;
-				h *= twisterRingScale;
+				h *= twisterRingScale * twisterRingVertMul;
 				const circleDy = isLandscapePhone ? s(10) : 0;
 				image.setAttribute('x', String(twCenterX - (w / 2)));
 				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
