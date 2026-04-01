@@ -3439,30 +3439,47 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		/** Viewport → SVG user coords when the container is CSS-transformed (e.g. phone landscape squashY). */
 		function svgCenterFromRect(svgEl, domRect, containerRect) {
-			try {
-				if (!svgEl || !domRect || !svgEl.createSVGPoint) {
+			function fallbackSvgFromScreen() {
+				try {
+					if (!svgEl || !domRect || !svgEl.getBoundingClientRect) {
+						return {
+							x: domRect.left - containerRect.left + domRect.width / 2,
+							y: domRect.top - containerRect.top + domRect.height / 2,
+						};
+					}
+					const svgRect = svgEl.getBoundingClientRect();
+					const sw = Math.max(svgRect.width, 1e-6);
+					const sh = Math.max(svgRect.height, 1e-6);
+					const cw = Math.max(svgEl.clientWidth || 1, 1);
+					const ch = Math.max(svgEl.clientHeight || 1, 1);
+					const cx = domRect.left + domRect.width / 2;
+					const cy = domRect.top + domRect.height / 2;
+					return {
+						x: (cx - svgRect.left) * (cw / sw),
+						y: (cy - svgRect.top) * (ch / sh),
+					};
+				} catch (_) {
 					return {
 						x: domRect.left - containerRect.left + domRect.width / 2,
 						y: domRect.top - containerRect.top + domRect.height / 2,
 					};
+				}
+			}
+			try {
+				if (!svgEl || !domRect || !svgEl.createSVGPoint) {
+					return fallbackSvgFromScreen();
 				}
 				const pt = svgEl.createSVGPoint();
 				pt.x = domRect.left + domRect.width / 2;
 				pt.y = domRect.top + domRect.height / 2;
 				const ctm = svgEl.getScreenCTM();
 				if (!ctm) {
-					return {
-						x: domRect.left - containerRect.left + domRect.width / 2,
-						y: domRect.top - containerRect.top + domRect.height / 2,
-					};
+					return fallbackSvgFromScreen();
 				}
 				const svgPt = pt.matrixTransform(ctm.inverse());
 				return { x: svgPt.x, y: svgPt.y };
 			} catch (_) {
-				return {
-					x: domRect.left - containerRect.left + domRect.width / 2,
-					y: domRect.top - containerRect.top + domRect.height / 2,
-				};
+				return fallbackSvgFromScreen();
 			}
 		}
 
@@ -4946,10 +4963,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			/* Samme som portrait-grid: ellers kan innerWidth afvige og kæden (bl.a. Kø-Bajer→Byens) bruger forkert gren */
 			const isPortraitMindmap =
 				!!(container && container.classList && container.classList.contains('projects-mindmap--portrait'));
-			const isMobileProjects =
+			let isMobileProjects =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
-				(isPortraitMindmap || (iw <= 640 && ih >= iw));
+				(isPortraitMindmap || (iw > 0 && ih > 0 && iw <= 640 && ih >= iw));
+			/* Kort landscape: brug ellipse + asset-linjer (CTM), ikke portrait-kæden (pt() i skærm-pixel uden skala). */
+			try {
+				if (mskIsProjectsShortLandscapeViewport()) isMobileProjects = false;
+			} catch (_) {}
 			if (isMobileProjects) {
 				const scale = 1;
 				const svgScale = (n) => n * scale;
