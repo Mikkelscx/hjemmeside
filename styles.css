@@ -6705,14 +6705,13 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleBaseH: 520;
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
-        /* Lidt mindre hele kortet; ens scale bevarer indbyrdes placering */
-        --projectsLandscapeFit: 0.72;
-        --projectsBrainSize: 54px;
+        /* Tættere på desktop: én ensartet scale (som desktop, bare mindre vindue) */
+        --projectsLandscapeFit: 0.88;
+        --projectsBrainSize: 76px;
         transform-origin: 50% 50%;
-        /* Phone landscape: nudge down + left so nodes stay inside short viewports */
         transform:
-            translateX(calc(12px + env(safe-area-inset-left)))
-            translateY(calc(18px + env(safe-area-inset-top)))
+            translateX(calc(8px + env(safe-area-inset-left)))
+            translateY(calc(10px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
@@ -6723,42 +6722,7 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .project-node {
         font-size: 1.00rem !important;
     }
-    /* Mindre billedtitler → mindre footprint når ellipsen er lav */
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
-        max-width: min(220px, 40vw) !important;
-    }
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] {
-        width: min(168px, 38vw) !important;
-        min-width: 0 !important;
-        max-width: min(168px, 38vw) !important;
-    }
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] {
-        width: min(142px, 34vw) !important;
-        min-width: 0 !important;
-        max-width: min(142px, 34vw) !important;
-    }
-    body.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"],
-    body.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] {
-        width: min(120px, 28vw) !important;
-        min-width: 0 !important;
-        max-width: min(120px, 28vw) !important;
-    }
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] {
-        width: min(118px, 30vw) !important;
-        min-width: 0 !important;
-        max-width: min(118px, 30vw) !important;
-    }
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"],
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop.html"] {
-        width: min(200px, 44vw) !important;
-        min-width: 0 !important;
-        max-width: min(200px, 44vw) !important;
-    }
-    body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
-        width: min(148px, 34vw) !important;
-        min-width: 0 !important;
-        max-width: min(148px, 34vw) !important;
-    }
+    /* Faner + billedtitler: samme globale regler som tablet (5258+) — ingen ekstra smalle !important pr. projekt */
 
     /* Projects: horizontal mobile BRAINFARTS sign inside circle */
     body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,

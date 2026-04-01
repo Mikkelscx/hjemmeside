@@ -3437,49 +3437,33 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
-		/** Viewport → SVG user coords when the container is CSS-transformed (e.g. phone landscape squashY). */
+		/** Viewport → SVG user coords når forælder har CSS transform.
+		 *  Bruger altid proportional mapping (SVG-boks ↔ clientWidth/Height), ikke getScreenCTM(),
+		 *  så Chrome og Safari giver samme tal (CTM kan afvige mellem motorer). */
 		function svgCenterFromRect(svgEl, domRect, containerRect) {
-			function fallbackSvgFromScreen() {
-				try {
-					if (!svgEl || !domRect || !svgEl.getBoundingClientRect) {
-						return {
-							x: domRect.left - containerRect.left + domRect.width / 2,
-							y: domRect.top - containerRect.top + domRect.height / 2,
-						};
-					}
-					const svgRect = svgEl.getBoundingClientRect();
-					const sw = Math.max(svgRect.width, 1e-6);
-					const sh = Math.max(svgRect.height, 1e-6);
-					const cw = Math.max(svgEl.clientWidth || 1, 1);
-					const ch = Math.max(svgEl.clientHeight || 1, 1);
-					const cx = domRect.left + domRect.width / 2;
-					const cy = domRect.top + domRect.height / 2;
-					return {
-						x: (cx - svgRect.left) * (cw / sw),
-						y: (cy - svgRect.top) * (ch / sh),
-					};
-				} catch (_) {
+			try {
+				if (!svgEl || !domRect || !svgEl.getBoundingClientRect) {
 					return {
 						x: domRect.left - containerRect.left + domRect.width / 2,
 						y: domRect.top - containerRect.top + domRect.height / 2,
 					};
 				}
-			}
-			try {
-				if (!svgEl || !domRect || !svgEl.createSVGPoint) {
-					return fallbackSvgFromScreen();
-				}
-				const pt = svgEl.createSVGPoint();
-				pt.x = domRect.left + domRect.width / 2;
-				pt.y = domRect.top + domRect.height / 2;
-				const ctm = svgEl.getScreenCTM();
-				if (!ctm) {
-					return fallbackSvgFromScreen();
-				}
-				const svgPt = pt.matrixTransform(ctm.inverse());
-				return { x: svgPt.x, y: svgPt.y };
+				const svgRect = svgEl.getBoundingClientRect();
+				const sw = Math.max(svgRect.width, 1e-6);
+				const sh = Math.max(svgRect.height, 1e-6);
+				const cw = Math.max(svgEl.clientWidth || 1, 1);
+				const ch = Math.max(svgEl.clientHeight || 1, 1);
+				const cx = domRect.left + domRect.width / 2;
+				const cy = domRect.top + domRect.height / 2;
+				return {
+					x: (cx - svgRect.left) * (cw / sw),
+					y: (cy - svgRect.top) * (ch / sh),
+				};
 			} catch (_) {
-				return fallbackSvgFromScreen();
+				return {
+					x: domRect.left - containerRect.left + domRect.width / 2,
+					y: domRect.top - containerRect.top + domRect.height / 2,
+				};
 			}
 		}
 
@@ -3527,6 +3511,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches) || (w > 0 && w <= 640);
 			} catch {}
+			/* Kort phone landscape: brug samme ellipse som desktop (padding/minRx/extraRy), ikke "narrow phone"-ring */
+			let isShortLandscape = false;
+			try {
+				isShortLandscape = mskIsProjectsShortLandscapeViewport();
+			} catch {}
+			try {
+				if (isShortLandscape) narrow = false;
+			} catch {}
 
 			let touchLandscape = false;
 			try {
@@ -3537,6 +3529,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				if (!touchLandscape && mskIsProjectsShortLandscapeViewport()) touchLandscape = true;
 			} catch {}
+			/* Touch-landscape layout-tweaks (flad ry, mindre padding) — ikke i kort landscape; dér følger vi desktop */
+			const touchLayout = touchLandscape && !isShortLandscape;
 
 			const nodeArray = Array.from(nodes);
 			const scale = 1;
@@ -3751,8 +3745,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				minRx = 48;
 				minRy = 48;
 			}
-			/* Bred landscape (fx 896×414): mindre side-padding → større rx (mere luft til siderne) */
-			if (touchLandscape && w > h && !narrow) {
+			/* Bred landscape (fx tablet), ikke kort phone landscape: mindre side-padding → større rx */
+			if (touchLayout && w > h && !narrow) {
 				paddingX = Math.min(paddingX, 64);
 			}
 			let rx = Math.max(minRx, (w / 2) - paddingX);
@@ -3763,9 +3757,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				rx = Math.min(rx, capX);
 				ry = Math.min(ry, capY);
 			}
-			/* Lav landscape: tidligere for flad ry → knapper + hjerte for tæt. Højere loft giver mere lodret luft. */
+			/* Lav landscape (tablet m.m.): flad ry — spring over i kort landscape (desktop ellipse) */
 			try {
-				if (touchLandscape && w > h) {
+				if (touchLayout && w > h) {
 					const flatRy =
 						!narrow && mskIsProjectsShortLandscapeViewport()
 							? Math.max(195, h * 0.64)
@@ -3773,7 +3767,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					ry = Math.min(ry, flatRy);
 				}
 			} catch {}
-			const shortLsRing = !narrow && mskIsProjectsShortLandscapeViewport();
+			/* Kort phone landscape = samme bue som desktop (ingen 1.09-ring) */
+			const shortLsRing = false;
 			const n = nodeArray.length || 1;
 			// Start at top (-90deg) and go clockwise.
 			const startAngle = -Math.PI / 2;
@@ -3801,7 +3796,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
-				if (href.includes('repop')) y += touchLandscape ? 14 : 35;
+				if (href.includes('repop')) y += touchLayout ? 14 : 35;
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
