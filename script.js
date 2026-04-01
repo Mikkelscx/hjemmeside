@@ -1,3 +1,68 @@
+// Visual Viewport API: match JS layout to the visible area (mobile Safari toolbar, pinch-zoom, etc.).
+function mskViewportSize() {
+	try {
+		const vv = window.visualViewport;
+		const w = vv && vv.width > 0 ? vv.width : window.innerWidth;
+		const h = vv && vv.height > 0 ? vv.height : window.innerHeight;
+		return { w, h };
+	} catch {
+		return { w: window.innerWidth, h: window.innerHeight };
+	}
+}
+
+(function syncMobileVhFromVisualViewport() {
+	let raf = null;
+	function apply() {
+		if (raf) cancelAnimationFrame(raf);
+		raf = requestAnimationFrame(() => {
+			raf = null;
+			try {
+				if (!window.matchMedia || !window.matchMedia('(max-width: 1024px)').matches) {
+					document.documentElement.style.removeProperty('--vh');
+					document.documentElement.style.removeProperty('--vw');
+					return;
+				}
+				const { w, h } = mskViewportSize();
+				if (h > 0) document.documentElement.style.setProperty('--vh', h + 'px');
+				if (w > 0) document.documentElement.style.setProperty('--vw', w + 'px');
+			} catch {}
+		});
+	}
+	apply();
+	window.addEventListener('resize', apply);
+	window.addEventListener('orientationchange', apply);
+	document.addEventListener('visibilitychange', () => {
+		try {
+			if (document.visibilityState === 'visible') apply();
+		} catch {}
+	});
+	window.addEventListener('pageshow', (ev) => {
+		try {
+			if (ev && ev.persisted) apply();
+		} catch {}
+	});
+	if (window.visualViewport) {
+		window.visualViewport.addEventListener('resize', apply);
+		window.visualViewport.addEventListener('scroll', apply);
+	}
+	/* Virtual keyboard changes visible height (especially Android Chrome) */
+	try {
+		document.addEventListener(
+			'focusin',
+			(e) => {
+				try {
+					const t = e && e.target;
+					if (!t || !t.tagName) return;
+					const tag = String(t.tagName).toLowerCase();
+					if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') return;
+					apply();
+				} catch {}
+			},
+			true
+		);
+	} catch {}
+})();
+
 // Simple JavaScript for any interactive functionality
 document.addEventListener('DOMContentLoaded', function() {
 	// If a page is loaded inside a transition iframe, render "clean" (no navbar),
@@ -496,7 +561,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initProjectsToAboutDrag() {
 			const DRAG_CLASS = 'projects-about-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
-			const DRAG_PX = Math.max(260, Math.min(520, Math.round(window.innerWidth * 0.38)));
+			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
 			let dragging = false;
@@ -602,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-					const vw = window.innerWidth || 1;
+					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
 
 					// Right page to left: startX -> seam (0..0.5), then seam -> left edge (0.5..1)
@@ -1252,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initAboutToProjectsDrag() {
 			const DRAG_CLASS = 'about-projects-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
-			const DRAG_PX = Math.max(260, Math.min(520, Math.round(window.innerWidth * 0.38)));
+			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
 			let dragging = false;
@@ -1350,7 +1415,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-					const vw = window.innerWidth || 1;
+					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
 
 					// Match Projects -> About drag distance:
@@ -1613,7 +1678,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initAboutToContactDrag() {
 			const DRAG_CLASS = 'about-contact-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
-			const DRAG_PX = Math.max(260, Math.min(520, Math.round(window.innerWidth * 0.38)));
+			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
 			let dragging = false;
@@ -1704,7 +1769,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-					const vw = window.innerWidth || 1;
+					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
 
 					// Map drag distance to seam-aware progress:
@@ -1935,7 +2000,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initContactToAboutDrag() {
 			const DRAG_CLASS = 'contact-about-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
-			const DRAG_PX = Math.max(260, Math.min(520, Math.round(window.innerWidth * 0.38)));
+			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
 			let dragging = false;
@@ -2023,7 +2088,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-					const vw = window.innerWidth || 1;
+					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
 
 					// Map drag distance to seam-aware progress:
@@ -2564,8 +2629,8 @@ document.addEventListener('DOMContentLoaded', function() {
 													const payload = {
 														__msk: 'ai_reveal_set_headline_rect',
 													rect: snapped,
-														vw: window.innerWidth,
-														vh: window.innerHeight
+														vw: mskViewportSize().w,
+														vh: mskViewportSize().h
 													};
 												revealFrame && revealFrame.contentWindow && revealFrame.contentWindow.postMessage(payload, '*');
 												} catch {}
@@ -2598,8 +2663,8 @@ document.addEventListener('DOMContentLoaded', function() {
 													const payload = {
 														__msk: 'ai_reveal_set_headline_rect',
 														rect: { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.w ?? r.width), h: Math.round(r.h ?? r.height) },
-														vw: window.innerWidth,
-														vh: window.innerHeight
+														vw: mskViewportSize().w,
+														vh: mskViewportSize().h
 													};
 													revealFrame && revealFrame.contentWindow && revealFrame.contentWindow.postMessage(payload, '*');
 												} catch {}
@@ -2708,8 +2773,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						window.parent && window.parent.postMessage({
 							__msk: 'ai_universe_measure',
 							rect: { x: r.x, y: r.y, w: r.w ?? r.width, h: r.h ?? r.height },
-							vw: window.innerWidth,
-							vh: window.innerHeight
+							vw: mskViewportSize().w,
+							vh: mskViewportSize().h
 						}, '*');
 					} catch {}
 				};
@@ -2782,7 +2847,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				window.sessionStorage.removeItem('ai_universe_from_rect');
 				const from = JSON.parse(raw);
 				// Only if viewport seems unchanged.
-				if (from && Math.abs((from.vw || 0) - window.innerWidth) < 3 && Math.abs((from.vh || 0) - window.innerHeight) < 3) {
+				if (from && Math.abs((from.vw || 0) - mskViewportSize().w) < 3 && Math.abs((from.vh || 0) - mskViewportSize().h) < 3) {
 					window.scrollTo(0, 0);
 					// Wait for layout (2 frames).
 					requestAnimationFrame(() => {
@@ -3135,7 +3200,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				setOpen(false);
 				return;
 			}
-			const dist = window.innerWidth - e.clientX;
+			const dist = (mskViewportSize().w || window.innerWidth) - e.clientX;
 			if (dist <= OPEN_PX) {
 				if (closeTimer) window.clearTimeout(closeTimer);
 				setOpen(true);
@@ -3356,6 +3421,35 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
+		/** Viewport → SVG user coords when the container is CSS-transformed (e.g. phone landscape squashY). */
+		function svgCenterFromRect(svgEl, domRect, containerRect) {
+			try {
+				if (!svgEl || !domRect || !svgEl.createSVGPoint) {
+					return {
+						x: domRect.left - containerRect.left + domRect.width / 2,
+						y: domRect.top - containerRect.top + domRect.height / 2,
+					};
+				}
+				const pt = svgEl.createSVGPoint();
+				pt.x = domRect.left + domRect.width / 2;
+				pt.y = domRect.top + domRect.height / 2;
+				const ctm = svgEl.getScreenCTM();
+				if (!ctm) {
+					return {
+						x: domRect.left - containerRect.left + domRect.width / 2,
+						y: domRect.top - containerRect.top + domRect.height / 2,
+					};
+				}
+				const svgPt = pt.matrixTransform(ctm.inverse());
+				return { x: svgPt.x, y: svgPt.y };
+			} catch (_) {
+				return {
+					x: domRect.left - containerRect.left + domRect.width / 2,
+					y: domRect.top - containerRect.top + domRect.height / 2,
+				};
+			}
+		}
+
 		// If we've already bound listeners once, just re-position/redraw.
 		if (brain.dataset.animInit === '1') {
 			try {
@@ -3387,11 +3481,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const containerRect = container.getBoundingClientRect();
 			const brainRect = brain.getBoundingClientRect();
-			const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
-			const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
-
-			const w = containerRect.width;
-			const h = containerRect.height;
+			/* Layout px (matches absolute left/top + SVG). Viewport rects alone break when .brainstorm-container has CSS transform. */
+			const layoutW = Math.max(1, container.clientWidth || containerRect.width);
+			const layoutH = Math.max(1, container.clientHeight || containerRect.height);
+			const svgForLayout = document.querySelector('.connecting-lines');
+			const brainCenter = svgCenterFromRect(svgForLayout, brainRect, containerRect);
+			const centerX = brainCenter.x;
+			const centerY = brainCenter.y;
+			const w = layoutW;
+			const h = layoutH;
 			let narrow = false;
 			try {
 				narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches) || (w > 0 && w <= 640);
@@ -3410,9 +3508,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeArray = Array.from(nodes);
 			const scale = 1;
 
-			const iw = window.innerWidth || w;
-			const ih = window.innerHeight || h;
-			const cw = (containerRect.width > 0 ? containerRect.width : iw) || iw;
+			const _vp = mskViewportSize();
+			const iw = _vp.w || w;
+			const ih = _vp.h || h;
+			const cw = (layoutW > 0 ? layoutW : iw) || iw;
 			const usePortraitSketchGrid =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
@@ -3423,23 +3522,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				if (usePortraitSketchGrid) {
 					try { container.classList.add('projects-mindmap--portrait'); } catch {}
-					const NAV_H = 52;
-					const ih = window.innerHeight || 0;
+					let NAV_H = 52;
+					try {
+						const nb = document.querySelector('.navbar');
+						if (nb && nb.getBoundingClientRect) NAV_H = Math.round(nb.getBoundingClientRect().bottom);
+					} catch {}
+					const ih = mskViewportSize().h || 0;
 					const vvH =
 						window.visualViewport && window.visualViewport.height > 0
 							? window.visualViewport.height
 							: 0;
 					const capH = vvH || ih;
-					const layoutH =
-						capH > 0 ? Math.min(containerRect.height, capH) : containerRect.height;
+					const portraitBandH =
+						capH > 0 ? Math.min(container.clientHeight || layoutH, capH) : container.clientHeight || layoutH;
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const safeTop = NAV_H + Math.round(36 * scale);
-					const safeBottom = layoutH - Math.round(40 * scale);
+					const safeBottom = portraitBandH - Math.round(40 * scale);
 					const minX = 52;
-					const maxX = containerRect.width - 52;
-					const baseLeft = Math.max(minX, Math.min(maxX, containerRect.width * 0.22));
-					const baseRight = Math.max(minX, Math.min(maxX, containerRect.width * 0.78));
-					const maxW = Math.max(120, Math.floor(containerRect.width * 0.48));
+					const maxX = layoutW - 52;
+					const baseLeft = Math.max(minX, Math.min(maxX, layoutW * 0.22));
+					const baseRight = Math.max(minX, Math.min(maxX, layoutW * 0.78));
+					const maxW = Math.max(120, Math.floor(layoutW * 0.48));
 					const tilts = [-1, 1, -2, 0.5, -1.5, 2, -0.5, 1.5];
 
 					const rowOffsets = [
@@ -3520,7 +3623,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						} else if (p.key === 'unge') {
 							const ungeTabW = Math.min(
 								300,
-								Math.floor(containerRect.width * 0.58)
+								Math.floor(layoutW * 0.58)
 							);
 							node.style.setProperty('max-width', `${Math.max(maxW + 32, ungeTabW)}px`, 'important');
 						} else if (p.key === 'byens') {
@@ -3615,6 +3718,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				minRx = 48;
 				minRy = 48;
 			}
+			/* Bred landscape (fx 896×414): mindre side-padding → større rx mod kanterne */
+			if (touchLandscape && w > h && !narrow) {
+				paddingX = Math.min(paddingX, 100);
+			}
 			let rx = Math.max(minRx, (w / 2) - paddingX);
 			let ry = Math.max(minRy, (h / 2) - paddingY) + extraRy;
 			if (narrow) {
@@ -3623,6 +3730,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				rx = Math.min(rx, capX);
 				ry = Math.min(ry, capY);
 			}
+			/* Lav landscape (touch): blød loft på ry — stadig plads til kanter, men fylder mere end 0,38 */
+			try {
+				if (touchLandscape && w > h) {
+					const flatRy = Math.max(152, h * 0.44);
+					ry = Math.min(ry, flatRy);
+				}
+			} catch {}
 			const n = nodeArray.length || 1;
 			// Start at top (-90deg) and go clockwise.
 			const startAngle = -Math.PI / 2;
@@ -3704,7 +3818,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
 				} catch {}
 				const cw = container.getBoundingClientRect().width;
-				if (!(narrow || cw <= 640)) return;
+				/* Bred lav landscape (fx 896×414): samme CSS som mobil-landscape — inline D&AD/Kravling osv. */
+				let shortLandscape = false;
+				try {
+					const { w: iw, h: ih } = mskViewportSize();
+					shortLandscape = ih < iw && iw <= 1024 && ih <= 520;
+				} catch {}
+				if (!(narrow || cw <= 640 || shortLandscape)) return;
 
 				function stackNode(el) {
 					if (!el) return;
@@ -4784,9 +4904,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Note: The TWISTER↔D&AD line is handled as a normal positioned <img> for reliability.
 		
-		// Calculate center of brain relative to container
-		const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
-		const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
+		// Brain center in SVG user space (container may use CSS transform in phone landscape)
+		const brainCenterSvg = svgCenterFromRect(currentSvg, brainRect, containerRect);
+		const centerX = brainCenterSvg.x;
+		const centerY = brainCenterSvg.y;
 		
 		// Calculate brain radius to create gap
 		const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
@@ -4796,10 +4917,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		/* Hjernen ↔ cirkler: alle segmenter lidt kortere (tykkelse uændret) */
 		const mindmapLineLenMul = 0.92;
 
+		/* Lav landscape (fx 896×414): smallere linjer — skaler <image> height (tykkelse visuelt) */
+		const lineThicknessMul = (() => {
+			try {
+				const iw = mskViewportSize().w || 0;
+				const ih = mskViewportSize().h || 0;
+				if (ih < iw && iw <= 1024 && ih <= 520) return 0.50;
+			} catch (_) {}
+			return 1;
+		})();
+		const lineH = (base) => Math.max(12, Math.round(Number(base) * lineThicknessMul));
+
 		// Portrait mobile: same sketch chain as hjemmesiden / live site (columns + brain), not radial spokes.
 		try {
-			const iw = window.innerWidth || 0;
-			const ih = window.innerHeight || 0;
+			const iw = mskViewportSize().w || 0;
+			const ih = mskViewportSize().h || 0;
 			/* Samme som portrait-grid: ellers kan innerWidth afvige og kæden (bl.a. Kø-Bajer→Byens) bruger forkert gren */
 			const isPortraitMindmap =
 				!!(container && container.classList && container.classList.contains('projects-mindmap--portrait'));
@@ -5022,8 +5154,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Create hand-drawn lines to each project node
 		currentNodes.forEach((node, index) => {
 			const nodeRect = node.getBoundingClientRect();
-			const nodeX = nodeRect.left - containerRect.left + nodeRect.width / 2;
-			const nodeY = nodeRect.top - containerRect.top + nodeRect.height / 2;
+			const nodeCenterSvg = svgCenterFromRect(currentSvg, nodeRect, containerRect);
+			const nodeX = nodeCenterSvg.x;
+			const nodeY = nodeCenterSvg.y;
 			
 			console.log(`Node ${index} (${node.textContent.trim()}):`, nodeX, nodeY);
 			
@@ -5067,9 +5200,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 8.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 195); // Offset by half height (390/2 = 195) to center on rotation point
+				lineImage.setAttribute('y', String(brainStartY - lineH(390) / 2)); // half of scaled line height
 				lineImage.setAttribute('width', lineLength * mindmapLineLenMul); // Longer
-				lineImage.setAttribute('height', '390'); // Slightly bigger/thicker line asset
+				lineImage.setAttribute('height', String(lineH(390)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -5121,9 +5254,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/Linje 4.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 4.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 200); // Offset by half height (400/2 = 200) to center on rotation point
+				lineImage.setAttribute('y', String(brainStartY - lineH(400) / 2));
 				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
-				lineImage.setAttribute('height', '400');
+				lineImage.setAttribute('height', String(lineH(400)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -5179,9 +5312,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 6.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 6.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
+				lineImage.setAttribute('y', String(brainStartY - lineH(300) / 2));
 				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
-				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
+				lineImage.setAttribute('height', String(lineH(300)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -5246,9 +5379,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 5.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 5.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartYAdj - 150); // Offset by half height (300/2 = 150) to center on rotation point
+				lineImage.setAttribute('y', String(brainStartYAdj - lineH(300) / 2));
 				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
-				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
+				lineImage.setAttribute('height', String(lineH(300)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartYAdj})`);
@@ -5309,9 +5442,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/linje 1.webp');
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 200); // Center vertically
+				lineImage.setAttribute('y', String(brainStartY - lineH(400) / 2));
 				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
-				lineImage.setAttribute('height', '400');
+				lineImage.setAttribute('height', String(lineH(400)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -5356,9 +5489,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/Linje 2.webp');
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 22); // Center vertically (even thinner)
+				lineImage.setAttribute('y', String(brainStartY - lineH(45) / 2));
 				lineImage.setAttribute('width', lineLength * 0.92 * mindmapLineLenMul); // Slightly shorter
-				lineImage.setAttribute('height', '45'); // Even thinner line
+				lineImage.setAttribute('height', String(lineH(45)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -5407,9 +5540,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 7.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 7.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 100); // Offset by half height (200/2 = 100) to center on rotation point
+				lineImage.setAttribute('y', String(brainStartY - lineH(200) / 2));
 				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
-				lineImage.setAttribute('height', '200'); // Further reduced height to make line thinner
+				lineImage.setAttribute('height', String(lineH(200)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -5460,9 +5593,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 3.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 3.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 300); // Offset by half height (600/2 = 300) to center on rotation point
+				lineImage.setAttribute('y', String(brainStartY - lineH(600) / 2));
 				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
-				lineImage.setAttribute('height', '600');
+				lineImage.setAttribute('height', String(lineH(600)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
@@ -5582,15 +5715,27 @@ document.addEventListener('DOMContentLoaded', function() {
 		const assetS = 1;
 		function isProjectsPhoneLandscape() {
 			try {
-				return window.innerWidth <= 640 && window.innerHeight < window.innerWidth;
+				const { w, h } = mskViewportSize();
+				return w <= 640 && h < w;
 			} catch (_) {
 				return false;
 			}
 		}
+		/** Bred/lav landscape (fx iPhone XR 896×414): samme mind map som telefon-landscape i CSS */
+		function isProjectsShortLandscape() {
+			try {
+				const { w, h } = mskViewportSize();
+				return h < w && w <= 1024 && h <= 520;
+			} catch (_) {
+				return false;
+			}
+		}
+		const landscapeMindmap =
+			isProjectsPhoneLandscape() || isProjectsShortLandscape();
 		/** Projects på smal skærm (≤640px): Twister/Kø-Bajer lodrette ring-juster — portrait og phone landscape */
 		function isProjectsPhoneWidth() {
 			try {
-				const iw = window.innerWidth || 0;
+				const iw = mskViewportSize().w || 0;
 				if (!document.body || !document.body.classList.contains('projects-page')) return false;
 				return iw <= 640;
 			} catch (_) {
@@ -5631,8 +5776,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const titleEl = node.querySelector('.project-node__title');
 			const anchorRect = titleEl ? titleEl.getBoundingClientRect() : nodeRect;
-			const centerX = anchorRect.left - containerRect.left + (anchorRect.width / 2);
-			const centerY = anchorRect.top - containerRect.top + (anchorRect.height / 2);
+			const anchorCenterSvg = svgCenterFromRect(currentSvg, anchorRect, containerRect);
+			const centerX = anchorCenterSvg.x;
+			const centerY = anchorCenterSvg.y;
 
 			console.log(`Processing node ${index}: "${nodeText}" at (${centerX}, ${centerY})`);
 			
@@ -5728,7 +5874,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const isLandscapePhone = isProjectsPhoneLandscape();
 				const repTitleEl = node.querySelector('.project-node__title');
 				const repBadgeEl = node.querySelector('.kravling-nomineret-badge--inline');
 				const repTitleRect = repTitleEl ? repTitleEl.getBoundingClientRect() : nodeRect;
@@ -5745,8 +5890,13 @@ document.addEventListener('DOMContentLoaded', function() {
 						const bottom = Math.max(repTitleRect.bottom, repBadgeRect.bottom);
 						unionW = Math.max(1, right - left);
 						unionH = Math.max(1, bottom - top);
-						repCenterX = (left - containerRect.left) + (unionW / 2);
-						repCenterY = (top - containerRect.top) + (unionH / 2);
+						const unionCenter = svgCenterFromRect(
+							currentSvg,
+							{ left, top, width: unionW, height: unionH },
+							containerRect
+						);
+						repCenterX = unionCenter.x;
+						repCenterY = unionCenter.y;
 					}
 				} catch {}
 
@@ -5756,10 +5906,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 
 				const baseW = s(380) * assetS;
-				const baseH = s(isLandscapePhone ? 195 : 165) * assetS;
-				const padX = s(40) * assetS;
+				const baseH = s(landscapeMindmap ? 218 : 165) * assetS;
+				const padX = s(landscapeMindmap ? 48 : 40) * assetS;
 				const padYPortrait = repBadgeRect ? 58 : 46;
-				const padY = s(isLandscapePhone ? 70 : padYPortrait) * assetS;
+				const padY = s(landscapeMindmap ? 96 : padYPortrait) * assetS;
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
 				w *= repopMul;
@@ -5808,7 +5958,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const isLandscapePhone = isProjectsPhoneLandscape();
 				const kTitleEl = node.querySelector('.project-node__title');
 				const kBadgeEl = node.querySelector('.kobajer-kravling-2024-badge--inline');
 				const kTitleRect = kTitleEl ? kTitleEl.getBoundingClientRect() : nodeRect;
@@ -5825,20 +5974,27 @@ document.addEventListener('DOMContentLoaded', function() {
 						const bottom = Math.max(kTitleRect.bottom, kBadgeRect.bottom);
 						unionW = Math.max(1, right - left);
 						unionH = Math.max(1, bottom - top);
-						kCenterX = (left - containerRect.left) + (unionW / 2);
-						kCenterY = (top - containerRect.top) + (unionH / 2);
+						const unionCenter = svgCenterFromRect(
+							currentSvg,
+							{ left, top, width: unionW, height: unionH },
+							containerRect
+						);
+						kCenterX = unionCenter.x;
+						kCenterY = unionCenter.y;
 					}
 				} catch {}
 
 				const baseW = s(232) * assetS;
-				const baseH = s(isLandscapePhone ? 268 : 232) * assetS;
-				const padX = s(80) * assetS;
+				const baseH = s(landscapeMindmap ? 292 : 232) * assetS;
+				const padX = s(landscapeMindmap ? 92 : 80) * assetS;
 				const padYPortrait = kBadgeRect ? 58 : 44;
-				const padY = s(isLandscapePhone ? 92 : padYPortrait) * assetS;
+				const padY = s(landscapeMindmap ? 124 : padYPortrait) * assetS;
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
 				const kobajerRingScale = 0.78;
-				const kobajerRingVertMul = isProjectsPhoneWidth() ? 0.74 : 1;
+				const kobajerRingVertMul = isProjectsPhoneWidth()
+					? (landscapeMindmap ? 0.84 : 0.74)
+					: (landscapeMindmap ? 0.94 : 1);
 				w *= kobajerRingScale;
 				h *= kobajerRingScale * kobajerRingVertMul;
 				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
@@ -5883,8 +6039,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				console.log('Creating NATURLI\' circle image...');
 				let naturliMul = 0.82;
 				try {
-					const ih = window.innerHeight || 0;
-					const iw = window.innerWidth || 1;
+					const ih = mskViewportSize().h || 0;
+					const iw = mskViewportSize().w || 1;
 					const ctr = container && container.classList ? container : null;
 					const portrait =
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
@@ -5945,8 +6101,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
 				let ungeMul = 1;
 				try {
-					const ih = window.innerHeight || 0;
-					const iw = window.innerWidth || 1;
+					const ih = mskViewportSize().h || 0;
+					const iw = mskViewportSize().w || 1;
 					const ctr = container && container.classList ? container : null;
 					const portrait =
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
@@ -6013,22 +6169,36 @@ document.addEventListener('DOMContentLoaded', function() {
 						const bottom = Math.max(twTitleRect.bottom, twBadgeRect.bottom);
 						unionW = Math.max(1, right - left);
 						unionH = Math.max(1, bottom - top);
-						twCenterX = (left - containerRect.left) + (unionW / 2);
-						twCenterY = (top - containerRect.top) + (unionH / 2);
+						const unionCenter = svgCenterFromRect(
+							currentSvg,
+							{ left, top, width: unionW, height: unionH },
+							containerRect
+						);
+						twCenterX = unionCenter.x;
+						twCenterY = unionCenter.y;
 					}
 				} catch {}
-				const isLandscapePhone = isProjectsPhoneLandscape();
-				const baseW = s(isMobile ? 380 : 280) * assetS;
-				const baseH = s(isMobile ? 170 : (isLandscapePhone ? 150 : 120)) * assetS;
-				const padX = s(isMobile ? 170 : 90) * assetS;
-				const padY = s(isMobile ? 90 : (isLandscapePhone ? 76 : 44)) * assetS;
+				const baseW = s(isMobile ? 380 : landscapeMindmap ? 360 : 280) * assetS;
+				const baseH = s(
+					isMobile ? (landscapeMindmap ? 192 : 170) : landscapeMindmap ? 188 : 120
+				) * assetS;
+				const padX = s(isMobile ? (landscapeMindmap ? 188 : 170) : landscapeMindmap ? 132 : 90) * assetS;
+				const padY = s(isMobile ? (landscapeMindmap ? 108 : 90) : landscapeMindmap ? 108 : 44) * assetS;
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
 				const twisterRingScale = 0.78;
-				const twisterRingVertMul = isProjectsPhoneWidth() ? 0.66 : 1;
+				const twisterRingVertMul = isProjectsPhoneWidth()
+					? (landscapeMindmap ? 0.76 : 0.66)
+					: (landscapeMindmap ? 0.92 : 1);
 				w *= twisterRingScale;
 				h *= twisterRingScale * twisterRingVertMul;
-				const circleDy = isLandscapePhone ? s(10) : 0;
+				/* Lav/bred landscape (fx 896×414): lidt mindre oval end øvrig mind map */
+				if (isProjectsShortLandscape()) {
+					const twisterShortLandscapeMul = 0.86;
+					w *= twisterShortLandscapeMul;
+					h *= twisterShortLandscapeMul;
+				}
+				const circleDy = landscapeMindmap ? s(10) : 0;
 				image.setAttribute('x', String(twCenterX - (w / 2)));
 				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
 				image.setAttribute('width', String(w));
@@ -6069,8 +6239,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const byensLandhandelRingScale = 0.78;
 				let byensMul = 1;
 				try {
-					const ih = window.innerHeight || 0;
-					const iw = window.innerWidth || 1;
+					const ih = mskViewportSize().h || 0;
+					const iw = mskViewportSize().w || 1;
 					const portrait =
 						(container && container.classList && container.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
@@ -6129,8 +6299,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
 				let durexMul = 1;
 				try {
-					const ih = window.innerHeight || 0;
-					const iw = window.innerWidth || 1;
+					const ih = mskViewportSize().h || 0;
+					const iw = mskViewportSize().w || 1;
 					const ctr = container && container.classList ? container : null;
 					const portrait =
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
@@ -6648,7 +6818,7 @@ window.addEventListener('load', function () {
 	// If a page already injected its own handles (interactive), don't add duplicates.
 	if (document.querySelector('.page-turn-handle--left') || document.querySelector('.page-turn-handle--right')) return;
 
-	const DRAG_PX = Math.max(220, Math.min(520, Math.round(window.innerWidth * 0.32)));
+	const DRAG_PX = Math.max(220, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.32)));
 	const THRESH = Math.round(DRAG_PX * 0.5); // only commit after passing the middle
 
 	function normalizeFileName() {

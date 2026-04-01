@@ -15,6 +15,13 @@
     --vh: 100vh;
     /* UI/body text: one stack so nav + body match across OS (not per-platform system font only) */
     --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    /* Notch / status bar: distance from top of screen to bottom of fixed navbar (desktop) */
+    --safeTop: env(safe-area-inset-top, 0px);
+    --navBarTotal: calc(var(--navBarH) + var(--safeTop));
+    /* Width: 100dvw avoids classic 100vw + scrollbar overflow; JS overrides --vw on mobile */
+    --vw: 100vw;
+    /* Form controls / progress: closer look across Chrome, Safari, Firefox */
+    accent-color: #333333;
 }
 
 @supports (height: 100dvh) {
@@ -23,11 +30,21 @@
     }
 }
 
+@supports (width: 100dvw) {
+    :root {
+        --vw: 100dvw;
+    }
+}
+
 html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Prefer light UI (scrollbars, form controls); `light only` where supported */
     color-scheme: light;
+    color-scheme: light only;
     scrollbar-gutter: stable;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
 }
 
 body {
@@ -37,6 +54,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
 }
 
 /* Cross-platform: inherit typography on form controls (avoids system default fonts) */
@@ -58,6 +76,44 @@ canvas {
 
 img {
     vertical-align: middle;
+}
+
+/* Phones / tablets: fewer double-tap zoom delays; more predictable taps */
+@media (max-width: 1024px) and (pointer: coarse) {
+    a,
+    button,
+    .nav-link,
+    .nav-toggle,
+    .back-button,
+    input,
+    label,
+    [role="button"],
+    .project-node,
+    .page-turn-handle,
+    summary,
+    details {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.07);
+    }
+}
+
+/* iOS: avoid auto-zoom on focus for small inputs (keeps layout = design) */
+@media (max-width: 640px) {
+    html {
+        /* Thinner scrollbars on Firefox Android; WebKit ignores */
+        scrollbar-width: thin;
+    }
+
+    /* Home indicator / curved corners: extra scroll room without shifting fixed overlays */
+    body {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea,
+    select {
+        font-size: max(1rem, 16px);
+    }
 }
 
 /* Frontpage (HJEM): big black notebook cover */
@@ -151,7 +207,7 @@ body.projects-about-flip-active > :not(.projects-about-transition):not(.navbar) 
     position: absolute;
     top: 0;
     height: 100%;
-    width: 100vw;
+    width: var(--vw);
     border: 0;
     background: transparent;
     pointer-events: none;
@@ -471,7 +527,7 @@ body.ai-close-active > :not(.ai-close-transition):not(.navbar) {
     transition: none !important;
 }
 .ai-close-transition .ai-universe-reveal iframe {
-    width: 100vw;
+    width: var(--vw);
     height: var(--vh);
     border: 0;
     display: block;
@@ -764,7 +820,7 @@ body.ai-close-active > :not(.ai-close-transition):not(.navbar) {
     transform-origin: center;
     /* Size to the text itself (important for exact rect matching) */
     width: max-content;
-    max-width: calc(100vw - 40px);
+    max-width: calc(var(--vw) - 40px);
     text-align: center;
     font-family: 'Bradley Hand', 'Noteworthy', 'Marker Felt', 'Chalkboard SE', 'Segoe Script', 'Brush Script MT', cursive;
     font-weight: 900;
@@ -952,7 +1008,7 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     position: absolute;
     top: 0;
     height: 100%;
-    width: 100vw;
+    width: var(--vw);
     border: 0;
     background: transparent;
     pointer-events: none;
@@ -1204,7 +1260,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
     position: absolute;
     top: 0;
     height: 100%;
-    width: 100vw;
+    width: var(--vw);
     border: 0;
     background: transparent;
     pointer-events: none;
@@ -1341,7 +1397,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
     position: absolute;
     top: 0;
     height: 100%;
-    width: 100vw;
+    width: var(--vw);
     border: 0;
     background: transparent;
     pointer-events: none;
@@ -1472,7 +1528,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
     position: absolute;
     top: 0;
     height: 100%;
-    width: 100vw;
+    width: var(--vw);
     border: 0;
     background: transparent;
     pointer-events: none;
@@ -1622,7 +1678,7 @@ body.ai-close-active .navbar {
     position: absolute;
     top: 0;
     height: 100%;
-    width: 100vw;
+    width: var(--vw);
     border: 0;
     background: transparent;
     pointer-events: none;
@@ -1770,7 +1826,7 @@ body.ai-close-active .navbar {
     position: absolute;
     top: 0;
     height: 100%;
-    width: 100vw;
+    width: var(--vw);
     border: 0;
     background: transparent;
     pointer-events: none;
@@ -1821,7 +1877,7 @@ body.ai-close-active .navbar {
 .about-projects-transition.is-turning .about-projects-turn__flip-front--projects,
 .about-projects-transition.is-turning .about-projects-turn__flip-face--back .about-projects-turn__frame--projects-right-on-flip,
 .about-projects-transition.is-turning .about-projects-turn__flip-backface .about-projects-turn__frame--projects-right-on-flip {
-    /* Crop to the right half (iframe is 100vw) */
+    /* Crop to the right half (iframe is var(--vw)) */
     left: -50vw !important;
     transform: translateZ(0.6px);
     transform-origin: 0% 50%;
@@ -1853,7 +1909,7 @@ body.ai-close-active .navbar {
 .about-projects-transition.swap-flip-mid .about-projects-turn__flip-front--about { opacity: 0; }
 
 /* The flipping sheet surface is a true 50vw card.
-   This avoids mirroring a 100vw iframe (which can make it look empty). */
+   This avoids mirroring a var(--vw) iframe (which can make it look empty). */
 .about-projects-turn__flip-surface {
     position: absolute;
     inset: 0;
@@ -2006,7 +2062,7 @@ body.home-notebook-page.home-opening-projects.projects-about-flip-active .home-n
     position: absolute;
     top: 0;
     left: 0; /* show LEFT half */
-    width: 100vw;
+    width: var(--vw);
     height: 100%;
     border: 0;
     background: transparent;
@@ -2077,7 +2133,7 @@ html.transition-preview body.sketchbook-theme .brainstorm-container.preview-read
     position: absolute;
     top: 0;
     height: 100%;
-    width: 100vw; /* we crop by page width */
+    width: var(--vw); /* we crop by page width */
     border: 0;
     display: block;
     background: transparent;
@@ -2414,7 +2470,7 @@ body.home-notebook-page .main-logo {
     /* Shared sizing tokens for the book + opened pages */
     --bookTop: 40px;
     /* Slightly slimmer book */
-    --bookW: min(680px, calc(100vw - 64px));
+    --bookW: min(680px, calc(var(--vw) - 64px));
     /* Taller book */
     --bookH: min(980px, calc(var(--vh) - 60px));
 }
@@ -2665,7 +2721,7 @@ body.home-notebook-page.home-opening-projects .home-notebook {
     top: var(--bookTop);
     left: 50%;
     transform: translateX(-50%);
-    width: min(1220px, calc(100vw - 40px)); /* opened spread is wider */
+    width: min(1220px, calc(var(--vw) - 40px)); /* opened spread is wider */
     height: min(820px, calc(var(--vh) - 140px));
     border-radius: 28px;
     overflow: hidden;
@@ -2786,7 +2842,7 @@ body.home-notebook-page.home-opening-projects .home-notebook {
 .home-notebook__projekter-left {
     position: absolute;
     inset: 0;
-    width: 100vw;        /* we crop by page width */
+    width: var(--vw);        /* we crop by page width */
     height: 100%;
     border: 0;
     display: block;
@@ -2803,8 +2859,8 @@ body.home-notebook-page.home-opening-layout.home-reveal-projects .home-notebook_
 body.home-notebook-page.home-opening-projects.home-reveal-projects .home-notebook__projekter-full[data-home-preview-ready="1"],
 body.home-notebook-page.home-opened-projects.home-reveal-projects .home-notebook__projekter-full[data-home-preview-ready="1"] {
     opacity: 1;
-    /* Show RIGHT half of the same 100vw composition */
-    width: 100vw;
+    /* Show RIGHT half of the same var(--vw) composition */
+    width: var(--vw);
     height: 100%;
     left: -50vw;
     top: 0;
@@ -3044,7 +3100,9 @@ body.home-notebook-page.home-opening-layout.home-opening-center .home-notebook__
     left: 0;
     right: 0;
     width: 100%;
-    height: var(--navBarH);
+    padding-top: env(safe-area-inset-top, 0px);
+    height: var(--navBarTotal);
+    box-sizing: border-box;
     z-index: 20000; /* above all transition overlays */
     display: block !important;
 }
@@ -4872,7 +4930,7 @@ body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
         margin: 0 auto !important;
         padding: 48px 12px 14px 32px !important;
         align-items: center !important;
-        min-height: calc(var(--vh) - 52px) !important;
+        min-height: calc(var(--vh) - var(--navBarTotal)) !important;
         justify-content: center !important;
         box-sizing: border-box !important;
     }
@@ -5449,6 +5507,11 @@ body.sketchbook-theme .brainstorm-container {
    IMPORTANT: does NOT affect tablet/desktop.
    Tablets (e.g. iPad) are typically >= 768px, so we target <= 640px. */
 @media (max-width: 640px) {
+    /* Phone nav is 52px content + notch; JS/CSS use same offset for dropdowns + full-height sections */
+    html {
+        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
+    }
+
     .mobile-only { display: inline; }
 
     /* Mobile dropdown menu theme vars (page-specific overrides below) */
@@ -5488,7 +5551,11 @@ body.sketchbook-theme .brainstorm-container {
         top: 0;
         left: 0;
         right: 0;
-        height: 52px;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+        height: var(--navBarTotal);
+        box-sizing: border-box;
         z-index: 5000;
     }
 
@@ -5571,7 +5638,7 @@ body.sketchbook-theme .brainstorm-container {
         position: fixed;
         left: 0;
         right: 0;
-        top: 52px;
+        top: var(--navBarTotal);
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch;
@@ -5986,7 +6053,7 @@ body.sketchbook-theme .brainstorm-container {
         padding: 70px 18px 30px 44px;
         align-items: stretch;
         /* Use the whole phone height */
-        min-height: calc(var(--vh) - 52px);
+        min-height: calc(var(--vh) - var(--navBarTotal));
     }
     body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook__title {
         font-size: clamp(1.9rem, 9.5vw, 2.6rem) !important;
@@ -6615,7 +6682,7 @@ body.sketchbook-theme .brainstorm-container {
         background: #f5f5f0;
     }
     body.sketchbook-theme::before {
-        width: 100vw;
+        width: var(--vw);
         left: 0;
         right: 0;
         box-shadow: none;
@@ -6635,12 +6702,19 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleBaseH: 520;
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
+        /* Fylder mere af skærmen i landscape end 0,86 — stadig lidt margin til kanter */
+        --projectsLandscapeFit: 0.94;
         transform-origin: 50% 50%;
-        /* Phone landscape: push design up + right so it's fully visible */
+        /* Phone landscape: nudge down + left so nodes stay inside short viewports */
         transform:
-            translateX(calc(42px + env(safe-area-inset-left)))
-            translateY(calc(-68px + env(safe-area-inset-top)))
+            translateX(calc(12px + env(safe-area-inset-left)))
+            translateY(calc(18px + env(safe-area-inset-top)))
+            scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
+    }
+    /* Statiske linjer i SVG (fx NATURLI placeholder) — JS tilføjer .dynamic-mindmap-line; undgå dobbelt linje */
+    body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.mindmap-line:not(.dynamic-mindmap-line) {
+        display: none !important;
     }
     body.projects-page.sketchbook-theme .project-node {
         font-size: 1.00rem !important;
@@ -6702,20 +6776,20 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 71% !important;
-        /* Lidt større end før, tættere på Kø-Bajer 2024 (vandret mobil) */
-        transform: translate(-50%, -50%) scale(0.96) !important;
+        top: 69% !important;
+        transform: translate(-50%, -50%) scale(1) !important;
         transform-origin: 50% 50% !important;
         pointer-events: none !important;
         z-index: 0 !important;
         text-align: center !important;
-        line-height: 1.03 !important;
+        line-height: 1.06 !important;
+        max-width: min(92%, 200px) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
-        font-size: 11px !important;
+        font-size: 12px !important;
         font-weight: 600 !important;
         -webkit-text-stroke: 0.24px #1a1a1a !important;
         paint-order: stroke fill;
@@ -6727,8 +6801,8 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
-        font-size: 17px !important;
-        margin-top: -2px !important;
+        font-size: 19px !important;
+        margin-top: -1px !important;
         font-weight: 600 !important;
         -webkit-text-stroke: 0.34px #1a1a1a !important;
         paint-order: stroke fill;
@@ -6754,23 +6828,24 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 76% !important;
-        transform: translate(-50%, -50%) scale(0.72) !important;
+        top: 74% !important;
+        transform: translate(-50%, -50%) scale(0.84) !important;
         transform-origin: 50% 50% !important;
         pointer-events: none !important;
         z-index: 0 !important;
         text-align: center !important;
-        line-height: 1.03 !important;
+        line-height: 1.06 !important;
+        max-width: min(94%, 200px) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line1,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line1,
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2 {
-        font-size: 9px !important;
+        font-size: 10px !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3 {
-        font-size: 13px !important;
+        font-size: 15px !important;
         margin-top: -2px !important;
     }
     /* Keep the D&AD mark INSIDE the TWISTER circle (not below) */
@@ -6782,8 +6857,8 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 78% !important;
-        transform: translate(-50%, calc(-50% + 3px)) scale(0.48) !important;
+        top: 76% !important;
+        transform: translate(-50%, calc(-50% + 2px)) scale(0.66) !important;
         transform-origin: 50% 50% !important;
         width: auto !important;
         height: auto !important;
@@ -6793,19 +6868,20 @@ body.sketchbook-theme .brainstorm-container {
         flex-direction: row !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 0 !important;
+        gap: 2px !important;
+        max-width: min(96%, 220px) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-        width: 27px !important;
+        width: 34px !important;
         height: auto !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
-        width: 37px !important;
+        width: 48px !important;
         height: auto !important;
         margin: 0 !important;
-        margin-left: -6px !important;
+        margin-left: -4px !important;
     }
 }
 
@@ -6830,7 +6906,7 @@ body.sketchbook-theme .brainstorm-container {
         pointer-events: auto;
     }
     body .nav-menu {
-        top: calc(52px + env(safe-area-inset-top)) !important;
+        top: var(--navBarTotal) !important;
     }
 
     /* When the menu is open, the menu list must be clickable.
@@ -6851,7 +6927,7 @@ body.sketchbook-theme .brainstorm-container {
 
     /* Repop: less vertical dead space in phone landscape (margins/padding only — no smaller type) */
     html body.repop-page .page-content {
-        padding: 52px 12px 10px !important;
+        padding: var(--navBarTotal) 12px 10px !important;
         margin: 4px auto 8px !important;
     }
     /* Menu stays top-left; back control top-right so it doesn't cover the brief grid */
@@ -6984,7 +7060,7 @@ body.sketchbook-theme .brainstorm-container {
         background: #f5f5f0;
     }
     body.sketchbook-theme::before {
-        width: 100vw;
+        width: var(--vw);
         left: 0;
         right: 0;
         box-shadow: none;
@@ -6999,6 +7075,11 @@ body.sketchbook-theme .brainstorm-container {
 
 /* Mobile navbar on iPad / big mobile (touch): use burger menu too */
 @media (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse) {
+    /* Same bar height as phone burger layout (52px) + notch — matches --navBarTotal for dropdown top */
+    html {
+        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
+    }
+
     body {
         --mobileMenuBg: rgba(255, 255, 255, 0.96);
         --mobileMenuLink: rgba(0, 0, 0, 0.92);
@@ -7020,7 +7101,11 @@ body.sketchbook-theme .brainstorm-container {
         top: 0;
         left: 0;
         right: 0;
-        height: 52px;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+        height: var(--navBarTotal);
+        box-sizing: border-box;
         z-index: 5000;
     }
     body .nav-container {
@@ -7090,7 +7175,7 @@ body.sketchbook-theme .brainstorm-container {
         position: fixed;
         left: 0;
         right: 0;
-        top: 52px;
+        top: var(--navBarTotal);
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch;
@@ -7727,7 +7812,7 @@ body.sketchbook-theme .brainstorm-container .connecting-lines .hand-drawn-frame.
 .thought-bubble,
 body.brainfarts-page .brainfarts-content,
 body.unge-mod-uv-page .unge-mod-uv-content {
-    width: min(calc(100vw - (var(--infoboxSidePad) * 2)), var(--infoboxMaxW)) !important;
+    width: min(calc(var(--vw) - (var(--infoboxSidePad) * 2)), var(--infoboxMaxW)) !important;
     max-width: var(--infoboxMaxW) !important;
     margin-left: auto !important;
     margin-right: auto !important;
@@ -7911,7 +7996,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
 /* Back Button (projektsider → projects.html, under navbar) */
 .back-button {
     position: fixed;
-    top: calc(52px + env(safe-area-inset-top, 0px) + 10px);
+    top: calc(var(--navBarTotal) + 10px);
     left: max(14px, env(safe-area-inset-left, 0px) + 8px);
     color: white;
     padding: 0.8rem 1.5rem;
@@ -9245,7 +9330,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
     }
     
     .back-button {
-        top: calc(52px + env(safe-area-inset-top, 0px) + 8px);
+        top: calc(var(--navBarTotal) + 8px);
         left: max(10px, env(safe-area-inset-left, 0px) + 6px);
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
@@ -9671,7 +9756,7 @@ html body a[href="project1.html"]:hover {
         background: #f5f5f0 !important;
     }
     body.projects-page.sketchbook-theme::before {
-        width: 100vw !important;
+        width: var(--vw) !important;
         left: 0 !important;
         right: 0 !important;
         box-shadow: none !important;
@@ -9690,16 +9775,21 @@ html body a[href="project1.html"]:hover {
         --projectsScaleBaseW: 860;
         --projectsScaleBaseH: 430;
         --projectsScaleExp: 1.00;
-        --projectsScaleMin: 0.82;
-        /* Brain size in phone landscape (SVG size, not container transform); kun mobil */
-        --projectsBrainSize: 68px;
-        /* Base offsets (JS will auto-center by updating these) */
-        --projectsOffsetX: 200px;
-        --projectsOffsetY: -290px;
+        --projectsScaleMin: 0.8;
+        /* Brain size in phone landscape — større så kortet føles mere fyldt */
+        --projectsBrainSize: 72px;
+        /* Lidt mod højre ift. tidligere negative offset */
+        --projectsOffsetX: 12px;
+        --projectsOffsetY: 14px;
+        --projectsLandscapeFit: 0.94;
         transform:
             translateX(calc(var(--projectsOffsetX) + env(safe-area-inset-left)))
             translateY(calc(var(--projectsOffsetY) + env(safe-area-inset-top)))
+            scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy)) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.mindmap-line:not(.dynamic-mindmap-line) {
+        display: none !important;
     }
 
     /* JS sets .brain transform inline; shrink the actual SVG instead */
