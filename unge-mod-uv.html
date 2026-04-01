@@ -2,14 +2,14 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>UNGE MOD UV - Mikkel Skrøder-Christensen</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         /* UNGE MOD UV Theme - Black and Neon Light Blue */
         .unge-mod-uv-page {
             background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #1a1a1a 50%, #0a0a0a 75%, #000000 100%);
-            min-height: 100vh;
+            min-height: var(--vh);
             color: #00ffff;
             position: relative;
             overflow-x: hidden;
@@ -658,7 +658,7 @@
 
         @keyframes floatParticle {
             0% {
-                transform: translateY(100vh) translateX(0);
+                transform: translateY(var(--vh)) translateX(0);
                 opacity: 0;
             }
             10% {
@@ -668,7 +668,7 @@
                 opacity: 1;
             }
             100% {
-                transform: translateY(-10vh) translateX(100px);
+                transform: translateY(calc(var(--vh) * -0.1)) translateX(100px);
                 opacity: 0;
             }
         }

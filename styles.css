@@ -11,19 +11,60 @@
     --pageFlipEase: cubic-bezier(.42,0,.58,1);
     /* Top navigation height (separate UI strip) */
     --navBarH: 56px;
+    /* Full viewport height: 100dvh tracks visible mobile area (URL bar); 100vh fallback */
+    --vh: 100vh;
+    /* UI/body text: one stack so nav + body match across OS (not per-platform system font only) */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+
+@supports (height: 100dvh) {
+    :root {
+        --vh: 100dvh;
+    }
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    color-scheme: light;
+    scrollbar-gutter: stable;
 }
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: var(--font-sans);
     line-height: 1.6;
     color: #333;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Cross-platform: inherit typography on form controls (avoids system default fonts) */
+button,
+input,
+textarea,
+select {
+    font: inherit;
+    color: inherit;
+}
+
+/* Prevent media overflow and baseline gaps */
+img,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+img {
+    vertical-align: middle;
 }
 
 /* Frontpage (HJEM): big black notebook cover */
 body.home-notebook-page {
     background: #f4f3ef;
     color: #111;
-    min-height: 100vh;
+    min-height: var(--vh);
     overflow-x: hidden;
 }
 
@@ -80,7 +121,7 @@ body.projects-about-flip-active > :not(.projects-about-transition):not(.navbar) 
 .projects-about-transition .projects-about-under {
     position: absolute;
     top: 0;
-    height: 100vh;
+    height: var(--vh);
     width: 50vw;
     overflow: hidden;
     background: #f5f5f5;
@@ -155,7 +196,7 @@ body.projects-about-dragging .projects-about-transition.swap-under-right .projec
     top: 0;
     left: 50vw;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     transform-style: preserve-3d;
     transform-origin: 0% 50%;
@@ -431,7 +472,7 @@ body.ai-close-active > :not(.ai-close-transition):not(.navbar) {
 }
 .ai-close-transition .ai-universe-reveal iframe {
     width: 100vw;
-    height: 100vh;
+    height: var(--vh);
     border: 0;
     display: block;
 }
@@ -587,7 +628,7 @@ body.ai-close-active > :not(.ai-close-transition):not(.navbar) {
     /* Slight overlap to prevent any seam peek-through (no visible line) */
     left: calc(50vw - 2px);
     width: calc(50vw + 2px);
-    height: 100vh;
+    height: var(--vh);
     border-radius: 0;
     box-shadow: none !important;
 }
@@ -640,7 +681,7 @@ body.ai-close-active > :not(.ai-close-transition):not(.navbar) {
     pointer-events: none;
     /* Expose book sizing vars to the title (sibling of .home-notebook) */
     --bookTop: 40px;
-    --bookH: min(980px, calc(100vh - 60px));
+    --bookH: min(980px, calc(var(--vh) - 60px));
 }
 .ai-close-transition.show-closed .ai-close--opened { opacity: 0; pointer-events: none; }
 .ai-close-transition.show-closed .ai-close--closed { opacity: 1; pointer-events: none; }
@@ -896,7 +937,7 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
 .contact-about-turn__under {
     position: absolute;
     top: 0;
-    height: 100vh;
+    height: var(--vh);
     width: 50vw;
     overflow: hidden;
     background: #f5f5f0;
@@ -950,7 +991,7 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     top: 0;
     left: 50vw;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     transform-style: preserve-3d;
     transform-origin: 0% 50%;
@@ -973,7 +1014,7 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     top: 0;
     left: 0;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     transform-style: preserve-3d;
     transform-origin: 100% 50%;
@@ -1151,7 +1192,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
 .projects-contact-double-transition .pcd-under {
     position: absolute;
     top: 0;
-    height: 100vh;
+    height: var(--vh);
     width: 50vw;
     overflow: hidden;
     background: #f5f5f0;
@@ -1197,7 +1238,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
     top: 0;
     left: 50vw;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     transform-style: preserve-3d;
     transform-origin: 0% 50%;
@@ -1288,7 +1329,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
 .projects-contact-turn__under {
     position: absolute;
     top: 0;
-    height: 100vh;
+    height: var(--vh);
     width: 50vw;
     overflow: hidden;
     background: #f5f5f0;
@@ -1339,7 +1380,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
     top: 0;
     left: 50vw;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     transform-style: preserve-3d;
     transform-origin: 0% 50%;
@@ -1419,7 +1460,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
 .pc-under {
     position: absolute;
     top: 0;
-    height: 100vh;
+    height: var(--vh);
     width: 50vw;
     overflow: hidden;
     background: #f5f5f0;
@@ -1474,7 +1515,7 @@ body.projects-contact-double-active > :not(.projects-contact-double-transition):
     top: 0;
     left: 50vw;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     transform-style: preserve-3d;
     transform-origin: 0% 50%;
@@ -1550,7 +1591,7 @@ body.ai-close-active .navbar {
 .cp-under {
     position: absolute;
     top: 0;
-    height: 100vh;
+    height: var(--vh);
     width: 50vw;
     overflow: hidden;
     /* Always show correct sketchbook paper even before iframes paint */
@@ -1623,7 +1664,7 @@ body.ai-close-active .navbar {
     top: 0;
     left: 0;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     transform-style: preserve-3d;
     transform-origin: 100% 50%;
@@ -1697,7 +1738,7 @@ body.ai-close-active .navbar {
 .about-projects-turn__under {
     position: absolute;
     top: 0;
-    height: 100vh;
+    height: var(--vh);
     width: 50vw;
     overflow: hidden;
     /* Never show blank while iframes load */
@@ -1831,7 +1872,7 @@ body.ai-close-active .navbar {
     top: 0;
     left: 0;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     transform-style: preserve-3d;
     transform-origin: 100% 50%; /* hinge at the middle seam */
@@ -1954,7 +1995,7 @@ body.home-notebook-page.home-opening-projects.projects-about-flip-active .home-n
     top: 0;
     left: 0;
     width: 50vw;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
     z-index: 1;
     pointer-events: none;
@@ -2249,7 +2290,7 @@ body.home-notebook-page.home-opening-projects,
 body.home-notebook-page.home-opened-projects {
     /* Let paper run behind the navbar (no dead space). */
     --bookTop: 0px;
-    --bookH: 100vh;
+    --bookH: var(--vh);
     /* Slight bleed so pages feel bigger top/bottom */
     --pageBleed: 22px;
     /* Extra space ONLY at the top */
@@ -2365,7 +2406,7 @@ body.home-notebook-page .main-logo {
 }
 
 .home-notebook {
-    min-height: 100vh;
+    min-height: var(--vh);
     padding-top: 0 !important; /* navbar hidden */
     display: grid;
     place-items: center;
@@ -2375,7 +2416,7 @@ body.home-notebook-page .main-logo {
     /* Slightly slimmer book */
     --bookW: min(680px, calc(100vw - 64px));
     /* Taller book */
-    --bookH: min(980px, calc(100vh - 60px));
+    --bookH: min(980px, calc(var(--vh) - 60px));
 }
 
 /* Add perspective ONLY during opening animation (frontpage still front-view at rest) */
@@ -2625,7 +2666,7 @@ body.home-notebook-page.home-opening-projects .home-notebook {
     left: 50%;
     transform: translateX(-50%);
     width: min(1220px, calc(100vw - 40px)); /* opened spread is wider */
-    height: min(820px, calc(100vh - 140px));
+    height: min(820px, calc(var(--vh) - 140px));
     border-radius: 28px;
     overflow: hidden;
     opacity: 0;
@@ -3016,7 +3057,7 @@ body.home-notebook-page.home-opening-layout.home-opening-center .home-notebook__
     position: fixed;
     top: 0;
     right: 0;
-    height: 100vh;
+    height: var(--vh);
     width: 260px;
     transform: translateX(232px); /* keep a slim handle visible */
     transition: transform 220ms cubic-bezier(.2,.9,.2,1), opacity 180ms ease;
@@ -3093,13 +3134,13 @@ body.home-notebook-page.home-opened-projects .edge-nav {
 
 /* Projects (sketchbook-theme): keep navbar matching other pages */
 body.sketchbook-theme .navbar {
-    font-family: 'Arial', sans-serif;
+    font-family: var(--font-sans);
 }
 body.sketchbook-theme .nav-menu {
     padding: 0.3rem 0;
 }
 body.sketchbook-theme .nav-link {
-    font-family: 'Arial', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.8rem;
 }
 
@@ -3169,7 +3210,7 @@ body.sketchbook-theme .nav-link {
 
 /* Main Logo Styles */
 .hero-section {
-    min-height: 100vh;
+    min-height: var(--vh);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3206,7 +3247,7 @@ body.sketchbook-theme .nav-link {
 .hero {
     margin-top: 80px; /* Account for fixed navbar */
     width: 100%;
-    height: 100vh;
+    height: var(--vh);
     overflow: hidden;
 }
 
@@ -3263,7 +3304,7 @@ body.sketchbook-theme .nav-link {
     }
     
     .hero {
-        height: 60vh;
+        height: calc(var(--vh) * 0.6);
     }
     
     .main-content h1 {
@@ -3277,7 +3318,7 @@ body.sketchbook-theme .nav-link {
 
 /* Brainstorm Page Styles */
 .brainstorm-container {
-    min-height: 100vh;
+    min-height: var(--vh);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -4313,7 +4354,7 @@ body.about-sketchbook-page.sketchbook-theme {
 body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
     position: relative;
     z-index: 3;
-    min-height: 100vh;
+    min-height: var(--vh);
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr;
@@ -4336,7 +4377,7 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__title {
 }
 
 body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page {
-    min-height: calc(100vh - 120px);
+    min-height: calc(var(--vh) - 120px);
     padding: 75px 64px 42px 96px; /* move down 2 ruled lines (2 * 25px) */
     position: relative;
     z-index: 7; /* text must never be covered by photos */
@@ -4690,7 +4731,7 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
 body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook {
     position: relative;
     z-index: 3; /* above paper + margin lines */
-    min-height: 100vh;
+    min-height: var(--vh);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -4831,7 +4872,7 @@ body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
         margin: 0 auto !important;
         padding: 48px 12px 14px 32px !important;
         align-items: center !important;
-        min-height: calc(100svh - 52px) !important;
+        min-height: calc(var(--vh) - 52px) !important;
         justify-content: center !important;
         box-sizing: border-box !important;
     }
@@ -4862,7 +4903,7 @@ body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
         justify-content: center !important;
         padding: 14px 8px 16px !important;
         margin: 0 !important;
-        min-height: clamp(200px, 50vh, 310px) !important;
+        min-height: clamp(200px, calc(var(--vh) * 0.5), 310px) !important;
     }
     body.contact-sketchbook-page.sketchbook-theme .contact-item__icon {
         position: static !important;
@@ -5373,7 +5414,7 @@ body.sketchbook-theme .brainstorm-container {
     z-index: 3;
 
     /* Override the generic brainstorm page styling */
-    min-height: 100vh;
+    min-height: var(--vh);
     width: 100%;
     height: 100%;
     display: block;
@@ -5542,8 +5583,8 @@ body.sketchbook-theme .brainstorm-container {
         margin: 0;
         list-style: none;
         /* Dropdown is half screen and NOT scrollable */
-        height: 50vh;
-        max-height: 50vh;
+        height: calc(var(--vh) * 0.5);
+        max-height: calc(var(--vh) * 0.5);
         overflow: hidden;
         background: var(--mobileMenuBg);
         border-top: 1px solid rgba(0, 0, 0, 0.12);
@@ -5621,6 +5662,7 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;
+        min-height: var(--vh);
         /* One uniform scale for phone: mindmap + lines + brain shrink together; more top/bottom margin */
         --projectsMobileVisScale: 0.88;
         /* Mobile fit tuning (JS reads these and sets --projectsSx/--projectsSy) */
@@ -5944,7 +5986,7 @@ body.sketchbook-theme .brainstorm-container {
         padding: 70px 18px 30px 44px;
         align-items: stretch;
         /* Use the whole phone height */
-        min-height: calc(100svh - 52px);
+        min-height: calc(var(--vh) - 52px);
     }
     body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook__title {
         font-size: clamp(1.9rem, 9.5vw, 2.6rem) !important;
@@ -7058,8 +7100,8 @@ body.sketchbook-theme .brainstorm-container {
         padding: 0 12px 8px;
         margin: 0;
         list-style: none;
-        height: 70vh;
-        max-height: 70vh;
+        height: calc(var(--vh) * 0.7);
+        max-height: calc(var(--vh) * 0.7);
         overflow: auto;
         -webkit-overflow-scrolling: touch;
         background: var(--mobileMenuBg);
@@ -7958,14 +8000,14 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
 /* Repop by Depop Page Theme */
 .repop-page {
     background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%);
-    min-height: 100vh;
+    min-height: var(--vh);
     color: white;
 }
 
 /* Project1 Page Theme (same as repop but with standard navbar) */
 .project1-page {
     background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%);
-    min-height: 100vh;
+    min-height: var(--vh);
     color: white;
 }
 
@@ -8107,7 +8149,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
 .byens-landhandel-page {
     background: linear-gradient(135deg, #8B7355 0%, #A0522D 50%, #8B4513 100%);
     color: #2F1B14;
-    min-height: 100vh;
+    min-height: var(--vh);
 }
 
 /* .byens-landhandel-page .navbar (custom styling removed) */
@@ -8502,7 +8544,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
 .naturlig-page {
     background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 25%, #90caf9 50%, #64b5f6 75%, #42a5f5 100%) !important;
     color: #333333;
-    min-height: 100vh;
+    min-height: var(--vh);
     position: relative;
 }
 
@@ -8617,7 +8659,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
         aspect-ratio: unset !important;
         width: 100% !important;
         max-width: 100% !important;
-        max-height: min(68vh, 320px) !important;
+        max-height: min(calc(var(--vh) * 0.68), 320px) !important;
         height: auto !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
@@ -8629,7 +8671,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
 .durex-page {
     background: linear-gradient(135deg, #0066CC 0%, #0099FF 25%, #00CCFF 50%, #33CCFF 75%, #66CCFF 100%) !important;
     color: #333333;
-    min-height: 100vh;
+    min-height: var(--vh);
     position: relative;
 }
 
@@ -8775,7 +8817,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
 .kobajer-page {
     background: linear-gradient(135deg, #FFE066 0%, #FF6B6B 25%, #4ECDC4 50%, #45B7D1 75%, #96CEB4 100%);
     color: #333333;
-    min-height: 100vh;
+    min-height: var(--vh);
     position: relative;
 }
 
@@ -9286,7 +9328,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
     background: linear-gradient(135deg,
         #32CD32 0%, #32CD32 25%, #FF69B4 40%, #FFFACD 100%
     );
-    min-height: 100vh;
+    min-height: var(--vh);
     overflow-x: hidden;
 }
 
@@ -9295,7 +9337,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 40vh;
+    min-height: calc(var(--vh) * 0.4);
     margin-top: 80px;
     position: relative;
 }

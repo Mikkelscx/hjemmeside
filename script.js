@@ -2315,7 +2315,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				fr.style.position = 'fixed';
 				fr.style.inset = '0';
 				fr.style.width = '100vw';
-				fr.style.height = '100vh';
+				fr.style.height = (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('height', '100dvh')) ? '100dvh' : '100vh';
 				fr.style.border = '0';
 				fr.style.opacity = '0';
 				fr.style.pointerEvents = 'none';
@@ -3424,11 +3424,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (usePortraitSketchGrid) {
 					try { container.classList.add('projects-mindmap--portrait'); } catch {}
 					const NAV_H = 52;
-					const layoutH = Math.max(
-						containerRect.height,
-						window.innerHeight || 0,
-						(window.visualViewport && window.visualViewport.height) || 0
-					);
+					const ih = window.innerHeight || 0;
+					const vvH =
+						window.visualViewport && window.visualViewport.height > 0
+							? window.visualViewport.height
+							: 0;
+					const capH = vvH || ih;
+					const layoutH =
+						capH > 0 ? Math.min(containerRect.height, capH) : containerRect.height;
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const safeTop = NAV_H + Math.round(36 * scale);
 					const safeBottom = layoutH - Math.round(40 * scale);
@@ -6557,8 +6560,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		document.addEventListener('mousemove', updatePupilPosition);
 		
-		// Recreate lines and frames on window resize
-		window.addEventListener('resize', function() {
+		function refreshProjectsMindmapLayout() {
 			setTimeout(() => {
 				positionNodesPerfectCircle();
 				createAndPositionDandDLogo();
@@ -6570,7 +6572,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				createConnectingLines();
 				createHandDrawnFrames();
 			}, 100);
-		});
+		}
+		window.addEventListener('resize', refreshProjectsMindmapLayout);
+		try {
+			if (window.visualViewport) {
+				window.visualViewport.addEventListener('resize', refreshProjectsMindmapLayout);
+			}
+		} catch {}
 
 		// Mark as initialized to avoid duplicate event listeners on re-run.
 		brain.dataset.animInit = '1';
