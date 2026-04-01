@@ -3736,7 +3736,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			/* Bred landscape (fx 896×414): mindre side-padding → større rx (mere luft til siderne) */
 			if (touchLandscape && w > h && !narrow) {
-				paddingX = Math.min(paddingX, 78);
+				paddingX = Math.min(paddingX, 64);
 			}
 			let rx = Math.max(minRx, (w / 2) - paddingX);
 			let ry = Math.max(minRy, (h / 2) - paddingY) + extraRy;
@@ -3751,11 +3751,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (touchLandscape && w > h) {
 					const flatRy =
 						!narrow && mskIsProjectsShortLandscapeViewport()
-							? Math.max(178, h * 0.58)
+							? Math.max(195, h * 0.64)
 							: Math.max(152, h * 0.44);
 					ry = Math.min(ry, flatRy);
 				}
 			} catch {}
+			const shortLsRing = !narrow && mskIsProjectsShortLandscapeViewport();
 			const n = nodeArray.length || 1;
 			// Start at top (-90deg) and go clockwise.
 			const startAngle = -Math.PI / 2;
@@ -3767,33 +3768,23 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Anchor each tab by its CENTER so varying text widths/heights don't break the circle.
 			nodeArray.forEach((node, i) => {
 				const angle = startAngle + i * step;
-				let x = centerX + rx * Math.cos(angle);
-				let y = centerY + ry * Math.sin(angle);
+				/* Kort landscape: skub hele ringen ~8% ud fra centrum — mindre overlap end per-node-fidus */
+				const rxEff = shortLsRing ? rx * 1.09 : rx;
+				const ryEff = shortLsRing ? ry * 1.09 : ry;
+				let x = centerX + rxEff * Math.cos(angle);
+				let y = centerY + ryEff * Math.sin(angle);
 				const href = (node.getAttribute('href') || '').toLowerCase();
-				const shortLs = !narrow && mskIsProjectsShortLandscapeViewport();
+				const shortLs = shortLsRing;
 
-				/* Øvre bue (over hjernen): pres lidt ned mod centrum */
-				if (Math.sin(angle) < -0.12) y += Math.round(26 * scale);
+				/* Øvre bue: lidt ned mod centrum — mindre i kort landscape */
+				if (Math.sin(angle) < -0.12) y += Math.round((shortLs ? 16 : 26) * scale);
 
-				/* Nederste bue: stor offset trak knapper op mod hjernen → overlap. I kort landscape: mildere. */
-				if (Math.sin(angle) > 0.38) y -= shortLs ? 16 : 38;
+				/* Nederste bue: træk op mod midten gav overlap med hjernen — slå fra i kort landscape */
+				if (Math.sin(angle) > 0.38) y -= shortLs ? 0 : 38;
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
 				if (href.includes('repop')) y += touchLandscape ? 14 : 35;
-
-				/* Skub højreside-knapper lidt væk fra centrum (især UNGE tæt på hjernen) */
-				if (shortLs) {
-					let radial = 0;
-					if (href.includes('unge-mod-uv')) radial = 32;
-					else if (href.includes('durex')) radial = 18;
-					else if (href.includes('naturli')) radial = 14;
-					else if (href.includes('twister')) radial = 12;
-					if (radial > 0) {
-						x += Math.cos(angle) * radial;
-						y += Math.sin(angle) * radial;
-					}
-				}
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -5368,9 +5359,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				let ungeLineShiftLeft = 0;
 				let ungeShortenFromNodeEndPx = 0;
 				if (mskIsProjectsShortLandscapeViewport()) {
-					ungeLinePressDown = 5;
-					ungeLineShiftLeft = -26;
-					ungeShortenFromNodeEndPx = 38;
+					ungeLinePressDown = -8;
+					ungeLineShiftLeft = -42;
+					ungeShortenFromNodeEndPx = 56;
 				}
 				
 				// Calculate end point - extend closer to/past the UNGE MOD UV node
@@ -5378,8 +5369,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const deltaX = nodeX - brainCenterX;
 				const deltaY = nodeY - brainCenterY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				// Extend past the node center (slightly shorter than before)
-				const extensionAmount = nodeRadius * 0.5; // Extend 50% of node radius past the center
+				// Slut tættere på cirklen i landscape (mindre “stik ind i teksten”)
+				const extensionAmount =
+					mskIsProjectsShortLandscapeViewport() ? nodeRadius * 0.22 : nodeRadius * 0.5;
 				let lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				let lineEndY = nodeY + (deltaY / distance) * extensionAmount;
 				lineEndX += ungeLineShiftLeft;

@@ -6706,8 +6706,8 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
         /* Lidt mindre hele kortet; ens scale bevarer indbyrdes placering */
-        --projectsLandscapeFit: 0.78;
-        --projectsBrainSize: 60px;
+        --projectsLandscapeFit: 0.72;
+        --projectsBrainSize: 54px;
         transform-origin: 50% 50%;
         /* Phone landscape: nudge down + left so nodes stay inside short viewports */
         transform:
@@ -6725,7 +6725,7 @@ body.sketchbook-theme .brainstorm-container {
     }
     /* Mindre billedtitler → mindre footprint når ellipsen er lav */
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
-        max-width: min(260px, 46vw) !important;
+        max-width: min(220px, 40vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] {
         width: min(168px, 38vw) !important;
@@ -6739,9 +6739,25 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"],
     body.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] {
-        width: min(130px, 30vw) !important;
+        width: min(120px, 28vw) !important;
         min-width: 0 !important;
-        max-width: min(130px, 30vw) !important;
+        max-width: min(120px, 28vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] {
+        width: min(118px, 30vw) !important;
+        min-width: 0 !important;
+        max-width: min(118px, 30vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop.html"] {
+        width: min(200px, 44vw) !important;
+        min-width: 0 !important;
+        max-width: min(200px, 44vw) !important;
+    }
+    body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
+        width: min(148px, 34vw) !important;
+        min-width: 0 !important;
+        max-width: min(148px, 34vw) !important;
     }
 
     /* Projects: horizontal mobile BRAINFARTS sign inside circle */
@@ -6759,15 +6775,15 @@ body.sketchbook-theme .brainstorm-container {
         position: absolute;
         left: 50%;
         top: 52%;
-        transform: translate(-50%, -50%) rotate(-1deg);
+        transform: translate(-50%, -50%) rotate(-1deg) scale(0.88);
         display: block !important;
         visibility: visible !important;
-        width: 87px;
-        max-width: 78%;
+        width: 72px;
+        max-width: 70%;
         height: auto;
         margin: 0;
         pointer-events: none;
-        opacity: 0.52 !important;
+        opacity: 0.38 !important;
         z-index: 0;
         image-rendering: -webkit-optimize-contrast;
         filter: none;
