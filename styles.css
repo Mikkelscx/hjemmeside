@@ -5255,7 +5255,7 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
     }
 }
 
-@media (max-width: 640px), (max-width: 1024px) and (max-height: 520px) and (orientation: landscape) {
+@media (max-width: 640px), (max-width: 1024px) and (max-height: 520px) and (orientation: landscape), (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
     body.sketchbook-theme .brainstorm-container .project-node__title-img {
         width: min(190px, 92%);
     }
@@ -6675,8 +6675,11 @@ body.sketchbook-theme .brainstorm-container {
     }
 }
 
-/* Projects: phone landscape should feel closer to desktop (avoid tiny mindmap) */
-@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape) {
+/* Projects phone landscape — tal (1024/520) matcher script.js: MSK_PROJECTS_LANDSCAPE_MAX_W/H + mskIsProjectsShortLandscapeViewport() */
+/* Projects: phone landscape should feel closer to desktop (avoid tiny mindmap)
+   + min-aspect-ratio: Safari/DevTools kan afvige på orientation — bred/kort viewport fanges stadig */
+@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+       (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
     /* In phone landscape, use a single full-width paper page (no two-page "book" margins). */
     body.sketchbook-theme {
         background: #f5f5f0;
@@ -6903,7 +6906,8 @@ body.sketchbook-theme .brainstorm-container {
 }
 
 /* Phone landscape: make burger just a button (no bar) */
-@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape) {
+@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+       (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
     body .navbar {
         height: 0 !important;
         background: transparent !important;
@@ -9768,7 +9772,8 @@ html body a[href="project1.html"]:hover {
 
 /* Projekter: force true full-width paper in phone landscape.
    This block is intentionally at the end of the file so it wins the cascade. */
-@media (max-width: 1024px) and (max-height: 520px) and (hover: none) and (pointer: coarse) {
+@media (max-width: 1024px) and (max-height: 520px) and (hover: none) and (pointer: coarse),
+       (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) and (hover: none) {
     body.projects-page.sketchbook-theme {
         background: #f5f5f0 !important;
     }

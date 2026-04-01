@@ -10,6 +10,22 @@ function mskViewportSize() {
 	}
 }
 
+/** Projects “kort landscape” — samme logik som CSS (max-width 1024px, max-height 520px, bred>kort). Én kilde = mindre drift mellem browsere. */
+const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
+const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
+
+function mskIsProjectsShortLandscapeViewport() {
+	try {
+		const { w, h } = mskViewportSize();
+		if (!w || !h) return false;
+		if (h >= w) return false;
+		if (w > MSK_PROJECTS_LANDSCAPE_MAX_W || h > MSK_PROJECTS_LANDSCAPE_MAX_H) return false;
+		return true;
+	} catch (_) {
+		return false;
+	}
+}
+
 (function syncMobileVhFromVisualViewport() {
 	let raf = null;
 	function apply() {
@@ -3502,7 +3518,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			} catch {}
 			try {
-				if (!touchLandscape && w && h && w <= 1024 && h <= 520 && w > h) touchLandscape = true;
+				if (!touchLandscape && mskIsProjectsShortLandscapeViewport()) touchLandscape = true;
 			} catch {}
 
 			const nodeArray = Array.from(nodes);
@@ -3818,13 +3834,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
 				} catch {}
 				const cw = container.getBoundingClientRect().width;
-				/* Bred lav landscape (fx 896×414): samme CSS som mobil-landscape — inline D&AD/Kravling osv. */
-				let shortLandscape = false;
-				try {
-					const { w: iw, h: ih } = mskViewportSize();
-					shortLandscape = ih < iw && iw <= 1024 && ih <= 520;
-				} catch {}
-				if (!(narrow || cw <= 640 || shortLandscape)) return;
+				if (!(narrow || cw <= 640 || mskIsProjectsShortLandscapeViewport())) return;
 
 				function stackNode(el) {
 					if (!el) return;
@@ -4918,14 +4928,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const mindmapLineLenMul = 0.92;
 
 		/* Lav landscape (fx 896×414): smallere linjer — skaler <image> height (tykkelse visuelt) */
-		const lineThicknessMul = (() => {
-			try {
-				const iw = mskViewportSize().w || 0;
-				const ih = mskViewportSize().h || 0;
-				if (ih < iw && iw <= 1024 && ih <= 520) return 0.50;
-			} catch (_) {}
-			return 1;
-		})();
+		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.5 : 1;
 		const lineH = (base) => Math.max(12, Math.round(Number(base) * lineThicknessMul));
 
 		// Portrait mobile: same sketch chain as hjemmesiden / live site (columns + brain), not radial spokes.
@@ -5343,19 +5346,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brainCenterX = centerX;
 				const brainCenterY = centerY;
 
-				/* Telefon landscape (lav/bred): linje lidt op + mod venstre — samme viewport som CSS short-landscape */
+				/* Telefon landscape (lav/bred): linje lidt op + mod venstre — mskIsProjectsShortLandscapeViewport */
 				let ungeLinePressDown = 16;
 				let ungeLineShiftLeft = 0;
 				let ungeShortenFromNodeEndPx = 0;
-				try {
-					const iw = mskViewportSize().w || 0;
-					const ih = mskViewportSize().h || 0;
-					if (ih < iw && iw <= 1024 && ih <= 520) {
-						ungeLinePressDown = 5;
-						ungeLineShiftLeft = -26;
-						ungeShortenFromNodeEndPx = 38;
-					}
-				} catch (_) {}
+				if (mskIsProjectsShortLandscapeViewport()) {
+					ungeLinePressDown = 5;
+					ungeLineShiftLeft = -26;
+					ungeShortenFromNodeEndPx = 38;
+				}
 				
 				// Calculate end point - extend closer to/past the UNGE MOD UV node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
@@ -5745,17 +5744,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				return false;
 			}
 		}
-		/** Bred/lav landscape (fx iPhone XR 896×414): samme mind map som telefon-landscape i CSS */
-		function isProjectsShortLandscape() {
-			try {
-				const { w, h } = mskViewportSize();
-				return h < w && w <= 1024 && h <= 520;
-			} catch (_) {
-				return false;
-			}
-		}
 		const landscapeMindmap =
-			isProjectsPhoneLandscape() || isProjectsShortLandscape();
+			isProjectsPhoneLandscape() || mskIsProjectsShortLandscapeViewport();
 		/** Projects på smal skærm (≤640px): Twister/Kø-Bajer lodrette ring-juster — portrait og phone landscape */
 		function isProjectsPhoneWidth() {
 			try {
@@ -6217,7 +6207,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= twisterRingScale;
 				h *= twisterRingScale * twisterRingVertMul;
 				/* Lav/bred landscape (fx 896×414): lidt mindre oval end øvrig mind map */
-				if (isProjectsShortLandscape()) {
+				if (mskIsProjectsShortLandscapeViewport()) {
 					const twisterShortLandscapeMul = 0.86;
 					w *= twisterShortLandscapeMul;
 					h *= twisterShortLandscapeMul;
