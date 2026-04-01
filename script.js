@@ -3767,13 +3767,14 @@ document.addEventListener('DOMContentLoaded', function() {
 					ry = Math.min(ry, flatRy);
 				}
 			} catch {}
-			/* Kort landscape: desktop-ry er ofte for stor ift. synlig højde → top/bund klipper. Træk ringen ind. */
+			/* Kort landscape: begræns kun lodret radius (top/bund). Horisontalt: udvid ringen så den bruger bredden
+			   (tidligere min(rx, rxTight) trykkede rx ned til ~158px og stablede knapper i midten). */
 			try {
 				if (isShortLandscape && !narrow) {
-					const ryTight = Math.max(115, h * 0.355);
-					const rxTight = Math.max(158, w * 0.395);
-					ry = Math.min(ry, ryTight);
-					rx = Math.min(rx, rxTight);
+					/* Højere ry = mere brug af den korte viewport i højden (fx 414px) */
+					ry = Math.min(ry, Math.max(132, h * 0.46));
+					const rxWide = Math.min((w / 2) - 32, w * 0.46);
+					rx = Math.min(Math.max(rx, rxWide), (w / 2) - 28);
 				}
 			} catch {}
 			/* Kort phone landscape = samme bue som desktop (ingen 1.09-ring) */
@@ -3797,11 +3798,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				const href = (node.getAttribute('href') || '').toLowerCase();
 				const shortLs = shortLsRing;
 
-				/* Øvre bue: lidt ned mod centrum — mindre i kort landscape */
-				if (Math.sin(angle) < -0.12) y += Math.round((shortLs ? 16 : 26) * scale);
+				/* Øvre bue: mindre træk mod midten i kort landscape → mere plads til top/bund */
+				if (Math.sin(angle) < -0.12) {
+					const topPull = shortLs ? 16 : isShortLandscape ? 12 : 26;
+					y += Math.round(topPull * scale);
+				}
 
-				/* Nederste bue: træk op mod midten gav overlap med hjernen — slå fra i kort landscape */
-				if (Math.sin(angle) > 0.38) y -= shortLs ? 0 : 38;
+				if (Math.sin(angle) > 0.38) {
+					const botPull = shortLs ? 0 : isShortLandscape ? 22 : 38;
+					y -= botPull;
+				}
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
@@ -4956,8 +4962,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		/* Hjernen ↔ cirkler: alle segmenter lidt kortere (tykkelse uændret) */
 		const mindmapLineLenMul = 0.92;
 
-		/* Lav landscape (fx 896×414): smallere linjer — skaler <image> height (tykkelse visuelt) */
-		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.5 : 1;
+		/* Kort landscape: smallere linjer (tyndere assets) */
+		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.38 : 1;
 		const lineH = (base) => Math.max(12, Math.round(Number(base) * lineThicknessMul));
 
 		// Portrait mobile: same sketch chain as hjemmesiden / live site (columns + brain), not radial spokes.
@@ -5769,7 +5775,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		try { void container.offsetHeight; } catch {}
 		const scale = 1;
 		const s = (n) => n * scale;
-		const assetS = 1;
+		/* Kort landscape: mindre håndtegnede cirkler (SVG) så de matcher mindre titelbilleder */
+		const assetS = mskIsProjectsShortLandscapeViewport() ? 0.76 : 1;
 		function isProjectsPhoneLandscape() {
 			try {
 				const { w, h } = mskViewportSize();
@@ -5834,7 +5841,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			// (Titles are often image-only; match href so we always use your asset.)
 			if (nodeText === 'BRAINFARTS' || nodeHref.includes('brainfarts')) {
 				console.log('Creating BRAINFARTS circle image...');
-				const brainfartsRingScale = 0.78;
+				const brainfartsRingScale = 0.78 * (mskIsProjectsShortLandscapeViewport() ? 0.86 : 1);
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";

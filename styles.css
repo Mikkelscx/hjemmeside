@@ -6698,6 +6698,9 @@ body.sketchbook-theme .brainstorm-container {
     body.sketchbook-theme .left-margin { left: 14px; }
 
     body.projects-page.sketchbook-theme .brainstorm-container {
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
         /* Keep proportions in landscape */
         --projectsScaleUniform: 1;
         /* Make it a bit smaller and fit the full width */
@@ -6705,24 +6708,65 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleBaseH: 520;
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
-        /* Lidt mindre end 0.88 så top/bund ikke klipper i meget lav landscape */
-        --projectsLandscapeFit: 0.81;
-        --projectsBrainSize: 68px;
+        /* Lodret: ry i JS er hævet; lidt større fit så kortet fylder bedre i højden */
+        --projectsLandscapeFit: 0.78;
+        --projectsBrainSize: 56px;
         transform-origin: 50% 50%;
         transform:
-            translateX(calc(6px + env(safe-area-inset-left)))
-            translateY(calc(4px + env(safe-area-inset-top)))
+            translateX(calc(4px + env(safe-area-inset-left)))
+            translateY(calc(2px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+        max-width: min(136px, 30vw) !important;
+        width: min(136px, 30vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
+        max-width: min(136px, 30vw) !important;
+        width: min(136px, 30vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
+        max-width: min(104px, 24vw) !important;
+        width: min(104px, 24vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
+        max-width: min(124px, 28vw) !important;
+        width: min(124px, 28vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
+        max-width: min(128px, 28vw) !important;
+        width: min(128px, 28vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
+        max-width: min(108px, 24vw) !important;
+        width: min(108px, 24vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
+        max-width: min(100px, 23vw) !important;
+        width: min(100px, 23vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts {
+        max-width: min(112px, 26vw) !important;
+        width: min(112px, 26vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
+        max-width: min(132px, 30vw) !important;
+        width: min(132px, 30vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .kravling-nomineret-badge--inline,
+    body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline {
+        font-size: 0.58rem !important;
+        line-height: 1.05 !important;
     }
     /* Statiske linjer i SVG (fx NATURLI placeholder) — JS tilføjer .dynamic-mindmap-line; undgå dobbelt linje */
     body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.mindmap-line:not(.dynamic-mindmap-line) {
         display: none !important;
     }
     body.projects-page.sketchbook-theme .project-node {
-        font-size: 1.00rem !important;
+        font-size: 0.86rem !important;
     }
-    /* Faner + billedtitler: samme globale regler som tablet (5258+) — ingen ekstra smalle !important pr. projekt */
+    /* Faner + billedtitler: mindre i landscape (ovenfor) */
 
     /* Projects: horizontal mobile BRAINFARTS sign inside circle */
     body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
@@ -6739,11 +6783,11 @@ body.sketchbook-theme .brainstorm-container {
         position: absolute;
         left: 50%;
         top: 52%;
-        transform: translate(-50%, -50%) rotate(-1deg) scale(0.88);
+        transform: translate(-50%, -50%) rotate(-1deg) scale(0.82);
         display: block !important;
         visibility: visible !important;
-        width: 72px;
-        max-width: 70%;
+        width: 58px;
+        max-width: 62%;
         height: auto;
         margin: 0;
         pointer-events: none;
@@ -6879,7 +6923,7 @@ body.sketchbook-theme .brainstorm-container {
         position: absolute !important;
         left: 50% !important;
         top: 76% !important;
-        transform: translate(-50%, calc(-50% + 2px)) scale(0.66) !important;
+        transform: translate(-50%, calc(-50% + 2px)) scale(0.56) !important;
         transform-origin: 50% 50% !important;
         width: auto !important;
         height: auto !important;
