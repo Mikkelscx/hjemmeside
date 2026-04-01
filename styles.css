@@ -6706,7 +6706,8 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
         /* Lidt mindre hele kortet; ens scale bevarer indbyrdes placering */
-        --projectsLandscapeFit: 0.82;
+        --projectsLandscapeFit: 0.78;
+        --projectsBrainSize: 60px;
         transform-origin: 50% 50%;
         /* Phone landscape: nudge down + left so nodes stay inside short viewports */
         transform:
@@ -6721,6 +6722,26 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.projects-page.sketchbook-theme .project-node {
         font-size: 1.00rem !important;
+    }
+    /* Mindre billedtitler → mindre footprint når ellipsen er lav */
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+        max-width: min(260px, 46vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] {
+        width: min(168px, 38vw) !important;
+        min-width: 0 !important;
+        max-width: min(168px, 38vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] {
+        width: min(142px, 34vw) !important;
+        min-width: 0 !important;
+        max-width: min(142px, 34vw) !important;
+    }
+    body.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"],
+    body.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] {
+        width: min(130px, 30vw) !important;
+        min-width: 0 !important;
+        max-width: min(130px, 30vw) !important;
     }
 
     /* Projects: horizontal mobile BRAINFARTS sign inside circle */
@@ -9799,7 +9820,7 @@ html body a[href="project1.html"]:hover {
         --projectsScaleExp: 1.00;
         --projectsScaleMin: 0.8;
         /* Brain size in phone landscape — større så kortet føles mere fyldt */
-        --projectsBrainSize: 72px;
+        --projectsBrainSize: 60px;
         /* Lidt mod højre ift. tidligere negative offset */
         --projectsOffsetX: 12px;
         --projectsOffsetY: 14px;

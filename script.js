@@ -3734,9 +3734,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				minRx = 48;
 				minRy = 48;
 			}
-			/* Bred landscape (fx 896×414): mindre side-padding → større rx mod kanterne */
+			/* Bred landscape (fx 896×414): mindre side-padding → større rx (mere luft til siderne) */
 			if (touchLandscape && w > h && !narrow) {
-				paddingX = Math.min(paddingX, 100);
+				paddingX = Math.min(paddingX, 78);
 			}
 			let rx = Math.max(minRx, (w / 2) - paddingX);
 			let ry = Math.max(minRy, (h / 2) - paddingY) + extraRy;
@@ -3746,10 +3746,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				rx = Math.min(rx, capX);
 				ry = Math.min(ry, capY);
 			}
-			/* Lav landscape (touch): blød loft på ry — stadig plads til kanter, men fylder mere end 0,38 */
+			/* Lav landscape: tidligere for flad ry → knapper + hjerte for tæt. Højere loft giver mere lodret luft. */
 			try {
 				if (touchLandscape && w > h) {
-					const flatRy = Math.max(152, h * 0.44);
+					const flatRy =
+						!narrow && mskIsProjectsShortLandscapeViewport()
+							? Math.max(178, h * 0.58)
+							: Math.max(152, h * 0.44);
 					ry = Math.min(ry, flatRy);
 				}
 			} catch {}
@@ -3764,19 +3767,33 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Anchor each tab by its CENTER so varying text widths/heights don't break the circle.
 			nodeArray.forEach((node, i) => {
 				const angle = startAngle + i * step;
-				const x = centerX + rx * Math.cos(angle);
+				let x = centerX + rx * Math.cos(angle);
 				let y = centerY + ry * Math.sin(angle);
 				const href = (node.getAttribute('href') || '').toLowerCase();
+				const shortLs = !narrow && mskIsProjectsShortLandscapeViewport();
 
 				/* Øvre bue (over hjernen): pres lidt ned mod centrum */
 				if (Math.sin(angle) < -0.12) y += Math.round(26 * scale);
 
-				/* Nederste bue af ellipsen (under hjernen): lidt op */
-				if (Math.sin(angle) > 0.38) y -= 38;
+				/* Nederste bue: stor offset trak knapper op mod hjernen → overlap. I kort landscape: mildere. */
+				if (Math.sin(angle) > 0.38) y -= shortLs ? 16 : 38;
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
 				if (href.includes('repop')) y += touchLandscape ? 14 : 35;
+
+				/* Skub højreside-knapper lidt væk fra centrum (især UNGE tæt på hjernen) */
+				if (shortLs) {
+					let radial = 0;
+					if (href.includes('unge-mod-uv')) radial = 32;
+					else if (href.includes('durex')) radial = 18;
+					else if (href.includes('naturli')) radial = 14;
+					else if (href.includes('twister')) radial = 12;
+					if (radial > 0) {
+						x += Math.cos(angle) * radial;
+						y += Math.sin(angle) * radial;
+					}
+				}
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
