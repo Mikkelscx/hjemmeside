@@ -3760,7 +3760,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
-				if (href.includes('repop')) y += 35;
+				if (href.includes('repop')) y += touchLandscape ? 14 : 35;
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -5342,6 +5342,20 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Start from the center of the brain, extended backward toward brain
 				const brainCenterX = centerX;
 				const brainCenterY = centerY;
+
+				/* Telefon landscape (lav/bred): linje lidt op + mod venstre — samme viewport som CSS short-landscape */
+				let ungeLinePressDown = 16;
+				let ungeLineShiftLeft = 0;
+				let ungeShortenFromNodeEndPx = 0;
+				try {
+					const iw = mskViewportSize().w || 0;
+					const ih = mskViewportSize().h || 0;
+					if (ih < iw && iw <= 1024 && ih <= 520) {
+						ungeLinePressDown = 5;
+						ungeLineShiftLeft = -26;
+						ungeShortenFromNodeEndPx = 38;
+					}
+				} catch (_) {}
 				
 				// Calculate end point - extend closer to/past the UNGE MOD UV node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
@@ -5350,8 +5364,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
 				// Extend past the node center (slightly shorter than before)
 				const extensionAmount = nodeRadius * 0.5; // Extend 50% of node radius past the center
-				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
-				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
+				let lineEndX = nodeX + (deltaX / distance) * extensionAmount;
+				let lineEndY = nodeY + (deltaY / distance) * extensionAmount;
+				lineEndX += ungeLineShiftLeft;
 				
 				// Add gap from brain center, then extend backward toward brain
 				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
@@ -5361,10 +5376,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Extend backward from initial start point to make line longer toward brain
 				const brainExtension = brainRadius * 0.1; // Extend 10% of brain radius backward (slightly longer)
-				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
+				let brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
 				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				brainStartX += ungeLineShiftLeft;
+				/* Forkort mod UNGE-enden: træk slutpunkt mod hjernen langs segmentet (ikke fra hjernen) */
+				if (ungeShortenFromNodeEndPx > 0) {
+					const ux = lineEndX - brainStartX;
+					const uy = lineEndY - brainStartY;
+					const segLen = Math.sqrt(ux * ux + uy * uy) || 1;
+					const pull = Math.min(ungeShortenFromNodeEndPx, segLen * 0.42);
+					lineEndX -= (ux / segLen) * pull;
+					lineEndY -= (uy / segLen) * pull;
+				}
 				/* Hele segmentet lidt ned (samme offset i begge ender → samme vinkel) */
-				const ungeLinePressDown = 16;
 				const lineEndYAdj = lineEndY + ungeLinePressDown;
 				const brainStartYAdj = brainStartY + ungeLinePressDown;
 				

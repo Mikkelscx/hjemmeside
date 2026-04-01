@@ -6702,8 +6702,8 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleBaseH: 520;
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
-        /* Fylder mere af skærmen i landscape end 0,86 — stadig lidt margin til kanter */
-        --projectsLandscapeFit: 0.94;
+        /* Lidt mindre hele kortet; ens scale bevarer indbyrdes placering */
+        --projectsLandscapeFit: 0.82;
         transform-origin: 50% 50%;
         /* Phone landscape: nudge down + left so nodes stay inside short viewports */
         transform:
@@ -6776,14 +6776,23 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 69% !important;
+        top: 86% !important;
         transform: translate(-50%, -50%) scale(1) !important;
         transform-origin: 50% 50% !important;
         pointer-events: none !important;
         z-index: 0 !important;
         text-align: center !important;
-        line-height: 1.06 !important;
+        line-height: 1.1 !important;
         max-width: min(92%, 200px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 2px !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .project-node__title--image,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title--image {
+        display: block !important;
+        margin-bottom: 22px !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
@@ -6791,6 +6800,9 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
         font-size: 12px !important;
         font-weight: 600 !important;
+        line-height: 1.1 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
         -webkit-text-stroke: 0.24px #1a1a1a !important;
         paint-order: stroke fill;
         text-shadow:
@@ -6799,10 +6811,15 @@ body.sketchbook-theme .brainstorm-container {
             0 0.42px 0 #1a1a1a,
             0 -0.42px 0 #1a1a1a !important;
     }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
+        margin-top: 0 !important;
+    }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
         font-size: 19px !important;
-        margin-top: -1px !important;
+        margin-top: 0 !important;
+        line-height: 1.05 !important;
         font-weight: 600 !important;
         -webkit-text-stroke: 0.34px #1a1a1a !important;
         paint-order: stroke fill;
@@ -9781,7 +9798,7 @@ html body a[href="project1.html"]:hover {
         /* Lidt mod højre ift. tidligere negative offset */
         --projectsOffsetX: 12px;
         --projectsOffsetY: 14px;
-        --projectsLandscapeFit: 0.94;
+        --projectsLandscapeFit: 0.82;
         transform:
             translateX(calc(var(--projectsOffsetX) + env(safe-area-inset-left)))
             translateY(calc(var(--projectsOffsetY) + env(safe-area-inset-top)))
@@ -9830,6 +9847,34 @@ html body a[href="project1.html"]:hover {
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
         z-index: 1;
+    }
+
+    /* REPOP + Kravling: samme som orientation-landscape (coarse touch) */
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
+        top: 86% !important;
+        line-height: 1.1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 2px !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .project-node__title--image,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title--image {
+        margin-bottom: 22px !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
+        line-height: 1.1 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
+        margin-top: 0 !important;
+        line-height: 1.05 !important;
     }
 }
 
