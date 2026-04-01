@@ -6705,13 +6705,13 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleBaseH: 520;
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
-        /* Tættere på desktop: én ensartet scale (som desktop, bare mindre vindue) */
-        --projectsLandscapeFit: 0.88;
-        --projectsBrainSize: 76px;
+        /* Lidt mindre end 0.88 så top/bund ikke klipper i meget lav landscape */
+        --projectsLandscapeFit: 0.81;
+        --projectsBrainSize: 68px;
         transform-origin: 50% 50%;
         transform:
-            translateX(calc(8px + env(safe-area-inset-left)))
-            translateY(calc(10px + env(safe-area-inset-top)))
+            translateX(calc(6px + env(safe-area-inset-left)))
+            translateY(calc(4px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }

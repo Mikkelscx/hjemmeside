@@ -3767,6 +3767,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					ry = Math.min(ry, flatRy);
 				}
 			} catch {}
+			/* Kort landscape: desktop-ry er ofte for stor ift. synlig højde → top/bund klipper. Træk ringen ind. */
+			try {
+				if (isShortLandscape && !narrow) {
+					const ryTight = Math.max(115, h * 0.355);
+					const rxTight = Math.max(158, w * 0.395);
+					ry = Math.min(ry, ryTight);
+					rx = Math.min(rx, rxTight);
+				}
+			} catch {}
 			/* Kort phone landscape = samme bue som desktop (ingen 1.09-ring) */
 			const shortLsRing = false;
 			const n = nodeArray.length || 1;
