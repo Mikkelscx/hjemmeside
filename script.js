@@ -16,7 +16,10 @@ const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 
 function mskIsProjectsShortLandscapeViewport() {
 	try {
-		const { w, h } = mskViewportSize();
+		/* Layout-viewport (inner*) — samme som mindmap-redraw og @media max-height; undgår drift når
+		 * visualViewport ændrer sig (pinch, adresselinje) uden at layout-px skifter. */
+		const w = window.innerWidth;
+		const h = window.innerHeight;
 		if (!w || !h) return false;
 		if (h >= w) return false;
 		if (w > MSK_PROJECTS_LANDSCAPE_MAX_W || h > MSK_PROJECTS_LANDSCAPE_MAX_H) return false;
@@ -3499,6 +3502,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	 */
 	let mskProjectsMindmapLastLayoutIw = -1;
 	let mskProjectsMindmapLastLayoutIh = -1;
+	/** Pixel-drift der ignoreres (Safari kan flappe 1–2px i innerHeight når UI vises/skjules). */
+	const MSK_PROJECTS_MINDMAP_LAYOUT_EPS_PX = 4;
+	let mskProjectsMindmapRefreshDebounce = null;
 	function mskProjectsMindmapLayoutResizeMeaningful() {
 		try {
 			const iw = window.innerWidth;
@@ -3508,7 +3514,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				mskProjectsMindmapLastLayoutIh = ih;
 				return true;
 			}
-			if (Math.abs(iw - mskProjectsMindmapLastLayoutIw) >= 1 || Math.abs(ih - mskProjectsMindmapLastLayoutIh) >= 1) {
+			if (
+				Math.abs(iw - mskProjectsMindmapLastLayoutIw) >= MSK_PROJECTS_MINDMAP_LAYOUT_EPS_PX ||
+				Math.abs(ih - mskProjectsMindmapLastLayoutIh) >= MSK_PROJECTS_MINDMAP_LAYOUT_EPS_PX
+			) {
 				mskProjectsMindmapLastLayoutIw = iw;
 				mskProjectsMindmapLastLayoutIh = ih;
 				return true;
@@ -6979,18 +6988,27 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('mousemove', updatePupilPosition);
 		
 		function refreshProjectsMindmapLayout() {
-			if (!mskProjectsMindmapLayoutResizeMeaningful()) return;
-			setTimeout(() => {
-				positionNodesPerfectCircle();
-				createAndPositionDandDLogo();
-				createAndPositionTwisterDandDLine();
-				createAndPositionRepopKravlingLine();
-				createAndPositionKravlingNomineretBadge();
-				createAndPositionKobajerArrow();
-				ensureProjectsMobileInlineBadges();
-				createConnectingLines();
-				createHandDrawnFrames();
-			}, 100);
+			/* Samle burst (resize + flere inner*-flap) — undgå at fjerne alle .dynamic-mindmap-line flere gange i træk */
+			try {
+				if (mskProjectsMindmapRefreshDebounce) clearTimeout(mskProjectsMindmapRefreshDebounce);
+			} catch {}
+			mskProjectsMindmapRefreshDebounce = setTimeout(() => {
+				mskProjectsMindmapRefreshDebounce = null;
+				if (!mskProjectsMindmapLayoutResizeMeaningful()) return;
+				requestAnimationFrame(() => {
+					try {
+						positionNodesPerfectCircle();
+						createAndPositionDandDLogo();
+						createAndPositionTwisterDandDLine();
+						createAndPositionRepopKravlingLine();
+						createAndPositionKravlingNomineretBadge();
+						createAndPositionKobajerArrow();
+						ensureProjectsMobileInlineBadges();
+						createConnectingLines();
+						createHandDrawnFrames();
+					} catch {}
+				});
+			}, 150);
 		}
 		try {
 			mskProjectsMindmapLastLayoutIw = window.innerWidth;
@@ -7005,11 +7023,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 			setTimeout(refreshProjectsMindmapLayout, 220);
 		});
-		try {
-			if (window.visualViewport) {
-				window.visualViewport.addEventListener('resize', refreshProjectsMindmapLayout);
-			}
-		} catch {}
+		/* Ikke visualViewport.resize her: pinching/adresselinje giver ofte vv-ændring uden reelt layout-skifte
+		 * → unødig fuld genoptegning, linjer der “forsvinder” et øjeblik. window.resize + orientationchange rækker. */
 
 		// Mark as initialized to avoid duplicate event listeners on re-run.
 		brain.dataset.animInit = '1';
