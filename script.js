@@ -26,6 +26,69 @@ function mskIsProjectsShortLandscapeViewport() {
 	}
 }
 
+/** Vandrette papirlinjer på canvas — samme fixed/layout-viewport som body::before/::after (ikke visualViewport.offset, det gav “glidende” linjer ved zoom). */
+function mskSketchbookPaperLinesDraw() {
+	try {
+		if (!document.body) return;
+		if (!document.body.classList.contains('sketchbook-theme')) {
+			const old = document.getElementById('msk-sketch-paper-lines');
+			if (old) old.remove();
+			return;
+		}
+		let canvas = document.getElementById('msk-sketch-paper-lines');
+		if (!canvas) {
+			canvas = document.createElement('canvas');
+			canvas.id = 'msk-sketch-paper-lines';
+			canvas.className = 'msk-sketch-paper-lines';
+			canvas.setAttribute('aria-hidden', 'true');
+			document.body.insertBefore(canvas, document.body.firstChild);
+		}
+		const cssW = Math.max(
+			1,
+			Math.ceil(window.innerWidth || document.documentElement.clientWidth || 0)
+		);
+		const cssH = Math.max(
+			1,
+			Math.ceil(window.innerHeight || document.documentElement.clientHeight || 0)
+		);
+		const dpr = Math.min(window.devicePixelRatio || 1, 3);
+		const bw = Math.ceil(cssW * dpr);
+		const bh = Math.ceil(cssH * dpr);
+		if (bw > 8192 || bh > 8192) return;
+		canvas.style.cssText = [
+			'position:fixed',
+			'left:0',
+			'top:0',
+			'width:' + cssW + 'px',
+			'height:' + cssH + 'px',
+			'pointer-events:none',
+			'z-index:2',
+			'display:block',
+		].join(';');
+		canvas.width = bw;
+		canvas.height = bh;
+		const ctx = canvas.getContext('2d', { alpha: true });
+		if (!ctx) return;
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.scale(dpr, dpr);
+		ctx.clearRect(0, 0, cssW, cssH);
+		const mid = Math.round(cssW / 2);
+		const row = 25;
+		const snapY = (y) => Math.round(y * dpr) / dpr;
+		const lineH = 2;
+		for (let y0 = 0; y0 < cssH + row; y0 += row) {
+			const yA = snapY(y0 + 22);
+			const yB = snapY(y0 + 23);
+			ctx.fillStyle = 'rgba(208, 208, 208, 0.88)';
+			ctx.fillRect(0, yA, mid, lineH);
+			ctx.fillStyle = 'rgba(213, 213, 213, 0.88)';
+			ctx.fillRect(mid, yA, cssW - mid, lineH);
+			ctx.fillStyle = 'rgba(224, 224, 224, 0.62)';
+			ctx.fillRect(0, yB, cssW, lineH);
+		}
+	} catch (_) {}
+}
+
 (function syncMobileVhFromVisualViewport() {
 	let raf = null;
 	function apply() {
@@ -33,18 +96,38 @@ function mskIsProjectsShortLandscapeViewport() {
 		raf = requestAnimationFrame(() => {
 			raf = null;
 			try {
-				if (!window.matchMedia || !window.matchMedia('(max-width: 1024px)').matches) {
+				const narrow = window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
+				const sketch =
+					document.body && document.body.classList && document.body.classList.contains('sketchbook-theme');
+				if (!narrow && !sketch) {
 					document.documentElement.style.removeProperty('--vh');
 					document.documentElement.style.removeProperty('--vw');
+					document.documentElement.style.removeProperty('--sketchPaperMinH');
+					mskSketchbookPaperLinesDraw();
 					return;
 				}
 				const { w, h } = mskViewportSize();
-				if (h > 0) document.documentElement.style.setProperty('--vh', h + 'px');
-				if (w > 0) document.documentElement.style.setProperty('--vw', w + 'px');
+				if (narrow) {
+					if (h > 0) document.documentElement.style.setProperty('--vh', h + 'px');
+					if (w > 0) document.documentElement.style.setProperty('--vw', w + 'px');
+				} else {
+					document.documentElement.style.removeProperty('--vh');
+					document.documentElement.style.removeProperty('--vw');
+				}
+				/* Papir (::before) skal følge synlig højde ved pinch-zoom — ellers klippes/kollapser linjer */
+				if (sketch && h > 0) {
+					document.documentElement.style.setProperty('--sketchPaperMinH', h + 'px');
+				} else {
+					document.documentElement.style.removeProperty('--sketchPaperMinH');
+				}
+				mskSketchbookPaperLinesDraw();
 			} catch {}
 		});
 	}
 	apply();
+	try {
+		document.addEventListener('DOMContentLoaded', apply);
+	} catch {}
 	window.addEventListener('resize', apply);
 	window.addEventListener('orientationchange', apply);
 	document.addEventListener('visibilitychange', () => {
@@ -3410,6 +3493,32 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	})();
 
+	/**
+	 * Projekter mindmap: fuld genoptegning (ringe, linjer) kun når layout-viewport ændrer sig (innerWidth/innerHeight).
+	 * Ren browser-/DevTools-zoom uden layout-ændring udløser ofte visualViewport.resize med nye getBoundingClientRect()-værdier → ovale/cirkler “hopper” i form (preserveAspectRatio none).
+	 */
+	let mskProjectsMindmapLastLayoutIw = -1;
+	let mskProjectsMindmapLastLayoutIh = -1;
+	function mskProjectsMindmapLayoutResizeMeaningful() {
+		try {
+			const iw = window.innerWidth;
+			const ih = window.innerHeight;
+			if (mskProjectsMindmapLastLayoutIw < 0) {
+				mskProjectsMindmapLastLayoutIw = iw;
+				mskProjectsMindmapLastLayoutIh = ih;
+				return true;
+			}
+			if (Math.abs(iw - mskProjectsMindmapLastLayoutIw) >= 1 || Math.abs(ih - mskProjectsMindmapLastLayoutIh) >= 1) {
+				mskProjectsMindmapLastLayoutIw = iw;
+				mskProjectsMindmapLastLayoutIh = ih;
+				return true;
+			}
+			return false;
+		} catch (_) {
+			return true;
+		}
+	}
+
 	// Brain animations and connecting lines
 	function initBrainAnimations() {
 		if (!document.body || !document.body.classList.contains('projects-page')) return;
@@ -5156,15 +5265,16 @@ document.addEventListener('DOMContentLoaded', function() {
 						x: brainLeft.x - svgScale(6) + shiftX,
 						y: brainBottom.y - svgScale(58),
 					};
+					/* Slut tættere på TWISTER-boblen (længere ud mod twister) */
 					const b = {
-						x: pt(twiRect, 'left').x - svgScale(52) + shiftX,
-						y: pt(twiRect, 'top').y - svgScale(26),
+						x: pt(twiRect, 'left').x - svgScale(28) + shiftX,
+						y: pt(twiRect, 'top').y - svgScale(14),
 					};
 					/* Ren rotation set ovenfra (ikke flytte ankre); negativ grader = mod venstre i SVG */
 					lineImg('assets/linje 8.webp', a, b, svgScale(175), {
 						gapA: -svgScale(14),
-						gapB: svgScale(8),
-						lenMul: underBrainLineLenMul * 0.66,
+						gapB: -svgScale(10),
+						lenMul: underBrainLineLenMul * 0.98,
 						angleOffsetDeg: -34,
 					});
 				}
@@ -5178,7 +5288,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						{ x: twBot.x, y: twBot.y + twBrfDown - twBrfShiftUp },
 						{ x: bfTop.x, y: bfTop.y + twBrfDown - twBrfShiftUp },
 						svgScale(232),
-						{ gapA: svgScale(4), gapB: svgScale(4), lenMul: 1.32 }
+						{ gapA: svgScale(2), gapB: svgScale(0), lenMul: 1.48 }
 					);
 				}
 
@@ -5198,9 +5308,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					const bh = (brainBottom.y - brainTop.y) || 1;
 					const b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 + ungeLineDy };
 					lineImg('assets/linje 5.webp', a, b, svgScale(220), {
-						gapA: svgScale(6),
-						gapB: svgScale(13),
-						lenMul: portraitUpperLineMul,
+						gapA: svgScale(4),
+						gapB: svgScale(5),
+						lenMul: portraitUpperLineMul * 1.08,
 					});
 				}
 				if (kobRect) {
@@ -5209,8 +5319,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					const b = { x: kcx, y: pt(kobRect, 'top').y - svgScale(14) };
 					lineImg('assets/Linje 4.webp', a, b, svgScale(235), {
 						gapA: -svgScale(14),
-						gapB: svgScale(8),
-						lenMul: underBrainLineLenMul * 1.18,
+						gapB: svgScale(2),
+						lenMul: underBrainLineLenMul * 1.38,
 					});
 				}
 				if (kobRect && byeRect) {
@@ -5280,14 +5390,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate end point - extend closer to/past the BRAINFARTS node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				// Extend past the node center for a longer line
-				const extensionAmount = nodeRadius * 1.05; // Extend further toward BRAINFARTS
+				const bfShortLs = mskIsProjectsShortLandscapeViewport();
+				const bfExtensionMul = bfShortLs ? 2.06 : 1.28;
+				const extensionAmount = nodeRadius * bfExtensionMul;
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
+				const bfWidthMul = bfShortLs ? 1.14 : 1;
 				
 				console.log('BRAINFARTS Linje 8 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -5297,7 +5409,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', String(brainStartY - lineH(390) / 2)); // half of scaled line height
-				lineImage.setAttribute('width', lineLength * mindmapLineLenMul); // Longer
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * bfWidthMul);
 				lineImage.setAttribute('height', String(lineH(390)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -5334,14 +5446,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate end point - extend to/past the KØ-BAJER node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				// Extend past the node center for a longer line
-				const extensionAmount = nodeRadius * 1.10; // Extend further toward KØ-BAJER
+				// Kort mobil-landscape: længere ud mod Kø-Bajer-boblen
+				const kobShortLs = mskIsProjectsShortLandscapeViewport();
+				const extensionMul = kobShortLs ? 2.02 : 1.36;
+				const extensionAmount = nodeRadius * extensionMul;
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
+				const kobWidthMul = kobShortLs ? 1.12 : 1;
 				
 				console.log('KØ-BAJER Linje 4 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -5351,7 +5466,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 4.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', String(brainStartY - lineH(400) / 2));
-				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * kobWidthMul);
 				lineImage.setAttribute('height', String(lineH(400)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -5446,7 +5561,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (mskIsProjectsShortLandscapeViewport()) {
 					ungeLinePressDown = -8;
 					ungeLineShiftLeft = -42;
-					ungeShortenFromNodeEndPx = 56;
+					ungeShortenFromNodeEndPx = 22;
 				}
 				
 				// Calculate end point - extend closer to/past the UNGE MOD UV node
@@ -5454,9 +5569,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const deltaX = nodeX - brainCenterX;
 				const deltaY = nodeY - brainCenterY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				// Slut tættere på cirklen i landscape (mindre “stik ind i teksten”)
+				// Slut tættere på cirklen i landscape (mindre “stik ind i teksten”) — lidt længere ud mod boblen
 				const extensionAmount =
-					mskIsProjectsShortLandscapeViewport() ? nodeRadius * 0.22 : nodeRadius * 0.5;
+					mskIsProjectsShortLandscapeViewport() ? nodeRadius * 0.4 : nodeRadius * 0.55;
 				let lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				let lineEndY = nodeY + (deltaY / distance) * extensionAmount;
 				lineEndX += ungeLineShiftLeft;
@@ -5497,7 +5612,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 5.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', String(brainStartYAdj - lineH(300) / 2));
-				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * 1.04);
 				lineImage.setAttribute('height', String(lineH(300)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -5701,8 +5816,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate end point - extend to/past the TWISTER node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				// Extend past the node center for a longer line
-				const extensionAmount = nodeRadius * 1.3; // Extend further toward TWISTER
+				// Extend past the node center for a longer line (længere ud mod TWISTER-boblen)
+				const extensionAmount = nodeRadius * 1.82;
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount - 30; // Move line up by 30px
 				
@@ -5718,7 +5833,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 3.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', String(brainStartY - lineH(600) / 2));
-				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * 1.06);
 				lineImage.setAttribute('height', String(lineH(600)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -6857,6 +6972,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('mousemove', updatePupilPosition);
 		
 		function refreshProjectsMindmapLayout() {
+			if (!mskProjectsMindmapLayoutResizeMeaningful()) return;
 			setTimeout(() => {
 				positionNodesPerfectCircle();
 				createAndPositionDandDLogo();
@@ -6869,9 +6985,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				createHandDrawnFrames();
 			}, 100);
 		}
+		try {
+			mskProjectsMindmapLastLayoutIw = window.innerWidth;
+			mskProjectsMindmapLastLayoutIh = window.innerHeight;
+		} catch {}
 		window.addEventListener('resize', refreshProjectsMindmapLayout);
 		/* Safari: innerWidth/innerHeight kan først stemme efter et tick efter rotation */
 		window.addEventListener('orientationchange', () => {
+			try {
+				mskProjectsMindmapLastLayoutIw = -1;
+				mskProjectsMindmapLastLayoutIh = -1;
+			} catch {}
 			setTimeout(refreshProjectsMindmapLayout, 220);
 		});
 		try {

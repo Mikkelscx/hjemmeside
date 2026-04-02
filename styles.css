@@ -4339,44 +4339,58 @@ body.sketchbook-theme {
     overflow: hidden;
 }
 
-/* Left page */
+/* Vandrette linjer tegnes i JS (canvas#msk-sketch-paper-lines) så de overlever browser-/DevTools-zoom; her kun papirfarve + tekstur. */
 body.sketchbook-theme::before {
     content: '';
     position: fixed;
     left: 0;
     top: 0;
+    bottom: 0;
     width: 50%;
-    height: 100%;
-    background: 
-        /* Hand-drawn lines */
-        linear-gradient(transparent 0px, transparent 23px, #d0d0d0 23px, #d0d0d0 24px, transparent 24px),
-        linear-gradient(transparent 0px, transparent 25px, #e0e0e0 25px, #e0e0e0 26px, transparent 26px),
-        /* Paper texture */
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: var(--sketchPaperMinH, 100dvh);
+    background:
         radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
         #f5f5f0;
-    background-size: 100% 25px, 100% 25px, 100% 100%, 100% 100%;
     z-index: 1;
     box-shadow: inset -2px 0 10px rgba(0,0,0,0.1);
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
-/* Right page */
+/* Højre side */
 body.sketchbook-theme::after {
     content: '';
     position: fixed;
     right: 0;
     top: 0;
+    bottom: 0;
     width: 50%;
-    height: 100%;
-    background: 
-        /* Hand-drawn lines */
-        linear-gradient(transparent 0px, transparent 24px, #d5d5d5 24px, #d5d5d5 25px, transparent 25px),
-        linear-gradient(transparent 0px, transparent 26px, #e0e0e0 26px, #e0e0e0 27px, transparent 27px),
-        /* Paper texture */
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: var(--sketchPaperMinH, 100dvh);
+    background:
         radial-gradient(circle at 80% 80%, rgba(0,0,0,0.02) 0%, transparent 50%),
         #f5f5f0;
-    background-size: 100% 25px, 100% 25px, 100% 100%, 100% 100%;
     z-index: 1;
     box-shadow: inset 2px 0 10px rgba(0,0,0,0.1);
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* Placering og størrelse sættes i JS (layout viewport = samme som papir-lag) — ikke visualViewport-offset */
+canvas.msk-sketch-paper-lines {
+    position: fixed;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: 2;
+    display: block;
 }
 
 /* Red margin lines for both pages */
@@ -5485,7 +5499,7 @@ body.sketchbook-theme .brainstorm-container {
 
     /* Base sizes (the "big version"). We squeeze the whole mindmap via .brainstorm-stage. */
     /* Desktop + tablet: fuld størrelse; kun telefon (≤640px) overskriver --projectsBrainSize */
-    --projectsBrainSize: 180px;
+    --projectsBrainSize: 204px;
     --projectsTabW: 180px;
     --projectsTabH: 80px;
     --projectsTabFont: 1.2rem;
@@ -5535,6 +5549,13 @@ body.sketchbook-theme .brainstorm-container {
     body.sketchbook-theme::before {
         width: 100%;
         left: 0;
+        top: 0;
+        bottom: 0;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        min-height: var(--sketchPaperMinH, 100dvh);
         box-shadow: none;
     }
     body.sketchbook-theme::after {
@@ -5753,8 +5774,8 @@ body.sketchbook-theme .brainstorm-container {
         body.projects-page.sketchbook-theme .brainstorm-container {
             --projectsSx: 1 !important;
             --projectsSy: 1 !important;
-            /* Kun mobil: mindre hjerne end desktop/tablet (180px) */
-            --projectsBrainSize: 132px;
+            /* Kun mobil: mindre hjerne end desktop/tablet */
+            --projectsBrainSize: 152px;
         }
     }
 
@@ -6698,6 +6719,13 @@ body.sketchbook-theme .brainstorm-container {
         width: var(--vw);
         left: 0;
         right: 0;
+        top: 0;
+        bottom: 0;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        min-height: var(--sketchPaperMinH, 100dvh);
         box-shadow: none;
     }
     body.sketchbook-theme::after {
@@ -6720,7 +6748,7 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleMin: 0.64;
         /* Lodret: ry i JS er hævet; lidt større fit så kortet fylder bedre i højden */
         --projectsLandscapeFit: 0.78;
-        --projectsBrainSize: 72px;
+        --projectsBrainSize: 104px;
         transform-origin: 50% 50%;
         transform:
             translateX(calc(-38px + env(safe-area-inset-left)))
@@ -6942,7 +6970,7 @@ body.sketchbook-theme .brainstorm-container {
         position: absolute !important;
         left: 50% !important;
         top: 76% !important;
-        transform: translate(-50%, calc(-50% + 2px)) scale(0.56) !important;
+        transform: translate(-50%, calc(-50% + 2px)) scale(0.76) !important;
         transform-origin: 50% 50% !important;
         width: auto !important;
         height: auto !important;
@@ -6952,17 +6980,17 @@ body.sketchbook-theme .brainstorm-container {
         flex-direction: row !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 2px !important;
-        max-width: min(96%, 220px) !important;
+        gap: 4px !important;
+        max-width: min(96%, 260px) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-        width: 34px !important;
+        width: 46px !important;
         height: auto !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
-        width: 48px !important;
+        width: 64px !important;
         height: auto !important;
         margin: 0 !important;
         margin-left: -4px !important;
@@ -7148,6 +7176,13 @@ body.sketchbook-theme .brainstorm-container {
         width: var(--vw);
         left: 0;
         right: 0;
+        top: 0;
+        bottom: 0;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        min-height: var(--sketchPaperMinH, 100dvh);
         box-shadow: none;
     }
     body.sketchbook-theme::after {
