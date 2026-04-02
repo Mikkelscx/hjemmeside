@@ -14,12 +14,27 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 
+/**
+ * Ét stabilt mål for layout (afrundet heltal) — documentElement.client*, ikke visualViewport.
+ * Bruges til mindmap-ellipse, breakpoint-lignende checks og --vh på projekter så design ikke “ånder” med Safari-UI.
+ */
+function mskProjectsLayoutViewportBox() {
+	try {
+		const de = document.documentElement;
+		const w = Math.round(Math.max(1, de.clientWidth || window.innerWidth || 0));
+		const h = Math.round(Math.max(1, de.clientHeight || window.innerHeight || 0));
+		return { w, h };
+	} catch {
+		return {
+			w: Math.round(Math.max(1, window.innerWidth || 0)),
+			h: Math.round(Math.max(1, window.innerHeight || 0)),
+		};
+	}
+}
+
 function mskIsProjectsShortLandscapeViewport() {
 	try {
-		/* Layout-viewport (inner*) — samme som mindmap-redraw og @media max-height; undgår drift når
-		 * visualViewport ændrer sig (pinch, adresselinje) uden at layout-px skifter. */
-		const w = window.innerWidth;
-		const h = window.innerHeight;
+		const { w, h } = mskProjectsLayoutViewportBox();
 		if (!w || !h) return false;
 		if (h >= w) return false;
 		if (w > MSK_PROJECTS_LANDSCAPE_MAX_W || h > MSK_PROJECTS_LANDSCAPE_MAX_H) return false;
@@ -102,6 +117,8 @@ function mskSketchbookPaperLinesDraw() {
 				const narrow = window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
 				const sketch =
 					document.body && document.body.classList && document.body.classList.contains('sketchbook-theme');
+				const projectsPage =
+					document.body && document.body.classList && document.body.classList.contains('projects-page');
 				if (!narrow && !sketch) {
 					document.documentElement.style.removeProperty('--vh');
 					document.documentElement.style.removeProperty('--vw');
@@ -109,7 +126,9 @@ function mskSketchbookPaperLinesDraw() {
 					mskSketchbookPaperLinesDraw();
 					return;
 				}
-				const { w, h } = mskViewportSize();
+				/* Projekter: layout-viewport (ikke visualViewport) → samme højde/bredde som ellipse + mindre hop mellem enheder */
+				const { w, h } =
+					projectsPage && sketch ? mskProjectsLayoutViewportBox() : mskViewportSize();
 				if (narrow) {
 					if (h > 0) document.documentElement.style.setProperty('--vh', h + 'px');
 					if (w > 0) document.documentElement.style.setProperty('--vw', w + 'px');
@@ -3507,8 +3526,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	let mskProjectsMindmapRefreshDebounce = null;
 	function mskProjectsMindmapLayoutResizeMeaningful() {
 		try {
-			const iw = window.innerWidth;
-			const ih = window.innerHeight;
+			const { w: iw, h: ih } = mskProjectsLayoutViewportBox();
 			if (mskProjectsMindmapLastLayoutIw < 0) {
 				mskProjectsMindmapLastLayoutIw = iw;
 				mskProjectsMindmapLastLayoutIh = ih;
@@ -3678,8 +3696,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!container) return;
 
 			const containerRectForLayout = container.getBoundingClientRect();
-			const layoutW = Math.max(1, container.clientWidth || containerRectForLayout.width);
-			const layoutH = Math.max(1, container.clientHeight || containerRectForLayout.height);
+			const layoutW = Math.round(Math.max(1, container.clientWidth || containerRectForLayout.width));
+			const layoutH = Math.round(Math.max(1, container.clientHeight || containerRectForLayout.height));
 			const w = layoutW;
 			const h = layoutH;
 			let narrow = false;
@@ -3710,10 +3728,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeArray = Array.from(nodes);
 			const scale = 1;
 
-			const _vp = mskViewportSize();
-			const iw = _vp.w || w;
-			const ih = _vp.h || h;
-			const cw = (layoutW > 0 ? layoutW : iw) || iw;
+			const lv = mskProjectsLayoutViewportBox();
+			const iw = lv.w;
+			const ih = lv.h;
+			const cw = layoutW;
 			const usePortraitSketchGrid =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
@@ -3729,12 +3747,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						const nb = document.querySelector('.navbar');
 						if (nb && nb.getBoundingClientRect) NAV_H = Math.round(nb.getBoundingClientRect().bottom);
 					} catch {}
-					const ih = mskViewportSize().h || 0;
-					const vvH =
-						window.visualViewport && window.visualViewport.height > 0
-							? window.visualViewport.height
-							: 0;
-					const capH = vvH || ih;
+					const ihPortrait = lv.h || 0;
+					const capH = ihPortrait;
 					const portraitBandH =
 						capH > 0 ? Math.min(container.clientHeight || layoutH, capH) : container.clientHeight || layoutH;
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
@@ -3916,8 +3930,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			const brainRect = brain.getBoundingClientRect();
 			const svgForLayout = document.querySelector('.connecting-lines');
 			const brainCenter = svgCenterFromRect(svgForLayout, brainRect, containerRect);
-			const centerX = brainCenter.x;
-			const centerY = brainCenter.y;
+			const centerX = Math.round(brainCenter.x);
+			const centerY = Math.round(brainCenter.y);
 
 			// Use an ellipse ring (rx > ry). On phones, drop the desktop min radius (200px) or left/right nodes clip off-screen.
 			let paddingX = 210;
@@ -3958,10 +3972,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			   (tidligere min(rx, rxTight) trykkede rx ned til ~158px og stablede knapper i midten). */
 			try {
 				if (isShortLandscape && !narrow) {
-					/* Højere ry = mere brug af den korte viewport i højden (fx 414px) */
-					ry = Math.min(ry, Math.max(132, h * 0.46));
-					const rxWide = Math.min((w / 2) - 32, w * 0.46);
-					rx = Math.min(Math.max(rx, rxWide), (w / 2) - 28);
+					/* Flad nok til at undgå overlap på højre kolonne; lidt større ry-budget end 0.46 */
+					ry = Math.min(ry, Math.max(138, h * 0.50));
+					const rxWide = Math.min((w / 2) - 30, w * 0.46);
+					rx = Math.min(Math.max(rx, rxWide), (w / 2) - 26);
 				}
 			} catch {}
 			/* Kort phone landscape = samme bue som desktop (ingen 1.09-ring) */
@@ -4001,6 +4015,23 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (href.includes('repop')) y += touchLayout ? 14 : 35;
 				/* Kort mobil-landscape: cirkel + indhold lidt op */
 				if (href.includes('repop') && isShortLandscape) y -= 20;
+				/* Kort landscape: skub højre-side (Naturli / Durex / Unge) fra hinanden — mindre overlap på tværs af enheder */
+				if (isShortLandscape) {
+					if (href.includes('naturli')) {
+						y -= 10;
+						x += 6;
+					}
+					if (href.includes('durex')) {
+						x += 8;
+					}
+					if (href.includes('unge-mod-uv')) {
+						y += 12;
+						x += 6;
+					}
+				}
+
+				x = Math.round(x);
+				y = Math.round(y);
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -7011,8 +7042,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			}, 150);
 		}
 		try {
-			mskProjectsMindmapLastLayoutIw = window.innerWidth;
-			mskProjectsMindmapLastLayoutIh = window.innerHeight;
+			const _lv0 = mskProjectsLayoutViewportBox();
+			mskProjectsMindmapLastLayoutIw = _lv0.w;
+			mskProjectsMindmapLastLayoutIh = _lv0.h;
 		} catch {}
 		window.addEventListener('resize', refreshProjectsMindmapLayout);
 		/* Safari: innerWidth/innerHeight kan først stemme efter et tick efter rotation */

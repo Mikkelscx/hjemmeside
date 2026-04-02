@@ -5744,6 +5744,9 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme {
         overflow-x: hidden;
         overflow-y: hidden; /* mindmap is fixed */
+        /* Mindre forskel mellem Safari/Chrome og systemets tekstskalering */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
     }
     body.projects-page.sketchbook-theme .projects-mobile {
         display: none !important;
@@ -6746,8 +6749,8 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleBaseH: 520;
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
-        /* Lodret: ry i JS er hævet; lidt større fit så kortet fylder bedre i højden */
-        --projectsLandscapeFit: 0.78;
+        /* Lidt mindre samlet scale → mere luft mellem cirkler på tværs af enheder */
+        --projectsLandscapeFit: 0.76;
         --projectsBrainSize: 104px;
         transform-origin: 50% 50%;
         transform:
@@ -6769,16 +6772,16 @@ body.sketchbook-theme .brainstorm-container {
         width: min(136px, 30vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
-        max-width: min(104px, 24vw) !important;
-        width: min(104px, 24vw) !important;
+        max-width: min(98px, 23vw) !important;
+        width: min(98px, 23vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
-        max-width: min(124px, 28vw) !important;
-        width: min(124px, 28vw) !important;
+        max-width: min(118px, 27vw) !important;
+        width: min(118px, 27vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
-        max-width: min(128px, 28vw) !important;
-        width: min(128px, 28vw) !important;
+        max-width: min(120px, 27vw) !important;
+        width: min(120px, 27vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
         max-width: min(108px, 24vw) !important;
