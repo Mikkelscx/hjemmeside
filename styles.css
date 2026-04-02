@@ -5742,7 +5742,10 @@ body.sketchbook-theme .brainstorm-container {
         transform-origin: 50% 50%;
         /* Move the whole design down a bit so top/bottom are visible on iPhone Safari */
         /* Lift it slightly so bottom nodes aren't clipped */
-        transform: translateY(calc(-8px + env(safe-area-inset-top))) scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
+        transform:
+            translateX(calc(-10px + env(safe-area-inset-left)))
+            translateY(calc(-12px + env(safe-area-inset-top)))
+            scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
 
     /* Portrait: full-scale mind map (JS also forces 1 in hjemmesiden). */
@@ -6720,8 +6723,8 @@ body.sketchbook-theme .brainstorm-container {
         --projectsBrainSize: 56px;
         transform-origin: 50% 50%;
         transform:
-            translateX(calc(-14px + env(safe-area-inset-left)))
-            translateY(calc(-12px + env(safe-area-inset-top)))
+            translateX(calc(-22px + env(safe-area-inset-left)))
+            translateY(calc(-18px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
