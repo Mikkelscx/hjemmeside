@@ -5754,7 +5754,7 @@ body.sketchbook-theme .brainstorm-container {
             --projectsSx: 1 !important;
             --projectsSy: 1 !important;
             /* Kun mobil: mindre hjerne end desktop/tablet (180px) */
-            --projectsBrainSize: 118px;
+            --projectsBrainSize: 132px;
         }
     }
 
@@ -6720,11 +6720,11 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleMin: 0.64;
         /* Lodret: ry i JS er hævet; lidt større fit så kortet fylder bedre i højden */
         --projectsLandscapeFit: 0.78;
-        --projectsBrainSize: 56px;
+        --projectsBrainSize: 72px;
         transform-origin: 50% 50%;
         transform:
-            translateX(calc(-22px + env(safe-area-inset-left)))
-            translateY(calc(-18px + env(safe-area-inset-top)))
+            translateX(calc(-38px + env(safe-area-inset-left)))
+            translateY(calc(-28px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
