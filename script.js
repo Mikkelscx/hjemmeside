@@ -3490,21 +3490,78 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
+		// After portrait → landscape/wide: fuld reset af alt JS/HTML har sat inline,
+		// så ellipse + badges + linjer matcher cold load (ikke kun hjernen).
+		function clearProjectsMindmapPortraitInlineStylesForEllipseLayout() {
+			const container = document.querySelector('.brainstorm-container');
+			try {
+				brain.removeAttribute('style');
+			} catch {}
+			try {
+				Array.from(nodes).forEach((node) => {
+					try {
+						node.removeAttribute('style');
+						const title = node.querySelector('.project-node__title');
+						if (title) title.removeAttribute('style');
+						node.querySelectorAll('.node-label').forEach((el) => el.removeAttribute('style'));
+						node
+							.querySelectorAll(
+								'.dandd-badge--inline, .kravling-nomineret-badge--inline, .kobajer-kravling-2024-badge--inline'
+							)
+							.forEach((el) => el.removeAttribute('style'));
+						const bfSign = node.querySelector('.brainfarts-build__sign--inline');
+						if (bfSign) bfSign.removeAttribute('style');
+					} catch {}
+				});
+			} catch {}
+			if (!container) return;
+			try {
+				[
+					'.repop-kravling-line',
+					'.twister-dandd-line',
+					'.kobajer-arrow',
+					'.dandd-badge',
+					'.kravling-nomineret-badge',
+					'.kobajer-kravling-2024-badge',
+				].forEach((sel) => {
+					container.querySelectorAll(sel).forEach((el) => {
+						try {
+							el.removeAttribute('style');
+						} catch {}
+					});
+				});
+			} catch {}
+		}
+
+		function applyMindmapLineImgBaseStyles(img) {
+			if (!img) return;
+			img.style.position = 'absolute';
+			img.style.pointerEvents = 'none';
+			img.style.zIndex = '12';
+			img.style.display = 'block';
+			img.style.imageRendering = 'crisp-edges';
+			img.style.filter = 'none';
+		}
+
+		function applyKobajerArrowBaseStyles(arrow) {
+			if (!arrow) return;
+			arrow.style.position = 'absolute';
+			arrow.style.pointerEvents = 'none';
+			arrow.style.zIndex = '20';
+			arrow.style.display = 'block';
+			arrow.style.imageRendering = 'crisp-edges';
+			arrow.style.filter = 'none';
+		}
+
 		// Position all project nodes in a perfect circle around the brain.
 		// This overrides the hand-tuned % positions in the HTML so everything is evenly spaced.
 		function positionNodesPerfectCircle() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 
-			const containerRect = container.getBoundingClientRect();
-			const brainRect = brain.getBoundingClientRect();
-			/* Layout px (matches absolute left/top + SVG). Viewport rects alone break when .brainstorm-container has CSS transform. */
-			const layoutW = Math.max(1, container.clientWidth || containerRect.width);
-			const layoutH = Math.max(1, container.clientHeight || containerRect.height);
-			const svgForLayout = document.querySelector('.connecting-lines');
-			const brainCenter = svgCenterFromRect(svgForLayout, brainRect, containerRect);
-			const centerX = brainCenter.x;
-			const centerY = brainCenter.y;
+			const containerRectForLayout = container.getBoundingClientRect();
+			const layoutW = Math.max(1, container.clientWidth || containerRectForLayout.width);
+			const layoutH = Math.max(1, container.clientHeight || containerRectForLayout.height);
 			const w = layoutW;
 			const h = layoutH;
 			let narrow = false;
@@ -3731,6 +3788,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			} catch {}
 			try { container.classList.remove('projects-mindmap--portrait'); } catch {}
+			clearProjectsMindmapPortraitInlineStylesForEllipseLayout();
+			try {
+				void brain.offsetHeight;
+			} catch {}
+
+			/* Ellipse: mål hjernens centrum EFTER portrait-inline er væk — ellers matcher rotation ikke cold load i landscape. */
+			const containerRect = container.getBoundingClientRect();
+			const brainRect = brain.getBoundingClientRect();
+			const svgForLayout = document.querySelector('.connecting-lines');
+			const brainCenter = svgCenterFromRect(svgForLayout, brainRect, containerRect);
+			const centerX = brainCenter.x;
+			const centerY = brainCenter.y;
 
 			// Use an ellipse ring (rx > ry). On phones, drop the desktop min radius (200px) or left/right nodes clip off-screen.
 			let paddingX = 210;
@@ -4027,7 +4096,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 
-			let badge = container.querySelector('.dandd-badge');
+			let badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 			if (!badge) {
 				badge = document.createElement('div');
 				badge.className = 'dandd-badge';
@@ -4129,7 +4198,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
-			const badge = container.querySelector('.dandd-badge');
+			const badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 			if (!twisterNode || !badge) return;
 
 			let line = container.querySelector('.twister-dandd-line');
@@ -4138,14 +4207,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				line.className = 'twister-dandd-line';
 				line.alt = '';
 				line.src = encodeURI("assets/linje mellem  twister og  D&AD.webp");
-				line.style.position = 'absolute';
-				line.style.pointerEvents = 'none';
-				line.style.zIndex = '12';
-				line.style.display = 'block';
-				line.style.imageRendering = 'crisp-edges';
-				line.style.filter = 'none';
 				container.appendChild(line);
 			}
+			applyMindmapLineImgBaseStyles(line);
 
 			const containerRect = container.getBoundingClientRect();
 			const twRect = twisterNode.getBoundingClientRect();
@@ -4193,14 +4257,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				line.className = 'repop-kravling-line';
 				line.alt = '';
 				line.src = `assets/${encodeURIComponent("linje fra repop til kravling.webp")}`;
-				line.style.position = 'absolute';
-				line.style.pointerEvents = 'none';
-				line.style.zIndex = '12';
-				line.style.display = 'block';
-				line.style.imageRendering = 'crisp-edges';
-				line.style.filter = 'none';
 				container.appendChild(line);
 			}
+			applyMindmapLineImgBaseStyles(line);
 
 			const containerRect = container.getBoundingClientRect();
 			const r = repopNode.getBoundingClientRect();
@@ -4333,14 +4392,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				arrow.className = 'kobajer-arrow';
 				arrow.alt = '';
 				arrow.draggable = false;
-				arrow.style.position = 'absolute';
-				arrow.style.pointerEvents = 'none';
-				arrow.style.zIndex = '20';
-				arrow.style.display = 'block';
-				arrow.style.imageRendering = 'crisp-edges';
-				arrow.style.filter = 'none';
 				container.appendChild(arrow);
 			}
+			applyKobajerArrowBaseStyles(arrow);
 			// Always use the latest arrow asset file
 			arrow.src = `assets/${encodeURIComponent('pil til kø bajer.webp')}`;
 			// When navigating/re-initializing, the arrow image may not have dimensions yet.
@@ -6557,7 +6611,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				console.log('Hovering over:', href, 'hoverKey:', hoverKey);
 
 				// TWISTER hover: spark animation over D&AD logo
-				const badge = document.querySelector('.dandd-badge');
+				const badge = document.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 				if (badge) {
 					if (hoverKey.includes('twister')) badge.classList.add('is-sparking');
 					else badge.classList.remove('is-sparking');
@@ -6728,7 +6782,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Stop farting when leaving
 				stopBrainFart();
 				// Stop D&AD sparks when leaving
-				const badge = document.querySelector('.dandd-badge');
+				const badge = document.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 				if (badge) badge.classList.remove('is-sparking');
 				// Stop Kravling stars when leaving
 				const kravlingBadge = document.querySelector('.kravling-nomineret-badge');
@@ -6799,6 +6853,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			}, 100);
 		}
 		window.addEventListener('resize', refreshProjectsMindmapLayout);
+		/* Safari: innerWidth/innerHeight kan først stemme efter et tick efter rotation */
+		window.addEventListener('orientationchange', () => {
+			setTimeout(refreshProjectsMindmapLayout, 220);
+		});
 		try {
 			if (window.visualViewport) {
 				window.visualViewport.addEventListener('resize', refreshProjectsMindmapLayout);
