@@ -5601,18 +5601,25 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				/* Hjernen → REPOP (lodret streg op): i kort landscape IKKE bruge lineH() — lineThicknessMul (~0,38) + CSS scale(~0,78) gør strimmelen for tynd ift. boblen */
+				let repopLineHpx;
+				if (mskIsProjectsShortLandscapeViewport()) {
+					repopLineHpx = 160;
+				} else {
+					repopLineHpx = lineH(52);
+				}
 				
 				// Create image element for the line
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/Linje 2.webp');
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', String(brainStartY - lineH(45) / 2));
+				lineImage.setAttribute('y', String(brainStartY - repopLineHpx / 2));
 				lineImage.setAttribute('width', lineLength * 0.92 * mindmapLineLenMul); // Slightly shorter
-				lineImage.setAttribute('height', String(lineH(45)));
+				lineImage.setAttribute('height', String(repopLineHpx));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line', 'repop-brain-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -6106,6 +6113,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					: (landscapeMindmap ? 0.94 : 1);
 				w *= kobajerRingScale;
 				h *= kobajerRingScale * kobajerRingVertMul;
+				/* Kort mobil landscape: bred oval; h var 0.86 (meget lav) — lidt højere vertikalt */
+				if (mskIsProjectsShortLandscapeViewport()) {
+					w *= 1.28;
+					h *= 1.0;
+				}
 				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
 				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
 				image.setAttribute('x', String(kCenterX - (w / 2)));
@@ -6128,8 +6140,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(kCenterX));
 				fill.setAttribute('cy', String(drawCy - s(1)));
-				fill.setAttribute('rx', String(((w / 2) * 0.56) * assetS));
-				fill.setAttribute('ry', String(((h / 2) * 0.60) * assetS));
+				{
+					const shortLs = mskIsProjectsShortLandscapeViewport();
+					const rxMul = shortLs ? 0.59 : 0.56;
+					/* Kort LS: højere cirkel → lidt større lodret fyld */
+					const ryMul = shortLs ? 0.58 : 0.6;
+					fill.setAttribute('rx', String(((w / 2) * rxMul) * assetS));
+					fill.setAttribute('ry', String(((h / 2) * ryMul) * assetS));
+				}
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6301,11 +6319,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					: (landscapeMindmap ? 0.92 : 1);
 				w *= twisterRingScale;
 				h *= twisterRingScale * twisterRingVertMul;
-				/* Lav/bred landscape (fx 896×414): lidt mindre oval end øvrig mind map */
+				/* Kort mobil landscape: større Twister-ring (tidligere 0.86 skalerede ned) */
 				if (mskIsProjectsShortLandscapeViewport()) {
-					const twisterShortLandscapeMul = 0.86;
-					w *= twisterShortLandscapeMul;
-					h *= twisterShortLandscapeMul;
+					w *= 1.12;
+					h *= 1.1;
 				}
 				const circleDy = landscapeMindmap ? s(10) : 0;
 				image.setAttribute('x', String(twCenterX - (w / 2)));
