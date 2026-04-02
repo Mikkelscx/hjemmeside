@@ -3990,6 +3990,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
 				if (href.includes('repop')) y += touchLayout ? 14 : 35;
+				/* Kort mobil-landscape: cirkel + indhold lidt op */
+				if (href.includes('repop') && isShortLandscape) y -= 20;
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -5661,8 +5663,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Extend backward from the initial start point to make the line longer toward the brain
 				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
 				const brainExtension = brainRadius * 0.28;
-				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
-				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				let brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
+				let brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				/* Kort mobil-landscape: hjernens ende (peger mod hjernen) lidt ned + til venstre */
+				if (mskIsProjectsShortLandscapeViewport()) {
+					brainStartX -= 22;
+					brainStartY += 24;
+				}
 				
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;

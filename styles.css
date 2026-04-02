@@ -6752,9 +6752,13 @@ body.sketchbook-theme .brainstorm-container {
         transform-origin: 50% 50%;
         transform:
             translateX(calc(-38px + env(safe-area-inset-left)))
-            translateY(calc(-28px + env(safe-area-inset-top)))
+            translateY(calc(6px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
+    }
+    /* Samme lodrette skub som mindmap, så papirlinjer matcher indholdet */
+    body.projects-page.sketchbook-theme canvas.msk-sketch-paper-lines {
+        transform: translateY(6px);
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
         max-width: min(136px, 30vw) !important;
@@ -6868,7 +6872,7 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 79% !important;
+        top: 76% !important;
         transform: translate(-50%, -50%) scale(1) !important;
         transform-origin: 50% 50% !important;
         pointer-events: none !important;
@@ -6884,7 +6888,8 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .project-node__title--image,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title--image {
         display: block !important;
-        margin-bottom: 14px !important;
+        margin-bottom: 8px !important;
+        transform: translateY(-4px);
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
