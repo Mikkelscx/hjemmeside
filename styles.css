@@ -5787,6 +5787,9 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;
         min-height: var(--vh);
+        /* Samme som body: nogle motorer respekterer ikke nedarvning ind i fixed/transform-lag */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
         /* One uniform scale for phone: mindmap + lines + brain shrink together; more top/bottom margin */
         --projectsMobileVisScale: 0.88;
         /* Mobile fit tuning (JS reads these and sets --projectsSx/--projectsSy) */
@@ -5870,7 +5873,8 @@ body.sketchbook-theme .brainstorm-container {
         pointer-events: none;
         /* See-through, like it's drawn on paper */
         opacity: 0.62;
-        /* keep crisp */
+        /* keep crisp: Firefox bruger crisp-edges; WebKit optimize-contrast */
+        image-rendering: crisp-edges;
         image-rendering: -webkit-optimize-contrast;
         filter: none;
     }
@@ -6990,6 +6994,7 @@ body.sketchbook-theme .brainstorm-container {
         pointer-events: none;
         opacity: 0.38 !important;
         z-index: 0;
+        image-rendering: crisp-edges;
         image-rendering: -webkit-optimize-contrast;
         filter: none;
     }

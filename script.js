@@ -3854,20 +3854,20 @@ document.addEventListener('DOMContentLoaded', function() {
 						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
 						if (p.key === 'byens') x -= Math.round(38 * scale);
 						if (p.key === 'byens') y += Math.round(14 * scale);
-						/* Alt under hjernen (række 4–5): lidt op */
-						if (p.row >= 4) y -= Math.round(32 * scale);
-						/* Række 5 (under Kø-Bajer-cirklen): ekstra op */
-						if (p.row === 5) y -= Math.round(40 * scale);
+						/* Alt under hjernen (række 4–5): finjuster lodret (mindre “op” = længere ned på skærmen) */
+						if (p.row >= 4) y -= Math.round(20 * scale);
+						/* Række 5 (Brainfarts + Byens): ekstra finjuster */
+						if (p.row === 5) y -= Math.round(28 * scale);
 						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
 						if (p.key === 'durex') x += Math.round(38 * scale);
 						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
 						if (p.key === 'unge') x -= Math.round(28 * scale);
-						/* Øverste rækker (over hjernen): pres lidt ned mod hjernen */
-						if (p.row <= 2) y += Math.round(26 * scale);
-						/* Række 1 (Repop + Naturlig): lidt ned så cirkler/indhold følger bedre med papiret */
-						if (p.row === 1) y += Math.round(12 * scale);
-						/* Repop: ekstra ned i portrait-grid (kun denne node, ikke Naturlig) */
-						if (p.key === 'repop') y += Math.round(20 * scale);
+						/* Øverste rækker (over hjernen): finjuster mod hjernen (mindre ned = højere op på skærmen) */
+						if (p.row <= 2) y += Math.round(12 * scale);
+						/* Række 1 (Repop + Naturlig) */
+						if (p.row === 1) y += Math.round(4 * scale);
+						/* Repop: ekstra i portrait-grid (kun denne node, ikke Naturlig) */
+						if (p.key === 'repop') y += Math.round(10 * scale);
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
 						node.style.setProperty('top', `${y}px`, 'important');
