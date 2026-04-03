@@ -3855,9 +3855,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'byens') x -= Math.round(38 * scale);
 						if (p.key === 'byens') y += Math.round(14 * scale);
 						/* Alt under hjernen (række 4–5): finjuster lodret (mindre “op” = længere ned på skærmen) */
-						if (p.row >= 4) y -= Math.round(20 * scale);
+						if (p.row >= 4) y -= Math.round(4 * scale);
 						/* Række 5 (Brainfarts + Byens): ekstra finjuster */
-						if (p.row === 5) y -= Math.round(28 * scale);
+						if (p.row === 5) y -= Math.round(12 * scale);
 						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
 						if (p.key === 'durex') x += Math.round(38 * scale);
 						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
