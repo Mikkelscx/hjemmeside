@@ -4383,7 +4383,7 @@ body.sketchbook-theme::after {
     -webkit-transform: translateZ(0);
 }
 
-/* Placering og størrelse sættes i JS (visualViewport ved zoom, ellers layout) */
+/* Placering og størrelse sættes i JS — fast layout-viewport (linjer bevæger sig ikke ved pan/zoom) */
 canvas.msk-sketch-paper-lines {
     position: fixed;
     left: 0;
@@ -6758,6 +6758,10 @@ body.sketchbook-theme .brainstorm-container {
             translateY(calc(6px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
+    }
+    /* Lodret justering mod mindmap (fast canvas — kun lille translate her) */
+    body.projects-page.sketchbook-theme canvas.msk-sketch-paper-lines {
+        transform: translateY(6px);
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
         max-width: min(136px, 30vw) !important;

@@ -45,8 +45,8 @@ function mskIsProjectsShortLandscapeViewport() {
 }
 
 /**
- * Vandrette papirlinjer på canvas — ved pinch-zoom følger vi visualViewport (størrelse + offset),
- * ellers dækker et fast layout-canvas ikke det synlige område og linjer “forsvinder”.
+ * Vandrette papirlinjer — altid layout-viewport (inner*), fixed 0,0. Ingen visualViewport-offset:
+ * ellers følger linjerne med pan/zoom og “bevæger sig”. Ved pinch-zoom kan udkant klippe; det er bevidst.
  */
 function mskSketchbookPaperLinesDraw() {
 	try {
@@ -64,50 +64,27 @@ function mskSketchbookPaperLinesDraw() {
 			canvas.setAttribute('aria-hidden', 'true');
 			document.body.insertBefore(canvas, document.body.firstChild);
 		}
-		const vv = window.visualViewport;
-		let cssW;
-		let cssH;
-		let offX = 0;
-		let offY = 0;
-		if (vv && typeof vv.width === 'number' && vv.width >= 1 && typeof vv.height === 'number' && vv.height >= 1) {
-			cssW = Math.ceil(vv.width);
-			cssH = Math.ceil(vv.height);
-			offX = Math.round(vv.offsetLeft || 0);
-			offY = Math.round(vv.offsetTop || 0);
-		} else {
-			cssW = Math.max(
-				1,
-				Math.ceil(window.innerWidth || document.documentElement.clientWidth || 0)
-			);
-			cssH = Math.max(
-				1,
-				Math.ceil(window.innerHeight || document.documentElement.clientHeight || 0)
-			);
-		}
-		try {
-			if (
-				document.body.classList.contains('projects-page') &&
-				typeof mskIsProjectsShortLandscapeViewport === 'function' &&
-				mskIsProjectsShortLandscapeViewport()
-			) {
-				offY += 6;
-			}
-		} catch {}
-		const vvScale = vv && typeof vv.scale === 'number' && vv.scale > 0 ? vv.scale : 1;
+		const cssW = Math.max(
+			1,
+			Math.ceil(window.innerWidth || document.documentElement.clientWidth || 0)
+		);
+		const cssH = Math.max(
+			1,
+			Math.ceil(window.innerHeight || document.documentElement.clientHeight || 0)
+		);
 		const dpr = Math.min(window.devicePixelRatio || 1, 3);
 		const bw = Math.ceil(cssW * dpr);
 		const bh = Math.ceil(cssH * dpr);
 		if (bw > 8192 || bh > 8192) return;
 		canvas.style.cssText = [
 			'position:fixed',
-			'left:' + offX + 'px',
-			'top:' + offY + 'px',
+			'left:0',
+			'top:0',
 			'width:' + cssW + 'px',
 			'height:' + cssH + 'px',
 			'pointer-events:none',
 			'z-index:2',
 			'display:block',
-			'transform:none',
 		].join(';');
 		canvas.width = bw;
 		canvas.height = bh;
@@ -119,7 +96,7 @@ function mskSketchbookPaperLinesDraw() {
 		const mid = Math.round(cssW / 2);
 		const row = 25;
 		const snapY = (y) => Math.round(y * dpr) / dpr;
-		const lineH = Math.max(1.25, Math.min(3, 2 / Math.max(vvScale, 0.5)));
+		const lineH = 2;
 		for (let y0 = 0; y0 < cssH + row; y0 += row) {
 			const yA = snapY(y0 + 22);
 			const yB = snapY(y0 + 23);
@@ -135,16 +112,6 @@ function mskSketchbookPaperLinesDraw() {
 
 (function syncMobileVhFromVisualViewport() {
 	let raf = null;
-	let mskProjectsOverlayRaf = null;
-	function queueMskProjectsOverlayRedraw() {
-		if (mskProjectsOverlayRaf) return;
-		mskProjectsOverlayRaf = requestAnimationFrame(() => {
-			mskProjectsOverlayRaf = null;
-			try {
-				if (typeof window.mskProjectsRedrawOverlays === 'function') window.mskProjectsRedrawOverlays();
-			} catch {}
-		});
-	}
 	function apply() {
 		if (raf) cancelAnimationFrame(raf);
 		raf = requestAnimationFrame(() => {
@@ -179,8 +146,6 @@ function mskSketchbookPaperLinesDraw() {
 					document.documentElement.style.removeProperty('--sketchPaperMinH');
 				}
 				mskSketchbookPaperLinesDraw();
-				/* Pinch/pan: layout-viewport ændrer sig ikke, men getBoundingClientRect gør — genoptegn linjer/ringe */
-				if (sketch && projectsPage) queueMskProjectsOverlayRedraw();
 			} catch {}
 		});
 	}
@@ -202,7 +167,7 @@ function mskSketchbookPaperLinesDraw() {
 	});
 	if (window.visualViewport) {
 		window.visualViewport.addEventListener('resize', apply);
-		window.visualViewport.addEventListener('scroll', apply);
+		/* Ikke scroll: ellers redraw’es papir hver gang man pan’er ved zoom → linjer “lever” */
 	}
 	/* Virtual keyboard changes visible height (especially Android Chrome) */
 	try {
@@ -7093,22 +7058,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 			setTimeout(refreshProjectsMindmapLayout, 220);
 		});
-		/* Fuld layout: window.resize + orientationchange. Pinch/pan: syncMobileVhFromVisualViewport → mskProjectsRedrawOverlays. */
-
-		window.mskProjectsRedrawOverlays = function () {
-			if (!document.body || !document.body.classList.contains('projects-page')) return;
-			if (brain.dataset.animInit !== '1') return;
-			try {
-				createConnectingLines();
-				createHandDrawnFrames();
-				createAndPositionDandDLogo();
-				createAndPositionTwisterDandDLine();
-				createAndPositionRepopKravlingLine();
-				createAndPositionKravlingNomineretBadge();
-				createAndPositionKobajerArrow();
-				ensureProjectsMobileInlineBadges();
-			} catch {}
-		};
+		/* Fuld layout: window.resize + orientationchange (ingen visualViewport-overlay — undgår hoppende streger). */
 
 		// Mark as initialized to avoid duplicate event listeners on re-run.
 		brain.dataset.animInit = '1';
