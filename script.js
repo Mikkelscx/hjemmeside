@@ -44,6 +44,21 @@ function mskIsProjectsShortLandscapeViewport() {
 	}
 }
 
+/** iOS home indicator m.m. — portrait mindmap: trækker “bund” op så nederste knapper ikke sidder i safe area. */
+function mskSafeAreaInsetBottomPx() {
+	try {
+		const t = document.createElement('div');
+		t.style.cssText =
+			'position:fixed;visibility:hidden;left:0;bottom:0;width:0;height:0;margin:0;border:0;padding:0;padding-bottom:env(safe-area-inset-bottom,0px);';
+		document.body.appendChild(t);
+		const v = parseFloat(getComputedStyle(t).paddingBottom) || 0;
+		t.remove();
+		return Math.round(v);
+	} catch {
+		return 0;
+	}
+}
+
 /**
  * Vandrette papirlinjer — DOM-lag med CSS repeating-linear-gradient (ikke canvas-bitmap).
  * Skalerer med side-zoom/pinch uden at tynde streger forsvinder ved subpixel/rasterisering.
@@ -3723,7 +3738,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						capH > 0 ? Math.min(container.clientHeight || layoutH, capH) : container.clientHeight || layoutH;
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const safeTop = NAV_H + Math.round(36 * scale);
-					const safeBottom = portraitBandH - Math.round(40 * scale);
+					let safeBottom = portraitBandH - Math.round(40 * scale) - mskSafeAreaInsetBottomPx();
+					if (safeBottom < safeTop + 120) {
+						safeBottom = portraitBandH - Math.round(40 * scale);
+					}
 					const minX = 52;
 					const maxX = layoutW - 52;
 					const baseLeft = Math.max(minX, Math.min(maxX, layoutW * 0.22));
@@ -3829,8 +3847,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'brainfarts') x += Math.round(32 * scale);
 						/* Twister: mod højre så cirkel + D&AD ikke sidder for tæt på venstre margin */
 						if (p.key === 'twister') x += Math.round(28 * scale);
-						/* Twister: pres hele cirklen + indhold op */
-						if (p.key === 'twister') y -= Math.round(38 * scale);
+						/* Twister: portrait — lidt ned */
+						if (p.key === 'twister') y += Math.round(10 * scale);
 						/* Repop: mod højre så boblen + Kravling ikke klipper i venstre kant */
 						if (p.key === 'repop') x += Math.round(28 * scale);
 						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
@@ -3846,6 +3864,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'unge') x -= Math.round(28 * scale);
 						/* Øverste rækker (over hjernen): pres lidt ned mod hjernen */
 						if (p.row <= 2) y += Math.round(26 * scale);
+						/* Række 1 (Repop + Naturlig): lidt ned så cirkler/indhold følger bedre med papiret */
+						if (p.row === 1) y += Math.round(12 * scale);
+						/* Repop: ekstra ned i portrait-grid (kun denne node, ikke Naturlig) */
+						if (p.key === 'repop') y += Math.round(20 * scale);
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
 						node.style.setProperty('top', `${y}px`, 'important');
@@ -6155,8 +6177,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const baseW = s(380) * assetS;
 				const baseH = s(landscapeMindmap ? 218 : 165) * assetS;
-				const padX = s(landscapeMindmap ? 48 : 40) * assetS;
-				const padYPortrait = repBadgeRect ? 58 : 46;
+				let padXPx = landscapeMindmap ? 48 : 40;
+				let padYPortrait = repBadgeRect ? 58 : 46;
+				try {
+					if (window.matchMedia && window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
+						padXPx = Math.max(padXPx, 64);
+						padYPortrait = repBadgeRect ? 92 : 72;
+					}
+				} catch {}
+				const padX = s(padXPx) * assetS;
 				const padY = s(landscapeMindmap ? 96 : padYPortrait) * assetS;
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
@@ -6563,7 +6592,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					const portrait =
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
-					if (portrait) durexMul = 0.84;
+					/* Portræt: større ring vs. tekst så “GUESS WHO” m.m. sidder mere inde i cirklen */
+					if (portrait) durexMul = 0.98;
 				} catch {}
 				durexMul *= 0.805; /* cirkel + fill matcher Durex tekst-asset + tab */
 				const dw = 440 * durexMul;
@@ -6585,7 +6615,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - 3)); // DUREX: keep top, trim bottom
+				let durexCyOff = 3;
+				try {
+					if (window.matchMedia && window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
+						durexCyOff = 0;
+					}
+				} catch {}
+				fill.setAttribute('cy', String(centerY - durexCyOff));
 				fill.setAttribute('rx', String(220 * durexMul * 0.55)); // DUREX: less horizontal fill
 				fill.setAttribute('ry', String(75 * durexMul * 0.68 + 1)); // DUREX: keep top, trim bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
