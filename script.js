@@ -3842,7 +3842,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'kobajer') y -= Math.round(6 * scale);
 						const { lx, rx } = rowXs(p.row);
 						let x = (p.side === 'left') ? lx : rx;
-						if (p.key === 'kobajer') y += Math.round(38 * scale);
+						if (p.key === 'kobajer') y += Math.round(62 * scale);
 						/* Brainfarts: lidt mod højre så boblen ikke klipper i venstre kant */
 						if (p.key === 'brainfarts') x += Math.round(32 * scale);
 						/* Twister: mod højre så cirkel + D&AD ikke sidder for tæt på venstre margin */
@@ -5294,14 +5294,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				if (twiRect) {
 					const shiftX = svgScale(36);
+					const twBrainLineDy = svgScale(18);
 					const a = {
 						x: brainLeft.x - svgScale(6) + shiftX,
-						y: brainBottom.y - svgScale(58),
+						y: brainBottom.y - svgScale(58) + twBrainLineDy,
 					};
 					/* Slut tættere på TWISTER-boblen (længere ud mod twister) */
 					const b = {
 						x: pt(twiRect, 'left').x - svgScale(28) + shiftX,
-						y: pt(twiRect, 'top').y - svgScale(14),
+						y: pt(twiRect, 'top').y - svgScale(14) + twBrainLineDy,
 					};
 					/* Ren rotation set ovenfra (ikke flytte ankre); negativ grader = mod venstre i SVG */
 					lineImg('assets/linje 8.webp', a, b, svgScale(175), {
@@ -5313,7 +5314,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				if (twiRect && brfRect) {
 					const twBrfDown = svgScale(8);
-					const twBrfShiftUp = svgScale(14);
+					/* Portræt mobil: lidt højere (streg trukket op mellem Twister og Brainfarts) */
+					const twBrfShiftUp = svgScale(22);
 					const twBot = pt(twiRect, 'bottom');
 					const bfTop = pt(brfRect, 'top');
 					lineImg(
