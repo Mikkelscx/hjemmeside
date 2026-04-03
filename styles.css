@@ -4339,7 +4339,7 @@ body.sketchbook-theme {
     overflow: hidden;
 }
 
-/* Vandrette linjer tegnes i JS (canvas#msk-sketch-paper-lines) så de overlever browser-/DevTools-zoom; her kun papirfarve + tekstur. */
+/* Vandrette linjer: #msk-paper-lines-layer (CSS-gradient), ikke canvas — bedre ved pinch-zoom. Her kun papirfarve + tekstur. */
 body.sketchbook-theme::before {
     content: '';
     position: fixed;
@@ -4383,14 +4383,47 @@ body.sketchbook-theme::after {
     -webkit-transform: translateZ(0);
 }
 
-/* Placering og størrelse sættes i JS — fast layout-viewport (linjer bevæger sig ikke ved pan/zoom) */
-canvas.msk-sketch-paper-lines {
+/* Vandrette linjer — fuld viewport, to halvdele matcher tidligere canvas (208 / 213) + fælles nederste streg */
+.msk-paper-lines-layer {
     position: fixed;
-    left: 0;
-    top: 0;
+    inset: 0;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: var(--sketchPaperMinH, 100dvh);
     pointer-events: none;
     z-index: 2;
-    display: block;
+    display: flex;
+    flex-direction: row;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+.msk-paper-lines-layer__half {
+    flex: 1 1 50%;
+    width: 50%;
+    min-height: inherit;
+    background-repeat: repeat;
+    background-size: 100% 25px;
+}
+
+.msk-paper-lines-layer__half--left {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0 22px,
+        rgba(208, 208, 208, 0.88) 22px 24px,
+        rgba(224, 224, 224, 0.62) 23px 25px
+    );
+}
+
+.msk-paper-lines-layer__half--right {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0 22px,
+        rgba(213, 213, 213, 0.88) 22px 24px,
+        rgba(224, 224, 224, 0.62) 23px 25px
+    );
 }
 
 /* Red margin lines for both pages */
@@ -6738,6 +6771,17 @@ body.sketchbook-theme .brainstorm-container {
     /* Move the red margin line closer to the edge so we don't waste width */
     body.sketchbook-theme .left-margin { left: 14px; }
 
+    /* Én papirside i kort landscape: ens linjer (intet synligt midt-søm som ved to sider) */
+    body.sketchbook-theme .msk-paper-lines-layer__half--left,
+    body.sketchbook-theme .msk-paper-lines-layer__half--right {
+        background-image: repeating-linear-gradient(
+            to bottom,
+            transparent 0 22px,
+            rgba(210, 210, 210, 0.88) 22px 24px,
+            rgba(224, 224, 224, 0.62) 23px 25px
+        );
+    }
+
     body.projects-page.sketchbook-theme .brainstorm-container {
         width: 100%;
         max-width: none;
@@ -6759,9 +6803,10 @@ body.sketchbook-theme .brainstorm-container {
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
-    /* Lodret justering mod mindmap (fast canvas — kun lille translate her) */
-    body.projects-page.sketchbook-theme canvas.msk-sketch-paper-lines {
-        transform: translateY(6px);
+    /* Lodret justering mod mindmap (papirlinjer — kun lille translate her) */
+    body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+        transform: translate3d(0, 6px, 0);
+        -webkit-transform: translate3d(0, 6px, 0);
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
         max-width: min(136px, 30vw) !important;

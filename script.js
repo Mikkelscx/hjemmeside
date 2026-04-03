@@ -45,67 +45,34 @@ function mskIsProjectsShortLandscapeViewport() {
 }
 
 /**
- * Vandrette papirlinjer — altid layout-viewport (inner*), fixed 0,0. Ingen visualViewport-offset:
- * ellers følger linjerne med pan/zoom og “bevæger sig”. Ved pinch-zoom kan udkant klippe; det er bevidst.
+ * Vandrette papirlinjer — DOM-lag med CSS repeating-linear-gradient (ikke canvas-bitmap).
+ * Skalerer med side-zoom/pinch uden at tynde streger forsvinder ved subpixel/rasterisering.
  */
 function mskSketchbookPaperLinesDraw() {
 	try {
 		if (!document.body) return;
 		if (!document.body.classList.contains('sketchbook-theme')) {
-			const old = document.getElementById('msk-sketch-paper-lines');
-			if (old) old.remove();
+			const oldCanvas = document.getElementById('msk-sketch-paper-lines');
+			if (oldCanvas) oldCanvas.remove();
+			const oldLayer = document.getElementById('msk-paper-lines-layer');
+			if (oldLayer) oldLayer.remove();
 			return;
 		}
-		let canvas = document.getElementById('msk-sketch-paper-lines');
-		if (!canvas) {
-			canvas = document.createElement('canvas');
-			canvas.id = 'msk-sketch-paper-lines';
-			canvas.className = 'msk-sketch-paper-lines';
-			canvas.setAttribute('aria-hidden', 'true');
-			document.body.insertBefore(canvas, document.body.firstChild);
-		}
-		const cssW = Math.max(
-			1,
-			Math.ceil(window.innerWidth || document.documentElement.clientWidth || 0)
-		);
-		const cssH = Math.max(
-			1,
-			Math.ceil(window.innerHeight || document.documentElement.clientHeight || 0)
-		);
-		const dpr = Math.min(window.devicePixelRatio || 1, 3);
-		const bw = Math.ceil(cssW * dpr);
-		const bh = Math.ceil(cssH * dpr);
-		if (bw > 8192 || bh > 8192) return;
-		canvas.style.cssText = [
-			'position:fixed',
-			'left:0',
-			'top:0',
-			'width:' + cssW + 'px',
-			'height:' + cssH + 'px',
-			'pointer-events:none',
-			'z-index:2',
-			'display:block',
-		].join(';');
-		canvas.width = bw;
-		canvas.height = bh;
-		const ctx = canvas.getContext('2d', { alpha: true });
-		if (!ctx) return;
-		ctx.setTransform(1, 0, 0, 1, 0, 0);
-		ctx.scale(dpr, dpr);
-		ctx.clearRect(0, 0, cssW, cssH);
-		const mid = Math.round(cssW / 2);
-		const row = 25;
-		const snapY = (y) => Math.round(y * dpr) / dpr;
-		const lineH = 2;
-		for (let y0 = 0; y0 < cssH + row; y0 += row) {
-			const yA = snapY(y0 + 22);
-			const yB = snapY(y0 + 23);
-			ctx.fillStyle = 'rgba(208, 208, 208, 0.88)';
-			ctx.fillRect(0, yA, mid, lineH);
-			ctx.fillStyle = 'rgba(213, 213, 213, 0.88)';
-			ctx.fillRect(mid, yA, cssW - mid, lineH);
-			ctx.fillStyle = 'rgba(224, 224, 224, 0.62)';
-			ctx.fillRect(0, yB, cssW, lineH);
+		const oldCanvas = document.getElementById('msk-sketch-paper-lines');
+		if (oldCanvas) oldCanvas.remove();
+		let layer = document.getElementById('msk-paper-lines-layer');
+		if (!layer) {
+			layer = document.createElement('div');
+			layer.id = 'msk-paper-lines-layer';
+			layer.className = 'msk-paper-lines-layer';
+			layer.setAttribute('aria-hidden', 'true');
+			const left = document.createElement('div');
+			left.className = 'msk-paper-lines-layer__half msk-paper-lines-layer__half--left';
+			const right = document.createElement('div');
+			right.className = 'msk-paper-lines-layer__half msk-paper-lines-layer__half--right';
+			layer.appendChild(left);
+			layer.appendChild(right);
+			document.body.insertBefore(layer, document.body.firstChild);
 		}
 	} catch (_) {}
 }
