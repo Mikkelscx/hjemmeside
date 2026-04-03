@@ -5158,8 +5158,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		/* Hjernen ↔ cirkler: alle segmenter lidt kortere (tykkelse uændret) */
 		const mindmapLineLenMul = 0.92;
 
-		/* Kort landscape: smallere linjer (tyndere assets) */
-		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.38 : 1;
+		/* Kort landscape: tykkelse < 1 — stadig tydelig ift. bobler */
+		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.55 : 1;
 		const lineH = (base) => Math.max(12, Math.round(Number(base) * lineThicknessMul));
 
 		// Portrait mobile: same sketch chain as hjemmesiden / live site (columns + brain), not radial spokes.
@@ -5758,10 +5758,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
-				/* Hjernen → REPOP (lodret streg op): i kort landscape IKKE bruge lineH() — lineThicknessMul (~0,38) + CSS scale(~0,78) gør strimmelen for tynd ift. boblen */
+				/* Hjernen → REPOP (lodret streg op): i kort landscape fast px — matcher tykkere lineThicknessMul */
 				let repopLineHpx;
 				if (mskIsProjectsShortLandscapeViewport()) {
-					repopLineHpx = 160;
+					repopLineHpx = 200;
 				} else {
 					repopLineHpx = lineH(52);
 				}
@@ -6059,7 +6059,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			// (Titles are often image-only; match href so we always use your asset.)
 			if (nodeText === 'BRAINFARTS' || nodeHref.includes('brainfarts')) {
 				console.log('Creating BRAINFARTS circle image...');
-				const brainfartsRingScale = 0.78 * (mskIsProjectsShortLandscapeViewport() ? 0.86 : 1);
+				const brainfartsRingScale = 0.78 * (mskIsProjectsShortLandscapeViewport() ? 1.09 : 1);
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";
@@ -6192,8 +6192,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				const padY = s(landscapeMindmap ? 96 : padYPortrait) * assetS;
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
-				w *= repopMul;
-				h *= repopMul;
+				/* Kort mobil-landskab (fx iPhone XR 896×414): landscapeMindmap er true selv om w>640 — isProjectsPhoneLandscape() var false → ingen skalering */
+				let repopLsMulW = 1;
+				let repopLsMulH = 1;
+				try {
+					if (
+						landscapeMindmap &&
+						window.matchMedia &&
+						window.matchMedia('(orientation: landscape)').matches
+					) {
+						/* Kun bredere (ovalere) i kort mobil-landskab — ikke højere */
+						repopLsMulW = 1.22;
+						repopLsMulH = 1.14;
+					}
+				} catch {}
+				w *= repopMul * repopLsMulW;
+				h *= repopMul * repopLsMulH;
 
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
 				image.setAttribute('y', String(repCenterY - (h / 2)));
@@ -6215,7 +6229,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(repCenterX - s(1)));
 				fill.setAttribute('cy', String(repCenterY - s(2)));
-				fill.setAttribute('rx', String(((s(190) * 0.55 - s(7)) * assetS) * repopMul));
+				fill.setAttribute(
+					'rx',
+					String(((s(190) * 0.55 - s(7)) * assetS) * repopMul * repopLsMulW)
+				);
 				fill.setAttribute('ry', String(((h / 2) * 0.68 - s(2)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
@@ -6337,6 +6354,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					if (portrait) naturliMul = 0.78;
+				} catch {}
+				try {
+					if (mskIsProjectsShortLandscapeViewport()) naturliMul *= 1.09;
 				} catch {}
 				const nW = 240 * naturliMul;
 				const nH = 140 * naturliMul;
