@@ -5321,15 +5321,17 @@ document.addEventListener('DOMContentLoaded', function() {
 						{ x: twBot.x, y: twBot.y + twBrfDown - twBrfShiftUp },
 						{ x: bfTop.x, y: bfTop.y + twBrfDown - twBrfShiftUp },
 						svgScale(232),
-						{ gapA: svgScale(2), gapB: svgScale(0), lenMul: 1.48 }
+						/* negativ gapA: stregen starter længere op mod Twister-cirklen */
+						{ gapA: -svgScale(16), gapB: svgScale(0), lenMul: 1.58 }
 					);
 				}
 
 				if (natRect && ungRect) {
-					lineImg('assets/linje 7.webp', pt(natRect, 'bottom'), pt(ungRect, 'top'), svgScale(190), {
-						gapA: svgScale(8),
-						gapB: svgScale(12),
-						lenMul: portraitUpperLineMul,
+					/* Smallere (lavere height) men lidt længere (højere lenMul + lidt mindre gap) */
+					lineImg('assets/linje 7.webp', pt(natRect, 'bottom'), pt(ungRect, 'top'), svgScale(158), {
+						gapA: svgScale(6),
+						gapB: svgScale(10),
+						lenMul: portraitUpperLineMul * 1.1,
 					});
 				}
 				if (ungRect) {
@@ -6474,8 +6476,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
 				const twisterRingScale = 0.78;
+				/* Portræt mobil: lidt højere oval (0.66 → 0.74); landscape uændret */
 				const twisterRingVertMul = isProjectsPhoneWidth()
-					? (landscapeMindmap ? 0.76 : 0.66)
+					? (landscapeMindmap ? 0.76 : 0.74)
 					: (landscapeMindmap ? 0.92 : 1);
 				w *= twisterRingScale;
 				h *= twisterRingScale * twisterRingVertMul;
