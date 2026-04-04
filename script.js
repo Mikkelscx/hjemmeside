@@ -3717,11 +3717,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			const iw = lv.w;
 			const ih = lv.h;
 			const cw = layoutW;
+			/* Under rotation kan clientWidth/Height kort give ih<iw selv i portræt — orientation media matcher CSS */
+			let portraitOrientation = false;
+			try {
+				portraitOrientation = !!(window.matchMedia && window.matchMedia('(orientation: portrait)').matches);
+			} catch (_) {
+				portraitOrientation = ih >= iw;
+			}
 			const usePortraitSketchGrid =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
 				cw <= 640 &&
-				ih >= iw;
+				portraitOrientation;
 
 			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) like the live site; ellipse for landscape / wide.
 			try {
@@ -7047,15 +7054,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		createHandDrawnFrames();
 		
 		document.addEventListener('mousemove', updatePupilPosition);
-		
-		function refreshProjectsMindmapLayout() {
-			/* Samle burst (resize + flere inner*-flap) — undgå at fjerne alle .dynamic-mindmap-line flere gange i træk */
-			try {
-				if (mskProjectsMindmapRefreshDebounce) clearTimeout(mskProjectsMindmapRefreshDebounce);
-			} catch {}
-			mskProjectsMindmapRefreshDebounce = setTimeout(() => {
-				mskProjectsMindmapRefreshDebounce = null;
-				if (!mskProjectsMindmapLayoutResizeMeaningful()) return;
+
+		function runProjectsMindmapLayoutTick() {
+			requestAnimationFrame(() => {
 				requestAnimationFrame(() => {
 					try {
 						positionNodesPerfectCircle();
@@ -7067,8 +7068,23 @@ document.addEventListener('DOMContentLoaded', function() {
 						ensureProjectsMobileInlineBadges();
 						createConnectingLines();
 						createHandDrawnFrames();
+						const lv = mskProjectsLayoutViewportBox();
+						mskProjectsMindmapLastLayoutIw = lv.w;
+						mskProjectsMindmapLastLayoutIh = lv.h;
 					} catch {}
 				});
+			});
+		}
+
+		function refreshProjectsMindmapLayout() {
+			/* Samle burst (resize + flere inner*-flap) — undgå at fjerne alle .dynamic-mindmap-line flere gange i træk */
+			try {
+				if (mskProjectsMindmapRefreshDebounce) clearTimeout(mskProjectsMindmapRefreshDebounce);
+			} catch {}
+			mskProjectsMindmapRefreshDebounce = setTimeout(() => {
+				mskProjectsMindmapRefreshDebounce = null;
+				if (!mskProjectsMindmapLayoutResizeMeaningful()) return;
+				runProjectsMindmapLayoutTick();
 			}, 150);
 		}
 		try {
@@ -7077,13 +7093,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			mskProjectsMindmapLastLayoutIh = _lv0.h;
 		} catch {}
 		window.addEventListener('resize', refreshProjectsMindmapLayout);
-		/* Safari: innerWidth/innerHeight kan først stemme efter et tick efter rotation */
+		/* Chrome: flere resize-ticks efter rotation — ekstra pass når mål er stabile */
 		window.addEventListener('orientationchange', () => {
 			try {
 				mskProjectsMindmapLastLayoutIw = -1;
 				mskProjectsMindmapLastLayoutIh = -1;
 			} catch {}
-			setTimeout(refreshProjectsMindmapLayout, 220);
+			try {
+				if (mskProjectsMindmapRefreshDebounce) clearTimeout(mskProjectsMindmapRefreshDebounce);
+			} catch {}
+			setTimeout(runProjectsMindmapLayoutTick, 280);
+			setTimeout(runProjectsMindmapLayoutTick, 520);
 		});
 		/* Fuld layout: window.resize + orientationchange (ingen visualViewport-overlay — undgår hoppende streger). */
 
