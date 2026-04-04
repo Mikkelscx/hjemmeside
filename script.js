@@ -44,6 +44,44 @@ function mskIsProjectsShortLandscapeViewport() {
 	}
 }
 
+/** Projekter desktop: “Under ombygning” + pil lige under BRAINFARTS-cirklen (følger SVG-ring efter layout). */
+function positionBrainfartsBuildNote() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		const build = document.querySelector('.brainfarts-build');
+		if (!build) return;
+		const w = mskProjectsLayoutViewportBox().w || 0;
+		if (w < 1025 || mskIsProjectsShortLandscapeViewport()) {
+			build.style.removeProperty('left');
+			build.style.removeProperty('top');
+			build.style.removeProperty('right');
+			build.style.removeProperty('bottom');
+			build.style.removeProperty('transform');
+			return;
+		}
+		const container = document.querySelector('.brainstorm-container');
+		if (!container) return;
+		const frameEl = document.querySelector('.connecting-lines image.brainfarts-image');
+		const bfNode = document.querySelector('a[href*="brainfarts"]');
+		const cRect = container.getBoundingClientRect();
+		let ringRect = frameEl ? frameEl.getBoundingClientRect() : null;
+		if (!ringRect || ringRect.width < 2) {
+			if (!bfNode) return;
+			ringRect = bfNode.getBoundingClientRect();
+		}
+		const cx = ringRect.left + ringRect.width / 2 - cRect.left;
+		const leftNudgePx = 48;
+		const leftPx = cx - leftNudgePx;
+		/* Højere op mod ringen (pil + skilt tættere på cirklen) */
+		const topPx = ringRect.bottom - cRect.top - 70;
+		build.style.setProperty('left', `${Math.round(leftPx)}px`, 'important');
+		build.style.setProperty('top', `${Math.round(topPx)}px`, 'important');
+		build.style.setProperty('right', 'auto', 'important');
+		build.style.setProperty('bottom', 'auto', 'important');
+		build.style.setProperty('transform', 'translateX(-50%)', 'important');
+	} catch (_) {}
+}
+
 /** iOS home indicator m.m. — portrait mindmap: trækker “bund” op så nederste knapper ikke sidder i safe area. */
 function mskSafeAreaInsetBottomPx() {
 	try {
@@ -4027,6 +4065,32 @@ document.addEventListener('DOMContentLoaded', function() {
 						x += 6;
 					}
 				}
+				/* Desktop (≥1025): venstresidens bobler længere ud mod papirmargin — kun ellipse-layout */
+				try {
+					if (!narrow && !isShortLandscape && w >= 1025) {
+						const leftPush = Math.round(56 * scale);
+						if (
+							href.includes('byens-landhandel') ||
+							href.includes('brainfarts') ||
+							href.includes('kobajer')
+						) {
+							x -= leftPush;
+						}
+					}
+				} catch {}
+				/* Desktop: UNGE MOD UV — ned + mod højre (ellipse-node ellers for tæt på Durex / midten) */
+				try {
+					if (!narrow && !isShortLandscape && w >= 1025 && href.includes('unge-mod-uv')) {
+						y += Math.round(46 * scale);
+						x += Math.round(56 * scale);
+					}
+				} catch {}
+				/* Desktop: TWISTER — tekst + ring lidt længere ned i ovalen */
+				try {
+					if (!narrow && !isShortLandscape && w >= 1025 && href.includes('twister')) {
+						y += Math.round(14 * scale);
+					}
+				} catch {}
 
 				x = Math.round(x);
 				y = Math.round(y);
@@ -4232,8 +4296,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					const delay = (i % 10) * 0.06;
 					const w = (i % 3 === 0) ? 4 : 3;
 					// Perfect round ring: ALL rays start from the same radius.
-					const r = 34;
-					let h = 48;
+					const r = 40;
+					let h = 54;
 					// Every second ray is half as long (but starts at the same ring)
 					if (i % 2 === 1) h = Math.round(h * 0.5);
 					s.style.setProperty('--rot', `${rot}deg`);
@@ -4308,7 +4372,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const containerRect = container.getBoundingClientRect();
 			const r = twisterNode.getBoundingClientRect();
-			const top = (r.top - containerRect.top) + (r.height / 2) + 34; // D&AD badge: under TWISTER-rækken (mellem +28 og +40)
+			const top = (r.top - containerRect.top) + (r.height / 2) + 46; // D&AD badge: lidt længere ned under TWISTER
 			const left = (r.right - containerRect.left) + 14 + 70; // move a lot more right
 
 			badge.style.left = `${left}px`;
@@ -4412,14 +4476,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const containerRect = container.getBoundingClientRect();
 			const r = repopNode.getBoundingClientRect();
+			const titleImg = repopNode.querySelector('.project-node__title-img--repop');
+			const titleRect = titleImg ? titleImg.getBoundingClientRect() : r;
+			/* Pilens højre kant skal møde venstre kant af REPOP-teksten (ikke hele fanen) */
+			const anchorLeft = titleRect.left - containerRect.left;
 
-			// Size (can be tuned) — keep the right edge anchored to the tab
-			const width = 170; // shorter
+			// Size (can be tuned) — kortere pil så Kravling + pil ikke sidder “udenfor” cirklen
+			const width = 138;
 			const height = 80; // slimmer
-			const gap = 10;
+			const tipOverlapPx = 4;
+			/* Skub pil + Kravling-badge mod højre (badge følger via pilens rect) */
+			const shiftRightPx = 76;
+			const left = anchorLeft - width + tipOverlapPx + shiftRightPx;
 
 			const top = (r.top - containerRect.top) + (r.height / 2) + 12; // a bit more down
-			const left = (r.left - containerRect.left) - width + gap + 8; // a bit to the right
 
 			line.style.width = `${width}px`;
 			line.style.height = `${height}px`;
@@ -4512,7 +4582,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const a = arrow.getBoundingClientRect();
 
 			const width = 160;
-			const gap = 12;
+			const gap = 4;
 			const left = (a.left - containerRect.left) - width - gap;
 			const top = (a.top - containerRect.top) + (a.height / 2);
 
@@ -4520,7 +4590,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			badge.style.height = 'auto';
 			badge.style.left = `${left}px`;
 			badge.style.top = `${top}px`;
-			badge.style.transform = 'translateY(-50%) translateX(62px) translateY(-12px) rotate(-2deg)'; // 2025 badge slightly left
+			badge.style.transform = 'translateY(-50%) translateX(22px) translateY(-12px) rotate(-2deg)'; /* tættere på pil + tekst */
 		}
 
 		// Place arrow asset just under KØ-BAJER
@@ -4684,7 +4754,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const tipY = (r.bottom - containerRect.top);
 
 			badge.style.left = `${tipX - 28}px`; // a bit more to the left
-			badge.style.top = `${tipY - 36}px`;  // slightly more up
+			badge.style.top = `${tipY - 22}px`; // lidt ned ift. pilspids
 			badge.style.transform = 'translateX(-50%) rotate(-2deg)';
 			badge.dataset.lastLeft = badge.style.left;
 			badge.dataset.lastTop = badge.style.top;
@@ -5165,6 +5235,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		/* Hjernen ↔ cirkler: alle segmenter lidt kortere (tykkelse uændret) */
 		const mindmapLineLenMul = 0.92;
 
+		let desktopProjectsWide = false;
+		try {
+			const iw = mskProjectsLayoutViewportBox().w || 0;
+			desktopProjectsWide = iw >= 1025 && !mskIsProjectsShortLandscapeViewport();
+		} catch (_) {}
+		/* Desktop: 0.77 efterlader synligt hul til venstre — næsten fuld længde ud til cirkler */
+		const spokeLenMul = desktopProjectsWide ? 0.99 : underBrainLineLenMul;
+
 		/* Kort landscape: tykkelse < 1 — stadig tydelig ift. bobler */
 		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.55 : 1;
 		const lineH = (base) => Math.max(12, Math.round(Number(base) * lineThicknessMul));
@@ -5435,14 +5513,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Calculate end point - extend closer to/past the BRAINFARTS node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				const bfShortLs = mskIsProjectsShortLandscapeViewport();
-				const bfExtensionMul = bfShortLs ? 2.06 : 1.28;
+				const bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 1.95 : 1.28;
 				const extensionAmount = nodeRadius * bfExtensionMul;
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
 				const bfWidthMul = bfShortLs ? 1.14 : 1;
 				
 				console.log('BRAINFARTS Linje 8 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
@@ -5492,14 +5570,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				// Kort mobil-landscape: længere ud mod Kø-Bajer-boblen
 				const kobShortLs = mskIsProjectsShortLandscapeViewport();
-				const extensionMul = kobShortLs ? 2.02 : 1.36;
+				const extensionMul = kobShortLs ? 2.02 : desktopProjectsWide ? 1.92 : 1.36;
 				const extensionAmount = nodeRadius * extensionMul;
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
 				const kobWidthMul = kobShortLs ? 1.12 : 1;
 				
 				console.log('KØ-BAJER Linje 4 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
@@ -5606,6 +5684,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					ungeLinePressDown = -8;
 					ungeLineShiftLeft = -42;
 					ungeShortenFromNodeEndPx = 22;
+				} else {
+					/* Desktop m.m.: forkort mod UNGE-boblen — slutpunkt trækkes mod hjernen langs stregen */
+					ungeShortenFromNodeEndPx = 34;
 				}
 				
 				// Calculate end point - extend closer to/past the UNGE MOD UV node
@@ -5695,7 +5776,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// End further toward the tab (extend a bit past the tab center)
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				const nodeExtension = nodeRadius * 0.25;
+				const nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
 				const deltaX = byensAnchorX - initialBrainStartX;
 				const deltaY = byensAnchorY - initialBrainStartY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
@@ -5715,7 +5796,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
 				
 				console.log('Line details:', {brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength});
 				
@@ -5765,10 +5846,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
-				/* Hjernen → REPOP (lodret streg op): i kort landscape fast px — matcher tykkere lineThicknessMul */
+				/* Hjernen → REPOP: samme tykkelse som øvrige asset-linjer (fx linje 1/4 = lineH(400)) på desktop */
 				let repopLineHpx;
 				if (mskIsProjectsShortLandscapeViewport()) {
 					repopLineHpx = 200;
+				} else if (desktopProjectsWide) {
+					repopLineHpx = lineH(400);
 				} else {
 					repopLineHpx = lineH(52);
 				}
@@ -5778,7 +5861,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/Linje 2.webp');
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', String(brainStartY - repopLineHpx / 2));
-				lineImage.setAttribute('width', lineLength * 0.92 * mindmapLineLenMul); // Slightly shorter
+				lineImage.setAttribute(
+					'width',
+					String(lineLength * (desktopProjectsWide ? 0.99 : 0.92) * mindmapLineLenMul)
+				);
 				lineImage.setAttribute('height', String(repopLineHpx));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -5872,7 +5958,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * underBrainLineLenMul;
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
 				
 				console.log('TWISTER Linje 3 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -6023,6 +6109,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 
+		/** Desktop mindmap (matcher CSS min-width: 1025px): lidt større håndtegnede ringe — mobil uændret */
+		function getProjectsDesktopRingMul() {
+			try {
+				const w = mskViewportSize().w || mskProjectsLayoutViewportBox().w || 0;
+				if (w < 1025) return 1;
+				if (mskIsProjectsShortLandscapeViewport()) return 1;
+				return 1.14;
+			} catch (_) {
+				return 1;
+			}
+		}
+		const projectsDesktopRingMul = getProjectsDesktopRingMul();
+
 		currentNodes.forEach((node, index) => {
 			// Used to map hover -> matching frame element
 			node.dataset.nodeIndex = String(index);
@@ -6073,8 +6172,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const bw = 240 * brainfartsRingScale;
-				const bh = 200 * brainfartsRingScale;
+				const bw = 240 * brainfartsRingScale * projectsDesktopRingMul;
+				const bh = 200 * brainfartsRingScale * projectsDesktopRingMul;
 				image.setAttribute('x', String(centerX - bw / 2));
 				image.setAttribute('y', String(centerY - bh / 2));
 				image.setAttribute('width', String(bw));
@@ -6099,8 +6198,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				fill.setAttribute('cx', String(centerX - 1)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
 				// Slightly smaller at the bottom: shift up a bit
 				fill.setAttribute('cy', String(centerY - 3)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
-				fill.setAttribute('rx', String((120 * 0.56 + 2) * brainfartsRingScale));
-				fill.setAttribute('ry', String((100 * 0.56 - 1) * brainfartsRingScale));
+				fill.setAttribute('rx', String((120 * 0.56 + 2) * brainfartsRingScale * projectsDesktopRingMul));
+				fill.setAttribute('ry', String((100 * 0.56 - 1) * brainfartsRingScale * projectsDesktopRingMul));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6120,8 +6219,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', linePath);
 
 					// Keep it smaller and within the circle-ish area (circle image is 240x200, scaled by brainfartsRingScale)
-					const w = 205 * brainfartsRingScale;
-					const h = 160 * brainfartsRingScale;
+					const w = 205 * brainfartsRingScale * projectsDesktopRingMul;
+					const h = 160 * brainfartsRingScale * projectsDesktopRingMul;
 					lineImg.setAttribute('width', String(w));
 					lineImg.setAttribute('height', String(h));
 					// Place it so it goes from RIGHT side -> down to BOTTOM-LEFT
@@ -6215,6 +6314,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 				w *= repopMul * repopLsMulW;
 				h *= repopMul * repopLsMulH;
+				w *= projectsDesktopRingMul;
+				h *= projectsDesktopRingMul;
+				/* Lidt bredere horizontalt (oval) — kun stretch på X, som NATURLI */
+				const repopStretchX = 1.12;
+				w *= repopStretchX;
 
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
 				image.setAttribute('y', String(repCenterY - (h / 2)));
@@ -6238,7 +6342,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				fill.setAttribute('cy', String(repCenterY - s(2)));
 				fill.setAttribute(
 					'rx',
-					String(((s(190) * 0.55 - s(7)) * assetS) * repopMul * repopLsMulW)
+					String(
+						((s(190) * 0.55 - s(7)) * assetS) *
+							repopMul *
+							repopLsMulW *
+							projectsDesktopRingMul *
+							repopStretchX
+					)
 				);
 				fill.setAttribute('ry', String(((h / 2) * 0.68 - s(2)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
@@ -6306,6 +6416,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					w *= 1.28;
 					h *= 1.0;
 				}
+				w *= projectsDesktopRingMul;
+				h *= projectsDesktopRingMul;
 				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
 				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
 				image.setAttribute('x', String(kCenterX - (w / 2)));
@@ -6352,7 +6464,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: NATURLI' uses the image instead of hand-drawn circle
 			if (nodeText === 'NATURLI\'' || nodeHref.includes('naturli')) {
 				console.log('Creating NATURLI\' circle image...');
-				let naturliMul = 0.82;
+				let naturliMul = 0.93;
 				try {
 					const ih = mskViewportSize().h || 0;
 					const iw = mskViewportSize().w || 1;
@@ -6360,13 +6472,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					const portrait =
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
-					if (portrait) naturliMul = 0.78;
+					if (portrait) naturliMul = 0.86;
 				} catch {}
 				try {
 					if (mskIsProjectsShortLandscapeViewport()) naturliMul *= 1.09;
 				} catch {}
-				const nW = 240 * naturliMul;
-				const nH = 140 * naturliMul;
+				/* Bredere horizontalt (apostrof + tekst inde i ringen) — kun stretch på X */
+				const naturliStretchX = 1.22;
+				const nW = 240 * naturliMul * projectsDesktopRingMul * naturliStretchX;
+				const nH = 140 * naturliMul * projectsDesktopRingMul;
 				// Create an image element for NATURLI'
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring naturli'.webp";
@@ -6393,8 +6507,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				// NATURLI': make the RIGHT side slightly smaller (keep left edge the same)
 				fill.setAttribute('cx', String(centerX + 1));
 				fill.setAttribute('cy', String(centerY - 1));
-				fill.setAttribute('rx', String((120 * 0.50 - 2) * naturliMul));
-				fill.setAttribute('ry', String(70 * 0.66 * naturliMul));
+				fill.setAttribute('rx', String((120 * 0.50 - 2) * naturliMul * projectsDesktopRingMul * naturliStretchX));
+				fill.setAttribute('ry', String(70 * 0.66 * naturliMul * projectsDesktopRingMul));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6427,8 +6541,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					if (portrait) ungeMul = 0.84;
 				} catch {}
-				const uw = 320 * ungeMul;
-				const uh = 150 * ungeMul;
+				const uw = 320 * ungeMul * projectsDesktopRingMul;
+				const uh = 150 * ungeMul * projectsDesktopRingMul;
 				image.setAttribute('x', centerX - uw / 2);
 				image.setAttribute('y', centerY - uh / 2);
 				image.setAttribute('width', String(uw));
@@ -6447,8 +6561,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY)); // UNGE MOD UV: keep centered
-				fill.setAttribute('rx', String(160 * ungeMul * 0.54)); // UNGE MOD UV: wider left+right
-				fill.setAttribute('ry', String(75 * ungeMul * 0.51));  // UNGE MOD UV: slightly more top+bottom
+				fill.setAttribute('rx', String(160 * ungeMul * 0.54 * projectsDesktopRingMul)); // UNGE MOD UV: wider left+right
+				fill.setAttribute('ry', String(75 * ungeMul * 0.51 * projectsDesktopRingMul));  // UNGE MOD UV: slightly more top+bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6504,7 +6618,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const padY = s(isMobile ? (landscapeMindmap ? 108 : 90) : landscapeMindmap ? 108 : 44) * assetS;
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
-				const twisterRingScale = 0.78;
+				const twisterRingScale = 0.88;
 				/* Portræt mobil: lidt højere oval (0.66 → 0.74); landscape uændret */
 				const twisterRingVertMul = isProjectsPhoneWidth()
 					? (landscapeMindmap ? 0.76 : 0.74)
@@ -6516,7 +6630,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					w *= 1.12;
 					h *= 1.1;
 				}
-				const circleDy = landscapeMindmap ? s(10) : 0;
+				w *= projectsDesktopRingMul;
+				h *= projectsDesktopRingMul;
+				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
+				const circleDy = landscapeMindmap ? s(48) : s(20);
 				image.setAttribute('x', String(twCenterX - (w / 2)));
 				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
 				image.setAttribute('width', String(w));
@@ -6564,8 +6681,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					if (portrait) byensMul = 0.88;
 				} catch {}
-				const bw = 440 * byensMul * byensLandhandelRingScale;
-				const bh = 170 * byensMul * byensLandhandelRingScale;
+				const bw = 440 * byensMul * byensLandhandelRingScale * projectsDesktopRingMul;
+				const bh = 170 * byensMul * byensLandhandelRingScale * projectsDesktopRingMul;
 				// Create an image element for BYENS LANDHANDEL
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle omkring byens landhandel.webp";
@@ -6591,8 +6708,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY - 2));
-				fill.setAttribute('rx', String((220 * 0.50 + 3) * byensMul * byensLandhandelRingScale));
-				fill.setAttribute('ry', String((85 * 0.58 - 2) * byensMul * byensLandhandelRingScale));
+				fill.setAttribute('rx', String((220 * 0.50 + 3) * byensMul * byensLandhandelRingScale * projectsDesktopRingMul));
+				fill.setAttribute('ry', String((85 * 0.58 - 2) * byensMul * byensLandhandelRingScale * projectsDesktopRingMul));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6627,8 +6744,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (portrait) durexMul = 0.98;
 				} catch {}
 				durexMul *= 0.805; /* cirkel + fill matcher Durex tekst-asset + tab */
-				const dw = 440 * durexMul;
-				const dh = 150 * durexMul;
+				const dw = 440 * durexMul * projectsDesktopRingMul;
+				const dh = 150 * durexMul * projectsDesktopRingMul;
 				image.setAttribute('x', centerX - dw / 2);
 				image.setAttribute('y', centerY - dh / 2);
 				image.setAttribute('width', String(dw));
@@ -6653,8 +6770,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				} catch {}
 				fill.setAttribute('cy', String(centerY - durexCyOff));
-				fill.setAttribute('rx', String(220 * durexMul * 0.55)); // DUREX: less horizontal fill
-				fill.setAttribute('ry', String(75 * durexMul * 0.68 + 1)); // DUREX: keep top, trim bottom
+				fill.setAttribute('rx', String(220 * durexMul * 0.55 * projectsDesktopRingMul)); // DUREX: less horizontal fill
+				fill.setAttribute('ry', String((75 * durexMul * 0.68 + 1) * projectsDesktopRingMul)); // DUREX: keep top, trim bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6669,7 +6786,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Create soft hand-drawn circle with smooth curves for other nodes
-			let baseRadius = 50 + Math.random() * 30; // 50-80px radius variation (normal size)
+			let baseRadius = (50 + Math.random() * 30) * projectsDesktopRingMul; // 50-80px radius variation (normal size)
 			
 			const numPoints = 12 + Math.floor(Math.random() * 8); // 12-20 points for smoother curves
 			let pathData = '';
@@ -7052,7 +7169,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Create hand-drawn frames around project tabs
 		createHandDrawnFrames();
-		
+		positionBrainfartsBuildNote();
+
 		document.addEventListener('mousemove', updatePupilPosition);
 
 		function runProjectsMindmapLayoutTick() {
@@ -7068,6 +7186,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						ensureProjectsMobileInlineBadges();
 						createConnectingLines();
 						createHandDrawnFrames();
+						positionBrainfartsBuildNote();
 						const lv = mskProjectsLayoutViewportBox();
 						mskProjectsMindmapLastLayoutIw = lv.w;
 						mskProjectsMindmapLastLayoutIh = lv.h;

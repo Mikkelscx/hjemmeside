@@ -5192,21 +5192,53 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
         drop-shadow(-0.78px -0.78px 0 rgba(26, 26, 26, 0.84));
 }
 
-/* Projekter: Naturli' — tekst-webp + mindre fane (matcher mindre cirkel) */
+/* Projekter: Naturli' — tekst-webp + fane (matcher cirkel i JS) */
 body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
     display: block;
-    width: 72%;
-    max-width: min(124px, 100%);
+    width: 88%;
+    max-width: min(150px, 100%);
     height: auto;
     margin: 0 auto;
     object-fit: contain;
 }
 
-/* Projekter: Durex — tekst-asset (webp) mindre end fanen */
+/* NATURLI': større apostrof (tegn) — webp beskæres til højre så den lille ' i asset ikke dubleres */
+body.sketchbook-theme .brainstorm-container .naturli-title-with-apostrophe,
+.projects-mobile__name--image.naturli-title-with-apostrophe {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0;
+    line-height: 0;
+}
+body.sketchbook-theme .brainstorm-container .naturli-title-with-apostrophe .project-node__title-img--naturli,
+.projects-mobile__name--image.naturli-title-with-apostrophe .projects-mobile__name-img--naturli {
+    clip-path: inset(0 11% 0 0);
+    margin: 0;
+}
+body.sketchbook-theme .brainstorm-container .naturli-apostrophe-large,
+.projects-mobile__name--image .naturli-apostrophe-large {
+    font-family: 'Noteworthy', 'Bradley Hand', 'Marker Felt', 'Chalkboard SE', 'Brush Script MT', 'Segoe Script', 'Comic Sans MS', cursive !important;
+    font-weight: bold;
+    font-size: clamp(18px, 3.8vmin, 28px);
+    color: #1a1a1a;
+    line-height: 1;
+    margin-left: -0.48em;
+    -webkit-text-stroke: 0.18px #1a1a1a;
+    text-shadow:
+        0.3px 0 0 #1a1a1a,
+        -0.3px 0 0 #1a1a1a,
+        0 0.24px 0 #1a1a1a,
+        0 -0.24px 0 #1a1a1a;
+    flex-shrink: 0;
+}
+
+/* Projekter: Durex — tekst-asset (webp); desktop-fane styres i @media (min-width: 1025px) */
 body.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
     display: block;
-    width: 86%;
-    max-width: 152px;
+    width: 92%;
+    max-width: 162px;
     height: auto;
     margin: 0 auto;
     object-fit: contain;
@@ -5219,19 +5251,19 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-u
     object-fit: contain;
 }
 
-/* Projekter: Twister — slightly under default text tab (180px) */
+/* Projekter: Twister — tekst-webp; desktop i @media (min-width: 1025px) */
 body.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
     width: 100%;
-    max-width: 129px;
+    max-width: 138px;
     height: auto;
     object-fit: contain;
 }
 
-/* Projekter: Kø-Bajer — compact image tab; graphic slightly smaller so circle has more air */
+/* Projekter: Kø-Bajer — tekst-webp i cirklen; desktop-fane i @media (min-width: 1025px) */
 body.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
     display: block;
-    width: 80%;
-    max-width: 121px;
+    width: 86%;
+    max-width: 128px;
     height: auto;
     margin: 0 auto;
     object-fit: contain;
@@ -5260,45 +5292,110 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         white-space: normal !important;
         text-overflow: clip !important;
     }
-    body.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
         width: 100%;
+        transform: translateY(10px);
+        transform-origin: center top;
     }
 }
 
-/* Desktop: make ONLY Byens Landhandel label bigger */
+/* Desktop: make ONLY Byens Landhandel label bigger (projects-page slår fast 172px-regel længere nede) */
 @media (min-width: 1025px) {
-    body.sketchbook-theme .brainstorm-container .project-node[href*="byens-landhandel"],
-    body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
-        width: clamp(133px, 11vw, 195px) !important;
-        max-width: none !important;
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="byens-landhandel"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
+        width: clamp(142px, 12vw, 218px) !important;
         min-width: 0 !important;
+        max-width: none !important;
         padding: 6px 10px !important;
         white-space: normal !important;
         text-overflow: clip !important;
     }
-    body.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
-        width: 86%;
-        max-width: none;
-        transform: translateY(6px);
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
+        width: 100%;
+        max-width: 204px;
+        transform: translateY(5px);
     }
 }
 
-/* Desktop: Naturli' — compact image label */
+/* Desktop: Naturli' — større cirkel + tekst (matcher projectsDesktopRing / naturliMul i JS) */
 @media (min-width: 1025px) {
-    body.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"],
-    body.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] {
-        width: 154px !important;
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] {
+        width: 212px !important;
         max-width: none !important;
         min-width: 0 !important;
-        min-height: 68px !important;
+        min-height: 90px !important;
         max-height: none !important;
-        padding: 5px 7px !important;
+        padding: 5px 10px !important;
         white-space: normal !important;
         text-overflow: clip !important;
     }
-    body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
-        width: 72%;
-        max-width: 112px;
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
+        width: 96%;
+        max-width: 148px;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .naturli-title-with-apostrophe .naturli-apostrophe-large {
+        font-size: clamp(22px, 1.95vw, 32px);
+        margin-left: -0.52em;
+    }
+}
+
+/* Desktop: BRAINFARTS-tekst i cirklen lidt større + lidt op */
+@media (min-width: 1025px) {
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts {
+        width: 100%;
+        max-width: 156px;
+        transform: translateY(8px);
+    }
+}
+
+/* Desktop: Durex — større tekst i cirklen (projects-page slår fast 164px-regel) */
+@media (min-width: 1025px) {
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="durex"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] {
+        width: 198px !important;
+        min-width: 198px !important;
+        max-width: 198px !important;
+        padding: 6px 10px !important;
+        white-space: normal !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
+        width: 100%;
+        max-width: 182px;
+    }
+}
+
+/* Desktop: Kø-Bajer — lidt større tekst i cirklen (projects-page slår fast 121px-regel) */
+@media (min-width: 1025px) {
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] {
+        width: 142px !important;
+        min-width: 142px !important;
+        max-width: 142px !important;
+        padding: 6px 10px !important;
+        white-space: normal !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
+        width: 94%;
+        max-width: 134px;
+    }
+}
+
+/* Desktop: Twister — større tekst + ring (matcher twisterRingScale i JS); titel lidt ned i ovalen */
+@media (min-width: 1025px) {
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"],
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] {
+        width: 150px !important;
+        min-width: 150px !important;
+        max-width: 150px !important;
+        padding: 6px 10px !important;
+        white-space: normal !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
+        width: 100%;
+        max-width: 144px;
+        transform: translateY(22px);
+        transform-origin: center top;
     }
 }
 
@@ -5310,13 +5407,13 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         width: min(212px, 96%);
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
-        width: min(128px, 76%);
+        width: min(152px, 86%);
         height: auto;
-        max-width: 76%;
+        max-width: 86%;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
-        width: min(152px, 80%);
-        max-width: 80%;
+        width: min(168px, 86%);
+        max-width: 86%;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
         width: min(158px, 78%);
@@ -5355,17 +5452,17 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .project-node__title-img--twister,
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title-img--twister,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-            transform: translateY(8px);
+            transform: translateY(22px);
             transform-origin: center center;
         }
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
-        width: min(129px, 88%);
+        width: min(142px, 90%);
         max-width: 100%;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
-        width: min(105px, 75%);
-        max-width: 86%;
+        width: min(114px, 80%);
+        max-width: 88%;
     }
     body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts {
         width: min(126px, 92%);
@@ -5417,7 +5514,7 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
 }
 .projects-mobile__name--image .projects-mobile__name-img--naturli {
     width: 100%;
-    max-width: min(158px, 92%);
+    max-width: min(168px, 94%);
     height: auto;
 }
 .projects-mobile__name--image .projects-mobile__name-img--durex {
@@ -5434,7 +5531,7 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
 }
 .projects-mobile__name--image .projects-mobile__name-img--twister {
     width: 100%;
-    max-width: min(129px, 100%);
+    max-width: min(142px, 100%);
     height: auto;
     object-fit: contain;
 }
@@ -6049,22 +6146,22 @@ body.sketchbook-theme .brainstorm-container {
             transform: translateY(10px) !important;
             transform-origin: center top !important;
         }
-        /* Durex: mindre tekst-asset, centreret (ingen translate — ellers rykket ud af midten) */
+        /* Durex: tekst-asset centreret (ingen translate — ellers rykket ud af midten) */
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="durex"] .project-node__title-img--durex,
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="durex"] .project-node__title-img--durex {
-            width: min(124px, 72%) !important;
-            max-width: 72% !important;
+            width: min(142px, 82%) !important;
+            max-width: 82% !important;
             margin-left: auto !important;
             margin-right: auto !important;
             display: block !important;
         }
     }
 
-    /* TWISTER / D&AD: portrait — D&AD i ovalen, højere op sammen med titel */
+    /* TWISTER / D&AD: portrait — D&AD i ovalen */
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .dandd-badge--inline,
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .dandd-badge--inline {
         margin-top: 0 !important;
-        transform: translateY(-20px) !important;
+        transform: translateY(-2px) !important;
         gap: 0 !important;
         justify-content: center !important;
     }
@@ -6072,15 +6169,17 @@ body.sketchbook-theme .brainstorm-container {
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
             margin-top: 0 !important;
-            transform: translateY(-20px) !important;
+            transform: translateY(-2px) !important;
             gap: 0 !important;
             justify-content: center !important;
         }
     }
-    /* TWISTER: pencil + winner tættere mod midten */
+    /* TWISTER: VINDER større end blyant + lidt ned */
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
-        margin-left: -6px !important;
+        margin-left: -8px !important;
+        margin-top: 0 !important;
+        align-self: center !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
@@ -6194,18 +6293,19 @@ body.sketchbook-theme .brainstorm-container {
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 1px;
     }
     body.projects-page.sketchbook-theme .project-node .dandd-badge--inline .dandd-logo {
-        width: 33px;
+        width: 44px;
         height: auto;
     }
     body.projects-page.sketchbook-theme .project-node .dandd-badge--inline .dandd-winner {
-        width: 45px;
+        width: 98px;
         height: auto;
         /* No overlap in the inline version */
         margin-top: 0;
-        margin-left: 0;
+        margin-left: -2px;
+        align-self: center;
     }
 
     /* About page: stack to one column on phones */
@@ -6922,24 +7022,24 @@ body.sketchbook-theme .brainstorm-container {
         width: min(156px, 34vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
-        max-width: min(98px, 23vw) !important;
-        width: min(98px, 23vw) !important;
+        max-width: min(122px, 29vw) !important;
+        width: min(122px, 29vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
-        max-width: min(118px, 27vw) !important;
-        width: min(118px, 27vw) !important;
+        max-width: min(132px, 30vw) !important;
+        width: min(132px, 30vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
         max-width: min(120px, 27vw) !important;
         width: min(120px, 27vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister {
-        max-width: min(108px, 24vw) !important;
-        width: min(108px, 24vw) !important;
+        max-width: min(118px, 26vw) !important;
+        width: min(118px, 26vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer {
-        max-width: min(100px, 23vw) !important;
-        width: min(100px, 23vw) !important;
+        max-width: min(108px, 25vw) !important;
+        width: min(108px, 25vw) !important;
     }
     /* Kø-Bajer: titel lidt op → mere luft til Kravling 2024 under (kort mobil-landscape) */
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title--image,
@@ -7128,8 +7228,8 @@ body.sketchbook-theme .brainstorm-container {
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 76% !important;
-        transform: translate(-50%, calc(-50% + 2px)) scale(0.76) !important;
+        top: 87% !important;
+        transform: translate(-50%, calc(-50% + 2px)) scale(0.92) !important;
         transform-origin: 50% 50% !important;
         width: auto !important;
         height: auto !important;
@@ -7139,20 +7239,22 @@ body.sketchbook-theme .brainstorm-container {
         flex-direction: row !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 4px !important;
+        gap: 1px !important;
         max-width: min(96%, 260px) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-        width: 46px !important;
+        width: 54px !important;
         height: auto !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
-        width: 64px !important;
+        width: 128px !important;
         height: auto !important;
         margin: 0 !important;
-        margin-left: -4px !important;
+        margin-top: 0 !important;
+        margin-left: -10px !important;
+        align-self: center !important;
     }
 }
 
@@ -7643,18 +7745,19 @@ body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhand
     }
 }
 
-/* Projects: D&AD assets (logo + VINDER + spark ring) smaller on mind map */
+/* Projects: D&AD — kun VINDER under logoet forstørres + skubbes ned; blyant-logo fast */
 body.sketchbook-theme .brainstorm-container .dandd-logo {
-    width: 55px;
+    width: 70px;
 }
 body.sketchbook-theme .brainstorm-container > .dandd-badge .dandd-winner {
-    width: clamp(21px, 4.8vmin, 55px);
-    margin-top: clamp(-21px, -2.1vmin, -11px);
+    width: clamp(48px, 10vmin, 120px);
+    margin-top: clamp(-40px, -3.6vmin, -20px);
     margin-left: clamp(2px, 0.8vmin, 4px);
+    transform: translateY(0);
 }
 body.projects-page.sketchbook-theme .brainstorm-container .dandd-sparks {
-    width: calc(100% + 28px);
-    height: calc(100% + 28px);
+    width: calc(100% + 48px);
+    height: calc(100% + 48px);
 }
 
 /* Projects: Brainfarts -> Under ombygning arrow + sign */
@@ -7702,6 +7805,24 @@ body.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
     top: 100px;
     width: 81px;
     transform: translateX(-50%) rotate(var(--brainfartsSignRot, 0deg));
+}
+
+/* Desktop: større “Under ombygning” + pil (JS placerer .brainfarts-build; tablet/mobil uændret) */
+@media (min-width: 1025px) {
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
+        width: 158px;
+        height: 200px;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
+        width: 78px;
+        top: 52px;
+        left: 108%;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
+        width: 102px;
+        top: 64px;
+        left: 62%;
+    }
 }
 
 @media (max-width: 768px) {
