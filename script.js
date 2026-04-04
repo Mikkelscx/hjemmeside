@@ -3970,7 +3970,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			const centerY = Math.round(brainCenter.y);
 
 			// Use an ellipse ring (rx > ry). On phones, drop the desktop min radius (200px) or left/right nodes clip off-screen.
-			let paddingX = 210;
+			/* Mindre side-padding → større rx → ringen bredere mod venstre/højre */
+			let paddingX = 165;
 			let paddingY = 215;
 			let extraRy = 120;
 			let minRx = 200;
@@ -4847,18 +4848,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			const kornAsset = document.createElement('img');
 			kornAsset.src = 'assets/korn asset.webp';
 			kornAsset.className = 'korn-asset';
+			/* Placering + centrum: styles.css (.brain .korn-asset) — translate(-50%,-50%) + nudge så korn roterer om hjernen */
 			kornAsset.style.cssText = `
 				position: absolute;
-				width: 440px;
-				height: 380px;
-				top: 50%;
-				left: 50%;
-				margin-top: -190px;
-				margin-left: -220px;
 				opacity: 0;
 				display: none;
-				z-index: 25;
-				object-fit: fill;
+				z-index: 11;
 			`;
 			brain.appendChild(kornAsset);
 
@@ -5505,15 +5500,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				const deltaX = nodeX - centerX;
 				const deltaY = nodeY - centerY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				// Extend backward from brain center to make line longer toward brain
-				const brainExtension = brainRadius * 0.38; // Extend further toward brain
+				// Extend backward from brain center to make line longer toward brain (desktop: længere i begge ender)
+				const brainExtension = brainRadius * (desktopProjectsWide ? 0.52 : 0.38);
 				const brainStartX = centerX - (deltaX / distance) * brainExtension;
 				const brainStartY = centerY - (deltaY / distance) * brainExtension;
 				
 				// Calculate end point - extend closer to/past the BRAINFARTS node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				const bfShortLs = mskIsProjectsShortLandscapeViewport();
-				const bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 1.95 : 1.28;
+				const bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 2.82 : 1.28;
 				const extensionAmount = nodeRadius * bfExtensionMul;
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
@@ -5623,8 +5618,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const deltaX = nodeX - brainCenterX;
 				const deltaY = nodeY - brainCenterY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				// Stop before the node center (bigger gap => shorter toward DUREX)
-				const gapDistance = nodeRadius * 0.32; // Slightly shorter toward DUREX
+				// Stop før/ved node-cirklen. Desktop: tæt på centrum; ellers ældre større hul.
+				const durexGapMul = desktopProjectsWide ? 0.02 : 0.32;
+				const gapDistance = nodeRadius * durexGapMul;
 				const lineEndX = nodeX - (deltaX / distance) * gapDistance;
 				const lineEndY = nodeY - (deltaY / distance) * gapDistance;
 				
@@ -5637,6 +5633,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const calculatedLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
 				const lineLength = calculatedLength; // Use full length
+				/* Uden denne: mindmapLineLenMul (0.92) forkorter <image width> så streget stopper synligt før lineEnd — hul mod Durex-cirklen */
+				const durexLineWidthMul = desktopProjectsWide ? 1 : mindmapLineLenMul;
 				
 				console.log('DUREX linje 6 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -5646,7 +5644,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 6.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', String(brainStartY - lineH(300) / 2));
-				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
+				lineImage.setAttribute('width', lineLength * durexLineWidthMul);
 				lineImage.setAttribute('height', String(lineH(300)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -6672,6 +6670,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (nodeText === 'Byens Landhandel' || nodeHref.includes('byens-landhandel')) {
 				console.log('Creating Byens Landhandel circle image...');
 				const byensLandhandelRingScale = 0.78;
+				/* Bredere oval vandret (og lidt lavere lodret) end basis 440×170 */
+				const byensStretchX = 1.22;
+				const byensStretchY = 0.94;
 				let byensMul = 1;
 				try {
 					const ih = mskViewportSize().h || 0;
@@ -6681,8 +6682,18 @@ document.addEventListener('DOMContentLoaded', function() {
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					if (portrait) byensMul = 0.88;
 				} catch {}
-				const bw = 440 * byensMul * byensLandhandelRingScale * projectsDesktopRingMul;
-				const bh = 170 * byensMul * byensLandhandelRingScale * projectsDesktopRingMul;
+				const bw =
+					440 *
+					byensMul *
+					byensLandhandelRingScale *
+					projectsDesktopRingMul *
+					byensStretchX;
+				const bh =
+					170 *
+					byensMul *
+					byensLandhandelRingScale *
+					projectsDesktopRingMul *
+					byensStretchY;
 				// Create an image element for BYENS LANDHANDEL
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle omkring byens landhandel.webp";
@@ -6708,8 +6719,26 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY - 2));
-				fill.setAttribute('rx', String((220 * 0.50 + 3) * byensMul * byensLandhandelRingScale * projectsDesktopRingMul));
-				fill.setAttribute('ry', String((85 * 0.58 - 2) * byensMul * byensLandhandelRingScale * projectsDesktopRingMul));
+				fill.setAttribute(
+					'rx',
+					String(
+						(220 * 0.5 + 3) *
+							byensMul *
+							byensLandhandelRingScale *
+							projectsDesktopRingMul *
+							byensStretchX
+					)
+				);
+				fill.setAttribute(
+					'ry',
+					String(
+						(85 * 0.58 - 2) *
+							byensMul *
+							byensLandhandelRingScale *
+							projectsDesktopRingMul *
+							byensStretchY
+					)
+				);
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -7025,7 +7054,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (kornAsset) {
 						kornAsset.style.display = 'block';
 						kornAsset.style.opacity = '1';
-						kornAsset.style.animation = 'kornRotateOnce 1s ease-in-out forwards';
+						kornAsset.style.animation = 'kornRotateOnce 1.1s ease-in-out forwards';
 					}
 				} else if (hoverKey.includes('repop')) {
 					// Repop - show kasket asset

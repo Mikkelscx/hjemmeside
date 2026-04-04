@@ -3386,9 +3386,33 @@ body.sketchbook-theme .nav-link {
     text-align: center;
 }
 
+/* Projekter: korn-animation er bred — undgå at overflow:hidden klipper til venstre/højre */
+body.projects-page.sketchbook-theme .brainstorm-container {
+    overflow: visible;
+}
+
 /* Brain blush (cheeks) */
 .brain {
     position: relative;
+}
+
+/* Byens Landhandel: korn — ren 360° om hjernens centrum (ingen scale/skævvridning); nudge via --projectsKornTx/Ty */
+.brain .korn-asset {
+    left: 50%;
+    top: 50%;
+    margin: 0;
+    transform: translate(calc(-50% + var(--projectsKornTx, 8px)), calc(-50% + var(--projectsKornTy, 6px)));
+    transform-origin: center center;
+}
+
+/* Altid tydeligt større end hjernen (samme --projectsBrainSize som .brain svg); krans skaleres for sig via --projectsKornWreathMul */
+body.projects-page.sketchbook-theme .brain .korn-asset {
+    width: min(98vw, calc(var(--projectsBrainSize) * var(--projectsKornWreathMul, 1.55)));
+    height: auto;
+    max-width: none;
+    object-fit: contain;
+    /* Over .brain svg (z-index 10); under Twister-icecream (25) m.m. */
+    z-index: 11;
 }
 
 .brain-blush {
@@ -3974,6 +3998,15 @@ body.sketchbook-theme .nav-link {
     animation: none;
 }
 
+/* Projekter: JS tegner dynamiske linjer (fx NATURLI linje 7) — statisk placeholder (linje 1 i HTML) ligger ellers ovenpå og kan give piksel/hjørneartefakt ved hover */
+@media (min-width: 641px) {
+    body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.mindmap-line:not(.dynamic-mindmap-line) {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+}
+
 /* Projects page clickable feedback: pulse the hand-drawn circle frame instead of showing a purple box */
 .hand-drawn-frame {
     transition: opacity 0.15s ease, filter 0.15s ease;
@@ -4060,6 +4093,12 @@ body.sketchbook-theme .nav-link {
 
 body.sketchbook-theme .project-node:hover {
     text-decoration: underline;
+}
+
+/* NATURLI': kun billedtitel + løs apostrof — underline rammer apostroffen som en "sjov prik"/streg */
+body.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"]:hover,
+body.sketchbook-theme .brainstorm-container a.project-node[data-hover-key="naturli"]:hover {
+    text-decoration: none !important;
 }
 
 /* Hide any lines connecting to BRAINFARTS (left: 15%, top: 50%) */
@@ -4187,9 +4226,11 @@ a[href="twister.html"]:hover {
     background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     transition: box-shadow 0.3s ease !important;
     animation: none !important;
+    text-decoration: none !important;
 }
 
-a[href="twister.html"]:hover *,
+/* Ikke nulstil titelbilledets translateY (desktop oval) — ellers rykker "TWISTER" op ved hover */
+a[href="twister.html"]:hover *:not(.project-node__title-img--twister),
 a[href="twister.html"]:hover::before,
 a[href="twister.html"]:hover::after {
     transform: none !important;
@@ -4318,12 +4359,14 @@ a[href="byens-landhandel.html"]:hover {
     transform: translateX(-50%) !important;
     transition: none !important;
     animation: none !important;
+    text-decoration: none !important;
 }
 
-.project-node[href="byens-landhandel.html"]:hover *,
+/* Ikke nulstil titelbilledets translateY — ellers rykker label op ved hover */
+.project-node[href="byens-landhandel.html"]:hover *:not(.project-node__title-img--byens),
 .project-node[href="byens-landhandel.html"]:hover::before,
 .project-node[href="byens-landhandel.html"]:hover::after,
-a[href="byens-landhandel.html"]:hover *,
+a[href="byens-landhandel.html"]:hover *:not(.project-node__title-img--byens),
 a[href="byens-landhandel.html"]:hover::before,
 a[href="byens-landhandel.html"]:hover::after {
     transform: none !important;
@@ -4337,6 +4380,12 @@ body.sketchbook-theme {
     font-family: 'Courier New', monospace;
     position: relative;
     overflow: hidden;
+}
+
+/* Projekter: korn om hjernen må række ud til siderne (ellers klipper body overflow) */
+body.projects-page.sketchbook-theme {
+    overflow-x: visible;
+    overflow-y: hidden;
 }
 
 /* Vandrette linjer: #msk-paper-lines-layer (CSS-gradient), ikke canvas — bedre ved pinch-zoom. Her kun papirfarve + tekstur. */
@@ -5303,7 +5352,7 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
 @media (min-width: 1025px) {
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="byens-landhandel"],
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] {
-        width: clamp(142px, 12vw, 218px) !important;
+        width: clamp(152px, 13vw, 232px) !important;
         min-width: 0 !important;
         max-width: none !important;
         padding: 6px 10px !important;
@@ -5312,7 +5361,7 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
         width: 100%;
-        max-width: 204px;
+        max-width: 218px;
         transform: translateY(5px);
     }
 }
@@ -5630,6 +5679,10 @@ body.sketchbook-theme .brainstorm-container {
     /* Base sizes (the "big version"). We squeeze the whole mindmap via .brainstorm-stage. */
     /* Desktop + tablet: fuld størrelse; kun telefon (≤640px) overskriver --projectsBrainSize */
     --projectsBrainSize: 204px;
+    /* Kornkrans (Byens Landhandel) relativt til hjernen — kun desktop øges via @media (min-width: 1025px) på projects-page */
+    --projectsKornWreathMul: 1.55;
+    --projectsKornTx: 8px;
+    --projectsKornTy: 6px;
     --projectsTabW: 180px;
     --projectsTabH: 80px;
     --projectsTabFont: 1.2rem;
@@ -5645,6 +5698,14 @@ body.sketchbook-theme .brainstorm-container {
     --projectsScaleBaseH: 860;
     --projectsScaleExp: 2.2;
     --projectsScaleMin: 0.18;
+}
+
+/* Projekter desktop: større kornkrans uden at ændre hjernen (--projectsBrainSize uændret) */
+@media (min-width: 1025px) {
+    body.projects-page.sketchbook-theme .brainstorm-container {
+        --projectsKornWreathMul: 1.96;
+        --projectsKornTx: 0px;
+    }
 }
 
 /* ---------------- Mobile-only (phones) ----------------
@@ -7677,6 +7738,12 @@ body.sketchbook-theme .brainstorm-container .brain svg {
     height: var(--projectsBrainSize);
 }
 
+/* Hjerne-svg; korn (.korn-asset) ligger over med z-index 11 */
+body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
+    position: relative;
+    z-index: 10;
+}
+
 /* Projects: tabs shrink with viewport */
 body.sketchbook-theme .brainstorm-container .project-node,
 body.sketchbook-theme .brainstorm-container a.project-node {
@@ -7897,13 +7964,13 @@ body.sketchbook-theme .brainstorm-container .connecting-lines .hand-drawn-frame.
 }
 
 @keyframes kornCircle {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { transform: translate(calc(-50% + var(--projectsKornTx, 8px)), calc(-50% + var(--projectsKornTy, 6px))) rotate(0deg); }
+    100% { transform: translate(calc(-50% + var(--projectsKornTx, 8px)), calc(-50% + var(--projectsKornTy, 6px))) rotate(360deg); }
 }
 
 @keyframes kornRotateOnce {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { transform: translate(calc(-50% + var(--projectsKornTx, 8px)), calc(-50% + var(--projectsKornTy, 6px))) rotate(0deg); }
+    100% { transform: translate(calc(-50% + var(--projectsKornTx, 8px)), calc(-50% + var(--projectsKornTy, 6px))) rotate(360deg); }
 }
 
 @keyframes kasketFall {
