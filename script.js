@@ -3876,11 +3876,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							);
 							node.style.setProperty('max-width', `${Math.max(maxW + 32, ungeTabW)}px`, 'important');
 						} else if (p.key === 'byens') {
-							node.style.setProperty(
-								'max-width',
-								`${Math.max(100, Math.floor(maxW * 0.95))}px`,
-								'important'
-							);
+							/* Kun Byens: bredere fane i portræt-grid (inline max-width ellers klipper titel-webp) */
+							const byensTabW = Math.min(292, Math.floor(layoutW * 0.64));
+							node.style.setProperty('max-width', `${Math.max(132, byensTabW)}px`, 'important');
 						}
 						let y = rowY(p.row);
 						if (p.key === 'repop') y -= Math.round(8 * scale);
@@ -4086,7 +4084,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						x += Math.round(56 * scale);
 					}
 				} catch {}
-				/* Desktop: TWISTER — tekst + ring lidt længere ned i ovalen */
+				/* Desktop: TWISTER — tekst + ring lidt længere ned i ovalen (tekst finjusteres i CSS translateY) */
 				try {
 					if (!narrow && !isShortLandscape && w >= 1025 && href.includes('twister')) {
 						y += Math.round(14 * scale);
@@ -5879,8 +5877,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: NATURLI' - render linje 7.webp asset line from brain center to node
 			const nodeTextNaturli = node.textContent.trim();
 			const nodeHrefNaturli = node.getAttribute('href') || '';
-			if (nodeTextNaturli === 'NATURLI\'' || nodeHrefNaturli.includes('Naturli') || index === 2) {
-				console.log(`✓ NATURLI' detected at index ${index} - creating linje 7.webp asset line`);
+			if ((nodeHrefNaturli || '').toLowerCase().includes('naturli') || index === 2) {
+				console.log(`✓ NATURLI (naturli*) detected at index ${index} - creating linje 7.webp asset line`);
 				
 				// Start from the center of the brain
 				const brainCenterX = centerX;
@@ -5950,13 +5948,21 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Calculate end point - extend to/past the TWISTER node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				// Extend past the node center for a longer line (længere ud mod TWISTER-boblen)
-				const extensionAmount = nodeRadius * 1.82;
+				let extensionAmount = nodeRadius * 1.82;
+				/* Kort mobil-landscape: hjernen → TWISTER — lidt længere end default (afstemt — ikke for lang) */
+				if (mskIsProjectsShortLandscapeViewport()) {
+					extensionAmount = nodeRadius * 2.04 + 14;
+				}
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount - 30; // Move line up by 30px
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
+				const twShortLsSpokeBoost = mskIsProjectsShortLandscapeViewport() ? 1.1 : 1;
+				const lineLength =
+					Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) *
+					spokeLenMul *
+					twShortLsSpokeBoost;
 				
 				console.log('TWISTER Linje 3 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -6163,14 +6169,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			// (Titles are often image-only; match href so we always use your asset.)
 			if (nodeText === 'BRAINFARTS' || nodeHref.includes('brainfarts')) {
 				console.log('Creating BRAINFARTS circle image...');
-				const brainfartsRingScale = 0.78 * (mskIsProjectsShortLandscapeViewport() ? 1.09 : 1);
+				const bfShortLs = mskIsProjectsShortLandscapeViewport();
+				const brainfartsRingScale = 0.78 * (bfShortLs ? 1.09 : 1);
+				/* Kort mobil-landscape: bredere oval (kun vandret — bh / ry uændret) */
+				const bfShortLsStretchX = bfShortLs ? 1.24 : 1;
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const bw = 240 * brainfartsRingScale * projectsDesktopRingMul;
+				const bw = 240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX;
 				const bh = 200 * brainfartsRingScale * projectsDesktopRingMul;
 				image.setAttribute('x', String(centerX - bw / 2));
 				image.setAttribute('y', String(centerY - bh / 2));
@@ -6196,7 +6205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				fill.setAttribute('cx', String(centerX - 1)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
 				// Slightly smaller at the bottom: shift up a bit
 				fill.setAttribute('cy', String(centerY - 3)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
-				fill.setAttribute('rx', String((120 * 0.56 + 2) * brainfartsRingScale * projectsDesktopRingMul));
+				fill.setAttribute('rx', String((120 * 0.56 + 2) * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX));
 				fill.setAttribute('ry', String((100 * 0.56 - 1) * brainfartsRingScale * projectsDesktopRingMul));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
@@ -6217,7 +6226,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', linePath);
 
 					// Keep it smaller and within the circle-ish area (circle image is 240x200, scaled by brainfartsRingScale)
-					const w = 205 * brainfartsRingScale * projectsDesktopRingMul;
+					const w = 205 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX;
 					const h = 160 * brainfartsRingScale * projectsDesktopRingMul;
 					lineImg.setAttribute('width', String(w));
 					lineImg.setAttribute('height', String(h));
@@ -6409,10 +6418,28 @@ document.addEventListener('DOMContentLoaded', function() {
 					: (landscapeMindmap ? 0.94 : 1);
 				w *= kobajerRingScale;
 				h *= kobajerRingScale * kobajerRingVertMul;
-				/* Kort mobil landscape: bred oval; h var 0.86 (meget lav) — lidt højere vertikalt */
-				if (mskIsProjectsShortLandscapeViewport()) {
-					w *= 1.28;
-					h *= 1.0;
+				/*
+				 * Større ring i mobil/tablet landscape. Kun mskIsProjectsShortLandscapeViewport() rammer
+				 * ikke hvis clientHeight > 520 (DevTools, Safari-chrome) — så brug layout-boks: bred > høj, w≤1024.
+				 */
+				let kobajerLandscapeBump = false;
+				let kobajerPortraitPhoneBump = false;
+				try {
+					const { w: lw, h: lh } = mskProjectsLayoutViewportBox();
+					kobajerLandscapeBump = lh < lw && lw <= MSK_PROJECTS_LANDSCAPE_MAX_W && lw >= 280;
+					kobajerPortraitPhoneBump = lh >= lw && lw <= 640 && lw >= 280;
+				} catch (_) {}
+				if (kobajerLandscapeBump) {
+					if (mskIsProjectsShortLandscapeViewport()) {
+						w *= 1.44;
+						h *= 1.14;
+					} else {
+						w *= 1.34;
+						h *= 1.1;
+					}
+				} else if (kobajerPortraitPhoneBump && isProjectsPhoneWidth()) {
+					w *= 1.22;
+					h *= 1.16;
 				}
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
@@ -6460,23 +6487,51 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: NATURLI' uses the image instead of hand-drawn circle
-			if (nodeText === 'NATURLI\'' || nodeHref.includes('naturli')) {
-				console.log('Creating NATURLI\' circle image...');
+			if (nodeHref.includes('naturli')) {
+				console.log('Creating NATURLI (naturli*) circle image...');
 				let naturliMul = 0.93;
+				let portraitNaturli = false;
 				try {
 					const ih = mskViewportSize().h || 0;
 					const iw = mskViewportSize().w || 1;
 					const ctr = container && container.classList ? container : null;
-					const portrait =
+					portraitNaturli =
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
-					if (portrait) naturliMul = 0.86;
+					/* Lille tekst-webp i CSS — ring større så der er luft omkring label */
+					if (portraitNaturli) naturliMul = 0.88;
 				} catch {}
 				try {
 					if (mskIsProjectsShortLandscapeViewport()) naturliMul *= 1.09;
 				} catch {}
-				/* Bredere horizontalt (apostrof + tekst inde i ringen) — kun stretch på X */
-				const naturliStretchX = 1.22;
+				/* Kun desktop (min-width 1025): lidt mindre ring så den matcher mindre tekst-webp i CSS — ikke tablet/mobil */
+				try {
+					const iwDesk = mskViewportSize().w || 0;
+					if (
+						iwDesk >= 1025 &&
+						!portraitNaturli &&
+						!mskIsProjectsShortLandscapeViewport()
+					) {
+						naturliMul *= 0.85;
+					}
+				} catch {}
+				/* Bredere horizontalt (apostrof + tekst inde i ringen) — kun stretch på X (nH uden stretch) */
+				let naturliStretchX = 1.22;
+				try {
+					if (mskIsProjectsShortLandscapeViewport()) naturliStretchX = 1.34;
+					else if (portraitNaturli) naturliStretchX = 1.48;
+				} catch {}
+				/* Desktop: bredere oval (kun X) — ikke tablet/mobil */
+				try {
+					const iwWide = mskViewportSize().w || 0;
+					if (
+						iwWide >= 1025 &&
+						!portraitNaturli &&
+						!mskIsProjectsShortLandscapeViewport()
+					) {
+						naturliStretchX *= 1.28;
+					}
+				} catch {}
 				const nW = 240 * naturliMul * projectsDesktopRingMul * naturliStretchX;
 				const nH = 140 * naturliMul * projectsDesktopRingMul;
 				// Create an image element for NATURLI'
@@ -6631,7 +6686,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
-				const circleDy = landscapeMindmap ? s(48) : s(20);
+				let circleDy = landscapeMindmap ? s(48) : s(20);
+				/* Kort mobil-landscape: kun ringen op (noden uændret) — mindre circleDy */
+				if (mskIsProjectsShortLandscapeViewport()) {
+					circleDy -= s(34);
+				}
 				image.setAttribute('x', String(twCenterX - (w / 2)));
 				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
 				image.setAttribute('width', String(w));
@@ -6674,20 +6733,27 @@ document.addEventListener('DOMContentLoaded', function() {
 				const byensStretchX = 1.22;
 				const byensStretchY = 0.94;
 				let byensMul = 1;
+				/* Mobil portræt: gør ovalen smallere vandret (1.22+mul ellers for bred ift. skærm) — landscape/desktop uændret */
+				let byensPortraitXNarrow = 1;
 				try {
 					const ih = mskViewportSize().h || 0;
 					const iw = mskViewportSize().w || 1;
 					const portrait =
 						(container && container.classList && container.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
-					if (portrait) byensMul = 0.88;
+					/* Tidligere 0.88 gjorde ovalen markant mindre i portræt trods større titel-webp i CSS */
+					if (portrait) {
+						byensMul = 0.98;
+						byensPortraitXNarrow = 0.7;
+					}
 				} catch {}
 				const bw =
 					440 *
 					byensMul *
 					byensLandhandelRingScale *
 					projectsDesktopRingMul *
-					byensStretchX;
+					byensStretchX *
+					byensPortraitXNarrow;
 				const bh =
 					170 *
 					byensMul *
@@ -6726,7 +6792,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							byensMul *
 							byensLandhandelRingScale *
 							projectsDesktopRingMul *
-							byensStretchX
+							byensStretchX *
+							byensPortraitXNarrow
 					)
 				);
 				fill.setAttribute(
@@ -7025,8 +7092,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					frame.style.filter = 'drop-shadow(0 0 16px rgba(118, 75, 162, 0.65)) drop-shadow(0 0 28px rgba(102, 126, 234, 0.55)) drop-shadow(0 10px 18px rgba(0,0,0,0.22)) brightness(1.08)';
 				}
 
-				// Ensure the hovered line is visually complete (above the purple fill)
-				if (line && line.parentNode === currentSvg) {
+				// Ensure the hovered line is visually complete (above the purple fill ellipse).
+				// Durex: ikke flyt linjen til slutningen — så ligger linje 6 under cirkel-asset (appendChild ellers mal ovenpå ringen).
+				if (line && line.parentNode === currentSvg && !hoverKey.includes('durex')) {
 					currentSvg.appendChild(line);
 				}
 				const condomAsset = document.querySelector('.condom-asset');
