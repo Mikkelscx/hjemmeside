@@ -7100,13 +7100,15 @@ body.sketchbook-theme .brainstorm-container {
         --projectsScaleBaseH: 520;
         --projectsScaleExp: 1.05;
         --projectsScaleMin: 0.64;
-        /* Lidt mindre samlet scale → mere luft mellem cirkler på tværs af enheder */
-        --projectsLandscapeFit: 0.76;
+        /* Samlet scale for hele mindmap (hjerne, linjer, cirkler, faner) — kun kort mobil-landscape */
+        /* Skal matche MSK_PROJECTS_LANDSCAPE_FIT i script.js (layout-rx kompenserer for denne scale) */
+        --projectsLandscapeFit: 0.66;
         --projectsBrainSize: 104px;
         transform-origin: 50% 50%;
+        /* Centreret bedre i viewport — samme scale (--projectsLandscapeFit), mere synligt areal */
         transform:
-            translateX(calc(-38px + env(safe-area-inset-left)))
-            translateY(calc(6px + env(safe-area-inset-top)))
+            translateX(env(safe-area-inset-left))
+            translateY(calc(4px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }

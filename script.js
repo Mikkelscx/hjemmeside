@@ -13,6 +13,8 @@ function mskViewportSize() {
 /** Projects “kort landscape” — samme logik som CSS (max-width 1024px, max-height 520px, bred>kort). Én kilde = mindre drift mellem browsere. */
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
+/** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
+const MSK_PROJECTS_LANDSCAPE_FIT = 0.66;
 
 /**
  * Ét stabilt mål for layout (afrundet heltal) — documentElement.client*, ikke visualViewport.
@@ -34,10 +36,28 @@ function mskProjectsLayoutViewportBox() {
 
 function mskIsProjectsShortLandscapeViewport() {
 	try {
-		const { w, h } = mskProjectsLayoutViewportBox();
-		if (!w || !h) return false;
-		if (h >= w) return false;
-		if (w > MSK_PROJECTS_LANDSCAPE_MAX_W || h > MSK_PROJECTS_LANDSCAPE_MAX_H) return false;
+		/* Samme breakpoint som CSS (short landscape + --projectsLandscapeFit), så JS og styles matcher altid. */
+		if (window.matchMedia) {
+			const mqA = window.matchMedia(
+				'(max-width: 1024px) and (max-height: 520px) and (orientation: landscape)'
+			);
+			const mqB = window.matchMedia(
+				'(max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1)'
+			);
+			if ((mqA && mqA.matches) || (mqB && mqB.matches)) return true;
+		}
+		/* Fallback: inner* kort/lang (fx uden matchMedia) */
+		let iw = Math.round(Math.max(1, window.innerWidth || 0));
+		let ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (iw < 2 || ih < 2) {
+			const b = mskProjectsLayoutViewportBox();
+			iw = Math.max(1, b.w);
+			ih = Math.max(1, b.h);
+		}
+		const longSide = Math.max(iw, ih);
+		const shortSide = Math.min(iw, ih);
+		if (shortSide >= longSide) return false;
+		if (longSide > MSK_PROJECTS_LANDSCAPE_MAX_W || shortSide > MSK_PROJECTS_LANDSCAPE_MAX_H) return false;
 		return true;
 	} catch (_) {
 		return false;
@@ -3760,13 +3780,21 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				portraitOrientation = !!(window.matchMedia && window.matchMedia('(orientation: portrait)').matches);
 			} catch (_) {
-				portraitOrientation = ih >= iw;
+				portraitOrientation = false;
 			}
+			if (!portraitOrientation && ih >= iw) portraitOrientation = true;
+			let phonePortraitMedia = false;
+			try {
+				phonePortraitMedia = !!(
+					window.matchMedia &&
+					window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches
+				);
+			} catch (_) {}
 			const usePortraitSketchGrid =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
-				cw <= 640 &&
-				portraitOrientation;
+				portraitOrientation &&
+				(phonePortraitMedia || cw <= 640);
 
 			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) like the live site; ellipse for landscape / wide.
 			try {
@@ -4007,10 +4035,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			   (tidligere min(rx, rxTight) trykkede rx ned til ~158px og stablede knapper i midten). */
 			try {
 				if (isShortLandscape && !narrow) {
-					/* Flad nok til at undgå overlap på højre kolonne; lidt større ry-budget end 0.46 */
-					ry = Math.min(ry, Math.max(138, h * 0.50));
-					const rxWide = Math.min((w / 2) - 30, w * 0.46);
-					rx = Math.min(Math.max(rx, rxWide), (w / 2) - 26);
+					/* Lodret: lidt højere bue så top/bund bruger mere af højden — samme node-/ring-størrelse (kun placering) */
+					ry = Math.min(ry, Math.max(138, h * 0.54));
+					/* Vandret: scale(MSK_PROJECTS_LANDSCAPE_FIT) — layout-rx skal være højere end w/2 for synlig bredde, men fuld
+					   (vw/2)/fit klippede sidebobler (titler rækker ud). Bland mod rx fra padding ovenfor. */
+					try {
+						const innerMax = Math.max(window.innerWidth || 0, window.innerHeight || 0);
+						const vw = Math.max(1, w, innerMax, lv.w, lv.h);
+						let fit = MSK_PROJECTS_LANDSCAPE_FIT;
+						try {
+							const cs = window.getComputedStyle(container);
+							const v = parseFloat(cs.getPropertyValue('--projectsLandscapeFit') || '');
+							if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
+						} catch (_) {}
+						const edgePad = 18;
+						const rxLo = rx;
+						const rxFull = Math.max(40, (vw / 2 - edgePad) / fit);
+						const rxBlend = 0.56;
+						rx = Math.max(rxLo, rxLo + (rxFull - rxLo) * rxBlend);
+					} catch (_) {
+						/* Undlad fallback der capper rx til ~w/2 — det fjerner hele scale-kompensationen. */
+					}
 				}
 			} catch {}
 			/* Kort phone landscape = samme bue som desktop (ingen 1.09-ring) */
@@ -5240,20 +5285,53 @@ document.addEventListener('DOMContentLoaded', function() {
 		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.55 : 1;
 		const lineH = (base) => Math.max(12, Math.round(Number(base) * lineThicknessMul));
 
-		// Portrait mobile: same sketch chain as hjemmesiden / live site (columns + brain), not radial spokes.
+		// Portrait mobile: 4 streger hjerte→Durex/Unge/Twister/Kø + 4 cirkel→cirkel (Rep↔Dur …); ikke 8 radiale fra desktop-gren.
 		try {
-			const iw = mskViewportSize().w || 0;
-			const ih = mskViewportSize().h || 0;
-			/* Samme som portrait-grid: ellers kan innerWidth afvige og kæden (bl.a. Kø-Bajer→Byens) bruger forkert gren */
+			const iwVp = mskViewportSize().w || 0;
+			const ihVp = mskViewportSize().h || 0;
+			const lvLine = mskProjectsLayoutViewportBox();
+			const iwLv = lvLine.w;
+			const ihLv = lvLine.h;
+			const cwLine = container
+				? Math.round(Math.max(1, container.clientWidth || container.getBoundingClientRect().width))
+				: 0;
+			/* Samme logik som positionNodesPerfectCircle / usePortraitSketchGrid — ellers ellipse-noder + radiale streger */
 			const isPortraitMindmap =
 				!!(container && container.classList && container.classList.contains('projects-mindmap--portrait'));
-			let isMobileProjects =
+			let portraitOrientationChain = false;
+			try {
+				portraitOrientationChain = !!(window.matchMedia && window.matchMedia('(orientation: portrait)').matches);
+			} catch (_) {
+				portraitOrientationChain = false;
+			}
+			/* Når matchMedia siger landscape men layout-viewport er portræt (DevTools/Safari), ellers 8 radiale streger. */
+			if (!portraitOrientationChain && ihLv >= iwLv) portraitOrientationChain = true;
+			let phonePortraitMediaChain = false;
+			try {
+				phonePortraitMediaChain = !!(
+					window.matchMedia &&
+					window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches
+				);
+			} catch (_) {}
+			const portraitSketchLikeGrid =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
-				(isPortraitMindmap || (iw > 0 && ih > 0 && iw <= 640 && ih >= iw));
-			/* Kort landscape: brug ellipse + asset-linjer (CTM), ikke portrait-kæden (pt() i skærm-pixel uden skala). */
+				portraitOrientationChain &&
+				(phonePortraitMediaChain || cwLine <= 640);
+			let isMobileProjects =
+				isPortraitMindmap ||
+				portraitSketchLikeGrid ||
+				(iwVp > 0 && ihVp > 0 && iwVp <= 640 && ihVp >= iwVp);
+			/* Kort landscape: slå portrait-kæde fra — ikke når vi allerede er i portræt-skitse (klasse eller samme MQ som grid). */
 			try {
-				if (mskIsProjectsShortLandscapeViewport()) isMobileProjects = false;
+				if (
+					mskIsProjectsShortLandscapeViewport() &&
+					ihLv < iwLv &&
+					!isPortraitMindmap &&
+					!portraitSketchLikeGrid
+				) {
+					isMobileProjects = false;
+				}
 			} catch (_) {}
 			if (isMobileProjects) {
 				const scale = 1;
