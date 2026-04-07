@@ -5958,12 +5958,18 @@ body.sketchbook-theme .brainstorm-container {
     }
 
     /* Portrait: full-scale mind map (JS også 1). Portrait-grid: .projects-mindmap--portrait + safe-area bund til node-Y i script.js */
-    @media (orientation: portrait) {
+    /* orientation + max-aspect-ratio: DevTools kan vise portræt men matche ikke orientation: portrait — ellers forbliver hjernen 200×200 fra HTML */
+    @media (orientation: portrait), (max-aspect-ratio: 1/1) {
         body.projects-page.sketchbook-theme .brainstorm-container {
             --projectsSx: 1 !important;
             --projectsSy: 1 !important;
-            /* Kun mobil: mindre hjerne end desktop/tablet */
-            --projectsBrainSize: 152px;
+            /* Kun mobil portræt: mindre hjerne (ikke landscape ellipse / ikke desktop 204px) */
+            --projectsBrainSize: 112px;
+        }
+        /* Overskriv SVG width/height-attributter (200) — ellers ser hjernen ikke mindre ud */
+        body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
+            width: var(--projectsBrainSize) !important;
+            height: var(--projectsBrainSize) !important;
         }
     }
 
