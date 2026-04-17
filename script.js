@@ -6366,7 +6366,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				let repopMul = 0.88;
 				try {
-					if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) repopMul = 0.82;
+					if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) {
+						repopMul = 0.82;
+						/* Kun smal telefon portræt: større ring end tablet-portræt — mere luft om titel + Kravling */
+						if (window.matchMedia('(max-width: 640px)').matches) repopMul = 0.93;
+					}
 				} catch {}
 
 				const baseW = s(380) * assetS;
