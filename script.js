@@ -3938,6 +3938,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.row === 1) y += Math.round(4 * scale);
 						/* Repop: ekstra i portrait-grid (kun denne node, ikke Naturlig) */
 						if (p.key === 'repop') y += Math.round(10 * scale);
+						/* Nederste række (Brainfarts, Byens): lidt ned — cirkler + indhold; streger følger i createConnectingLines */
+						if (p.key === 'brainfarts' || p.key === 'byens') y += Math.round(34 * scale);
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
 						node.style.setProperty('top', `${y}px`, 'important');
@@ -5437,6 +5439,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Kun portræt: Repop↔Durex-stregen lidt ned */
 				const repDurexPortraitLineDy =
 					isPortraitMindmap || portraitSketchLikeGrid ? svgScale(10) : 0;
+				/* Kun portræt: Tw↔Brainfarts og Kø↔Byens — mindre “shift up” så stregen sætter lidt lavere */
+				const portraitBottomRowLineTune = isPortraitMindmap || portraitSketchLikeGrid;
 
 				if (repRect && durRect) {
 					const repBot = pt(repRect, 'bottom');
@@ -5490,8 +5494,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				if (twiRect && brfRect) {
 					const twBrfDown = svgScale(8);
-					/* Portræt mobil: lidt højere (streg trukket op mellem Twister og Brainfarts) */
-					const twBrfShiftUp = svgScale(22);
+					/* Standard: streg trukket lidt op i gap; portræt: mindre træk så den matcher lavere bund-række */
+					const twBrfShiftUp = svgScale(portraitBottomRowLineTune ? 14 : 22);
 					const twBot = pt(twiRect, 'bottom');
 					const bfTop = pt(brfRect, 'top');
 					lineImg(
@@ -5544,8 +5548,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				if (kobRect && byeRect) {
 					const kobByeDown = svgScale(22);
-					/* Samme længde/vinkel — parallelforskydning op + mod venstre */
-					const kobByeShiftUp = svgScale(54);
+					/* Samme længde/vinkel — parallelforskydning op + mod venstre; portræt: lidt mindre op-træk */
+					const kobByeShiftUp = svgScale(portraitBottomRowLineTune ? 38 : 54);
 					const kobByeShiftLeft = svgScale(18);
 					const a0 = pt(kobRect, 'bottom');
 					const b0 = pt(byeRect, 'top');
