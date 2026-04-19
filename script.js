@@ -6244,21 +6244,43 @@ document.addEventListener('DOMContentLoaded', function() {
 			function wireFrameNavigation(el) {
 				try {
 					if (!el || !targetHref) return;
-					if (nodeHref.includes('brainfarts')) return;
-					const isFineHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
-					if (isFineHover) {
-						el.style.pointerEvents = 'none';
-						el.style.cursor = 'default';
+					/* Brainfarts: samme som <a> — visuelt klikbar ring, men ingen navigation (under ombygning) */
+					if (nodeHref.includes('brainfarts')) {
+						el.style.pointerEvents = 'auto';
+						el.style.cursor = 'not-allowed';
+						el.addEventListener(
+							'click',
+							(e) => {
+								if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+								try {
+									e.preventDefault();
+								} catch {}
+								try {
+									e.stopPropagation();
+								} catch {}
+							},
+							true
+						);
 						return;
 					}
 					el.style.pointerEvents = 'auto';
 					el.style.cursor = 'pointer';
-					el.addEventListener('click', (e) => {
-						try { e.preventDefault(); } catch {}
-						try { e.stopPropagation(); } catch {}
-						try { e.stopImmediatePropagation(); } catch {}
-						window.location.href = targetHref;
-					}, true);
+					el.addEventListener(
+						'click',
+						(e) => {
+							try {
+								e.preventDefault();
+							} catch {}
+							try {
+								e.stopPropagation();
+							} catch {}
+							try {
+								e.stopImmediatePropagation();
+							} catch {}
+							window.location.href = targetHref;
+						},
+						true
+					);
 				} catch {}
 			}
 
@@ -6357,6 +6379,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 
 				console.log(`✓ BRAINFARTS circle image appended to SVG. SVG children count:`, currentSvg.children.length);
+				wireFrameNavigation(image);
 				return; // Skip the hand-drawn circle creation for BRAINFARTS
 			}
 			
@@ -6553,6 +6576,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					w *= 1.22;
 					h *= 1.16;
 				}
+				/* Portræt mindmap: bredere ring vandret (højde uændret) */
+				try {
+					if (container && container.classList.contains('projects-mindmap--portrait')) {
+						w *= 1.12;
+					}
+				} catch (_) {}
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
@@ -6683,6 +6712,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				else currentSvg.appendChild(fill);
 
 				currentSvg.appendChild(image);
+				wireFrameNavigation(image);
 				console.log(`✓ NATURLI' circle image appended to SVG`);
 				return; // Skip the hand-drawn circle creation for NATURLI'
 			}
@@ -6737,6 +6767,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				else currentSvg.appendChild(fill);
 
 				currentSvg.appendChild(image);
+				wireFrameNavigation(image);
 				console.log(`✓ UNGE MOD UV circle image appended to SVG`);
 				return; // Skip the hand-drawn circle creation for UNGE MOD UV
 			}
@@ -6968,7 +6999,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'durex-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				
+				wireFrameNavigation(image);
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				let durexCyOff = 3;
@@ -7081,7 +7113,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			else currentSvg.appendChild(fillPath);
 			
 			currentSvg.appendChild(circle);
-			
+			wireFrameNavigation(fillPath);
+
 			console.log(`Hand-drawn circle ${index} created for ${node.textContent.trim()}`);
 		});
 		

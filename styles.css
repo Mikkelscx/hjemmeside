@@ -4018,6 +4018,16 @@ body.projects-page.sketchbook-theme .brain .korn-asset {
     pointer-events: none;
 }
 
+/* Projekter: .connecting-lines har pointer-events: none — billed-/path-rammer og skitse-fill skal stadig kunne få klik */
+body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.hand-drawn-frame,
+body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path.hand-drawn-frame {
+    pointer-events: auto !important;
+}
+
+body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path.frame-fill {
+    pointer-events: auto !important;
+}
+
 .frame-fill.is-hovered {
     opacity: 1;
 }
