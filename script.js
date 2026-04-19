@@ -3913,21 +3913,21 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'kobajer') y -= Math.round(6 * scale);
 						const { lx, rx } = rowXs(p.row);
 						let x = (p.side === 'left') ? lx : rx;
-						if (p.key === 'kobajer') y += Math.round(62 * scale);
+						if (p.key === 'kobajer') y += Math.round(40 * scale);
 						/* Brainfarts: lidt mod højre så boblen ikke klipper i venstre kant */
 						if (p.key === 'brainfarts') x += Math.round(32 * scale);
-						/* Twister: mod højre så cirkel + D&AD ikke sidder for tæt på venstre margin */
-						if (p.key === 'twister') x += Math.round(28 * scale);
-						/* Twister: portrait — lidt ned */
-						if (p.key === 'twister') y += Math.round(10 * scale);
+						/* Twister: mod højre + lidt højere (cirkel + indhold, kun portræt-grid) */
+						if (p.key === 'twister') {
+							x += Math.round(28 * scale);
+							y -= Math.round(12 * scale);
+						}
 						/* Repop: mod højre så boblen + Kravling ikke klipper i venstre kant */
 						if (p.key === 'repop') x += Math.round(28 * scale);
 						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
 						if (p.key === 'byens') x -= Math.round(38 * scale);
-						if (p.key === 'byens') y += Math.round(14 * scale);
-						/* Alt under hjernen (række 4–5): lidt ned på skærmen */
-						if (p.row >= 4) y += Math.round(10 * scale);
-						if (p.row === 5) y += Math.round(8 * scale);
+						/* Alt under hjernen (række 4–5): endnu tættere på hjernen (kun portræt-grid) */
+						if (p.row >= 4) y -= Math.round(22 * scale);
+						if (p.row === 5) y -= Math.round(18 * scale);
 						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
 						if (p.key === 'durex') x += Math.round(38 * scale);
 						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
@@ -5336,6 +5336,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (isMobileProjects) {
 				const scale = 1;
 				const svgScale = (n) => n * scale;
+				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
+				const portraitUnderBrainStrokePullUp =
+					isPortraitMindmap || portraitSketchLikeGrid ? svgScale(16) : 0;
+				/* Kun portræt: venstre streg (Twister) lidt højere end højre (Kø-Bajer) */
+				const portraitUnderBrainLeftStrokeExtraPullUp =
+					isPortraitMindmap || portraitSketchLikeGrid ? svgScale(12) : 0;
 				/* Øvre kæde (Rep↔Dur, Dur↔hjerne, Nat↔Ung, Ung↔hjerne): ekstra forkortelse */
 				const portraitUpperLineMul = 0.88;
 				try {
@@ -5428,12 +5434,24 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brfRect = brainfarts && brainfarts.getBoundingClientRect();
 				const byeRect = byens && byens.getBoundingClientRect();
 
+				/* Kun portræt: Repop↔Durex-stregen lidt ned */
+				const repDurexPortraitLineDy =
+					isPortraitMindmap || portraitSketchLikeGrid ? svgScale(10) : 0;
+
 				if (repRect && durRect) {
-					lineImg('assets/Linje 2.webp', pt(repRect, 'bottom'), pt(durRect, 'top'), svgScale(210), {
-						gapA: svgScale(2),
-						gapB: svgScale(2),
-						lenMul: 1.04 * portraitUpperLineMul,
-					});
+					const repBot = pt(repRect, 'bottom');
+					const durTop = pt(durRect, 'top');
+					lineImg(
+						'assets/Linje 2.webp',
+						{ x: repBot.x, y: repBot.y + repDurexPortraitLineDy },
+						{ x: durTop.x, y: durTop.y + repDurexPortraitLineDy },
+						svgScale(210),
+						{
+							gapA: svgScale(2),
+							gapB: svgScale(2),
+							lenMul: 1.04 * portraitUpperLineMul,
+						}
+					);
 				}
 				if (durRect) {
 					const a = {
@@ -5451,14 +5469,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (twiRect) {
 					const shiftX = svgScale(36);
 					const twBrainLineDy = svgScale(18);
+					const twPortraitPullUp =
+						portraitUnderBrainStrokePullUp + portraitUnderBrainLeftStrokeExtraPullUp;
 					const a = {
 						x: brainLeft.x - svgScale(6) + shiftX,
-						y: brainBottom.y - svgScale(58) + twBrainLineDy,
+						y: brainBottom.y - svgScale(58) + twBrainLineDy - twPortraitPullUp,
 					};
 					/* Slut tættere på TWISTER-boblen (længere ud mod twister) */
 					const b = {
 						x: pt(twiRect, 'left').x - svgScale(28) + shiftX,
-						y: pt(twiRect, 'top').y - svgScale(14) + twBrainLineDy,
+						y: pt(twiRect, 'top').y - svgScale(14) + twBrainLineDy - twPortraitPullUp,
 					};
 					/* Ren rotation set ovenfra (ikke flytte ankre); negativ grader = mod venstre i SVG */
 					lineImg('assets/linje 8.webp', a, b, svgScale(175), {
@@ -5507,9 +5527,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					});
 				}
 				if (kobRect) {
-					const a = { x: brainRight.x - svgScale(52), y: brainBottom.y - svgScale(58) };
+					const a = {
+						x: brainRight.x - svgScale(52),
+						y: brainBottom.y - svgScale(58) - portraitUnderBrainStrokePullUp,
+					};
 					const kcx = (kobRect.left - containerRect.left) + kobRect.width * 0.32 - svgScale(4);
-					const b = { x: kcx, y: pt(kobRect, 'top').y - svgScale(14) };
+					const b = {
+						x: kcx,
+						y: pt(kobRect, 'top').y - svgScale(14) - portraitUnderBrainStrokePullUp,
+					};
 					lineImg('assets/Linje 4.webp', a, b, svgScale(235), {
 						gapA: -svgScale(14),
 						gapB: svgScale(2),
