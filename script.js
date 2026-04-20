@@ -34,6 +34,47 @@ function mskProjectsLayoutViewportBox() {
 	}
 }
 
+/**
+ * Chrome DevTools (mobil-emulering): `visualViewport.height` kan fejlagtigt blive den **smalle** dimension (~414px),
+ * så `--vh` sættes til bredden i stedet for højden → sider med `min-height: var(--vh)` kollapser og spacing ser “død” ud.
+ * Falder tilbage til layout-viewport (documentElement.client*), samme stabile kilde som på projekter-siden.
+ */
+function mskSanitizedViewportSize() {
+	try {
+		const visual = mskViewportSize();
+		const layout = mskProjectsLayoutViewportBox();
+		let w = visual.w;
+		let h = visual.h;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+
+		/* Layout vs. visual: vv.height kan være den smalle kant */
+		if (
+			layout.w > 0 &&
+			layout.h > 0 &&
+			h > 0 &&
+			w > 0 &&
+			h <= layout.w + 2 &&
+			layout.h > layout.w + 8
+		) {
+			w = layout.w;
+			h = layout.h;
+		}
+
+		/*
+		 * Chrome DevTools mobil-emulering: både visualViewport.height og documentElement.clientHeight
+		 * kan være ~414 (bredden), mens window.innerHeight er korrekt (~896). Uden dette forbliver --vh = 414.
+		 */
+		if (ih > iw + 24 && h <= iw + 4 && ih > h + 32) {
+			w = iw;
+			h = ih;
+		}
+		return { w, h };
+	} catch {
+		return mskViewportSize();
+	}
+}
+
 function mskIsProjectsShortLandscapeViewport() {
 	try {
 		/* Samme breakpoint som CSS (short landscape + --projectsLandscapeFit), så JS og styles matcher altid. */
@@ -169,9 +210,41 @@ function mskSketchbookPaperLinesDraw() {
 					mskSketchbookPaperLinesDraw();
 					return;
 				}
-				/* Projekter: layout-viewport (ikke visualViewport) → samme højde/bredde som ellipse + mindre hop mellem enheder */
-				const { w, h } =
-					projectsPage && sketch ? mskProjectsLayoutViewportBox() : mskViewportSize();
+				const repopPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('repop-page');
+				const naturligPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('naturlig-page');
+				/*
+				 * Repop: brug kun window.inner* — visualViewport kan i DevTools give ~8.96px højde på første frames (→ --vh: 8.96px).
+				 * Naturli': layout-viewport (client*) — ikke visualViewport; ellers ændrer --vh/--vw sig ved pinch-zoom → indhold/menu hopper.
+				 * Projekter+sketch: layout-viewport. Øvrige: mskSanitizedViewportSize.
+				 */
+				let w;
+				let h;
+				if (repopPage) {
+					w = Math.round(Math.max(1, window.innerWidth || 0));
+					h = Math.round(Math.max(1, window.innerHeight || 0));
+				} else if (naturligPage) {
+					const b = mskProjectsLayoutViewportBox();
+					w = b.w;
+					h = b.h;
+				} else if (projectsPage && sketch) {
+					const b = mskProjectsLayoutViewportBox();
+					w = b.w;
+					h = b.h;
+				} else {
+					const b = mskSanitizedViewportSize();
+					w = b.w;
+					h = b.h;
+				}
+				const iwClamp = Math.round(Math.max(1, window.innerWidth || 0));
+				const ihClamp = Math.round(Math.max(1, window.innerHeight || 0));
+				if (ihClamp > 200 && h < 120) h = ihClamp;
+				if (iwClamp > 200 && w < 120) w = iwClamp;
 				if (narrow) {
 					if (h > 0) document.documentElement.style.setProperty('--vh', h + 'px');
 					if (w > 0) document.documentElement.style.setProperty('--vw', w + 'px');
@@ -7517,6 +7590,259 @@ window.addEventListener('load', function () {
 		});
 	});
 }); 
+
+/**
+ * Projektsider: klik på billeder åbner central lightbox; video med dobbeltklik (enkeltklik = afspil inline).
+ * Afvis med data-no-lightbox på elementet eller forælder .msk-no-asset-lightbox.
+ */
+(function initMskProjectAssetLightbox() {
+	const LB_ID = 'msk-asset-lightbox';
+	let lastFocus = null;
+
+	function isLightboxPage() {
+		try {
+			if (window.self !== window.top) return false;
+			if (document.documentElement.classList.contains('transition-preview')) return false;
+			const b = document.body;
+			if (!b || !b.classList) return false;
+			const deny = new Set([
+				'projects-page',
+				'home-notebook-page',
+				'about-sketchbook-page',
+				'contact-sketchbook-page',
+			]);
+			return [...b.classList].some((c) => c.endsWith('-page') && !deny.has(c));
+		} catch {
+			return false;
+		}
+	}
+
+	function hasNoLightbox(el) {
+		let n = el;
+		for (let i = 0; i < 12 && n; i++) {
+			if (n.getAttribute && n.getAttribute('data-no-lightbox') !== null) return true;
+			if (n.classList && n.classList.contains('msk-no-asset-lightbox')) return true;
+			n = n.parentElement;
+		}
+		return false;
+	}
+
+	function shouldExcludeImg(el) {
+		if (!el || String(el.tagName).toLowerCase() !== 'img') return true;
+		if (hasNoLightbox(el)) return true;
+		if (el.closest && el.closest('.navbar')) return true;
+		if (el.closest && el.closest(`#${LB_ID}`)) return true;
+		const alt = (el.getAttribute('alt') || '').toLowerCase();
+		if (/\blogo\b/i.test(alt)) return true;
+		const cls = String(el.className || '').toLowerCase();
+		if (cls.includes('logo') && !cls.includes('poster') && !cls.includes('headline')) return true;
+		return false;
+	}
+
+	function shouldExcludeVideo(el) {
+		if (!el || String(el.tagName).toLowerCase() !== 'video') return true;
+		if (hasNoLightbox(el)) return true;
+		if (el.closest && el.closest('.navbar')) return true;
+		if (el.closest && el.closest(`#${LB_ID}`)) return true;
+		return false;
+	}
+
+	function ensureShell() {
+		let root = document.getElementById(LB_ID);
+		if (root) return root;
+		root = document.createElement('div');
+		root.id = LB_ID;
+		root.className = 'msk-asset-lightbox';
+		root.setAttribute('role', 'dialog');
+		root.setAttribute('aria-modal', 'true');
+		root.setAttribute('aria-hidden', 'true');
+		root.innerHTML = [
+			'<div class="msk-asset-lightbox__backdrop" data-msk-lb-dismiss="1"></div>',
+			'<button type="button" class="msk-asset-lightbox__close" aria-label="Luk">&times;</button>',
+			'<div class="msk-asset-lightbox__frame">',
+			'<div class="msk-asset-lightbox__stage"></div>',
+			'<p class="msk-asset-lightbox__hint">Klik på det mørke, tryk Esc, eller ✕ for at lukke</p>',
+			'</div>',
+		].join('');
+		document.body.appendChild(root);
+		root.querySelector('.msk-asset-lightbox__backdrop').addEventListener('click', close);
+		root.querySelector('.msk-asset-lightbox__close').addEventListener('click', (e) => {
+			try {
+				e.preventDefault();
+			} catch {}
+			close();
+		});
+		return root;
+	}
+
+	function buildVideoFrom(sourceEl) {
+		const v = document.createElement('video');
+		v.setAttribute('controls', '');
+		v.setAttribute('playsinline', '');
+		v.className = 'msk-asset-lightbox__video';
+		const poster = sourceEl.getAttribute('poster');
+		if (poster) v.setAttribute('poster', poster);
+		let got = false;
+		try {
+			sourceEl.querySelectorAll('source').forEach((s) => {
+				const u = s.getAttribute('src') || s.src;
+				if (!u) return;
+				const ns = document.createElement('source');
+				ns.src = u;
+				if (s.getAttribute('type')) ns.setAttribute('type', s.getAttribute('type'));
+				v.appendChild(ns);
+				got = true;
+			});
+		} catch {}
+		if (!got && sourceEl.currentSrc) {
+			v.src = sourceEl.currentSrc;
+		} else if (!got && sourceEl.src) {
+			v.src = sourceEl.src;
+		}
+		try {
+			v.load();
+		} catch {}
+		return v;
+	}
+
+	function openFromImg(el) {
+		const root = ensureShell();
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		stage.innerHTML = '';
+		const fullSrc = el.getAttribute('data-lightbox-src') || el.currentSrc || el.getAttribute('src');
+		const img = document.createElement('img');
+		img.src = fullSrc;
+		img.alt = el.getAttribute('alt') || '';
+		img.className = 'msk-asset-lightbox__img';
+		img.decoding = 'async';
+		img.loading = 'eager';
+		stage.appendChild(img);
+		root.setAttribute('aria-hidden', 'false');
+		root.classList.add('is-open');
+		document.body.classList.add('msk-asset-lightbox-open');
+		lastFocus = document.activeElement;
+		try {
+			root.querySelector('.msk-asset-lightbox__close').focus();
+		} catch {}
+	}
+
+	function openFromVideo(sourceEl) {
+		try {
+			sourceEl.pause();
+		} catch {}
+		const root = ensureShell();
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		stage.innerHTML = '';
+		stage.appendChild(buildVideoFrom(sourceEl));
+		root.setAttribute('aria-hidden', 'false');
+		root.classList.add('is-open');
+		document.body.classList.add('msk-asset-lightbox-open');
+		lastFocus = document.activeElement;
+		try {
+			root.querySelector('.msk-asset-lightbox__close').focus();
+		} catch {}
+	}
+
+	function close() {
+		const root = document.getElementById(LB_ID);
+		if (!root || !root.classList.contains('is-open')) return;
+		const v = root.querySelector('.msk-asset-lightbox__video');
+		if (v) {
+			try {
+				v.pause();
+			} catch {}
+		}
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		if (stage) stage.innerHTML = '';
+		root.classList.remove('is-open');
+		root.setAttribute('aria-hidden', 'true');
+		document.body.classList.remove('msk-asset-lightbox-open');
+		if (lastFocus && typeof lastFocus.focus === 'function') {
+			try {
+				lastFocus.focus();
+			} catch {}
+		}
+		lastFocus = null;
+	}
+
+	function isDesktopPointerLightbox() {
+		try {
+			return window.matchMedia && window.matchMedia('(hover: hover)').matches;
+		} catch {
+			return true;
+		}
+	}
+
+	document.addEventListener(
+		'click',
+		(e) => {
+			if (!isLightboxPage()) return;
+			const t = e.target;
+			if (!t || !t.tagName) return;
+			const tag = String(t.tagName).toLowerCase();
+
+			if (tag === 'img') {
+				if (shouldExcludeImg(t)) return;
+				try {
+					e.preventDefault();
+					e.stopPropagation();
+				} catch {}
+				openFromImg(t);
+				return;
+			}
+
+			/* Computer / mus: ét klik åbner video i lightbox. Touch: enkeltklik = afspilning; brug dobbeltklik. */
+			if (tag === 'video') {
+				if (!isDesktopPointerLightbox()) return;
+				if (shouldExcludeVideo(t)) return;
+				try {
+					e.preventDefault();
+					e.stopPropagation();
+				} catch {}
+				openFromVideo(t);
+			}
+		},
+		true
+	);
+
+	document.addEventListener(
+		'dblclick',
+		(e) => {
+			if (!isLightboxPage()) return;
+			if (isDesktopPointerLightbox()) return;
+			const t = e.target;
+			if (!t || String(t.tagName).toLowerCase() !== 'video') return;
+			if (shouldExcludeVideo(t)) return;
+			try {
+				e.preventDefault();
+				e.stopPropagation();
+			} catch {}
+			openFromVideo(t);
+		},
+		true
+	);
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key !== 'Escape') return;
+		const root = document.getElementById(LB_ID);
+		if (!root || !root.classList.contains('is-open')) return;
+		try {
+			e.preventDefault();
+		} catch {}
+		close();
+	});
+
+	function refreshLightboxRootClass() {
+		try {
+			document.documentElement.classList.toggle('msk-asset-lightbox-active', isLightboxPage());
+		} catch {}
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', refreshLightboxRootClass);
+	} else {
+		refreshLightboxRootClass();
+	}
+})();
 
 // Global corner page-turn handles (all pages).
 // Uses simple drag-threshold navigation, and triggers existing click-based flip transitions when available.

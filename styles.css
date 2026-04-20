@@ -6561,13 +6561,19 @@ body.sketchbook-theme .brainstorm-container {
         margin-right: auto !important;
     }
 
-    /* Repop: big red sections (LFW boxes) use the whole box on mobile */
-    body.repop-page .page-content > div[style*="linear-gradient(135deg, #ff4444"]:not(.repop-brief-box):not(.repop-mobile-overview) {
-        padding: 1.15rem !important;
+    /* Repop: LFW-kampagnebokse — ingen vandret padding i boksen, så billeder kan fylde kortet kant-til-kant */
+    body.repop-page .repop-lfw-segment {
+        padding: 1.15rem 0 !important;
         margin: 1rem 0 !important;
+        overflow: hidden;
+    }
+    body.repop-page .repop-lfw-segment > h3 {
+        padding-left: 1.15rem !important;
+        padding-right: 1.15rem !important;
+        box-sizing: border-box !important;
     }
 
-    /* Repop: stack "text + image" boxes, put image last, and fill width */
+    /* Repop: LFW / SoMe-rækker — stack i én kolonne; tekst først, billede under (fylder bredden) */
     body.repop-page .page-content {
         padding: 64px 14px 16px;
         margin: 12px auto;
@@ -6575,23 +6581,60 @@ body.sketchbook-theme .brainstorm-container {
     body.repop-page .repop-mobile-stack {
         flex-direction: column !important;
         align-items: stretch !important;
-        gap: 12px !important;
+        gap: 14px !important;
+    }
+    /* LFW-segment: sikrer fuld bredde (inline align-items:center gav snæver billedkolonne) */
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw {
+        align-items: stretch !important;
     }
     body.repop-page .repop-mobile-stack__text {
         order: 1;
         min-height: auto !important;
         margin-left: 0 !important;
+        margin-right: 0 !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        padding-left: 1.15rem !important;
+        padding-right: 1.15rem !important;
     }
     body.repop-page .repop-mobile-stack__media {
         order: 2;
         text-align: center;
+        width: 100%;
     }
     body.repop-page .repop-mobile-stack__media img {
         max-width: 100% !important;
         width: 100% !important;
         height: auto !important;
+        display: block !important;
+    }
+
+    /* LFW infobokse: mediekolonne = fuld bredde af kortet (-padding kun på tekst ovenfor) */
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
+        flex: none !important;
+        align-self: stretch !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media img {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        display: block !important;
+        object-fit: contain !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media img.repop-lfw-img--promo {
+        border-radius: 0 0 12px 12px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
     }
 
     /* Repop overview: phone portrait — each step = text above its circle (sliced from LFW asset 6) */
@@ -7023,33 +7066,456 @@ body.sketchbook-theme .brainstorm-container {
         border-radius: 12px !important;
         box-shadow: 0 10px 22px rgba(25, 118, 210, 0.18) !important;
     }
+}
 
-    /* NATURLI': stack META post + video and push video down */
-    body.naturlig-page .naturli-meta-video {
+/* NATURLI' — telefon i portræt: zoom kan gøre layout-viewport bredere end 640px, så
+   @media (max-width: 640px) og burger-layout slipper. Klassen sættes via JS ud fra
+   screen.* (stabilt ved zoom, i modsætning til innerWidth). */
+@media (min-width: 641px) {
+    html.naturlig-portrait-zoom-stable {
+        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
+    }
+
+    html.naturlig-portrait-zoom-stable .mobile-only {
+        display: inline;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page {
+        --mobileMenuBg: rgba(255, 255, 255, 0.96);
+        --mobileMenuLink: rgba(0, 0, 0, 0.92);
+        --mobileMenuDivider: rgba(0, 0, 0, 0.10);
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+        height: var(--navBarTotal);
+        box-sizing: border-box;
+        z-index: 5000;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-container {
+        height: 52px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle {
+        appearance: none;
+        -webkit-appearance: none;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        border-radius: 10px;
+        width: auto;
+        height: 38px;
+        padding: 0 12px;
+        cursor: pointer;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex: 0 0 auto;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars {
+        width: 18px;
+        height: 12px;
+        position: relative;
+        display: block;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::before,
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::after,
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars span {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.9);
+        transform-origin: 50% 50%;
+        transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::before {
+        top: 0;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars span {
+        top: 5px;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::after {
+        top: 10px;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars::before {
+        top: 5px;
+        transform: rotate(45deg);
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars span {
+        opacity: 0;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars::after {
+        top: 5px;
+        transform: rotate(-45deg);
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__label {
+        font-size: 0.92rem;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: rgba(0, 0, 0, 0.9);
+        line-height: 1;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-menu {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: var(--navBarTotal);
+        display: flex !important;
         flex-direction: column !important;
-        gap: 14px !important;
+        align-items: stretch;
+        justify-content: space-evenly;
+        gap: 0 !important;
+        text-align: center;
+        padding: 0 12px 6px;
+        margin: 0;
+        list-style: none;
+        height: calc(var(--vh) * 0.5);
+        max-height: calc(var(--vh) * 0.5);
+        overflow: hidden;
+        background: var(--mobileMenuBg);
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        white-space: normal !important;
+        z-index: 5001;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-10px);
+        transform-origin: top center;
+        transition:
+            transform 200ms ease,
+            opacity 160ms ease,
+            visibility 0ms linear 200ms;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition:
+            transform 220ms ease,
+            opacity 180ms ease,
+            visibility 0ms;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-item {
+        width: 100%;
+        display: block;
+        margin: 0 !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-link {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.86rem;
+        padding: 10px 0;
+        line-height: 1.1;
+        border-radius: 0;
+        white-space: normal !important;
+        text-align: center !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-menu .nav-link {
+        color: var(--mobileMenuLink) !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-item:not(:last-child) .nav-link {
+        border-bottom: 1px solid var(--mobileMenuDivider);
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-scrim {
+        position: fixed;
+        inset: 0;
+        display: none;
+        background: rgba(0, 0, 0, 0.22);
+        z-index: 4999;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-scrim {
+        display: block;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open {
+        overflow: hidden;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .page-content {
+        padding: 64px 14px 18px !important;
+        margin: 12px auto !important;
+        border-radius: 16px !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .page-content img[alt="Naturli Logo"] {
+        max-width: 270px !important;
+        margin-top: 10px !important;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox {
+        padding: 18px !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox h3 {
+        font-size: 1.6rem !important;
+        margin-bottom: 1rem !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox__assets {
+        gap: 12px !important;
+        margin-top: 12px !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox__asset {
+        border-radius: 12px !important;
+        box-shadow: 0 10px 22px rgba(25, 118, 210, 0.18) !important;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video {
+        flex-direction: column !important;
+        gap: 1rem !important;
         align-items: stretch !important;
     }
-    body.naturlig-page .naturli-meta-video__meta img {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta,
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
+        flex: 0 1 auto !important;
         width: 100% !important;
         max-width: 100% !important;
     }
-    body.naturlig-page .naturli-meta-video__video {
-        margin-top: 8px !important;
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta img {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
+        margin-top: 0 !important;
+    }
+
+    /* Større OUTDOOR/SoMe-plakater når viewport er “bred” pga. zoom (klassen er kun telefon portræt) */
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-inline-infobox {
+        padding: 0.95rem 0.32rem 1.05rem !important;
+        margin-left: -14px !important;
+        margin-right: -14px !important;
+        width: calc(100% + 28px) !important;
+        box-sizing: border-box !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-inline-asset-row {
+        gap: 0.26rem !important;
     }
 }
 
-/* Repop: portrait phones — less dead space under nav / between hero headline lines */
-@media (max-width: 640px) and (orientation: portrait) {
+/* Repop LFW: iPad/lille tablet i portræt (641–768px) matcher ikke max-width:640, men skal samme kolonne + fuld billedbredde */
+@media (min-width: 641px) and (max-width: 768px) and (orientation: portrait) {
+    body.repop-page .repop-lfw-segment {
+        padding: 1.15rem 0 !important;
+        margin: 1rem 0 !important;
+        overflow: hidden;
+    }
+    body.repop-page .repop-lfw-segment > h3 {
+        padding-left: 1.15rem !important;
+        padding-right: 1.15rem !important;
+        box-sizing: border-box !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 14px !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        order: 1;
+        min-height: auto !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 1.15rem !important;
+        padding-right: 1.15rem !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
+        order: 2;
+        flex: none !important;
+        align-self: stretch !important;
+        text-align: center;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media img {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        display: block !important;
+        object-fit: contain !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media img.repop-lfw-img--promo {
+        transform: none !important;
+        border-radius: 0 0 12px 12px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+}
+
+/* Repop LFW kalender (asset 6): smal skærm (uden orientation — matcher DevTools bedre) */
+@media (max-width: 768px) {
     html body.repop-page .page-content {
-        padding: 48px 14px 14px !important;
-        margin: 8px auto !important;
+        padding: var(--navBarTotal, calc(52px + env(safe-area-inset-top, 0px))) 1.2rem 1.45rem !important;
+        margin: 6px auto 18px !important;
+    }
+    html body.repop-page .repop-lfw-segment {
+        margin: 1.5rem 0 !important;
+        padding: 0.65rem 0 1.45rem !important;
+    }
+    html body.repop-page .repop-lfw-segment > h3 {
+        padding-left: 1.35rem !important;
+        padding-right: 1.35rem !important;
+    }
+    html body.repop-page .repop-mobile-stack {
+        gap: 1.2rem !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        display: block !important;
+        flex: 0 1 auto !important;
+        align-self: stretch !important;
+        padding-left: 1.35rem !important;
+        padding-right: 1.35rem !important;
+        padding-top: 0 !important;
+        min-height: 0 !important;
+        justify-content: flex-start !important;
+    }
+    html body.repop-page h2.repop-lfw-heading {
+        margin: 0.85rem 0 0.6rem 0 !important;
+    }
+    html body.repop-page .repop-video-wrap {
+        margin: 0.9rem 0 !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text h4:first-child {
+        margin-top: 0 !important;
+    }
+    html body.repop-page .repop-lfw-overview {
+        display: block !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        text-align: center !important;
+        margin-top: 0.35rem !important;
+        padding: 0.65rem 1.1rem 1.45rem !important;
+        box-sizing: border-box !important;
+    }
+    html body.repop-page .repop-lfw-overview__track {
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+    }
+    html body.repop-page .repop-lfw-overview__track .repop-lfw-overview__img {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        margin: 0 auto !important;
+        border-radius: 12px !important;
+    }
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker {
+        position: absolute !important;
+        z-index: 10 !important;
+        width: auto !important;
+        max-width: min(44vw, 10rem) !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding: 0 0.1rem !important;
+    }
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker p {
+        white-space: normal !important;
+        text-align: center !important;
+        line-height: 1.22 !important;
+        font-size: clamp(0.7rem, 2.6vw, 0.88rem) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+    }
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker p + p,
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker__sub {
+        margin-top: 0.4rem !important;
+    }
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker__sub {
+        line-height: 1.28 !important;
+    }
+    /* Asset 6: zigzag — højere op + venstre markører til venstre, højre til højre */
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(2) {
+        top: 11% !important;
+        left: 23% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(3) {
+        left: 13% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(4) {
+        left: 55% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(5) {
+        top: 5% !important;
+        left: 69% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(6) {
+        left: 81% !important;
+    }
+}
+
+/* Repop: portrait phones — plus max-aspect-ratio: DevTools kan vise portræt men ikke matche orientation:portrait */
+@media (max-width: 640px) and (orientation: portrait),
+       (max-width: 640px) and (max-aspect-ratio: 1/1) {
+    /* 2×2 brief: undgå 1fr-rækker (store huller mellem Problem/Observation og Indsigt/Løsning) */
+    html body.repop-page .repop-inline-brief-grid {
+        grid-template-rows: auto auto !important;
+        align-content: start !important;
+        gap: 0.55rem !important;
+    }
+    html body.repop-page .repop-inline-brief-grid > div {
+        padding: 0.55rem 0.5rem !important;
+    }
+    html body.repop-page .repop-brief-inner-title {
+        margin-bottom: 0.55rem !important;
+    }
+    /* LFW SoMe-første billede: inde i infoboksen (ingen scale — ellers overflow ud af kanten) */
+    html body.repop-page .repop-mobile-stack__media img.repop-lfw-img--promo {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        transform: none !important;
+    }
+    html body.repop-page .page-content {
+        padding: var(--navBarTotal, calc(52px + env(safe-area-inset-top, 0px))) 1.15rem 1.45rem !important;
+        margin: 6px auto 18px !important;
     }
     html body.repop-page .repop-headline {
-        margin-bottom: 0.08rem !important;
+        margin-bottom: 0.35rem !important;
     }
     html body.repop-page h2 {
-        margin: 0.12rem 0 0 !important;
+        margin: 0.35rem 0 0.15rem !important;
     }
     html body.repop-page .repop-nominering {
         margin: 0.22rem 0 0 !important;
@@ -7061,7 +7527,41 @@ body.sketchbook-theme .brainstorm-container {
         margin: 0.08rem auto 0 !important;
     }
     html body.repop-page .repop-brief-box {
-        margin-top: 0.5rem !important;
+        margin-top: 0.85rem !important;
+    }
+    /* LFW kalender (portræt): fylder mere horizontalt — modvirker .page-content side-padding */
+    html body.repop-page .repop-lfw-overview {
+        padding: 0.55rem 0.42rem 1.5rem !important;
+        margin-left: -1.1rem !important;
+        margin-right: -1.1rem !important;
+        width: calc(100% + 2.2rem) !important;
+        max-width: none !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+    }
+    html body.repop-page .repop-lfw-overview__track .repop-lfw-overview__img {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker {
+        max-width: min(46vw, 11rem) !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(2) {
+        top: 2% !important;
+        left: 28% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(3) {
+        left: 18% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(4) {
+        left: 52% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(5) {
+        top: 2% !important;
+        left: 72% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(6) {
+        left: 84% !important;
     }
 }
 
@@ -7523,7 +8023,9 @@ body.sketchbook-theme .brainstorm-container {
         flex: 0 0 48% !important;
         max-width: 48% !important;
         min-width: 0 !important;
+        margin-left: 0 !important;
         margin-right: 0.4rem !important;
+        width: auto !important;
         transform: translateX(-6px) !important;
     }
     html body.repop-page .repop-mobile-stack__media img {
@@ -8689,8 +9191,30 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
 /* Repop by Depop Page Theme */
 .repop-page {
     background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%);
-    min-height: var(--vh);
+    /* --vh fra script.js; hvis den fejler (fx DevTools), må siden ikke være kortere end viewport */
+    min-height: max(100vh, var(--vh, 100vh));
     color: white;
+}
+
+/* Repop LFW: tekstkolonne ved siden af billeder (desktop) — tidligere inline flex/min-height overskrev mobil-CSS */
+@media (min-width: 769px) {
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 200px;
+        box-sizing: border-box;
+    }
+    html body.repop-page .repop-lfw-segment--first .repop-mobile-stack__text {
+        min-height: 300px;
+    }
+    html body.repop-page .repop-mobile-stack__text--pad-left-0-lg {
+        padding-left: 0 !important;
+    }
+    html body.repop-page .repop-mobile-stack__text--pad-right-0-lg {
+        padding-right: 0 !important;
+    }
 }
 
 /* Project1 Page Theme (same as repop but with standard navbar) */
@@ -8756,6 +9280,30 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
     margin-right: auto;
 }
 
+.repop-page .repop-lfw-overview__track {
+    position: relative;
+    width: 100%;
+}
+.repop-page .repop-lfw-overview__track .repop-lfw-overview__img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* LFW kalender (asset 6): undertekster med <br /> — to linjer, ikke én lang linje */
+.repop-page .repop-lfw-overview .repop-lfw-marker__sub {
+    display: block !important;
+    white-space: normal !important;
+    text-align: center !important;
+    max-width: min(100%, 12rem) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    line-height: 1.28 !important;
+}
+
 .repop-page p.repop-brief-subtitle {
     font-size: 1.36rem !important;
 }
@@ -8783,8 +9331,8 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
     }
 }
 
-/* LFW asset 4 & 5: larger than other assets — scale up in portrait layouts */
-@media (max-width: 1024px) and (orientation: portrait) {
+/* SoMe promo-billede: lidt større i tablet-portræt (ikke på smal telefon — der overflow’er infoboksen) */
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
     body.repop-page .repop-mobile-stack__media img.repop-lfw-img--promo {
         transform: scale(1.34) !important;
         transform-origin: center center;
@@ -9333,6 +9881,49 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-section-box > h2 + p {
 /* SoMe assets share 544×762 */
 .naturlig-page .naturli-infobox--some .naturli-infobox__asset {
     aspect-ratio: 544 / 762;
+}
+
+/* Naturli'.html — inline OUTDOOR/SoMe: større plakater i portræt (mindre padding, strammere gap, brug af papirbredde) */
+@media (max-width: 1024px) and (orientation: portrait) {
+    html body.naturlig-page .naturli-inline-infobox {
+        padding: 1.1rem 0.42rem 1.2rem !important;
+        margin-left: -10px !important;
+        margin-right: -10px !important;
+        width: calc(100% + 20px) !important;
+        box-sizing: border-box !important;
+    }
+    html body.naturlig-page .naturli-inline-asset-row {
+        gap: 0.3rem !important;
+    }
+
+    /* META-post + video: kolonne i portræt så begge kan være fuld bredde */
+    html body.naturlig-page .naturli-meta-video {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+    }
+    html body.naturlig-page .naturli-meta-video__meta,
+    html body.naturlig-page .naturli-meta-video__video {
+        flex: 0 1 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    html body.naturlig-page .naturli-meta-video__meta img {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+@media (max-width: 480px) and (orientation: portrait) {
+    html body.naturlig-page .naturli-inline-infobox {
+        margin-left: -14px !important;
+        margin-right: -14px !important;
+        width: calc(100% + 28px) !important;
+        padding: 0.88rem 0.26rem 0.98rem !important;
+    }
+    html body.naturlig-page .naturli-inline-asset-row {
+        gap: 0.22rem !important;
+    }
 }
 
 /* Phone / tablet landscape: use horizontal row of 3 — wider cells = bigger art; still cap height for short viewports */
@@ -10400,4 +10991,133 @@ html body a[href="project1.html"]:hover {
         transform: translate(-50%, -50%) rotate(-1deg) scale(1.1) !important;
         opacity: 0.52 !important;
     }
+}
+
+/* -----------------------------------------------------------------
+   Centraliseret asset-lightbox (alle projektsider — se script.js)
+   ----------------------------------------------------------------- */
+.msk-asset-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 300050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s linear;
+}
+
+.msk-asset-lightbox.is-open {
+    pointer-events: auto;
+    visibility: visible;
+    opacity: 1;
+}
+
+.msk-asset-lightbox__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 12, 22, 0.78);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    cursor: zoom-out;
+}
+
+.msk-asset-lightbox__close {
+    position: fixed;
+    top: max(10px, calc(env(safe-area-inset-top, 0px) + 6px));
+    right: max(10px, calc(env(safe-area-inset-right, 0px) + 6px));
+    z-index: 300051;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(20, 24, 32, 0.88);
+    color: #fff;
+    font-size: 1.55rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    pointer-events: auto;
+}
+
+.msk-asset-lightbox__close:hover {
+    background: rgba(40, 48, 64, 0.95);
+}
+
+.msk-asset-lightbox__frame {
+    position: relative;
+    z-index: 1;
+    max-width: min(96vw, 1600px);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    pointer-events: none;
+}
+
+.msk-asset-lightbox__stage {
+    max-width: 100%;
+    max-height: min(82vh, 1200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.msk-asset-lightbox__img,
+.msk-asset-lightbox__video {
+    max-width: 100%;
+    max-height: min(82vh, 1200px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+.msk-asset-lightbox__video {
+    width: min(96vw, 1400px);
+    background: #000;
+}
+
+.msk-asset-lightbox__hint {
+    margin: 0;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.88);
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+    pointer-events: none;
+    max-width: 36rem;
+}
+
+body.msk-asset-lightbox-open {
+    overflow: hidden;
+}
+
+/*
+ * Projektsider med asset-lightbox (script.js sætter html.msk-asset-lightbox-active).
+ * !important så muse-cursor ikke overskrives af desktop-typografi/layout-regler.
+ */
+html.msk-asset-lightbox-active
+    :is(.page-content, .unge-mod-uv-content, .brainfarts-content, main)
+    img:not([data-no-lightbox]) {
+    cursor: zoom-in !important;
+}
+
+html.msk-asset-lightbox-active
+    :is(.page-content, .unge-mod-uv-content, .brainfarts-content, main)
+    video:not([data-no-lightbox]) {
+    cursor: zoom-in !important;
 }
