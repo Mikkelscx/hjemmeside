@@ -114,28 +114,6 @@
         </div>
     </div>
 
-    <script>
-        (function () {
-            function updateNaturligPortraitZoomStable() {
-                try {
-                    var sw = window.screen && window.screen.width ? window.screen.width : 0;
-                    var sh = window.screen && window.screen.height ? window.screen.height : 0;
-                    var shortSide = Math.min(sw, sh);
-                    var phoneLike = shortSide > 0 && shortSide <= 640;
-                    var portrait =
-                        window.matchMedia && window.matchMedia("(orientation: portrait)").matches;
-                    document.documentElement.classList.toggle(
-                        "naturlig-portrait-zoom-stable",
-                        phoneLike && portrait
-                    );
-                } catch (e) {}
-            }
-            updateNaturligPortraitZoomStable();
-            window.addEventListener("orientationchange", function () {
-                setTimeout(updateNaturligPortraitZoomStable, 100);
-            });
-        })();
-    </script>
     <script src="script.js"></script>
 </body>
 </html> 

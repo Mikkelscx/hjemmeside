@@ -218,9 +218,33 @@ function mskSketchbookPaperLinesDraw() {
 					document.body &&
 					document.body.classList &&
 					document.body.classList.contains('naturlig-page');
+				const durexPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('durex-page');
+				const twisterPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('twister-page');
+				const kobajerPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('kobajer-page');
+				const byensLandhandelPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('byens-landhandel-page');
+				const contactSketchbookPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('contact-sketchbook-page');
+				const aiUniversePage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('ai-universe-page');
 				/*
 				 * Repop: brug kun window.inner* — visualViewport kan i DevTools give ~8.96px højde på første frames (→ --vh: 8.96px).
-				 * Naturli': layout-viewport (client*) — ikke visualViewport; ellers ændrer --vh/--vw sig ved pinch-zoom → indhold/menu hopper.
+				 * Naturli' + Durex + Twister + Kø-bajeren + Byens Landhandel + Kontakt (sketchbook) + AI Universe: layout-viewport (client*) — ikke visualViewport; ellers ændrer --vh/--vw sig ved zoom/pinch → layout hopper (fx smal .page-content fra global infobox-CSS).
 				 * Projekter+sketch: layout-viewport. Øvrige: mskSanitizedViewportSize.
 				 */
 				let w;
@@ -228,7 +252,15 @@ function mskSketchbookPaperLinesDraw() {
 				if (repopPage) {
 					w = Math.round(Math.max(1, window.innerWidth || 0));
 					h = Math.round(Math.max(1, window.innerHeight || 0));
-				} else if (naturligPage) {
+				} else if (
+					naturligPage ||
+					durexPage ||
+					twisterPage ||
+					kobajerPage ||
+					byensLandhandelPage ||
+					contactSketchbookPage ||
+					aiUniversePage
+				) {
 					const b = mskProjectsLayoutViewportBox();
 					w = b.w;
 					h = b.h;
@@ -403,6 +435,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	console.log('Portfolio website loaded successfully!');
 
+	/** Telefon portræt: layout-viewport kan blive >640px ved zoom — hold mobil-layout (screen.* + orientation, som CSS max-width ikke kan). */
+	(function initPhonePortraitZoomStable() {
+		function updatePhonePortraitZoomStable() {
+			try {
+				const sw = window.screen && window.screen.width ? window.screen.width : 0;
+				const sh = window.screen && window.screen.height ? window.screen.height : 0;
+				const shortSide = Math.min(sw, sh);
+				const phoneLike = shortSide > 0 && shortSide <= 640;
+				const portrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+				document.documentElement.classList.toggle('phone-portrait-zoom-stable', phoneLike && portrait);
+			} catch (_) {}
+		}
+		updatePhonePortraitZoomStable();
+		window.addEventListener('orientationchange', function () {
+			setTimeout(updatePhonePortraitZoomStable, 100);
+		});
+		window.addEventListener('resize', function () {
+			setTimeout(updatePhonePortraitZoomStable, 100);
+		});
+	})();
+
 	function closeMobileBurgerMenu() {
 		try { document.body.classList.remove('nav-open'); } catch {}
 		try {
@@ -417,6 +470,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	function isPhoneViewport() {
 		try {
 			if (!window.matchMedia) return false;
+			try {
+				if (document.documentElement.classList.contains('phone-portrait-zoom-stable')) return true;
+			} catch {}
 			if (window.matchMedia('(max-width: 640px)').matches) return true;
 			if (window.matchMedia('(max-width: 1024px) and (hover: none) and (pointer: coarse)').matches) return true;
 			if (window.matchMedia('(max-height: 520px) and (orientation: landscape) and (hover: none) and (pointer: coarse)').matches) return true;
@@ -7661,7 +7717,6 @@ window.addEventListener('load', function () {
 			'<button type="button" class="msk-asset-lightbox__close" aria-label="Luk">&times;</button>',
 			'<div class="msk-asset-lightbox__frame">',
 			'<div class="msk-asset-lightbox__stage"></div>',
-			'<p class="msk-asset-lightbox__hint">Klik på det mørke, tryk Esc, eller ✕ for at lukke</p>',
 			'</div>',
 		].join('');
 		document.body.appendChild(root);
