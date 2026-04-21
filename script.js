@@ -193,6 +193,11 @@ function mskSketchbookPaperLinesDraw() {
 
 (function syncMobileVhFromVisualViewport() {
 	let raf = null;
+	/** Undgå at gentagne visualViewport-resize (pinch-zoom) spammer style-opdateringer — kan udløse Safari WebContent-nedbrud på sketchbook-sider. */
+	let vvResizeDebounce = null;
+	let lastVhPx = -1;
+	let lastVwPx = -1;
+	let lastSketchPaperMinHPx = -1;
 	function apply() {
 		if (raf) cancelAnimationFrame(raf);
 		raf = requestAnimationFrame(() => {
@@ -207,6 +212,9 @@ function mskSketchbookPaperLinesDraw() {
 					document.documentElement.style.removeProperty('--vh');
 					document.documentElement.style.removeProperty('--vw');
 					document.documentElement.style.removeProperty('--sketchPaperMinH');
+					lastVhPx = -1;
+					lastVwPx = -1;
+					lastSketchPaperMinHPx = -1;
 					mskSketchbookPaperLinesDraw();
 					return;
 				}
@@ -238,13 +246,17 @@ function mskSketchbookPaperLinesDraw() {
 					document.body &&
 					document.body.classList &&
 					document.body.classList.contains('contact-sketchbook-page');
+				const aboutSketchbookPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('about-sketchbook-page');
 				const aiUniversePage =
 					document.body &&
 					document.body.classList &&
 					document.body.classList.contains('ai-universe-page');
 				/*
 				 * Repop: brug kun window.inner* — visualViewport kan i DevTools give ~8.96px højde på første frames (→ --vh: 8.96px).
-				 * Naturli' + Durex + Twister + Kø-bajeren + Byens Landhandel + Kontakt (sketchbook) + AI Universe: layout-viewport (client*) — ikke visualViewport; ellers ændrer --vh/--vw sig ved zoom/pinch → layout hopper (fx smal .page-content fra global infobox-CSS).
+				 * Naturli' + Durex + Twister + Kø-bajeren + Byens Landhandel + Om mig/Kontakt (sketchbook) + AI Universe: layout-viewport (client*) — ikke visualViewport; ellers ændrer --vh/--vw sig ved zoom/pinch → feedback med Safari (gentagne layout + WebContent-crash).
 				 * Projekter+sketch: layout-viewport. Øvrige: mskSanitizedViewportSize.
 				 */
 				let w;
@@ -259,6 +271,7 @@ function mskSketchbookPaperLinesDraw() {
 					kobajerPage ||
 					byensLandhandelPage ||
 					contactSketchbookPage ||
+					aboutSketchbookPage ||
 					aiUniversePage
 				) {
 					const b = mskProjectsLayoutViewportBox();
@@ -277,18 +290,32 @@ function mskSketchbookPaperLinesDraw() {
 				const ihClamp = Math.round(Math.max(1, window.innerHeight || 0));
 				if (ihClamp > 200 && h < 120) h = ihClamp;
 				if (iwClamp > 200 && w < 120) w = iwClamp;
+				const rh = Math.round(Math.max(0, h));
+				const rw = Math.round(Math.max(0, w));
 				if (narrow) {
-					if (h > 0) document.documentElement.style.setProperty('--vh', h + 'px');
-					if (w > 0) document.documentElement.style.setProperty('--vw', w + 'px');
+					if (rh > 0 && rh !== lastVhPx) {
+						document.documentElement.style.setProperty('--vh', rh + 'px');
+						lastVhPx = rh;
+					}
+					if (rw > 0 && rw !== lastVwPx) {
+						document.documentElement.style.setProperty('--vw', rw + 'px');
+						lastVwPx = rw;
+					}
 				} else {
 					document.documentElement.style.removeProperty('--vh');
 					document.documentElement.style.removeProperty('--vw');
+					lastVhPx = -1;
+					lastVwPx = -1;
 				}
 				/* Papir (::before) skal følge synlig højde ved pinch-zoom — ellers klippes/kollapser linjer */
-				if (sketch && h > 0) {
-					document.documentElement.style.setProperty('--sketchPaperMinH', h + 'px');
+				if (sketch && rh > 0) {
+					if (rh !== lastSketchPaperMinHPx) {
+						document.documentElement.style.setProperty('--sketchPaperMinH', rh + 'px');
+						lastSketchPaperMinHPx = rh;
+					}
 				} else {
 					document.documentElement.style.removeProperty('--sketchPaperMinH');
+					lastSketchPaperMinHPx = -1;
 				}
 				mskSketchbookPaperLinesDraw();
 			} catch {}
@@ -311,7 +338,23 @@ function mskSketchbookPaperLinesDraw() {
 		} catch {}
 	});
 	if (window.visualViewport) {
-		window.visualViewport.addEventListener('resize', apply);
+		window.visualViewport.addEventListener('resize', () => {
+			try {
+				const b = document.body;
+				const sk = b && b.classList && b.classList.contains('sketchbook-theme');
+				const proj = b && b.classList && b.classList.contains('projects-page');
+				/* Om mig / Kontakt: --vh/--vw er layout-stabile; debounce VV så WebKit ikke oversvømmes ved pinch */
+				if (sk && !proj) {
+					if (vvResizeDebounce) clearTimeout(vvResizeDebounce);
+					vvResizeDebounce = setTimeout(() => {
+						vvResizeDebounce = null;
+						apply();
+					}, 160);
+					return;
+				}
+			} catch (_) {}
+			apply();
+		});
 		/* Ikke scroll: ellers redraw’es papir hver gang man pan’er ved zoom → linjer “lever” */
 	}
 	/* Virtual keyboard changes visible height (especially Android Chrome) */
@@ -7717,6 +7760,7 @@ window.addEventListener('load', function () {
 			'<button type="button" class="msk-asset-lightbox__close" aria-label="Luk">&times;</button>',
 			'<div class="msk-asset-lightbox__frame">',
 			'<div class="msk-asset-lightbox__stage"></div>',
+			'<p class="msk-asset-lightbox__hint">Klik på det mørke, tryk Esc, eller ✕ for at lukke</p>',
 			'</div>',
 		].join('');
 		document.body.appendChild(root);
