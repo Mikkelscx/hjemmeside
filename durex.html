@@ -2,36 +2,65 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#002244">
     <title>Durex X Guess Who - Mikkel's Portfolio</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* Rod = samme gradient som body (undgår synlig kant); color-scheme: dark → mindre hvid overscroll i Chrome */
+        html {
+            --durex-surface-gradient: linear-gradient(
+                135deg,
+                #002244 0%,
+                #003366 25%,
+                #004488 50%,
+                #0055aa 75%,
+                #0066cc 100%
+            );
+            background-color: #002244;
+            background-image: var(--durex-surface-gradient);
+            background-attachment: fixed;
+            min-height: max(100vh, var(--vh, 100vh));
+            min-height: max(100dvh, var(--vh, 100dvh));
+            min-height: -webkit-fill-available;
+            color-scheme: dark;
+        }
         .durex-page {
-            background: linear-gradient(135deg, #002244 0%, #003366 25%, #004488 50%, #0055AA 75%, #0066CC 100%) !important;
+            background-color: #002244;
+            background-image: var(--durex-surface-gradient);
+            background-attachment: fixed;
             color: #333333;
-            min-height: 100vh;
+            min-height: max(100vh, var(--vh, 100vh));
+            min-height: max(100dvh, var(--vh, 100dvh));
+            min-height: -webkit-fill-available;
             position: relative;
         }
         
         .durex-page .navbar {
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+            box-shadow: none !important;
+            color-scheme: light;
         }
         
         .durex-page .nav-link {
-            color: #1976D2 !important;
+            color: rgba(255, 255, 255, 0.92) !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
         }
         
         .durex-page .nav-link:hover {
-            color: #42A5F5 !important;
+            color: #ffffff !important;
         }
         
         .durex-page .page-content {
             background: rgba(255, 255, 255, 0.9) !important;
+            color-scheme: light;
             /* Keep the YouTube iframe 100% clickable: NO backdrop-filter here. */
-            border: 3px solid rgba(255, 255, 255, 0.8);
+            border: none;
             border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(25, 118, 210, 0.3), 0 5px 20px rgba(66, 165, 245, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 40px rgba(25, 118, 210, 0.22), 0 5px 20px rgba(66, 165, 245, 0.14);
             position: relative;
             z-index: 1;
             padding: 1.3rem;
@@ -79,6 +108,116 @@
             text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
             font-size: 1.1rem;
             margin: 0 0 0.45rem 0;
+        }
+
+        /* Kampagnevideo: rent billede som thumbnail — ingen browser-afspiller/tid før klik */
+        .durex-kampagnevideo-wrap {
+            position: relative;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* Indtil afspilning: skjul <video> — thumbnail er eget panel (gradient + logo) */
+        .durex-kampagnevideo-wrap:not(.is-revealed) {
+            background: linear-gradient(
+                135deg,
+                #2d5a8c 0%,
+                #3d72a8 18%,
+                #5088c0 36%,
+                #689fd4 54%,
+                #82b6e4 72%,
+                #9cccf2 86%,
+                #b8dff9 100%
+            );
+        }
+        .durex-kampagnevideo-wrap:not(.is-revealed) .durex-kampagnevideo-el {
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .durex-kampagnevideo-wrap.is-revealed .durex-kampagnevideo-el {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .durex-kampagnevideo-wrap .durex-kampagnevideo-el {
+            display: block;
+            width: 100%;
+            height: auto;
+            vertical-align: top;
+        }
+        .durex-kampagnevideo-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            background: transparent;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .durex-kampagnevideo-thumb-panel {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(0.5rem, 2.5vw, 1rem);
+            box-sizing: border-box;
+            background: linear-gradient(
+                135deg,
+                #2d5a8c 0%,
+                #3d72a8 18%,
+                #5088c0 36%,
+                #689fd4 54%,
+                #82b6e4 72%,
+                #9cccf2 86%,
+                #b8dff9 100%
+            );
+            pointer-events: none;
+        }
+        .durex-kampagnevideo-thumb-logo {
+            width: min(98%, 620px);
+            height: auto;
+            max-height: min(82%, 310px);
+            object-fit: contain;
+            object-position: center center;
+            display: block;
+        }
+        .durex-kampagnevideo-play {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: clamp(3rem, 14vw, 4.75rem);
+            height: clamp(3rem, 14vw, 4.75rem);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .durex-kampagnevideo-play svg {
+            width: 42%;
+            height: 42%;
+            margin-left: 10%;
+            fill: #1565C0;
+        }
+        .durex-kampagnevideo-wrap.is-revealed .durex-kampagnevideo-overlay {
+            display: none;
+        }
+        .durex-kampagnevideo-overlay:focus {
+            outline: none;
+        }
+        .durex-kampagnevideo-overlay:focus-visible {
+            outline: 2px solid #1976D2;
+            outline-offset: 3px;
         }
     </style>
 </head>
@@ -134,11 +273,19 @@
         
         <div style="text-align: center; margin-top: 0.8rem;">
             <h3>Kampagnevideo</h3>
-            <div class="video-container" style="max-width: 800px;">
-                <video controls playsinline preload="metadata" poster="assets/characters.png">
+            <div class="video-container durex-kampagnevideo-wrap" style="max-width: 800px;">
+                <video id="durex-kampagnevideo" class="durex-kampagnevideo-el" playsinline preload="metadata" data-no-play-overlay>
                     <source src="assets/Durex%20Case.mp4" type="video/mp4">
                     Din browser understøtter ikke videoafspilning.
                 </video>
+                <button type="button" class="durex-kampagnevideo-overlay" id="durex-kampagnevideo-overlay" aria-label="Afspil kampagnevideo">
+                    <span class="durex-kampagnevideo-thumb-panel" aria-hidden="true">
+                        <img class="durex-kampagnevideo-thumb-logo" src="assets/Durex-logo.png" alt="" width="620" height="260" decoding="async">
+                    </span>
+                    <span class="durex-kampagnevideo-play" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" focusable="false"><path d="M8 5v14l11-7z"/></svg>
+                    </span>
+                </button>
             </div>
         </div>
         
@@ -194,6 +341,19 @@
           </div>
     </div>
 
+    <script>
+    (function () {
+        var video = document.getElementById('durex-kampagnevideo');
+        var overlay = document.getElementById('durex-kampagnevideo-overlay');
+        var wrap = document.querySelector('.durex-kampagnevideo-wrap');
+        if (!video || !overlay || !wrap) return;
+        overlay.addEventListener('click', function () {
+            wrap.classList.add('is-revealed');
+            video.setAttribute('controls', '');
+            video.play().catch(function () {});
+        });
+    })();
+    </script>
     <script src="script.js"></script>
 </body>
 </html> 

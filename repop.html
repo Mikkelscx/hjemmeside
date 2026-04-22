@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Repop by Depop - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=repop-lfw-2046-overview-portrait-fullbleed">
+    <link rel="stylesheet" href="styles.css?v=repop-lfw-landscape-pre-29-2026">
     <style>
         /* Small navbar override */
         .repop-page .navbar {
@@ -43,6 +43,18 @@
         
         .repop-page .nav-link:hover {
             opacity: 0.7 !important;
+        }
+
+        /* Kalender-markører SoMe/Post: desktop-fallback (≤768 og landskab overskrives nedenfor) */
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+            top: 25%;
+            left: 35%;
+            transform: translateX(-50%);
+        }
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+            top: 25%;
+            left: 67%;
+            transform: translateX(-50%);
         }
 
         /*
@@ -143,22 +155,22 @@
                 text-align: center !important;
                 line-height: 1.28 !important;
             }
-            /* LFW asset 6: øverste række + vandret: venstre markører mod venstre, højre mod højre */
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(2) {
+            /* LFW asset 6: markør-positioner pr. slug (matcher styles.css) */
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
                 top: 11% !important;
                 left: 23% !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(3) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
                 left: 13% !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(4) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
                 left: 55% !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(5) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
                 top: 5% !important;
                 left: 69% !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(6) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
                 left: 81% !important;
             }
         }
@@ -182,22 +194,44 @@
             html body.repop-page .repop-lfw-overview .repop-lfw-marker {
                 max-width: min(46vw, 11rem) !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(2) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
                 top: 2% !important;
                 left: 28% !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(3) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
                 left: 18% !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(4) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
                 left: 52% !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(5) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
                 top: 2% !important;
                 left: 72% !important;
             }
-            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(6) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
                 left: 84% !important;
+            }
+        }
+        /*
+         * Mobil landskab: samme breakpoint som styles.css — sidst i <style> så !important slår igennem
+         * (undgår at inline top/left på HTML overskygger).
+         */
+        @media screen and (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+               screen and (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                transform: translate(-50%, calc(-100% - 8px)) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+                top: 26% !important;
+                left: 40% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                top: 26% !important;
+                left: 61% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+                left: 29% !important;
             }
         }
     </style>
@@ -380,23 +414,23 @@
         <div class="repop-lfw-overview" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; color: white; text-align: center; position: relative;">
             <div class="repop-lfw-overview__track">
             <img class="repop-lfw-overview__img" src="assets/LFW asset 6.png" alt="Kampagneoversigt Repop × LFW" style="height: auto; display: block; margin: 0 auto;">
-            <div class="repop-lfw-marker" style="position: absolute; top: 25%; left: 35%; z-index: 10; text-align: center; transform: translateX(-50%);">
+            <div class="repop-lfw-marker repop-lfw-marker--some" style="position: absolute; z-index: 10; text-align: center;">
                 <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Coming Soon SoMe</p>
                 <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">Fra 1. September<br />og frem</p>
             </div>
-            <div class="repop-lfw-marker" style="position: absolute; top: 70%; left: 21%; z-index: 10; text-align: center; transform: translateX(-50%);">
+            <div class="repop-lfw-marker repop-lfw-marker--pre" style="position: absolute; z-index: 10; text-align: center; transform: translateX(-50%);">
                 <p style="color: white; line-height: 1; margin: 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Pre LFW guerilla</p>
                 <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">1–18<br />September</p>
             </div>
-            <div class="repop-lfw-marker" style="position: absolute; top: 70%; left: 51%; z-index: 10; text-align: center; transform: translateX(-50%);">
+            <div class="repop-lfw-marker repop-lfw-marker--popup" style="position: absolute; top: 70%; left: 51%; z-index: 10; text-align: center; transform: translateX(-50%);">
                 <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Pop-up catwalk</p>
                 <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">18–22<br />September</p>
             </div>
-            <div class="repop-lfw-marker" style="position: absolute; top: 25%; left: 67%; z-index: 10; text-align: center; transform: translateX(-50%);">
-                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap; margin-left: -0.2rem;">Post LFW guerilla</p>
+            <div class="repop-lfw-marker repop-lfw-marker--post" style="position: absolute; z-index: 10; text-align: center;">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Post LFW guerilla</p>
                 <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">22–30<br />September</p>
             </div>
-            <div class="repop-lfw-marker" style="position: absolute; top: 70%; left: 83%; z-index: 10; text-align: center; transform: translateX(-50%);">
+            <div class="repop-lfw-marker repop-lfw-marker--ooh" style="position: absolute; top: 70%; left: 83%; z-index: 10; text-align: center; transform: translateX(-50%);">
                 <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Kontekstuelle OOHs</p>
                 <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">Fra 22. September<br />og frem</p>
             </div>

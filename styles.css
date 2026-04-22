@@ -45,6 +45,182 @@ html {
     scrollbar-gutter: stable;
     overflow-x: hidden;
     overscroll-behavior-x: none;
+    /* Ingen lodret gummi-scroll forbi dokumentets top/bund (alle sider) */
+    overscroll-behavior-y: none;
+}
+
+/*
+ * Overscroll / gummi: browserens html er ellers hvid. Match hvert body-tema med en tilsvarende
+ * flad basefarve (gradientens første stop / body.background), så scroll føles naturlig.
+ * Lodret gummi forbi dokument-top/bund: globalt slået fra på `html` (`overscroll-behavior-y: none` ovenfor).
+ */
+html:has(body.home-notebook-page),
+html:has(body.sketchbook-theme),
+html:has(body.repop-page),
+html:has(body.naturlig-page),
+html:has(body.durex-page),
+html:has(body.kobajer-page),
+html:has(body.twister-page),
+html:has(body.byens-landhandel-page),
+html:has(body.brainfarts-page),
+html:has(body.ai-universe-page),
+html:has(body.unge-mod-uv-page) {
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+}
+
+html:has(body.home-notebook-page) {
+    background-color: #f4f3ef !important;
+}
+
+html:has(body.sketchbook-theme) {
+    background-color: #8b4513 !important;
+}
+
+html:has(body.repop-page) {
+    background-color: #ff4444 !important;
+}
+
+html:has(body.naturlig-page) {
+    background-color: #e3f2fd !important;
+}
+
+/* Naturli': tyk hvid border + inset på .page-content lignede en “ramme”; én blød skygge i stedet */
+body.naturlig-page .page-content {
+    border: none !important;
+    box-shadow: 0 12px 36px rgba(25, 118, 210, 0.12) !important;
+}
+
+/*
+ * Fælles play-knap over native <video> (indsættes via script.js).
+ * Gennemsigtig “glas”-knap; Durex bruger eget overlay — video har data-no-play-overlay.
+ */
+.video-play-frame > video {
+    z-index: 1;
+}
+.video-play-frame > .video-play-btn {
+    position: absolute;
+    inset: 0;
+    width: 5.1rem;
+    height: 5.1rem;
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    /* Ingen backdrop-filter her: WebKit kan skjule SVG-indhold inde i knappen; gennemsigtighed via rgba */
+    background: rgba(255, 255, 255, 0.52);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    overflow: visible;
+}
+.video-play-frame > .video-play-btn:hover {
+    transform: scale(1.06);
+}
+.video-play-frame > .video-play-btn:focus-visible {
+    outline: 3px solid rgba(25, 118, 210, 0.85);
+    outline-offset: 3px;
+}
+.video-play-frame.is-playing > .video-play-btn {
+    opacity: 0;
+    pointer-events: none;
+}
+.video-play-frame > .video-play-btn__icon {
+    display: grid;
+    place-items: center;
+    width: 3.35rem;
+    height: 3.35rem;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+}
+.video-play-frame > .video-play-btn__icon .video-play-btn__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+.video-play-frame > .video-play-btn__icon .video-play-btn__svg path {
+    fill: #152a44;
+}
+
+/*
+ * Durex: html skal have præcis samme gradient som body — ellers ses en kant (ensfarvet rod vs. gradient).
+ * `color-scheme: dark` modvirker hvid gummi-overscroll i Chrome (globalt er `light only`).
+ */
+html:has(body.durex-page) {
+    --durex-surface-gradient: linear-gradient(
+        135deg,
+        #002244 0%,
+        #003366 25%,
+        #004488 50%,
+        #0055aa 75%,
+        #0066cc 100%
+    );
+    background-color: #002244 !important;
+    background-image: var(--durex-surface-gradient) !important;
+    /* Fyld altid synlig viewport (DevTools/mobil kan give for lav --vh); fixed = samme lag ved scroll/overscroll */
+    background-attachment: fixed !important;
+    min-height: max(100dvh, var(--vh, 100dvh)) !important;
+    color-scheme: dark !important;
+}
+
+html:has(body.durex-page) body.durex-page .navbar,
+html:has(body.durex-page) body.durex-page .page-content {
+    color-scheme: light !important;
+}
+
+/*
+ * Kø-Bajer: én definition af gradient + bundfarve (sidste stop). Body arver variabler — ingen kopier af stop-listen andre steder.
+ */
+html:has(body.kobajer-page) {
+    --kobajer-surface-bg-fallback: #c989ae;
+    --kobajer-surface-gradient: linear-gradient(
+        to bottom,
+        #3e524c 0%,
+        #406a62 14%,
+        #4a9486 27%,
+        #5fae9e 36%,
+        #3f6238 45%,
+        #6fad58 53%,
+        #92486f 72%,
+        var(--kobajer-surface-bg-fallback) 100%
+    );
+    background-color: var(--kobajer-surface-bg-fallback) !important;
+    background-image: var(--kobajer-surface-gradient) !important;
+    background-attachment: fixed !important;
+    background-position: top center;
+    background-size: 100vw 100dvh;
+    background-size: 100vw 100lvh;
+    background-repeat: no-repeat;
+    min-height: max(100dvh, var(--vh, 100dvh)) !important;
+    min-height: max(100lvh, 100dvh) !important;
+    min-height: -webkit-fill-available !important;
+}
+
+html:has(body.twister-page) {
+    background-color: #32cd32 !important;
+}
+
+html:has(body.byens-landhandel-page) {
+    background-color: #8b7355 !important;
+}
+
+html:has(body.brainfarts-page) {
+    background-color: #8b4513 !important;
+}
+
+html:has(body.ai-universe-page) {
+    background-color: #0b0f2a !important;
+}
+
+html:has(body.unge-mod-uv-page) {
+    background-color: #000000 !important;
 }
 
 body {
@@ -4069,6 +4245,16 @@ body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path
         animation: none !important;
         filter: none !important;
     }
+    /* Slår senere “Safari hover”-blok ud (højere specificitet) — ingen grå/lilla klik-flade */
+    body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines .hand-drawn-frame.is-hovered {
+        filter: none !important;
+        animation: none !important;
+        opacity: 1 !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+        -webkit-tap-highlight-color: transparent;
+    }
 
     /* Never show hover-only assets on touch */
     body.projects-page.sketchbook-theme .condom-asset,
@@ -5974,348 +6160,6 @@ body.sketchbook-theme .brainstorm-container {
     }
 }
 
-/* Telefon portræt (alle sider): zoom kan gøre layout-viewport >640px — gentag kerne-mobil (burger, tema-vars, sketchbook).
-   Klassen `phone-portrait-zoom-stable` sættes i script.js ud fra screen.* + orientation. */
-@media (min-width: 641px) {
-    html.phone-portrait-zoom-stable {
-        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
-    }
-
-    html.phone-portrait-zoom-stable .mobile-only {
-        display: inline;
-    }
-
-    html.phone-portrait-zoom-stable body {
-        --mobileMenuBg: rgba(255, 255, 255, 0.96);
-        --mobileMenuLink: rgba(0, 0, 0, 0.92);
-        --mobileMenuDivider: rgba(0, 0, 0, 0.1);
-    }
-    html.phone-portrait-zoom-stable body.ai-universe-page {
-        --mobileMenuBg: rgba(0, 0, 0, 0.92);
-        --mobileMenuLink: rgba(0, 255, 255, 0.95);
-        --mobileMenuDivider: rgba(0, 255, 255, 0.18);
-    }
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page {
-        --mobileMenuBg: rgba(0, 0, 0, 0.92);
-        --mobileMenuLink: #00ffff;
-        --mobileMenuDivider: rgba(0, 255, 255, 0.18);
-    }
-
-    html.phone-portrait-zoom-stable body.sketchbook-theme::before {
-        width: 100%;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
-        min-height: -webkit-fill-available;
-        min-height: var(--sketchPaperMinH, 100dvh);
-        box-shadow: none;
-    }
-    html.phone-portrait-zoom-stable body.sketchbook-theme::after {
-        display: none;
-    }
-
-    html.phone-portrait-zoom-stable body.sketchbook-theme .right-margin {
-        display: none;
-    }
-    html.phone-portrait-zoom-stable body.sketchbook-theme .left-margin {
-        left: 36px;
-    }
-
-    /* OM MIG (telefon portræt + zoom): papir + linjer følger scroll — samme som max-width:640 */
-    html.phone-portrait-zoom-stable body.about-sketchbook-page.sketchbook-theme::before {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        min-height: -webkit-fill-available !important;
-        min-height: var(--sketchPaperMinH, 100dvh) !important;
-    }
-    html.phone-portrait-zoom-stable body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        min-height: -webkit-fill-available !important;
-        min-height: var(--sketchPaperMinH, 100dvh) !important;
-    }
-    html.phone-portrait-zoom-stable body.about-sketchbook-page.sketchbook-theme .left-margin {
-        position: absolute !important;
-        top: 0 !important;
-        bottom: 0 !important;
-    }
-
-    html.phone-portrait-zoom-stable body.about-sketchbook-page.sketchbook-theme .about-sketchbook__text {
-        padding-top: 7px !important;
-    }
-
-    html.phone-portrait-zoom-stable:has(body.contact-sketchbook-page.sketchbook-theme) {
-        height: 100%;
-        overflow: hidden;
-        overscroll-behavior: none;
-    }
-    html.phone-portrait-zoom-stable body.contact-sketchbook-page.sketchbook-theme {
-        overflow: hidden !important;
-        height: var(--vh, 100dvh);
-        max-height: var(--vh, 100dvh);
-        overscroll-behavior: none;
-    }
-    html.phone-portrait-zoom-stable body.contact-sketchbook-page.sketchbook-theme main.contact-sketchbook {
-        overflow: hidden !important;
-        min-height: calc(var(--vh, 100dvh) - var(--navBarTotal)) !important;
-        max-height: calc(var(--vh, 100dvh) - var(--navBarTotal)) !important;
-        height: calc(var(--vh, 100dvh) - var(--navBarTotal)) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        box-sizing: border-box !important;
-    }
-    html.phone-portrait-zoom-stable body.contact-sketchbook-page.sketchbook-theme .contact-info {
-        flex: 1 1 auto !important;
-        min-height: 0 !important;
-        justify-content: space-between !important;
-        gap: 0 !important;
-        overflow: visible !important;
-    }
-
-    html.phone-portrait-zoom-stable body .navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-left: env(safe-area-inset-left, 0px);
-        padding-right: env(safe-area-inset-right, 0px);
-        height: var(--navBarTotal);
-        box-sizing: border-box;
-        z-index: 5000;
-    }
-
-    html.phone-portrait-zoom-stable body.repop-page .navbar {
-        z-index: 20000 !important;
-    }
-    html.phone-portrait-zoom-stable body.repop-page .page-content {
-        -webkit-backdrop-filter: none !important;
-        backdrop-filter: none !important;
-    }
-
-    html.phone-portrait-zoom-stable body .nav-container {
-        height: 52px;
-        padding: 6px 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    html.phone-portrait-zoom-stable body .nav-toggle {
-        appearance: none;
-        -webkit-appearance: none;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(0, 0, 0, 0.18);
-        border-radius: 10px;
-        width: auto;
-        height: 38px;
-        padding: 0 12px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        flex: 0 0 auto;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-    html.phone-portrait-zoom-stable body .nav-toggle__bars {
-        width: 18px;
-        height: 12px;
-        position: relative;
-        display: block;
-    }
-    html.phone-portrait-zoom-stable body .nav-toggle__bars::before,
-    html.phone-portrait-zoom-stable body .nav-toggle__bars::after,
-    html.phone-portrait-zoom-stable body .nav-toggle__bars span {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2px;
-        border-radius: 2px;
-        background: rgba(0, 0, 0, 0.9);
-        transform-origin: 50% 50%;
-        transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
-    }
-    html.phone-portrait-zoom-stable body .nav-toggle__bars::before {
-        top: 0;
-    }
-    html.phone-portrait-zoom-stable body .nav-toggle__bars span {
-        top: 5px;
-    }
-    html.phone-portrait-zoom-stable body .nav-toggle__bars::after {
-        top: 10px;
-    }
-
-    html.phone-portrait-zoom-stable body.nav-open .nav-toggle__bars::before {
-        top: 5px;
-        transform: rotate(45deg);
-    }
-    html.phone-portrait-zoom-stable body.nav-open .nav-toggle__bars span {
-        opacity: 0;
-    }
-    html.phone-portrait-zoom-stable body.nav-open .nav-toggle__bars::after {
-        top: 5px;
-        transform: rotate(-45deg);
-    }
-
-    html.phone-portrait-zoom-stable body .nav-toggle__label {
-        font-size: 0.92rem;
-        letter-spacing: 0.06em;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: rgba(0, 0, 0, 0.9);
-        line-height: 1;
-    }
-
-    html.phone-portrait-zoom-stable body .nav-menu {
-        position: fixed;
-        left: 0;
-        right: 0;
-        top: var(--navBarTotal);
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch;
-        justify-content: space-evenly;
-        gap: 0 !important;
-        text-align: center;
-        padding: 0 12px 6px;
-        margin: 0;
-        list-style: none;
-        height: calc(var(--vh) * 0.5);
-        max-height: calc(var(--vh) * 0.5);
-        overflow: hidden;
-        background: var(--mobileMenuBg);
-        border-top: 1px solid rgba(0, 0, 0, 0.12);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-        border-left: none;
-        border-right: none;
-        border-radius: 0;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        white-space: normal !important;
-        z-index: 5001;
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        transform: translateY(-10px);
-        transform-origin: top center;
-        transition: transform 200ms ease, opacity 160ms ease, visibility 0ms linear 200ms;
-    }
-
-    html.phone-portrait-zoom-stable body.repop-page .nav-menu {
-        justify-content: space-evenly !important;
-        padding: 0 12px 6px !important;
-    }
-    html.phone-portrait-zoom-stable body.nav-open .nav-menu {
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
-        transform: translateY(0);
-        transition: transform 220ms ease, opacity 180ms ease, visibility 0ms;
-    }
-
-    html.phone-portrait-zoom-stable body .nav-item {
-        width: 100%;
-        display: block;
-        margin: 0 !important;
-    }
-    html.phone-portrait-zoom-stable body .nav-link {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.86rem;
-        padding: 10px 0;
-        line-height: 1.1;
-        border-radius: 0;
-        white-space: normal !important;
-        text-align: center !important;
-    }
-    html.phone-portrait-zoom-stable body .nav-menu .nav-link {
-        color: var(--mobileMenuLink) !important;
-    }
-    html.phone-portrait-zoom-stable body .nav-item:not(:last-child) .nav-link {
-        border-bottom: 1px solid var(--mobileMenuDivider);
-    }
-
-    html.phone-portrait-zoom-stable body .nav-scrim {
-        position: fixed;
-        inset: 0;
-        display: none;
-        background: rgba(0, 0, 0, 0.22);
-        z-index: 4999;
-    }
-    html.phone-portrait-zoom-stable body.nav-open .nav-scrim {
-        display: block;
-    }
-    html.phone-portrait-zoom-stable body.nav-open {
-        overflow: hidden;
-    }
-
-    /* Som portræt ≤640: gennemsigtig navbar + venstrestillet menu-knap */
-    html.phone-portrait-zoom-stable body .navbar,
-    html.phone-portrait-zoom-stable body.repop-page .navbar,
-    html.phone-portrait-zoom-stable body.durex-page .navbar,
-    html.phone-portrait-zoom-stable body.brainfarts-page .navbar,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .navbar,
-    html.phone-portrait-zoom-stable body.naturlig-page .navbar,
-    html.phone-portrait-zoom-stable body.kobajer-page .navbar,
-    html.phone-portrait-zoom-stable body.twister-page .navbar,
-    html.phone-portrait-zoom-stable body.byens-landhandel-page .navbar {
-        background: transparent !important;
-        border-bottom: none !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-    }
-
-    html.phone-portrait-zoom-stable body .nav-container,
-    html.phone-portrait-zoom-stable body.repop-page .nav-container,
-    html.phone-portrait-zoom-stable body.durex-page .nav-container,
-    html.phone-portrait-zoom-stable body.brainfarts-page .nav-container,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .nav-container,
-    html.phone-portrait-zoom-stable body.naturlig-page .nav-container,
-    html.phone-portrait-zoom-stable body.kobajer-page .nav-container,
-    html.phone-portrait-zoom-stable body.twister-page .nav-container,
-    html.phone-portrait-zoom-stable body.byens-landhandel-page .nav-container {
-        justify-content: flex-start !important;
-        max-width: none !important;
-        width: auto !important;
-        margin-left: 0 !important;
-        margin-right: auto !important;
-    }
-
-    html.phone-portrait-zoom-stable body.repop-page .nav-container {
-        padding: 6px 10px !important;
-    }
-
-    /* Unge mod UV: cyan kant på dropdown (matcher max-width:640-tema) */
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .nav-menu {
-        border-top: 1px solid rgba(0, 255, 255, 0.12);
-        border-bottom: 1px solid rgba(0, 255, 255, 0.12);
-    }
-}
-
 @media (max-width: 640px) {
     /* Projects (mobile): keep the brain+lines+cirlces, but scale to fit phone height */
     body.projects-page.sketchbook-theme {
@@ -7565,344 +7409,524 @@ body.sketchbook-theme .brainstorm-container {
     }
 }
 
-/* NATURLI' — indhold når layout-viewport er “bred” pga. zoom (fælles mobil-navbar: phone-portrait-zoom-stable) */
+/* NATURLI' — telefon i portræt: zoom kan gøre layout-viewport bredere end 640px, så
+   @media (max-width: 640px) og burger-layout slipper. Klassen sættes via JS ud fra
+   screen.* (stabilt ved zoom, i modsætning til innerWidth). */
 @media (min-width: 641px) {
-    html.phone-portrait-zoom-stable body.naturlig-page .page-content {
+    html.naturlig-portrait-zoom-stable {
+        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
+    }
+
+    html.naturlig-portrait-zoom-stable .mobile-only {
+        display: inline;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page {
+        --mobileMenuBg: rgba(255, 255, 255, 0.96);
+        --mobileMenuLink: rgba(0, 0, 0, 0.92);
+        --mobileMenuDivider: rgba(0, 0, 0, 0.10);
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+        height: var(--navBarTotal);
+        box-sizing: border-box;
+        z-index: 5000;
+        background: transparent !important;
+        border-bottom: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-container {
+        height: 52px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle {
+        appearance: none;
+        -webkit-appearance: none;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        border-radius: 10px;
+        width: auto;
+        height: 38px;
+        padding: 0 12px;
+        cursor: pointer;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex: 0 0 auto;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars {
+        width: 18px;
+        height: 12px;
+        position: relative;
+        display: block;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::before,
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::after,
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars span {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.9);
+        transform-origin: 50% 50%;
+        transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::before {
+        top: 0;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars span {
+        top: 5px;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::after {
+        top: 10px;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars::before {
+        top: 5px;
+        transform: rotate(45deg);
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars span {
+        opacity: 0;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars::after {
+        top: 5px;
+        transform: rotate(-45deg);
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__label {
+        font-size: 0.92rem;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: rgba(0, 0, 0, 0.9);
+        line-height: 1;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-menu {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: var(--navBarTotal);
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch;
+        justify-content: space-evenly;
+        gap: 0 !important;
+        text-align: center;
+        padding: 0 12px 6px;
+        margin: 0;
+        list-style: none;
+        height: calc(var(--vh) * 0.5);
+        max-height: calc(var(--vh) * 0.5);
+        overflow: hidden;
+        background: var(--mobileMenuBg);
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        white-space: normal !important;
+        z-index: 5001;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-10px);
+        transform-origin: top center;
+        transition:
+            transform 200ms ease,
+            opacity 160ms ease,
+            visibility 0ms linear 200ms;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition:
+            transform 220ms ease,
+            opacity 180ms ease,
+            visibility 0ms;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-item {
+        width: 100%;
+        display: block;
+        margin: 0 !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-link {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.86rem;
+        padding: 10px 0;
+        line-height: 1.1;
+        border-radius: 0;
+        white-space: normal !important;
+        text-align: center !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-menu .nav-link {
+        color: var(--mobileMenuLink) !important;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-item:not(:last-child) .nav-link {
+        border-bottom: 1px solid var(--mobileMenuDivider);
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-scrim {
+        position: fixed;
+        inset: 0;
+        display: none;
+        background: rgba(0, 0, 0, 0.22);
+        z-index: 4999;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-scrim {
+        display: block;
+    }
+    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open {
+        overflow: hidden;
+    }
+
+    html.naturlig-portrait-zoom-stable body.naturlig-page .page-content {
         padding: 64px 14px 18px !important;
         margin: 12px auto !important;
         border-radius: 16px !important;
     }
-    html.phone-portrait-zoom-stable body.naturlig-page .page-content img[alt="Naturli Logo"] {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .page-content img[alt="Naturli Logo"] {
         max-width: 270px !important;
         margin-top: 10px !important;
     }
 
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-infobox {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox {
         padding: 18px !important;
     }
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-infobox h3 {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox h3 {
         font-size: 1.6rem !important;
         margin-bottom: 1rem !important;
     }
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-infobox__assets {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox__assets {
         gap: 12px !important;
         margin-top: 12px !important;
     }
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-infobox__asset {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox__asset {
         border-radius: 12px !important;
         box-shadow: 0 10px 22px rgba(25, 118, 210, 0.18) !important;
     }
 
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video {
         flex-direction: column !important;
         gap: 1rem !important;
         align-items: stretch !important;
     }
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta,
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta,
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
         flex: 0 1 auto !important;
         width: 100% !important;
         max-width: 100% !important;
     }
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta img {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta img {
         width: 100% !important;
         max-width: 100% !important;
     }
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
         margin-top: 0 !important;
     }
 
     /* Større OUTDOOR/SoMe-plakater når viewport er “bred” pga. zoom (klassen er kun telefon portræt) */
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-inline-infobox {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-inline-infobox {
         padding: 0.95rem 0.32rem 1.05rem !important;
         margin-left: -14px !important;
         margin-right: -14px !important;
         width: calc(100% + 28px) !important;
         box-sizing: border-box !important;
     }
-    html.phone-portrait-zoom-stable body.naturlig-page .naturli-inline-asset-row {
+    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-inline-asset-row {
         gap: 0.26rem !important;
     }
 
-    /* DUREX — indhold når layout-viewport er “bred” pga. zoom */
-    html.phone-portrait-zoom-stable body.durex-page .page-content {
-        margin-top: 12px !important;
-        padding: 64px 14px 18px !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        border-radius: 16px !important;
+    /* UNGE MOD UV — telefon portræt: zoom kan gøre layout-viewport >640px → mobil-layout + burger */
+    html.unge-mod-uv-portrait-zoom-stable {
+        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
     }
 
-    html.phone-portrait-zoom-stable body.durex-page h2,
-    html.phone-portrait-zoom-stable body.durex-page h3 {
-        margin-top: 0.75rem !important;
-        margin-bottom: 0 !important;
-        line-height: 1.08 !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page h3 {
-        line-height: 1.1 !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page h2 + p,
-    html.phone-portrait-zoom-stable body.durex-page h3 + p {
-        margin-top: -0.12em !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page p {
-        line-height: 1.3 !important;
-        margin: 0 0 0.38rem 0 !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page p + p {
-        margin-top: -0.22rem !important;
+    html.unge-mod-uv-portrait-zoom-stable .mobile-only {
+        display: inline;
     }
 
-    html.phone-portrait-zoom-stable body.durex-page .durex-rules h4 {
-        margin-top: 0.5rem !important;
-        margin-bottom: 0 !important;
-        line-height: 1.08 !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page .durex-rules h4:first-of-type {
-        margin-top: 0 !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page .durex-rules h4 + h4 {
-        margin-top: 0.3rem !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page .durex-rules h4 + p {
-        margin-top: -0.12em !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page .durex-infobox .durex-infobox__subhead {
-        margin-top: 0.3rem !important;
-        margin-bottom: 0 !important;
-        line-height: 1.08 !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page .durex-infobox .durex-infobox__subhead + p {
-        margin-top: -0.12em !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page {
+        --mobileMenuBg: rgba(0, 0, 0, 0.92);
+        --mobileMenuLink: #00ffff;
+        --mobileMenuDivider: rgba(0, 255, 255, 0.18);
     }
 
-    html.phone-portrait-zoom-stable body.durex-page .durex-infobox-grid {
-        grid-template-columns: 1fr !important;
-        gap: 0.9rem !important;
-    }
-    html.phone-portrait-zoom-stable body.durex-page .durex-board-section {
-        margin-top: 1rem;
-        padding-top: 0.8rem;
-        border-top: 1px solid rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    /* Én fælles twin-boks som i max-width 1024 portræt — også når zoom gør viewport “bred” */
-    html.phone-portrait-zoom-stable body.durex-page .durex-twin-cards {
-        display: block !important;
-        padding: 1.25rem 1.15rem !important;
-        background: rgba(255, 255, 255, 0.9) !important;
-        border: 3px solid rgba(255, 255, 255, 0.8) !important;
-        border-radius: 20px !important;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    html.phone-portrait-zoom-stable body.durex-page .durex-twin-cards__card {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+        height: var(--navBarTotal);
+        box-sizing: border-box;
+        z-index: 5000 !important;
         background: transparent !important;
-        border: none !important;
+        border-bottom: none !important;
         box-shadow: none !important;
-        padding: 0 !important;
-        border-radius: 0 !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
     }
 
-    html.phone-portrait-zoom-stable body.durex-page .durex-twin-cards__card + .durex-twin-cards__card {
-        margin-top: 1.35rem !important;
-        padding-top: 1.35rem !important;
-        border-top: 1px solid rgba(25, 118, 210, 0.22) !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-container {
+        height: 52px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
     }
 
-    html.phone-portrait-zoom-stable body.durex-page .durex-twin-cards__character-img {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-left: 0 !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle {
+        appearance: none;
+        -webkit-appearance: none;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        border-radius: 10px;
+        width: auto;
+        height: 38px;
+        padding: 0 12px;
+        cursor: pointer;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex: 0 0 auto;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
 
-    /* TWISTER — samme mobil-layout som max-width:640 når viewport er “bred” pga. zoom */
-    html.phone-portrait-zoom-stable body.twister-page .page-content {
-        padding: 64px 14px 16px !important;
-        margin: 12px auto !important;
-        border-radius: 16px !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars {
+        width: 18px;
+        height: 12px;
+        position: relative;
+        display: block;
     }
-    html.phone-portrait-zoom-stable body.twister-page .contact-info h3 {
-        margin: 0.42rem 0 0 !important;
-        line-height: 1.1 !important;
+
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars::before,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars::after,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars span {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.9);
+        transform-origin: 50% 50%;
+        transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
     }
-    html.phone-portrait-zoom-stable body.twister-page .contact-info > p {
-        line-height: 1.12 !important;
-        margin: 0 0 0.18rem 0 !important;
+
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars::before {
+        top: 0;
     }
-    html.phone-portrait-zoom-stable body.twister-page .contact-info h3 + p {
-        margin-top: -0.12em !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars span {
+        top: 5px;
     }
-    html.phone-portrait-zoom-stable body.twister-page .step-column h4 {
-        margin: 0 0 0.08rem !important;
-        line-height: 1.08 !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars::after {
+        top: 10px;
     }
-    html.phone-portrait-zoom-stable body.twister-page .step-column h5 {
-        margin: 0 0 0.14rem !important;
-        line-height: 1.08 !important;
+
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-toggle__bars::before {
+        top: 5px;
+        transform: rotate(45deg);
     }
-    html.phone-portrait-zoom-stable body.twister-page .step-column h5 + p {
-        margin-top: -0.1em !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-toggle__bars span {
+        opacity: 0;
     }
-    html.phone-portrait-zoom-stable body.twister-page .step-column p {
-        line-height: 1.14 !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-toggle__bars::after {
+        top: 5px;
+        transform: rotate(-45deg);
+    }
+
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__label {
+        font-size: 0.92rem;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: rgba(0, 0, 0, 0.9);
+        line-height: 1;
+    }
+
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-menu {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: var(--navBarTotal);
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch;
+        justify-content: space-evenly;
+        gap: 0 !important;
+        text-align: center;
+        padding: 0 12px 6px;
+        margin: 0;
+        list-style: none;
+        height: calc(var(--vh) * 0.5);
+        max-height: calc(var(--vh) * 0.5);
+        overflow: hidden;
+        background: var(--mobileMenuBg);
+        border-top: 1px solid rgba(0, 255, 255, 0.12);
+        border-bottom: 1px solid rgba(0, 255, 255, 0.12);
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        white-space: normal !important;
+        z-index: 5001;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-10px);
+        transform-origin: top center;
+        transition:
+            transform 200ms ease,
+            opacity 160ms ease,
+            visibility 0ms linear 200ms;
+    }
+
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition:
+            transform 220ms ease,
+            opacity 180ms ease,
+            visibility 0ms;
+    }
+
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-item {
+        width: 100%;
+        display: block;
         margin: 0 !important;
     }
-    html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box:nth-child(1) {
-        padding-top: 3.25rem !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-link {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.86rem;
+        padding: 10px 0;
+        line-height: 1.1;
+        border-radius: 0;
+        white-space: normal !important;
+        text-align: center !important;
     }
-    html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
-        width: 100% !important;
-        max-width: 100% !important;
-        max-height: 260px !important;
-        margin-top: 0.75rem !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-menu .nav-link {
+        color: var(--mobileMenuLink) !important;
     }
-
-    /* KØ-BAJEREN — infobox-billeder (samme som max-width:640 når zoom gør viewport “bred”) */
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-info-boxes {
-        gap: 0.55rem !important;
-        margin: 1.25rem 0 !important;
-    }
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-info-box {
-        padding: 0.18rem 0.1rem !important;
-        min-height: 0 !important;
-    }
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-can-image {
-        display: block !important;
-        width: calc(100% + 22px) !important;
-        max-width: none !important;
-        margin-left: -11px !important;
-        margin-right: -11px !important;
-        max-height: min(140vw, 640px) !important;
-        object-fit: contain !important;
-    }
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-step-box {
-        padding: 0.45rem 0.22rem !important;
-    }
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-step-image {
-        display: block !important;
-        width: calc(100% + 22px) !important;
-        max-width: none !important;
-        margin-left: -11px !important;
-        margin-right: -11px !important;
-        max-height: min(140vw, 640px) !important;
-        margin-top: 0.5rem !important;
-        object-fit: contain !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-item:not(:last-child) .nav-link {
+        border-bottom: 1px solid var(--mobileMenuDivider);
     }
 
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-bottom-cta {
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
-        margin-top: 1.5rem !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-scrim {
+        position: fixed;
+        inset: 0;
+        display: none;
+        background: rgba(0, 0, 0, 0.22);
+        z-index: 4999;
     }
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-bottom-cta__item:nth-child(3) {
-        grid-column: 1 !important;
-    }
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-bottom-cta__item {
-        min-height: min(44vw, 210px) !important;
-    }
-    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-bottom-cta__img {
-        width: 100% !important;
-        max-width: 100% !important;
-        max-height: min(92vw, 340px) !important;
-        height: auto !important;
-        object-fit: contain !important;
-    }
-
-    /* BYENS LANDHANDEL — samme mobil-layout som max-width:640 når viewport er “bred” pga. zoom */
-    html.phone-portrait-zoom-stable body.byens-landhandel-page .page-content {
-        padding: 88px 14px 16px !important;
-        margin: 12px auto 14px !important;
-        border-radius: 16px !important;
-    }
-    html.phone-portrait-zoom-stable body.byens-landhandel-page h1.byens-headline {
-        margin-top: 1.1rem !important;
-        margin-bottom: 0.55rem !important;
-        line-height: 1.05 !important;
-        font-size: clamp(1.45rem, 6.0vw, 2.05rem) !important;
-    }
-    html.phone-portrait-zoom-stable body.byens-landhandel-page .byens-headline__top {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-scrim {
         display: block;
-        white-space: nowrap;
-        font-weight: 900;
     }
-    html.phone-portrait-zoom-stable body.byens-landhandel-page .byens-headline__sub {
-        display: block;
-        font-weight: 900;
-    }
-    html.phone-portrait-zoom-stable body.byens-landhandel-page p {
-        line-height: 1.12 !important;
-        margin: 0 0 0.22rem 0 !important;
-    }
-    html.phone-portrait-zoom-stable body.byens-landhandel-page .poster-container {
-        margin: 0.9rem 0 0 !important;
-        width: calc(100% + 28px) !important;
-        margin-left: -14px !important;
-        margin-right: -14px !important;
-    }
-    html.phone-portrait-zoom-stable body.byens-landhandel-page .project-poster {
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-        border-radius: 0 !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open {
+        overflow: hidden;
     }
 
-    /* UNGE MOD UV — samme mobil-layout som max-width:640 når viewport er “bred” pga. zoom */
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content {
-        padding: 0 1.05rem 1rem !important;
+    /* Samme mobil-layout som @media (max-width: 640px) — også når zoom gør viewport “bred” */
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content {
+        padding: 0.05rem 1.05rem 1rem !important;
         margin: 56px auto 14px !important;
         border-radius: 16px !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-grid {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-grid {
         grid-template-columns: 1fr !important;
         grid-template-rows: auto !important;
         gap: 0.75rem !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card p {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card p {
         max-width: 100% !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content h1.uv-headline {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content h1.uv-headline {
         margin: 0 auto -1.85rem auto !important;
         line-height: 0 !important;
     }
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-hero {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-hero {
         margin-top: 0 !important;
         gap: 0 !important;
         margin-bottom: 0.15rem !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page h1.uv-headline + p.uv-credit {
-        margin: -128px auto 0.25rem auto !important;
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-hero .uv-credit {
+        margin-top: -1.65rem !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-credit {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-credit {
         margin-left: auto !important;
         margin-right: auto !important;
         margin-bottom: 0 !important;
         line-height: 1.1 !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-credit + h4 {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-credit + h4 {
         margin-top: 0 !important;
         margin-bottom: 0 !important;
     }
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-credit + h4 + p {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-credit + h4 + p {
         margin-top: -0.12em !important;
         margin-bottom: 0.28rem !important;
     }
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-headline__logo {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-headline__logo {
         width: min(78vw, 360px) !important;
         -webkit-clip-path: inset(16% 8% 28% 5%) !important;
         clip-path: inset(16% 8% 28% 5%) !important;
-        transform: translateY(-46px) !important;
+        transform: translateY(-14px);
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-box {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-box {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -7910,7 +7934,7 @@ body.sketchbook-theme .brainstorm-container {
         margin: 0.05rem 0 1rem 0 !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-section-box {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-section-box {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -7918,14 +7942,14 @@ body.sketchbook-theme .brainstorm-container {
         margin: 1rem 0 0 !important;
         border-radius: 0 !important;
     }
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-card {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-card {
         padding: 0.55rem 0.35rem !important;
     }
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-card p {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-card p {
         max-width: 100% !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid {
         grid-template-columns: 1fr !important;
         max-width: none !important;
         margin-left: -1.1rem !important;
@@ -7933,35 +7957,35 @@ body.sketchbook-theme .brainstorm-container {
         gap: 0.85rem !important;
         width: calc(100% + 2.2rem) !important;
     }
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid > div {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid > div {
         border-radius: 0 !important;
     }
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid img {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid img {
         width: 100% !important;
         height: auto !important;
         display: block;
         border-radius: 0 !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
         grid-template-columns: 1fr !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
         grid-template-columns: 1fr !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid > .uv-media-tile,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid > .uv-media-tile {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid > .uv-media-tile,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid > .uv-media-tile {
         min-width: 0 !important;
         max-width: 100% !important;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid img,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid img,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid img {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid img,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid img,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid img {
         width: 100% !important;
         max-width: 100% !important;
         height: auto !important;
@@ -7969,9 +7993,9 @@ body.sketchbook-theme .brainstorm-container {
         object-position: center top;
     }
 
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid,
-    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid,
+    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
         width: calc(100% + 3rem) !important;
         max-width: none !important;
         margin-left: -1.5rem !important;
@@ -8118,22 +8142,22 @@ body.sketchbook-theme .brainstorm-container {
     html body.repop-page .repop-lfw-overview .repop-lfw-marker__sub {
         line-height: 1.28 !important;
     }
-    /* Asset 6: zigzag — højere op + venstre markører til venstre, højre til højre */
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(2) {
+    /* Asset 6: zigzag — position pr. slug-klasse (samme som tidl. nth-child) */
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
         top: 11% !important;
         left: 23% !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(3) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
         left: 13% !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(4) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
         left: 55% !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(5) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
         top: 5% !important;
         left: 69% !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(6) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
         left: 81% !important;
     }
 }
@@ -8200,21 +8224,21 @@ body.sketchbook-theme .brainstorm-container {
     html body.repop-page .repop-lfw-overview .repop-lfw-marker {
         max-width: min(46vw, 11rem) !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(2) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
         top: 2% !important;
         left: 28% !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(3) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
         left: 18% !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(4) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
         left: 52% !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(5) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
         top: 2% !important;
         left: 72% !important;
     }
-    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker:nth-child(6) {
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
         left: 84% !important;
     }
 }
@@ -8607,10 +8631,13 @@ body.sketchbook-theme .brainstorm-container {
     /* Repop background is strong red; make menu less "dark" than other pages */
     html body.repop-page { --mobileMenuBg: rgba(255, 255, 255, 0.985); }
 
-    /* Repop: less vertical dead space in phone landscape (margins/padding only — no smaller type) */
+    /* Repop: max bredde i kort landskab — kant tættere på viewport (mindre “hvide kanter”) */
     html body.repop-page .page-content {
-        padding: var(--navBarTotal) 12px 10px !important;
-        margin: 4px auto 8px !important;
+        box-sizing: border-box !important;
+        width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) !important;
+        max-width: none !important;
+        padding: var(--navBarTotal) max(2px, env(safe-area-inset-right, 0px)) 6px max(2px, env(safe-area-inset-left, 0px)) !important;
+        margin: 0 auto 4px !important;
     }
     /* Menu stays top-left; back control top-right so it doesn't cover the brief grid */
     html body.repop-page .back-button {
@@ -8674,23 +8701,27 @@ body.sketchbook-theme .brainstorm-container {
     }
     /* Image column fills more of the row; nudge left + gutter so badges don’t overlap the text */
     html body.repop-page .repop-mobile-stack__media {
-        flex: 0 0 48% !important;
-        max-width: 48% !important;
+        flex: 0 0 58% !important;
+        max-width: 58% !important;
         min-width: 0 !important;
         margin-left: 0 !important;
         margin-right: 0.4rem !important;
         width: auto !important;
         transform: translateX(-6px) !important;
+        max-height: min(82vh, calc(var(--vh, 100dvh) - var(--navBarTotal) - 22px));
+        overflow: hidden;
+        align-self: flex-start;
     }
     html body.repop-page .repop-mobile-stack__media img {
         max-width: 100% !important;
         width: 100% !important;
+        max-height: min(80vh, calc(var(--vh, 100dvh) - var(--navBarTotal) - 32px)) !important;
         height: auto !important;
         object-fit: contain !important;
+        object-position: center top;
     }
     html body.repop-page .repop-mobile-stack__media img.repop-lfw-img--promo {
-        transform: scale(1.28) !important;
-        transform-origin: center center !important;
+        transform: none !important;
     }
     html body.repop-page .repop-mobile-stack__text {
         flex: 1 1 0% !important;
@@ -8713,6 +8744,11 @@ body.sketchbook-theme .brainstorm-container {
         padding-left: 0.85rem !important;
         padding-right: 0.85rem !important;
     }
+    /* Kalender (asset 6): overstyr 0.85rem — brug næsten fuld bredde */
+    html body.repop-page .page-content > div.repop-lfw-overview[style*="linear-gradient"] {
+        padding-left: max(0.35rem, env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(0.35rem, env(safe-area-inset-right, 0px)) !important;
+    }
 
     /* Campaign timeline (LFW asset 6): show absolute labels in phone landscape; nudge top row up */
     html body.repop-page .repop-mobile-overview {
@@ -8732,8 +8768,117 @@ body.sketchbook-theme .brainstorm-container {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
+        max-height: min(68vh, calc(var(--vh, 100dvh) - var(--navBarTotal) - 52px)) !important;
         height: auto !important;
+        object-fit: contain !important;
+        object-position: center top;
         border-radius: 12px;
+    }
+
+    /*
+     * LFW asset 6 (repop-lfw-overview): kort landskab — kalender-sektion + grafik fylder næsten hele skærmen.
+     * (Tidligere: max-height ~32vh på billedet → bundfelt føltes som ~⅓ af viewport.)
+     */
+    html body.repop-page .repop-lfw-overview {
+        padding: 0.4rem 0.35rem 0.65rem !important;
+        margin: 0.35rem 0 0.5rem !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: calc(var(--vh, 100dvh) - var(--navBarTotal) - env(safe-area-inset-bottom, 0px)) !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: stretch !important;
+    }
+    html body.repop-page .repop-lfw-overview__track {
+        flex: 1 1 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 0 !important;
+        width: 100% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track .repop-lfw-overview__img {
+        max-height: calc(
+            var(--vh, 100dvh) - var(--navBarTotal) - env(safe-area-inset-bottom, 0px) - 14px
+        ) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
+        object-position: center center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        transform: scale(1.12) !important;
+        transform-origin: center center !important;
+    }
+    /*
+     * Zigzag i landskab: SoMe + Post = tekst over cirkel; Pre + Pop-up + OOH = tekst under.
+     * `left` = vandret midte ved cirklen (translateX -50%).
+     */
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker {
+        position: absolute !important;
+        z-index: 10 !important;
+        max-width: min(20vw, 8rem) !important;
+        margin: 0 !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        box-sizing: border-box !important;
+    }
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker p,
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker .repop-lfw-marker__sub {
+        text-align: center !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+        transform: translate(-50%, calc(-100% - 8px)) !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre,
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup,
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+        transform: translateX(-50%) !important;
+    }
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker p {
+        font-size: clamp(0.62rem, 2.35vw, 0.95rem) !important;
+        line-height: 1.14 !important;
+        white-space: normal !important;
+    }
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker p + p,
+    html body.repop-page .repop-lfw-overview .repop-lfw-marker__sub {
+        font-size: clamp(0.55rem, 2.05vw, 0.84rem) !important;
+        line-height: 1.2 !important;
+        margin-top: 0.25rem !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+        top: 75% !important;
+        left: 29% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+        top: 26% !important;
+        left: 40% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+        top: 75% !important;
+        left: 50.5% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+        top: 26% !important;
+        left: 61% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+        top: 75% !important;
+        left: 68.5% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh .repop-lfw-marker__sub {
+        margin-left: 1.52rem !important;
     }
 }
 
@@ -9241,14 +9386,16 @@ body.sketchbook-theme .brainstorm-container .brainstorm-stage {
     transform-origin: 50% 50%;
 }
 
-/* Stronger, SVG-safe hover highlight (Safari-friendly) */
-body.sketchbook-theme .brainstorm-container .connecting-lines .hand-drawn-frame.is-hovered {
-    filter:
-        drop-shadow(0 0 16px rgba(118, 75, 162, 0.65))
-        drop-shadow(0 0 28px rgba(102, 126, 234, 0.55))
-        drop-shadow(0 10px 18px rgba(0,0,0,0.22))
-        brightness(1.08) !important;
-    opacity: 1 !important;
+/* Stronger, SVG-safe hover highlight — kun rigtig hover (ikke touch/klik der låser :hover) */
+@media (hover: hover) {
+    body.sketchbook-theme .brainstorm-container .connecting-lines .hand-drawn-frame.is-hovered {
+        filter:
+            drop-shadow(0 0 16px rgba(118, 75, 162, 0.65))
+            drop-shadow(0 0 28px rgba(102, 126, 234, 0.55))
+            drop-shadow(0 10px 18px rgba(0,0,0,0.22))
+            brightness(1.08) !important;
+        opacity: 1 !important;
+    }
 }
 
 /* Brain container positioning for mindmap effect */
@@ -9671,19 +9818,6 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 /* Unge mod UV — portræt mobil: Print/Outdoor/SoMe — fuld billedvisning (én kolonne, minmax undgås, contain) */
 @media (max-width: 640px) and (orientation: portrait),
     (max-width: 640px) and (max-aspect-ratio: 1/1) {
-    /* Hero: logo tættere på øverste infoboks-kant (kun portræt) */
-    body.unge-mod-uv-page .unge-mod-uv-content {
-        padding-top: 0 !important;
-    }
-    body.unge-mod-uv-page .uv-headline__logo {
-        transform: translateY(-46px) !important;
-    }
-
-    /* “Lavet med …” — samme idé som i unge-mod-uv.html (-128px @768); -2.45rem overskrev det med !important */
-    body.unge-mod-uv-page h1.uv-headline + p.uv-credit {
-        margin: -128px auto 0.25rem auto !important;
-    }
-
     body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
     body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
         grid-template-columns: 1fr !important;
@@ -9724,28 +9858,113 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 
 /* Phone / tablet landscape: less upward pull so logo clears back button + top chrome */
 @media (max-width: 1024px) and (orientation: landscape) and (max-height: 520px) {
+    /* unge-mod-uv.html har margin: 2rem + padding: 3rem — for >640px bredde gælder ikke max-width:640-regler; træk kortet op */
     body.unge-mod-uv-page .unge-mod-uv-content {
-        padding-top: 0.85rem !important;
+        padding-top: 0.05rem !important;
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
+        padding-bottom: 1.25rem !important;
+        margin-top: -0.45rem !important;
+        margin-bottom: 0.85rem !important;
     }
-    body.unge-mod-uv-page .uv-hero {
-        margin-top: -72px !important;
-        gap: 0 !important;
-    }
-    /* Tighten logo → “Lavet med” / BRIEF (wide landscape skips portrait mobile rules) */
+    /*
+     * HTML har ikke .uv-hero — hele stakken (logo → Lavet med → BRIEF → bokse) skal trækkes op samlet.
+     * margin-top på h1 svarer til den tidligere .uv-hero-træk.
+     */
+    /*
+     * Under logo: kraftig op-træk. h1 har lille neg. bund — hovedtræk på credit (undgår at margin-collapse
+     * slugger kun én af to store negative margins).
+     */
     body.unge-mod-uv-page .unge-mod-uv-content h1.uv-headline {
-        margin: 0 auto -2.15rem auto !important;
+        margin: -88px auto 0.12rem auto !important;
         line-height: 0 !important;
     }
-    body.unge-mod-uv-page .uv-hero .uv-credit {
-        margin-top: -1.5rem !important;
+    body.unge-mod-uv-page .unge-mod-uv-content h1.uv-headline + p.uv-credit {
+        /* Lidt mindre end forrige træk — undgår overlap med titel i logo-PNG */
+        margin: clamp(-188px, -27vw, -148px) auto 0.12rem !important;
     }
-    body.unge-mod-uv-page .uv-credit + h4 + p {
-        margin-top: -0.18em !important;
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-credit + h4 {
+        margin-top: -0.38rem !important;
+        line-height: 1.08 !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-credit + h4 + p {
+        margin-top: -0.22em !important;
+        margin-bottom: 0.2rem !important;
+        line-height: 1.2 !important;
+    }
+    /* Første neon-ramme (2×2 brief): tæt under BRIEF */
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-credit + h4 + p + div {
+        margin-top: 0.06rem !important;
+        margin-bottom: 0.5rem !important;
+        padding-top: 0.62rem !important;
+        padding-bottom: 0.68rem !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content > div:has(.uv-brief-grid) + div {
+        margin-top: 0.28rem !important;
     }
     body.unge-mod-uv-page .uv-headline__logo {
         -webkit-clip-path: inset(10% 8% 22% 5%) !important;
         clip-path: inset(10% 8% 22% 5%) !important;
-        transform: translateY(-8px);
+        transform: translateY(-15px);
+    }
+}
+
+/* Short landscape / wide aspect: fit each asset image in the viewport height (no vertical scroll to see full frame) */
+@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+    (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
+    /* Print: tre mockups på én række (HTML bruger minmax(420px) som ellers stakker på mobil) */
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.35rem !important;
+        align-items: stretch !important;
+        /* Brug bredden i den cyan ramme (ophæv sektionens 1.5rem side-padding) → højere kolonner */
+        width: calc(100% + 3rem) !important;
+        max-width: none !important;
+        margin-left: -1.5rem !important;
+        margin-right: -1.5rem !important;
+        box-sizing: border-box !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid > .uv-media-tile {
+        min-width: 0 !important;
+    }
+    /* SoMe: 2 + 1 — sidste post centreret på egen række (samme kortbredde som ovenfor) */
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 1.2rem !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile:nth-child(3) {
+        grid-column: 1 / -1;
+        justify-self: center;
+        width: min(100%, calc((100% - 1.2rem) / 2));
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid .uv-media-tile,
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid .uv-media-tile,
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid .uv-media-tile {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 0 !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid img,
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid img,
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid img {
+        width: auto !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: calc(
+            var(--vh, 100dvh) - var(--navBarTotal) - 2.25rem - env(safe-area-inset-bottom, 0px)
+        ) !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        flex-shrink: 0 !important;
+    }
+    /* Print: lidt mere lodret plads end outdoor/some (stadig uden scroll for ét fuldt mockup) */
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid img {
+        max-height: calc(
+            var(--vh, 100dvh) - var(--navBarTotal) - 1.05rem - env(safe-area-inset-bottom, 0px)
+        ) !important;
     }
 }
 
@@ -10784,23 +11003,34 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 
 /* DUREX X GUESS WHO Page Theme */
 .durex-page {
-    background: linear-gradient(135deg, #0066CC 0%, #0099FF 25%, #00CCFF 50%, #33CCFF 75%, #66CCFF 100%) !important;
+    background-color: #002244;
+    background-image: var(
+        --durex-surface-gradient,
+        linear-gradient(135deg, #002244 0%, #003366 25%, #004488 50%, #0055aa 75%, #0066cc 100%)
+    );
+    background-attachment: fixed;
     color: #333333;
-    min-height: var(--vh);
+    min-height: max(100dvh, var(--vh, 100dvh));
     position: relative;
 }
 
+/* Ingen hvid plade under status/safe area — gradient fra body/html skinner igennem (alle breakpoints). */
 .durex-page .navbar {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: none;
+    color-scheme: light;
 }
 
 .durex-page .nav-link {
-    color: #1976D2;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .durex-page .nav-link:hover {
-    color: #42A5F5;
+    color: #ffffff;
 }
 
 .durex-page .back-button {
@@ -10819,13 +11049,13 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 
 .durex-page .page-content {
     background: rgba(255, 255, 255, 0.9);
+    color-scheme: light;
     backdrop-filter: blur(15px);
-    border: 3px solid rgba(255, 255, 255, 0.8);
+    border: none;
     border-radius: 20px;
-    box-shadow: 
-        0 10px 40px rgba(25, 118, 210, 0.3),
-        0 5px 20px rgba(66, 165, 245, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 10px 40px rgba(25, 118, 210, 0.22),
+        0 5px 20px rgba(66, 165, 245, 0.14);
     position: relative;
     z-index: 1;
     padding: 2rem;
@@ -10928,11 +11158,22 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     margin-top: -0.12em !important;
 }
 
-/* KØ-BAJER Page Theme */
+/* KØ-BAJER Page Theme — samme lag som html (`--kobajer-surface-gradient` arves fra html) */
 .kobajer-page {
-    background: linear-gradient(135deg, #FFE066 0%, #FF6B6B 25%, #4ECDC4 50%, #45B7D1 75%, #96CEB4 100%);
+    background-color: var(--kobajer-surface-bg-fallback, #c989ae);
+    background-image: var(
+        --kobajer-surface-gradient,
+        linear-gradient(to bottom, #3e524c, #c989ae)
+    );
+    background-attachment: fixed;
+    background-position: top center;
+    background-size: 100vw 100dvh;
+    background-size: 100vw 100lvh;
+    background-repeat: no-repeat;
     color: #333333;
-    min-height: var(--vh);
+    min-height: max(100dvh, var(--vh, 100dvh));
+    min-height: max(100lvh, 100dvh);
+    min-height: -webkit-fill-available;
     position: relative;
 }
 
@@ -10943,7 +11184,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+    background: linear-gradient(125deg, transparent 35%, rgba(255, 255, 255, 0.07) 50%, transparent 65%);
     pointer-events: none;
     z-index: 0;
 }
@@ -11964,6 +12205,17 @@ html body a[href="project1.html"]:hover {
 .msk-asset-lightbox__video {
     width: min(96vw, 1400px);
     background: #000;
+}
+
+.msk-asset-lightbox__hint {
+    margin: 0;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.88);
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+    pointer-events: none;
+    max-width: 36rem;
 }
 
 body.msk-asset-lightbox-open {

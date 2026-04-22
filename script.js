@@ -222,6 +222,10 @@ function mskSketchbookPaperLinesDraw() {
 					document.body &&
 					document.body.classList &&
 					document.body.classList.contains('repop-page');
+				const ungeModUvPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('unge-mod-uv-page');
 				const naturligPage =
 					document.body &&
 					document.body.classList &&
@@ -255,20 +259,27 @@ function mskSketchbookPaperLinesDraw() {
 					document.body.classList &&
 					document.body.classList.contains('ai-universe-page');
 				/*
-				 * Repop: brug kun window.inner* — visualViewport kan i DevTools give ~8.96px højde på første frames (→ --vh: 8.96px).
-				 * Naturli' + Durex + Twister + Kø-bajeren + Byens Landhandel + Om mig/Kontakt (sketchbook) + AI Universe: layout-viewport (client*) — ikke visualViewport; ellers ændrer --vh/--vw sig ved zoom/pinch → feedback med Safari (gentagne layout + WebContent-crash).
+				 * Repop: tidligere kun window.inner* — i mobil-landskab (og nogle WebKit/DevTools-tilstande) kan innerWidth/innerHeight give vanvittige tal (fx ~9 og ~4 px) → --vh/--vw kollapser og “hvid kasse”/overlay-følelse.
+				 * Repop + Unge mod UV + Naturli' + Durex + … + AI Universe: layout-viewport (client*) — stabil.
 				 * Projekter+sketch: layout-viewport. Øvrige: mskSanitizedViewportSize.
 				 */
 				let w;
 				let h;
-				if (repopPage) {
-					w = Math.round(Math.max(1, window.innerWidth || 0));
-					h = Math.round(Math.max(1, window.innerHeight || 0));
+				if (repopPage || ungeModUvPage) {
+					const b = mskProjectsLayoutViewportBox();
+					w = b.w;
+					h = b.h;
+				} else if (durexPage || kobajerPage) {
+					/*
+					 * Layout-viewport (client*), ikke visualViewport: ved pinch-zoom krymper VV → --vh/--vw blev mikroskopiske
+					 * og Durex/Kø-Bajer `min-height: var(--vh)` kollapsede (format skiftede). RDM-fallbacks nedenfor bibeholdes.
+					 */
+					const b = mskProjectsLayoutViewportBox();
+					w = b.w;
+					h = b.h;
 				} else if (
 					naturligPage ||
-					durexPage ||
 					twisterPage ||
-					kobajerPage ||
 					byensLandhandelPage ||
 					contactSketchbookPage ||
 					aboutSketchbookPage ||
@@ -290,16 +301,35 @@ function mskSketchbookPaperLinesDraw() {
 				const ihClamp = Math.round(Math.max(1, window.innerHeight || 0));
 				if (ihClamp > 200 && h < 120) h = ihClamp;
 				if (iwClamp > 200 && w < 120) w = iwClamp;
-				const rh = Math.round(Math.max(0, h));
-				const rw = Math.round(Math.max(0, w));
-				if (narrow) {
-					if (rh > 0 && rh !== lastVhPx) {
-						document.documentElement.style.setProperty('--vh', rh + 'px');
-						lastVhPx = rh;
+				/* Sidste udvej hvis w/h stadig er urimelige (landskab-bugs, split-second frames) */
+				if (w < 80 || h < 80) {
+					const fb = mskProjectsLayoutViewportBox();
+					if (fb.w >= 80 && fb.h >= 80) {
+						w = fb.w;
+						h = fb.h;
 					}
-					if (rw > 0 && rw !== lastVwPx) {
-						document.documentElement.style.setProperty('--vw', rw + 'px');
-						lastVwPx = rw;
+				}
+				let rh = Math.round(Math.max(0, h));
+				let rw = Math.round(Math.max(0, w));
+				/* Chrome RDM / split frames: undgå at låse --vh/--vw til fx 4px (ødelægger layout + giver “hvid bjælke”). */
+				const lb = mskProjectsLayoutViewportBox();
+				if (rh < 80 && lb.h >= 80) rh = lb.h;
+				if (rw < 80 && lb.w >= 80) rw = lb.w;
+				if (narrow) {
+					if (rh < 80 || rw < 80) {
+						document.documentElement.style.removeProperty('--vh');
+						document.documentElement.style.removeProperty('--vw');
+						lastVhPx = -1;
+						lastVwPx = -1;
+					} else {
+						if (rh !== lastVhPx) {
+							document.documentElement.style.setProperty('--vh', rh + 'px');
+							lastVhPx = rh;
+						}
+						if (rw !== lastVwPx) {
+							document.documentElement.style.setProperty('--vw', rw + 'px');
+							lastVwPx = rw;
+						}
 					}
 				} else {
 					document.documentElement.style.removeProperty('--vh');
@@ -308,7 +338,7 @@ function mskSketchbookPaperLinesDraw() {
 					lastVwPx = -1;
 				}
 				/* Papir (::before) skal følge synlig højde ved pinch-zoom — ellers klippes/kollapser linjer */
-				if (sketch && rh > 0) {
+				if (sketch && rh >= 80) {
 					if (rh !== lastSketchPaperMinHPx) {
 						document.documentElement.style.setProperty('--sketchPaperMinH', rh + 'px');
 						lastSketchPaperMinHPx = rh;
@@ -343,8 +373,9 @@ function mskSketchbookPaperLinesDraw() {
 				const b = document.body;
 				const sk = b && b.classList && b.classList.contains('sketchbook-theme');
 				const proj = b && b.classList && b.classList.contains('projects-page');
-				/* Om mig / Kontakt: --vh/--vw er layout-stabile; debounce VV så WebKit ikke oversvømmes ved pinch */
-				if (sk && !proj) {
+				const repop = b && b.classList && b.classList.contains('repop-page');
+				/* Om mig / Kontakt / Repop: debounce VV så WebKit/Chrome ikke spammer layout ved pinch og DevTools-emulering */
+				if ((sk && !proj) || repop) {
 					if (vvResizeDebounce) clearTimeout(vvResizeDebounce);
 					vvResizeDebounce = setTimeout(() => {
 						vvResizeDebounce = null;
@@ -7338,7 +7369,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 
-		// Node hover effects
+		// Node hover effects (kun enheder med rigtig hover — undgå “låst” klik-/touch-tilstand på mobil)
+		function mskProjectsMindmapHoverVisualsEnabled() {
+			try {
+				return !(window.matchMedia && window.matchMedia('(hover: none)').matches);
+			} catch (err) {
+				return true;
+			}
+		}
+		const mskMindmapHoverFx = mskProjectsMindmapHoverVisualsEnabled();
+
 		nodes.forEach(node => {
 			// BRAINFARTS is "under construction" on the Projects page: keep hover animations,
 			// but prevent navigation so it is not clickable.
@@ -7352,6 +7392,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 
 			node.addEventListener('mouseenter', function() {
+				if (!mskMindmapHoverFx) return;
 				const href = (this.getAttribute('href') || '').toLowerCase();
 				const hoverKey = ((this.dataset && this.dataset.hoverKey) ? this.dataset.hoverKey : href).toLowerCase();
 				console.log('Hovering over:', href, 'hoverKey:', hoverKey);
@@ -7505,6 +7546,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 
 			node.addEventListener('mouseleave', function() {
+				if (!mskMindmapHoverFx) return;
 				const href = this.getAttribute('href');
 				const currentSvg = document.querySelector('.connecting-lines');
 				const idx = this.dataset.nodeIndex;
