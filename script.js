@@ -407,32 +407,6 @@ function mskSketchbookPaperLinesDraw() {
 })();
 
 /**
- * Book-flip transitions (document capture-click + preventDefault) ejer navigation for visse sidepar.
- * Burger-menuen bruger pointerup/touchend først og satte tidligere `location.href` med det samme —
- * samme tryk udløste så både fuld page-load OG flip-timeout navigation. Chrome (især mobil) kan da
- * “hamre” serveren og ende med netværksfejl. Returner true når menuen skal lade være med at navigere.
- */
-function mskBookTransitionNavDeferredToFlipClick(hrefAttr) {
-	try {
-		const path = (window.location.pathname || '').toLowerCase();
-		const h = String(hrefAttr || '').trim().toLowerCase();
-		const about = h === 'about.html' || h.startsWith('about.html#') || h.startsWith('about.html?');
-		const contact = h === 'contact.html' || h.startsWith('contact.html#') || h.startsWith('contact.html?');
-		const projects = h === 'projects.html' || h.startsWith('projects.html#') || h.startsWith('projects.html?');
-		if (path.endsWith('/projects.html') || path.endsWith('projects.html')) {
-			return about || contact;
-		}
-		if (path.endsWith('/about.html') || path.endsWith('about.html')) {
-			return projects || contact;
-		}
-		if (path.endsWith('/contact.html') || path.endsWith('contact.html')) {
-			return projects || about;
-		}
-	} catch (_) {}
-	return false;
-}
-
-/**
  * Transition-iframes (preview=1) og indlejret projects må ikke køre book-overlay init (rekursive iframes).
  */
 function mskSkipNestedProjectsBookInits() {
@@ -446,6 +420,9 @@ function mskSkipNestedProjectsBookInits() {
 	} catch (_) {}
 	return false;
 }
+
+/** Undertryk gentagne programmatic navigationer fra mobil-menu (pointerup + click, el. dobbelt touch). */
+let __mskMenuNavGateMs = 0;
 
 // Simple JavaScript for any interactive functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -664,39 +641,39 @@ document.addEventListener('DOMContentLoaded', function() {
 		button.addEventListener('click', () => setOpen(!isOpen()));
 		scrim.addEventListener('click', () => setOpen(false));
 
-		function forceNavigateFromMenuEvent(e) {
+		menu.addEventListener('click', (e) => {
 			try {
-				if (!isBurgerVisible() && !isOpen()) return false;
+				if (!isBurgerVisible() && !isOpen()) return;
 
-				const a = e && e.target && e.target.closest ? e.target.closest('a') : null;
-				if (!a || !menu.contains(a)) return false;
+				const a = e.target && e.target.closest ? e.target.closest('a') : null;
+				if (!a || !menu.contains(a)) return;
 				const hrefAttr = (a.getAttribute('href') || '').trim();
-				if (!hrefAttr || hrefAttr.startsWith('#')) return false;
-				if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) return false;
-				if (mskBookTransitionNavDeferredToFlipClick(hrefAttr)) {
-					try { setOpen(false); } catch {}
-					return false;
+				if (!hrefAttr || hrefAttr.startsWith('#')) return;
+				if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+				try { setOpen(false); } catch {}
+
+				if (e.defaultPrevented) {
+					return;
 				}
 
+				const now = Date.now();
+				if (now - __mskMenuNavGateMs < 650) {
+					try { e.preventDefault(); } catch {}
+					return;
+				}
+				__mskMenuNavGateMs = now;
+
 				try { e.preventDefault(); } catch {}
-				try { e.stopImmediatePropagation(); } catch {}
 				try { e.stopPropagation(); } catch {}
-				setOpen(false);
-				try { window.location.href = a.href; } catch {}
-				return true;
-			} catch {
-				return false;
-			}
-		}
-
-		menu.addEventListener('pointerup', (e) => { forceNavigateFromMenuEvent(e); }, true);
-		menu.addEventListener('touchend', (e) => { forceNavigateFromMenuEvent(e); }, { capture: true, passive: false });
-
-		menu.addEventListener('click', (e) => {
-			if (forceNavigateFromMenuEvent(e)) return;
-			const a = e.target && e.target.closest ? e.target.closest('a') : null;
-			if (!a) return;
-			setOpen(false);
+				try {
+					window.location.assign(a.href);
+				} catch {
+					try {
+						window.location.href = a.href;
+					} catch {}
+				}
+			} catch (_) {}
 		});
 
 		window.addEventListener('keydown', (e) => {
