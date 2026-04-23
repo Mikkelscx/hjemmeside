@@ -748,6 +748,16 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {
 			return;
 		}
+		/*
+		 * I transition-iframes (projects.html?preview=1) må denne init IKKE køre: den prewarmer ensureOverlay()
+		 * som indlæser nye projects-preview-iframes → hvert niveau gentager det → rekursiv/eksponentiel netværksstorm
+		 * (Chrome kan “hamre” mikkelsc.dk og ende med forbindelsesfejl). Kun top-level projektsiden styrer omslag.
+		 */
+		try {
+			if (document.documentElement.classList.contains('transition-preview')) return;
+			const qs = new URLSearchParams(window.location.search || '');
+			if (qs.get('preview') === '1') return;
+		} catch (_) {}
 
 		const FLIP_MS = getPageFlipMs(5200); // matches CSS `--pageFlipMs`
 		const NAV_MS = 140;
@@ -1116,6 +1126,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {
 			return;
 		}
+		try {
+			if (document.documentElement.classList.contains('transition-preview')) return;
+			const qs = new URLSearchParams(window.location.search || '');
+			if (qs.get('preview') === '1') return;
+		} catch (_) {}
 
 		const FLIP_MS = getPageFlipMs(4200);
 		const NAV_MS = 140;
