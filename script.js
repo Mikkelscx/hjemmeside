@@ -406,6 +406,47 @@ function mskSketchbookPaperLinesDraw() {
 	} catch {}
 })();
 
+/**
+ * Book-flip transitions (document capture-click + preventDefault) ejer navigation for visse sidepar.
+ * Burger-menuen bruger pointerup/touchend først og satte tidligere `location.href` med det samme —
+ * samme tryk udløste så både fuld page-load OG flip-timeout navigation. Chrome (især mobil) kan da
+ * “hamre” serveren og ende med netværksfejl. Returner true når menuen skal lade være med at navigere.
+ */
+function mskBookTransitionNavDeferredToFlipClick(hrefAttr) {
+	try {
+		const path = (window.location.pathname || '').toLowerCase();
+		const h = String(hrefAttr || '').trim().toLowerCase();
+		const about = h === 'about.html' || h.startsWith('about.html#') || h.startsWith('about.html?');
+		const contact = h === 'contact.html' || h.startsWith('contact.html#') || h.startsWith('contact.html?');
+		const projects = h === 'projects.html' || h.startsWith('projects.html#') || h.startsWith('projects.html?');
+		if (path.endsWith('/projects.html') || path.endsWith('projects.html')) {
+			return about || contact;
+		}
+		if (path.endsWith('/about.html') || path.endsWith('about.html')) {
+			return projects || contact;
+		}
+		if (path.endsWith('/contact.html') || path.endsWith('contact.html')) {
+			return projects || about;
+		}
+	} catch (_) {}
+	return false;
+}
+
+/**
+ * Transition-iframes (preview=1) og indlejret projects må ikke køre book-overlay init (rekursive iframes).
+ */
+function mskSkipNestedProjectsBookInits() {
+	try {
+		if (document.documentElement.classList.contains('transition-preview')) return true;
+		const qs = new URLSearchParams(window.location.search || '');
+		if (qs.has('preview')) return true;
+		const p = (window.location.pathname || '').toLowerCase();
+		const isProjects = p.endsWith('/projects.html') || p.endsWith('projects.html');
+		if (isProjects && window.self !== window.top) return true;
+	} catch (_) {}
+	return false;
+}
+
 // Simple JavaScript for any interactive functionality
 document.addEventListener('DOMContentLoaded', function() {
 	// If a page is loaded inside a transition iframe, render "clean" (no navbar),
@@ -632,6 +673,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				const hrefAttr = (a.getAttribute('href') || '').trim();
 				if (!hrefAttr || hrefAttr.startsWith('#')) return false;
 				if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) return false;
+				if (mskBookTransitionNavDeferredToFlipClick(hrefAttr)) {
+					try { setOpen(false); } catch {}
+					return false;
+				}
 
 				try { e.preventDefault(); } catch {}
 				try { e.stopImmediatePropagation(); } catch {}
@@ -748,16 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {
 			return;
 		}
-		/*
-		 * I transition-iframes (projects.html?preview=1) må denne init IKKE køre: den prewarmer ensureOverlay()
-		 * som indlæser nye projects-preview-iframes → hvert niveau gentager det → rekursiv/eksponentiel netværksstorm
-		 * (Chrome kan “hamre” mikkelsc.dk og ende med forbindelsesfejl). Kun top-level projektsiden styrer omslag.
-		 */
-		try {
-			if (document.documentElement.classList.contains('transition-preview')) return;
-			const qs = new URLSearchParams(window.location.search || '');
-			if (qs.get('preview') === '1') return;
-		} catch (_) {}
+		if (mskSkipNestedProjectsBookInits()) return;
 
 		const FLIP_MS = getPageFlipMs(5200); // matches CSS `--pageFlipMs`
 		const NAV_MS = 140;
@@ -1126,11 +1162,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {
 			return;
 		}
-		try {
-			if (document.documentElement.classList.contains('transition-preview')) return;
-			const qs = new URLSearchParams(window.location.search || '');
-			if (qs.get('preview') === '1') return;
-		} catch (_) {}
+		if (mskSkipNestedProjectsBookInits()) return;
 
 		const FLIP_MS = getPageFlipMs(4200);
 		const NAV_MS = 140;
