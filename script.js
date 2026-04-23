@@ -421,8 +421,25 @@ function mskSkipNestedProjectsBookInits() {
 	return false;
 }
 
+/** Notesbog-animation til Projekter kun fra forsiden (`index.html` har `home-notebook-page`; case-sider har ikke). */
+function mskIsHomeIndexPage() {
+	try {
+		return !!(document.body && document.body.classList && document.body.classList.contains('home-notebook-page'));
+	} catch (_) {}
+	return false;
+}
+
 /** Undertryk gentagne programmatic navigationer fra mobil-menu (pointerup + click, el. dobbelt touch). */
 let __mskMenuNavGateMs = 0;
+
+/** Efter page-turn drag: syntetisk click kan ramme nav-links og udløse dobbelt-navigation (især Safari/Chrome på mobil). */
+let __mskPageTurnGhostClickGuardUntil = 0;
+function mskArmPageTurnGhostClickGuard(ms) {
+	try {
+		const m = Math.max(380, Math.min(1200, Number(ms) || 520));
+		__mskPageTurnGhostClickGuardUntil = Math.max(__mskPageTurnGhostClickGuardUntil, Date.now() + m);
+	} catch {}
+}
 
 // Simple JavaScript for any interactive functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -437,6 +454,29 @@ document.addEventListener('DOMContentLoaded', function() {
 			// ignore
 		}
 	})();
+
+	// Første capture-handler: bloker interne link-klik mens et page-turn drag lige har committet (ghost click).
+	try {
+		document.addEventListener(
+			'click',
+			(e) => {
+				try {
+					if (typeof __mskPageTurnGhostClickGuardUntil !== 'number' || Date.now() >= __mskPageTurnGhostClickGuardUntil) return;
+					const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+					if (!a) return;
+					const hrefRaw = (a.getAttribute('href') || '').trim();
+					if (!hrefRaw || hrefRaw.startsWith('#')) return;
+					if (/^https?:\/\//i.test(hrefRaw)) return;
+					if (e.button !== 0) return;
+					e.preventDefault();
+					try {
+						e.stopImmediatePropagation();
+					} catch {}
+				} catch {}
+			},
+			true
+		);
+	} catch {}
 
 	// Add smooth scrolling for anchor links
 	document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -1078,11 +1118,31 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				function onUp() {
+				function onUp(ev) {
+					try {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+					} catch {}
 					try { catcher.removeEventListener('pointermove', onMove, true); } catch {}
 					try { catcher.removeEventListener('pointerup', onUp, true); } catch {}
 					try { catcher.removeEventListener('pointercancel', onUp, true); } catch {}
-					try { catcher.remove(); } catch {}
+					try {
+						catcher.addEventListener(
+							'click',
+							(ce) => {
+								try {
+									ce.preventDefault();
+									ce.stopPropagation();
+								} catch {}
+							},
+							{ capture: true, once: true }
+						);
+					} catch {}
+					window.setTimeout(() => {
+						try { catcher.remove(); } catch {}
+					}, 400);
 
 					const shouldComplete = progress >= COMPLETE_THRESHOLD;
 					if (!shouldComplete) {
@@ -1096,6 +1156,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						window.setTimeout(() => cleanupDragState(overlay, flipEl), 280);
 						return;
 					}
+
+					mskArmPageTurnGhostClickGuard(520);
 
 					// Complete flip to end
 					try {
@@ -1828,7 +1890,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				function onUp() {
+				function onUp(ev) {
+					try {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+					} catch {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -1844,6 +1912,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						window.setTimeout(() => cleanup(overlay, flipEl), 280);
 						return;
 					}
+
+					mskArmPageTurnGhostClickGuard(520);
 
 					try {
 						if (flipEl) {
@@ -2182,7 +2252,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				function onUp() {
+				function onUp(ev) {
+					try {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+					} catch {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -2199,11 +2275,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						return;
 					}
 
+					mskArmPageTurnGhostClickGuard(520);
+
+					let finishMs = 520;
 					try {
 						if (flipEl) {
 							const ease = getPageFlipEase('cubic-bezier(.42,0,.58,1)');
 							const remaining = Math.max(0, 1 - progress);
-							const finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
+							finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
 							flipEl.style.transition = `transform ${finishMs}ms ${ease}`;
 							flipEl.style.transform = 'rotateY(-180deg)';
 						}
@@ -2501,7 +2580,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				function onUp() {
+				function onUp(ev) {
+					try {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+					} catch {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -2518,11 +2603,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						return;
 					}
 
+					mskArmPageTurnGhostClickGuard(520);
+
+					let finishMs = 520;
 					try {
 						if (flipEl) {
 							const ease = getPageFlipEase('cubic-bezier(.42,0,.58,1)');
 							const remaining = Math.max(0, 1 - progress);
-							const finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
+							finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
 							flipEl.style.transition = `transform ${finishMs}ms ${ease}`;
 							flipEl.style.transform = 'rotateY(180deg)';
 						}
@@ -3764,6 +3852,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				const path = (window.location.pathname || '').toLowerCase();
 				if (path.endsWith('/about.html') || path.endsWith('about.html')) return;
+			} catch {}
+
+			// Notebook transition only from home; project/case pages use normal navigation.
+			try {
+				if (!mskIsHomeIndexPage()) return;
 			} catch {}
 
 			// If already on projects, allow default.
