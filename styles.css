@@ -10833,7 +10833,8 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 
 /* NATURLI' Page Theme */
 .naturlig-page {
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 25%, #90caf9 50%, #64b5f6 75%, #42a5f5 100%) !important;
+    /* To farvestop: undgår “bånd” fra 25 %-trin; ren jævn interpolation */
+    background: linear-gradient(135deg, #e3f2fd 0%, #42a5f5 100%) !important;
     color: #333333;
     min-height: var(--vh);
     position: relative;
@@ -12135,6 +12136,10 @@ html body a[href="project1.html"]:hover {
     opacity: 1;
 }
 
+.msk-asset-lightbox:focus {
+    outline: none;
+}
+
 .msk-asset-lightbox__backdrop {
     position: absolute;
     inset: 0;
@@ -12152,21 +12157,57 @@ html body a[href="project1.html"]:hover {
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(20, 24, 32, 0.88);
-    color: #fff;
-    font-size: 1.55rem;
-    line-height: 1;
+    /* Gradient-kant (én tone over hele rammen) + mørk fyld — × tegnes i ::after med egen gradient */
+    border: 2px solid transparent;
+    background:
+        linear-gradient(rgba(14, 26, 44, 0.96), rgba(18, 32, 52, 0.96)) padding-box,
+        linear-gradient(130deg, #00e5ff 0%, #2196f3 38%, #00b0ff 72%, #84ffff 100%) border-box;
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
     pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+    isolation: isolate;
+}
+
+.msk-asset-lightbox__close::after {
+    content: '×';
+    font-size: 1.55rem;
+    line-height: 1;
+    font-weight: 300;
+    background: linear-gradient(165deg, #eeffff 0%, #40c4ff 45%, #0091ea 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 6px rgba(0, 220, 255, 0.75)) drop-shadow(0 0 14px rgba(33, 150, 243, 0.45));
 }
 
 .msk-asset-lightbox__close:hover {
-    background: rgba(40, 48, 64, 0.95);
+    background:
+        linear-gradient(rgba(22, 40, 66, 0.97), rgba(26, 44, 74, 0.97)) padding-box,
+        linear-gradient(130deg, #a7ffff 0%, #448aff 45%, #00e5ff 85%, #18ffff 100%) border-box;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
+}
+
+.msk-asset-lightbox__close:hover::after {
+    background: linear-gradient(165deg, #ffffff 0%, #80d8ff 50%, #00b0ff 100%);
+    filter: drop-shadow(0 0 8px rgba(120, 250, 255, 0.9)) drop-shadow(0 0 18px rgba(0, 200, 255, 0.55));
+}
+
+/* Fokus = samme som basis (× arver ::after uden :hover) */
+.msk-asset-lightbox__close:focus,
+.msk-asset-lightbox__close:focus-visible {
+    outline: none;
+    border: 2px solid transparent;
+    background:
+        linear-gradient(rgba(14, 26, 44, 0.96), rgba(18, 32, 52, 0.96)) padding-box,
+        linear-gradient(130deg, #00e5ff 0%, #2196f3 38%, #00b0ff 72%, #84ffff 100%) border-box;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
 }
 
 .msk-asset-lightbox__frame {
