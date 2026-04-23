@@ -8302,8 +8302,9 @@ body.sketchbook-theme .brainstorm-container {
         --projectsBrainSize: 104px;
         transform-origin: 50% 50%;
         /* Centreret bedre i viewport — samme scale (--projectsLandscapeFit), mere synligt areal */
+        /* Lidt mod venstre: mindre “tom” højre side på mobil i landscape (Safari/Chrome) */
         transform:
-            translateX(env(safe-area-inset-left))
+            translateX(calc(env(safe-area-inset-left) - 24px))
             translateY(calc(4px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
