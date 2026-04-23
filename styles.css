@@ -8148,6 +8148,7 @@ body.sketchbook-theme .brainstorm-container {
         left: 23% !important;
     }
     html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+        top: 70% !important;
         left: 13% !important;
     }
     html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
@@ -8229,6 +8230,7 @@ body.sketchbook-theme .brainstorm-container {
         left: 28% !important;
     }
     html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+        top: 70% !important;
         left: 18% !important;
     }
     html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
