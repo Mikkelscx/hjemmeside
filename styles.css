@@ -6795,11 +6795,14 @@ body.sketchbook-theme .brainstorm-container {
         }
     }
 
-    /* Repop: make the 2x2 brief grid become 4 rows */
-    body.repop-page .repop-brief-grid {
-        grid-template-columns: 1fr !important;
+    /* Repop: brief-grid — HTML bruger .repop-inline-brief-grid m. inline 2-kol; tving 1 kolonne på mobil */
+    body.repop-page .repop-brief-grid,
+    body.repop-page .repop-inline-brief-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
         grid-template-rows: auto !important;
         gap: 6px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     /* Repop: force headline + nominering to single-line on phones */
@@ -6839,17 +6842,24 @@ body.sketchbook-theme .brainstorm-container {
         padding: 0.95rem !important;
         margin: 0.9rem 0 !important;
     }
-    body.repop-page .repop-brief-grid > div {
+    body.repop-page .repop-brief-grid > div,
+    body.repop-page .repop-inline-brief-grid > div {
         padding: 0.45rem !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
     }
-    body.repop-page .repop-brief-grid h2 {
+    body.repop-page .repop-brief-grid h2,
+    body.repop-page .repop-inline-brief-grid h2 {
         font-size: 1.22rem !important;
         margin-bottom: 0.25rem !important;
     }
-    body.repop-page .repop-brief-grid p {
+    body.repop-page .repop-brief-grid p,
+    body.repop-page .repop-inline-brief-grid p {
         font-size: 1.18rem !important;
         line-height: 1.32 !important;
         max-width: 100% !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
     }
 
     /* Repop: use full box width for paragraphs on mobile (desktop rule is max-width: 50%) */
@@ -6857,6 +6867,9 @@ body.sketchbook-theme .brainstorm-container {
         max-width: 100% !important;
         margin-left: auto !important;
         margin-right: auto !important;
+    }
+    body.repop-page .repop-brief-box p {
+        max-width: 100% !important;
     }
 
     /* Repop: LFW-kampagnebokse — ingen vandret padding i boksen, så billeder kan fylde kortet kant-til-kant */
@@ -8064,6 +8077,26 @@ body.sketchbook-theme .brainstorm-container {
         padding: var(--navBarTotal, calc(52px + env(safe-area-inset-top, 0px))) 1.2rem 1.45rem !important;
         margin: 6px auto 18px !important;
     }
+    html body.repop-page .page-content > h1 {
+        font-size: clamp(1.35rem, 5.5vw, 2rem) !important;
+        line-height: 1.12 !important;
+        padding-left: 0.15rem !important;
+        padding-right: 0.15rem !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        hyphens: auto !important;
+    }
+    html body.repop-page .repop-brief-grid,
+    html body.repop-page .repop-inline-brief-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-rows: auto !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    html body.repop-page .repop-brief-grid > div,
+    html body.repop-page .repop-inline-brief-grid > div {
+        min-width: 0 !important;
+    }
     html body.repop-page .repop-lfw-segment {
         margin: 1.5rem 0 !important;
         padding: 0.65rem 0 1.45rem !important;
@@ -8166,9 +8199,10 @@ body.sketchbook-theme .brainstorm-container {
 /* Repop: portrait phones — plus max-aspect-ratio: DevTools kan vise portræt men ikke matche orientation:portrait */
 @media (max-width: 640px) and (orientation: portrait),
        (max-width: 640px) and (max-aspect-ratio: 1/1) {
-    /* 2×2 brief: undgå 1fr-rækker (store huller mellem Problem/Observation og Indsigt/Løsning) */
+    /* Brief: én kolonne i portræt (fuld tekstbredde) */
     html body.repop-page .repop-inline-brief-grid {
-        grid-template-rows: auto auto !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-rows: auto !important;
         align-content: start !important;
         gap: 0.55rem !important;
     }
