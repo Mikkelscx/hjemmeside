@@ -12,11 +12,14 @@ function mskViewportSize() {
 
 /**
  * Idle prewarm af book-overlays med mange fuld-sides iframes kan presse WebKit til gentagne WebContent-nedbrud på iPhone.
- * På smalle eller primært touch-viewports: ingen idle preload, og transition-iframes får loading="lazy".
+ * Gælder både portræt (max-width) og landskab (kort viewport-kant), så vi ikke kun matcher den lange kant.
  */
 function mskSkipBookOverlayMemoryPrewarm() {
 	try {
-		return matchMedia('(max-width: 768px)').matches || matchMedia('(hover: none) and (pointer: coarse)').matches;
+		const narrow = matchMedia('(max-width: 768px)').matches;
+		const shortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
+		// Portrait phones hit `narrow`. In landscape the long edge is often >768px, but the short edge is still phone-sized — that case must also skip prewarm / use lazy iframes.
+		return narrow || (shortSide > 0 && shortSide <= 768);
 	} catch {
 		return false;
 	}
