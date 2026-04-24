@@ -10,6 +10,22 @@ function mskViewportSize() {
 	}
 }
 
+/**
+ * Idle prewarm af book-overlays med mange fuld-sides iframes kan presse WebKit til gentagne WebContent-nedbrud på iPhone.
+ * På smalle eller primært touch-viewports: ingen idle preload, og transition-iframes får loading="lazy".
+ */
+function mskSkipBookOverlayMemoryPrewarm() {
+	try {
+		return matchMedia('(max-width: 768px)').matches || matchMedia('(hover: none) and (pointer: coarse)').matches;
+	} catch {
+		return false;
+	}
+}
+
+function mskBookTransitionIframeLoadingAttr() {
+	return mskSkipBookOverlayMemoryPrewarm() ? 'lazy' : 'eager';
+}
+
 /** Projects “kort landscape” — samme logik som CSS (max-width 1024px, max-height 520px, bred>kort). Én kilde = mindre drift mellem browsere. */
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
@@ -899,19 +915,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				overlay.innerHTML = `
 					<div class="projects-about-turn" aria-hidden="true">
 						<div class="projects-about-under projects-about-under--left">
-							<iframe class="projects-about-frame projects-about-frame--left projects-about-under-frame projects-about-under-frame--projects" src="projects.html?preview=1" title="Projekter (left)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="projects-about-frame projects-about-frame--left projects-about-under-frame projects-about-under-frame--projects" src="projects.html?preview=1" title="Projekter (left)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="projects-about-under projects-about-under--right">
-							<iframe class="projects-about-frame projects-about-frame--right projects-about-under-frame projects-about-under-frame--projects" src="projects.html?preview=1" title="Projekter (right)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="projects-about-frame projects-about-frame--right projects-about-under-frame projects-about-under-frame--about" src="about.html?preview=1" title="Om mig (right)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="projects-about-frame projects-about-frame--right projects-about-under-frame projects-about-under-frame--projects" src="projects.html?preview=1" title="Projekter (right)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="projects-about-frame projects-about-frame--right projects-about-under-frame projects-about-under-frame--about" src="about.html?preview=1" title="Om mig (right)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<div class="projects-about-turn__flip">
 							<div class="projects-about-turn__flip-face projects-about-turn__flip-face--front">
-								<iframe class="projects-about-frame projects-about-frame--right projects-about-turn__flip-front" src="projects.html?preview=1" title="Projekter (right turning sheet)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="projects-about-frame projects-about-frame--right projects-about-turn__flip-front" src="projects.html?preview=1" title="Projekter (right turning sheet)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="projects-about-turn__flip-face projects-about-turn__flip-face--back">
-								<iframe class="projects-about-frame projects-about-frame--left projects-about-turn__flip-back" src="about.html?preview=1" title="Om mig (left on backface)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="projects-about-frame projects-about-frame--left projects-about-turn__flip-back" src="about.html?preview=1" title="Om mig (left on backface)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 					</div>
@@ -1012,10 +1028,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Prewarm the overlay and iframes so "Om mig (left)" is already loaded
 		// when the user clicks (prevents blank page at the seam).
-		try {
-			const pre = ensureOverlay();
-			wireFramesOnce(pre);
-		} catch {}
+		if (!mskSkipBookOverlayMemoryPrewarm()) {
+			try {
+				const pre = ensureOverlay();
+				wireFramesOnce(pre);
+			} catch {}
+		}
 
 		function startFlipToAbout(targetHref) {
 			const body = document.body;
@@ -1290,22 +1308,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				overlay.innerHTML = `
 					<div class="projects-contact-turn" aria-hidden="true">
 						<div class="projects-contact-turn__under projects-contact-turn__under--left">
-							<iframe class="projects-contact-turn__frame projects-contact-turn__frame--left projects-contact-turn__under-frame projects-contact-turn__under-frame--projects projects-contact-turn__page--projects" src="projects.html?preview=1" title="Projekter (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="projects-contact-turn__frame projects-contact-turn__frame--left projects-contact-turn__under-frame projects-contact-turn__under-frame--contact projects-contact-turn__page--contact" src="contact.html?preview=1" title="Kontakt (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="projects-contact-turn__frame projects-contact-turn__frame--left projects-contact-turn__under-frame projects-contact-turn__under-frame--projects projects-contact-turn__page--projects" src="projects.html?preview=1" title="Projekter (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="projects-contact-turn__frame projects-contact-turn__frame--left projects-contact-turn__under-frame projects-contact-turn__under-frame--contact projects-contact-turn__page--contact" src="contact.html?preview=1" title="Kontakt (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="projects-contact-turn__under projects-contact-turn__under--right">
-							<iframe class="projects-contact-turn__frame projects-contact-turn__frame--right projects-contact-turn__under-frame projects-contact-turn__under-frame--projects projects-contact-turn__page--projects" src="projects.html?preview=1" title="Projekter (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="projects-contact-turn__frame projects-contact-turn__frame--right projects-contact-turn__under-frame projects-contact-turn__under-frame--contact projects-contact-turn__page--contact" src="contact.html?preview=1" title="Kontakt (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="projects-contact-turn__frame projects-contact-turn__frame--right projects-contact-turn__under-frame projects-contact-turn__under-frame--projects projects-contact-turn__page--projects" src="projects.html?preview=1" title="Projekter (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="projects-contact-turn__frame projects-contact-turn__frame--right projects-contact-turn__under-frame projects-contact-turn__under-frame--contact projects-contact-turn__page--contact" src="contact.html?preview=1" title="Kontakt (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<div class="projects-contact-turn__flip">
 							<div class="projects-contact-turn__flip-face projects-contact-turn__flip-face--front">
 								<!-- Swap DESIGN on the FLIPPING page (same pattern as Kontakt -> Om mig) -->
-								<iframe class="projects-contact-turn__frame projects-contact-turn__frame--right projects-contact-turn__flip-front projects-contact-turn__flip-front--projects projects-contact-turn__page--projects" src="projects.html?preview=1" title="Projekter (right on turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-								<iframe class="projects-contact-turn__frame projects-contact-turn__frame--left projects-contact-turn__flip-front projects-contact-turn__flip-front--contact projects-contact-turn__page--contact" src="contact.html?preview=1" title="Kontakt (left on turning page after swap)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="projects-contact-turn__frame projects-contact-turn__frame--right projects-contact-turn__flip-front projects-contact-turn__flip-front--projects projects-contact-turn__page--projects" src="projects.html?preview=1" title="Projekter (right on turning page)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="projects-contact-turn__frame projects-contact-turn__frame--left projects-contact-turn__flip-front projects-contact-turn__flip-front--contact projects-contact-turn__page--contact" src="contact.html?preview=1" title="Kontakt (left on turning page after swap)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="projects-contact-turn__flip-face projects-contact-turn__flip-face--back">
-								<iframe class="projects-contact-turn__frame projects-contact-turn__frame--left projects-contact-turn__flip-back projects-contact-turn__page--contact" src="contact.html?preview=1" title="Kontakt (left on backface)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="projects-contact-turn__frame projects-contact-turn__frame--left projects-contact-turn__flip-back projects-contact-turn__page--contact" src="contact.html?preview=1" title="Kontakt (left on backface)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 					</div>
@@ -1374,33 +1392,33 @@ document.addEventListener('DOMContentLoaded', function() {
 				overlay.innerHTML = `
 					<div class="pcd-turn" aria-hidden="true">
 						<div class="pcd-under pcd-under--left">
-							<iframe class="pcd-frame pcd-frame--left pcd-under-frame pcd-under-left--projects" src="projects.html?preview=1" title="Projekter (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="pcd-frame pcd-frame--left pcd-under-frame pcd-under-left--about" src="about.html?preview=1" title="Om mig (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="pcd-frame pcd-frame--left pcd-under-frame pcd-under-left--contact" src="contact.html?preview=1" title="Kontakt (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="pcd-frame pcd-frame--left pcd-under-frame pcd-under-left--projects" src="projects.html?preview=1" title="Projekter (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="pcd-frame pcd-frame--left pcd-under-frame pcd-under-left--about" src="about.html?preview=1" title="Om mig (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="pcd-frame pcd-frame--left pcd-under-frame pcd-under-left--contact" src="contact.html?preview=1" title="Kontakt (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="pcd-under pcd-under--right">
-							<iframe class="pcd-frame pcd-frame--right pcd-under-frame pcd-under-right--projects" src="projects.html?preview=1" title="Projekter (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="pcd-frame pcd-frame--right pcd-under-frame pcd-under-right--about" src="about.html?preview=1" title="Om mig (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="pcd-frame pcd-frame--right pcd-under-frame pcd-under-right--contact" src="contact.html?preview=1" title="Kontakt (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="pcd-frame pcd-frame--right pcd-under-frame pcd-under-right--projects" src="projects.html?preview=1" title="Projekter (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="pcd-frame pcd-frame--right pcd-under-frame pcd-under-right--about" src="about.html?preview=1" title="Om mig (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="pcd-frame pcd-frame--right pcd-under-frame pcd-under-right--contact" src="contact.html?preview=1" title="Kontakt (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<div class="pcd-flip pcd-flip--1">
 							<div class="pcd-flip-face pcd-flip-face--front">
-								<iframe class="pcd-frame pcd-frame--right pcd-flip-front pcd-flip1-front--projects" src="projects.html?preview=1" title="Projekter (right turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-								<iframe class="pcd-frame pcd-frame--left pcd-flip-front pcd-flip1-front--about" src="about.html?preview=1" title="Om mig (left turning page after mid)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="pcd-frame pcd-frame--right pcd-flip-front pcd-flip1-front--projects" src="projects.html?preview=1" title="Projekter (right turning page)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="pcd-frame pcd-frame--left pcd-flip-front pcd-flip1-front--about" src="about.html?preview=1" title="Om mig (left turning page after mid)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="pcd-flip-face pcd-flip-face--back">
-								<iframe class="pcd-frame pcd-frame--left pcd-flip-back pcd-flip1-back--about" src="about.html?preview=1" title="Om mig (left on backface)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="pcd-frame pcd-frame--left pcd-flip-back pcd-flip1-back--about" src="about.html?preview=1" title="Om mig (left on backface)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 
 						<div class="pcd-flip pcd-flip--2">
 							<div class="pcd-flip-face pcd-flip-face--front">
-								<iframe class="pcd-frame pcd-frame--right pcd-flip-front pcd-flip2-front--about" src="about.html?preview=1" title="Om mig (right turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-								<iframe class="pcd-frame pcd-frame--left pcd-flip-front pcd-flip2-front--contact" src="contact.html?preview=1" title="Kontakt (left turning page after mid)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="pcd-frame pcd-frame--right pcd-flip-front pcd-flip2-front--about" src="about.html?preview=1" title="Om mig (right turning page)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="pcd-frame pcd-frame--left pcd-flip-front pcd-flip2-front--contact" src="contact.html?preview=1" title="Kontakt (left turning page after mid)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="pcd-flip-face pcd-flip-face--back">
-								<iframe class="pcd-frame pcd-frame--left pcd-flip-back pcd-flip2-back--contact" src="contact.html?preview=1" title="Kontakt (left on backface)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="pcd-frame pcd-frame--left pcd-flip-back pcd-flip2-back--contact" src="contact.html?preview=1" title="Kontakt (left on backface)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 					</div>
@@ -1593,6 +1611,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the double overlay (and its iframes) so the 2nd-half backface isn't blank.
 		(function preloadDoubleOnce() {
 			try {
+				if (mskSkipBookOverlayMemoryPrewarm()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureDoubleOverlay();
 				ov.classList.add('is-preloading');
@@ -1627,30 +1646,30 @@ document.addEventListener('DOMContentLoaded', function() {
 				overlay.innerHTML = `
 					<div class="about-projects-turn" aria-hidden="true">
 						<div class="about-projects-turn__under about-projects-turn__under--left">
-							<iframe class="about-projects-turn__frame about-projects-turn__frame--left about-projects-turn__under-frame about-projects-turn__under-frame--about" src="about.html?preview=1" title="Om mig (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="about-projects-turn__frame about-projects-turn__frame--left about-projects-turn__under-frame about-projects-turn__under-frame--projects" src="projects.html?preview=1" title="Projekter (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-projects-turn__frame about-projects-turn__frame--left about-projects-turn__under-frame about-projects-turn__under-frame--about" src="about.html?preview=1" title="Om mig (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-projects-turn__frame about-projects-turn__frame--left about-projects-turn__under-frame about-projects-turn__under-frame--projects" src="projects.html?preview=1" title="Projekter (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="about-projects-turn__under about-projects-turn__under--right">
-							<iframe class="about-projects-turn__frame about-projects-turn__frame--right about-projects-turn__under-frame about-projects-turn__under-frame--about" src="about.html?preview=1" title="Om mig (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="about-projects-turn__frame about-projects-turn__frame--right about-projects-turn__under-frame about-projects-turn__under-frame--projects" src="projects.html?preview=1" title="Projekter (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-projects-turn__frame about-projects-turn__frame--right about-projects-turn__under-frame about-projects-turn__under-frame--about" src="about.html?preview=1" title="Om mig (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-projects-turn__frame about-projects-turn__frame--right about-projects-turn__under-frame about-projects-turn__under-frame--projects" src="projects.html?preview=1" title="Projekter (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<div class="about-projects-turn__flip">
 							<div class="about-projects-turn__flip-face about-projects-turn__flip-face--front">
 								<!-- Swap DESIGN on the FLIPPING page at mid (50%): About LEFT -> Projects RIGHT -->
 								<div class="about-projects-turn__flip-surface about-projects-turn__flip-surface--about">
-									<iframe class="about-projects-turn__frame about-projects-turn__frame--left about-projects-turn__flip-front about-projects-turn__flip-front--about" src="about.html?preview=1" title="Om mig (left on turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+									<iframe class="about-projects-turn__frame about-projects-turn__frame--left about-projects-turn__flip-front about-projects-turn__flip-front--about" src="about.html?preview=1" title="Om mig (left on turning page)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 								</div>
 								<div class="about-projects-turn__flip-surface about-projects-turn__flip-surface--projects">
-									<iframe class="about-projects-turn__frame about-projects-turn__frame--projects-right-on-flip about-projects-turn__flip-front about-projects-turn__flip-front--projects" src="projects.html?preview=1" title="Projekter (right page on turning sheet after seam)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+									<iframe class="about-projects-turn__frame about-projects-turn__frame--projects-right-on-flip about-projects-turn__flip-front about-projects-turn__flip-front--projects" src="projects.html?preview=1" title="Projekter (right page on turning sheet after seam)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 								</div>
 							</div>
 							<div class="about-projects-turn__flip-face about-projects-turn__flip-face--back">
-								<iframe class="about-projects-turn__frame about-projects-turn__frame--projects-right-on-flip" src="projects.html?preview=1" title="Projekter (right page on flipped side)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="about-projects-turn__frame about-projects-turn__frame--projects-right-on-flip" src="projects.html?preview=1" title="Projekter (right page on flipped side)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<!-- Dedicated backface layer: keeps Projects RIGHT visible after mid (Safari-safe) -->
 							<div class="about-projects-turn__flip-backface" aria-hidden="true">
-								<iframe class="about-projects-turn__frame about-projects-turn__frame--projects-right-on-flip about-projects-turn__flip-backface-frame" src="projects.html?preview=1" title="Projekter (right page backface layer)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="about-projects-turn__frame about-projects-turn__frame--projects-right-on-flip about-projects-turn__flip-backface-frame" src="projects.html?preview=1" title="Projekter (right page backface layer)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 					</div>
@@ -1836,6 +1855,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (mskSkipBookOverlayMemoryPrewarm()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -2041,23 +2061,23 @@ document.addEventListener('DOMContentLoaded', function() {
 				overlay.innerHTML = `
 					<div class="about-contact-turn" aria-hidden="true">
 						<div class="about-contact-turn__under about-contact-turn__under--left">
-							<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__under-frame about-contact-turn__under-frame--about" src="about.html?preview=1" title="Om mig (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__under-frame about-contact-turn__under-frame--contact" src="contact.html?preview=1" title="Kontakt (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__under-frame about-contact-turn__under-frame--about" src="about.html?preview=1" title="Om mig (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__under-frame about-contact-turn__under-frame--contact" src="contact.html?preview=1" title="Kontakt (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="about-contact-turn__under about-contact-turn__under--right">
-							<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__under-frame about-contact-turn__under-frame--about" src="about.html?preview=1" title="Om mig (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__under-frame about-contact-turn__under-frame--contact" src="contact.html?preview=1" title="Kontakt (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__under-frame about-contact-turn__under-frame--about" src="about.html?preview=1" title="Om mig (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__under-frame about-contact-turn__under-frame--contact" src="contact.html?preview=1" title="Kontakt (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<div class="about-contact-turn__flip">
 							<div class="about-contact-turn__flip-face about-contact-turn__flip-face--front">
 								<!-- Front of turning sheet: Om mig RIGHT page -->
-								<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__flip-front about-contact-turn__flip-front--about" src="about.html?preview=1" title="Om mig (right on turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__flip-front about-contact-turn__flip-front--about" src="about.html?preview=1" title="Om mig (right on turning page)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 								<!-- Safety swap: after mid, force Kontakt LEFT design on the turning sheet (matches Projekter -> Kontakt pattern) -->
-								<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__flip-front about-contact-turn__flip-front--contact" src="contact.html?preview=1" title="Kontakt (left on turning page after seam)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__flip-front about-contact-turn__flip-front--contact" src="contact.html?preview=1" title="Kontakt (left on turning page after seam)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="about-contact-turn__flip-face about-contact-turn__flip-face--back">
-								<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__flip-back" src="contact.html?preview=1" title="Kontakt (left on backface)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__flip-back" src="contact.html?preview=1" title="Kontakt (left on backface)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 					</div>
@@ -2205,6 +2225,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (mskSkipBookOverlayMemoryPrewarm()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -2421,22 +2442,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				overlay.innerHTML = `
 					<div class="contact-about-turn" aria-hidden="true">
 						<div class="contact-about-turn__under contact-about-turn__under--left">
-							<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__under-frame contact-about-turn__under-frame--contact" src="contact.html?preview=1" title="Kontakt (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__under-frame contact-about-turn__under-frame--about" src="about.html?preview=1" title="Om mig (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__under-frame contact-about-turn__under-frame--contact" src="contact.html?preview=1" title="Kontakt (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__under-frame contact-about-turn__under-frame--about" src="about.html?preview=1" title="Om mig (left under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="contact-about-turn__under contact-about-turn__under--right">
-							<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__under-frame contact-about-turn__under-frame--contact" src="contact.html?preview=1" title="Kontakt (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__under-frame contact-about-turn__under-frame--about" src="about.html?preview=1" title="Om mig (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__under-frame contact-about-turn__under-frame--contact" src="contact.html?preview=1" title="Kontakt (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__under-frame contact-about-turn__under-frame--about" src="about.html?preview=1" title="Om mig (right under)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<div class="contact-about-turn__flip">
 							<div class="contact-about-turn__flip-face contact-about-turn__flip-face--front">
 								<!-- Swap DESIGN on the FLIPPING page at mid (50%) -->
-								<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__flip-front contact-about-turn__flip-front--contact" src="contact.html?preview=1" title="Kontakt (left turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-								<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__flip-front contact-about-turn__flip-front--about" src="about.html?preview=1" title="Om mig (right turning page after mid)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__flip-front contact-about-turn__flip-front--contact" src="contact.html?preview=1" title="Kontakt (left turning page)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__flip-front contact-about-turn__flip-front--about" src="about.html?preview=1" title="Om mig (right turning page after mid)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="contact-about-turn__flip-face contact-about-turn__flip-face--back">
-								<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__flip-back" src="about.html?preview=1" title="Om mig (right on backface)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__flip-back" src="about.html?preview=1" title="Om mig (right on backface)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 					</div>
@@ -2536,6 +2557,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (mskSkipBookOverlayMemoryPrewarm()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -2912,7 +2934,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (!wrap) {
 					wrap = document.createElement('div');
 					wrap.className = 'ai-universe-reveal';
-					wrap.innerHTML = `<iframe src="ai-universe.html?preview=1&reveal=1" title="AI Universe (reveal)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>`;
+					wrap.innerHTML = `<iframe src="ai-universe.html?preview=1&reveal=1" title="AI Universe (reveal)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>`;
 					overlay.appendChild(wrap);
 				}
 				return wrap.querySelector('iframe');
@@ -3472,24 +3494,24 @@ document.addEventListener('DOMContentLoaded', function() {
 				overlay.innerHTML = `
 					<div class="cp-turn" aria-hidden="true">
 						<div class="cp-under cp-under--left">
-							<iframe class="cp-frame cp-frame--left cp-under-frame cp-under-frame--contact" src="contact.html?preview=1" title="Kontakt (left)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="cp-frame cp-frame--left cp-under-frame cp-under-frame--about" src="about.html?preview=1" title="Om mig (left)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="cp-frame cp-frame--left cp-under-frame cp-under-frame--projects" src="projects.html?preview=1" title="Projekter (left)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="cp-frame cp-frame--left cp-under-frame cp-under-frame--contact" src="contact.html?preview=1" title="Kontakt (left)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="cp-frame cp-frame--left cp-under-frame cp-under-frame--about" src="about.html?preview=1" title="Om mig (left)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="cp-frame cp-frame--left cp-under-frame cp-under-frame--projects" src="projects.html?preview=1" title="Projekter (left)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="cp-under cp-under--right">
-							<iframe class="cp-frame cp-frame--right cp-under-frame cp-under-frame--contact" src="contact.html?preview=1" title="Kontakt (right)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="cp-frame cp-frame--right cp-under-frame cp-under-frame--about" src="about.html?preview=1" title="Om mig (right)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="cp-frame cp-frame--right cp-under-frame cp-under-frame--projects" src="projects.html?preview=1" title="Projekter (right)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="cp-frame cp-frame--right cp-under-frame cp-under-frame--contact" src="contact.html?preview=1" title="Kontakt (right)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="cp-frame cp-frame--right cp-under-frame cp-under-frame--about" src="about.html?preview=1" title="Om mig (right)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="cp-frame cp-frame--right cp-under-frame cp-under-frame--projects" src="projects.html?preview=1" title="Projekter (right)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<!-- Flip 1: Contact -> About (left page flips right)
 						     Turning sheet shows Kontakt LEFT until seam, then Om mig RIGHT (CV/udmærkelser). -->
 						<div class="cp-flip cp-flip--one">
 							<div class="cp-flip__content cp-flip__content--normal" aria-hidden="true">
-								<iframe class="cp-frame cp-frame--left cp-flip-frame cp-flip1-front--contact" src="contact.html?preview=1" title="Kontakt (left on turning sheet, before seam)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="cp-frame cp-frame--left cp-flip-frame cp-flip1-front--contact" src="contact.html?preview=1" title="Kontakt (left on turning sheet, before seam)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="cp-flip__content cp-flip__content--mirrored" aria-hidden="true">
-								<iframe class="cp-frame cp-frame--right cp-flip-frame cp-flip1-back--about" src="about.html?preview=1" title="Om mig (right on turning sheet, after seam)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="cp-frame cp-frame--right cp-flip-frame cp-flip1-back--about" src="about.html?preview=1" title="Om mig (right on turning sheet, after seam)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 
@@ -3497,10 +3519,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						     Turning sheet shows Om mig LEFT until seam, then Projekter RIGHT. -->
 						<div class="cp-flip cp-flip--two">
 							<div class="cp-flip__content cp-flip__content--normal" aria-hidden="true">
-								<iframe class="cp-frame cp-frame--left cp-flip-frame cp-flip2-front--about" src="about.html?preview=1" title="Om mig (left on turning sheet, before seam)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="cp-frame cp-frame--left cp-flip-frame cp-flip2-front--about" src="about.html?preview=1" title="Om mig (left on turning sheet, before seam)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="cp-flip__content cp-flip__content--mirrored" aria-hidden="true">
-								<iframe class="cp-frame cp-frame--right cp-flip-frame cp-flip2-back--projects" src="projects.html?preview=1" title="Projekter (right on turning sheet, after seam)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="cp-frame cp-frame--right cp-flip-frame cp-flip2-back--projects" src="projects.html?preview=1" title="Projekter (right on turning sheet, after seam)" loading="${mskBookTransitionIframeLoadingAttr()}" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 					</div>
@@ -3804,7 +3826,7 @@ document.addEventListener('DOMContentLoaded', function() {
 									class="home-notebook__projekter-full"
 									src="projects.html"
 									title="Projekter preview"
-									loading="eager"
+									loading="${mskBookTransitionIframeLoadingAttr()}"
 									referrerpolicy="no-referrer"
 									tabindex="-1"
 								></iframe>
@@ -3829,7 +3851,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				leftFrame.className = 'home-notebook__projekter-left';
 				leftFrame.src = 'projects.html';
 				leftFrame.title = 'Projekter preview (left)';
-				leftFrame.loading = 'eager';
+				leftFrame.loading = mskBookTransitionIframeLoadingAttr();
 				leftFrame.referrerPolicy = 'no-referrer';
 				leftFrame.tabIndex = -1;
 				cover.appendChild(leftFrame);
