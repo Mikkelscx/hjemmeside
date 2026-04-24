@@ -441,6 +441,82 @@ function mskArmPageTurnGhostClickGuard(ms) {
 	} catch {}
 }
 
+/**
+ * Safari/Chrome BFCache: ved tilbage-swipe kan JS-tilstand + overlays fra page-turn efterlades —
+ * ghost-click guard blokerer alle interne links, eller body overflow/transition-DOM blokerer visning.
+ */
+function mskRecoverAfterHistoryRestore() {
+	try {
+		__mskPageTurnGhostClickGuardUntil = 0;
+		__mskMenuNavGateMs = 0;
+	} catch (_) {}
+	try {
+		const b = document.body;
+		if (b) {
+			b.style.overflow = '';
+			const transient = [
+				'projects-about-flip-active',
+				'projects-about-dragging',
+				'projects-contact-flip-active',
+				'projects-contact-flipping',
+				'projects-contact-double-active',
+				'about-projects-flip-active',
+				'about-projects-flipping',
+				'about-projects-dragging',
+				'about-contact-flip-active',
+				'about-contact-flipping',
+				'about-contact-dragging',
+				'contact-about-flip-active',
+				'contact-about-flipping',
+				'contact-about-dragging',
+				'contact-projects-flip-active',
+				'cp-flipping',
+				'home-opening-projects',
+				'home-opening-layout',
+				'home-opened-projects',
+				'home-shift-projects',
+				'home-reveal-projects',
+				'projects-transition-active',
+			];
+			transient.forEach((c) => {
+				try {
+					b.classList.remove(c);
+				} catch (_) {}
+			});
+		}
+	} catch (_) {}
+	try {
+		document
+			.querySelectorAll(
+				[
+					'.projects-about-transition',
+					'.projects-contact-transition',
+					'.projects-contact-double-transition',
+					'.about-projects-transition',
+					'.about-contact-transition',
+					'.contact-about-transition',
+					'.contact-projects-transition',
+					'.projects-transition',
+				].join(',')
+			)
+			.forEach((el) => {
+				try {
+					el.remove();
+				} catch (_) {}
+			});
+	} catch (_) {}
+}
+
+window.addEventListener(
+	'pageshow',
+	function (e) {
+		try {
+			if (e && e.persisted) mskRecoverAfterHistoryRestore();
+		} catch (_) {}
+	},
+	false
+);
+
 // Simple JavaScript for any interactive functionality
 document.addEventListener('DOMContentLoaded', function() {
 	// If a page is loaded inside a transition iframe, render "clean" (no navbar),
