@@ -4699,6 +4699,8 @@ body.about-sketchbook-page.sketchbook-theme {
     /* projects page uses overflow hidden, but OM MIG needs scrolling */
     overflow-x: hidden;
     overflow-y: auto;
+    /* Fallback under papir/pseudo — undgå rå brun “omslag” (#8B4513) hvis et lag mangler (tablet/iframe) */
+    background: #f5f5f0;
 }
 
 body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
@@ -5037,6 +5039,41 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
         display: none;
     }
+
+    /* Tablet / iPad (≤1024): papir + linjer følger dokumentet — undgår brun/flad baggrund i WebKit-landskab */
+    body.about-sketchbook-page.sketchbook-theme::before {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme::after {
+        display: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .left-margin,
+    body.about-sketchbook-page.sketchbook-theme .right-margin {
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
+    }
 }
 
 /* OM MIG: portrait only — full-width copy below headline row (float+overflow:hidden keeps a narrow column for the whole page) */
@@ -5072,6 +5109,42 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
         grid-column: 1 / -1;
         grid-row: 2;
+    }
+}
+
+@media (min-width: 1025px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) {
+    body.about-sketchbook-page.sketchbook-theme::before {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme::after {
+        display: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .left-margin,
+    body.about-sketchbook-page.sketchbook-theme .right-margin {
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
     }
 }
 
