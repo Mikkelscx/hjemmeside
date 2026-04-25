@@ -2037,8 +2037,9 @@ body.ai-close-active .navbar {
     opacity: 0;
     transition: opacity 80ms linear;
 }
-.about-projects-transition .about-projects-turn__under-frame--projects.is-loaded,
-.about-projects-transition .about-projects-turn__flip-front--projects.is-loaded,
+/* Vigtigt: under/flip Projekter må ikke få opacity:1 alene fra is-loaded (iframe load),
+   for så vistes Projekter med det samme når is-turning slår til (fx ved drag), før søm-swap.
+   Brugere ser først Projekter når .swap-under-left / .swap-flip-mid sættes i JS. */
 .about-projects-transition .about-projects-turn__flip-face--back iframe.is-loaded {
     opacity: 1;
 }

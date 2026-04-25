@@ -1760,20 +1760,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					body.style.overflow = 'hidden';
 
 					overlay.classList.add('is-turning');
-					window.setTimeout(() => {
-						overlay.classList.add('swap-under-left');
-					}, 60);
 					// Timing tune (menu click): swap a bit AFTER the visual seam,
 					// but once it appears it must stay on for the rest of the flip.
 					const SWAP_FRAC = 0.58;
 					const SWAP_DEG = 105; // seam=90deg, slightly after
 					// Swap the FLIPPING page design at the visual seam (middle),
 					// so the 2nd half of the turning sheet shows Projekter RIGHT.
+					// Venstre under-side (Projekter) skal først vises her — ikke ved flip-start.
 					(function scheduleMidSwap() {
 						let done = false;
+						function applySeamSwap() {
+							overlay.classList.add('swap-flip-mid', 'swap-under-left');
+						}
 						const flipEl = overlay.querySelector('.about-projects-turn__flip');
 						if (!flipEl) {
-							window.setTimeout(() => overlay.classList.add('swap-flip-mid'), Math.round(FLIP_MS * SWAP_FRAC));
+							window.setTimeout(() => applySeamSwap(), Math.round(FLIP_MS * SWAP_FRAC));
 							return;
 						}
 						const startWatcher = () => {
@@ -1787,14 +1788,14 @@ document.addEventListener('DOMContentLoaded', function() {
 									// Trigger after the seam once we reach ~105deg in either direction.
 									if (typeof ang === 'number' && Math.abs(ang) >= SWAP_DEG) {
 										done = true;
-										overlay.classList.add('swap-flip-mid');
+										applySeamSwap();
 										return;
 									}
 								} catch {}
 								const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 								if ((now - startAt) >= fallbackMs) {
 									done = true;
-									overlay.classList.add('swap-flip-mid');
+									applySeamSwap();
 									return;
 								}
 								requestAnimationFrame(tick);
@@ -1806,7 +1807,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							// If `animationstart` is missed, start shortly after.
 							window.setTimeout(() => { if (!done) startWatcher(); }, 120);
 						} catch {
-							window.setTimeout(() => overlay.classList.add('swap-flip-mid'), Math.round(FLIP_MS * SWAP_FRAC));
+							window.setTimeout(() => applySeamSwap(), Math.round(FLIP_MS * SWAP_FRAC));
 						}
 					})();
 					// Keep OM MIG visible on the RIGHT page until the turning sheet covers it.
@@ -1846,6 +1847,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initAboutToProjectsDrag() {
 			const DRAG_CLASS = 'about-projects-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
+			// Venstre under-side: Projekter så snart træk starter. Vendende blad (swap-flip-mid): når "fold" når UDMÆRKELSER.
+			const SWAP_MIN_PROGRESS = 0.02;
 			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
@@ -1864,6 +1867,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				return handle;
 			}
 
+			function udmaerkelserNavDesignSwapX(fallbackVw) {
+				try {
+					const a = document.querySelector('.navbar a[href*="#udmaerkelser"]');
+					if (a) {
+						const r = a.getBoundingClientRect();
+						if (r.width > 0) {
+							return (r.left + r.right) * 0.5;
+						}
+					}
+				} catch {}
+				return (typeof fallbackVw === 'number' ? fallbackVw : (mskViewportSize().w || window.innerWidth)) * 0.5;
+			}
+
 			function setProgress(p, x, seamX, flipEl, overlay) {
 				progress = clamp01(p);
 				const angle = 180 * progress;
@@ -1877,17 +1893,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				try {
 					if (overlay) {
-						// Left under-page: show Projekter as soon as the flip begins.
-						if (progress > 0.02) overlay.classList.add('swap-under-left');
-						else overlay.classList.remove('swap-under-left');
+						const vw = mskViewportSize().w || window.innerWidth || 1;
+						const udmX = udmaerkelserNavDesignSwapX(vw);
+						const hasX = (typeof x === 'number' && isFinite(x));
+						const pastUdm = hasX && (x >= udmX) && (progress >= SWAP_MIN_PROGRESS);
+						if (pastUdm) {
+							overlay.classList.add('swap-flip-mid');
+						} else {
+							overlay.classList.remove('swap-flip-mid');
+						}
 
-						// Flipping page: switch to Projekter exactly once we cross the middle seam while dragging.
-						// This should feel like it changes right as the page passes the center.
-						const cursorPastMiddle = (typeof x !== 'number' || typeof seamX !== 'number') ? (progress >= 0.5) : (x >= seamX);
-						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
-						else overlay.classList.remove('swap-flip-mid');
-
-						// Swap the right under-page late (matches existing logic).
 						if (progress >= 0.88) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 					}
@@ -1930,7 +1945,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const overlay = ensureOverlay();
 				try { overlay.classList.remove('swap-flip-mid', 'swap-under-right'); } catch {}
-				overlay.classList.add('is-ready', 'is-turning');
+				overlay.classList.add('is-ready', 'is-turning', 'swap-under-left');
 				// Ensure we mark frames as loaded during drag too (so CSS can fade them in).
 				try {
 					const frames = Array.from(overlay.querySelectorAll('iframe'));
