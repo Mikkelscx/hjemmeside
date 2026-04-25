@@ -2294,27 +2294,6 @@ html.transition-preview body {
     overflow: hidden !important;
 }
 
-/*
- * OM MIG i page-turn / transition-iframes (?preview=1): skjul venstre “hero” (overskrift, polaroid, brødtekst).
- * Ellers ligger samme indhold som et ekstra lag ovenpå under animationen.
- */
-html.transition-preview body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .polaroid.polaroid--about.polaroid--about-main,
-html.transition-preview body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
-    display: none !important;
-}
-html.transition-preview body.about-sketchbook-page.sketchbook-theme .left-margin,
-html.transition-preview body.about-sketchbook-page.sketchbook-theme .right-margin,
-html.transition-preview body.about-sketchbook-page.sketchbook-theme #msk-paper-lines-layer {
-    display: none !important;
-}
-html.transition-preview body.about-sketchbook-page.sketchbook-theme {
-    background: transparent !important;
-}
-html.transition-preview body.about-sketchbook-page.sketchbook-theme::before,
-html.transition-preview body.about-sketchbook-page.sketchbook-theme::after {
-    display: none !important;
-}
-
 /* Projekter preview stability: don't show nodes until positioned (prevents top-left "glitch") */
 html.transition-preview body.sketchbook-theme .brainstorm-container .project-node {
     opacity: 0 !important;
@@ -5058,45 +5037,6 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
         display: none;
     }
-
-    /*
-     * Tablet / iPad (641–1024px): samme som telefon — papir + vandrette linjer skal sidde i dokumentet (absolute),
-     * ikke fixed. Ellers kan WebKit i landskab vise ensfarvet papir uden synlige linjer, mens margin-streger stadig tegnes.
-     */
-    body.about-sketchbook-page.sketchbook-theme::before {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        min-height: -webkit-fill-available !important;
-        min-height: var(--sketchPaperMinH, 100dvh) !important;
-    }
-    /* Ét sammenhængende papir (samme som mobil); undgå at højre ::after ligger ovenpå uden linjer */
-    body.about-sketchbook-page.sketchbook-theme::after {
-        display: none !important;
-    }
-    body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        min-height: -webkit-fill-available !important;
-        min-height: var(--sketchPaperMinH, 100dvh) !important;
-    }
-    body.about-sketchbook-page.sketchbook-theme .left-margin,
-    body.about-sketchbook-page.sketchbook-theme .right-margin {
-        position: absolute !important;
-        top: 0 !important;
-        bottom: 0 !important;
-    }
 }
 
 /* OM MIG: portrait only — full-width copy below headline row (float+overflow:hidden keeps a narrow column for the whole page) */
@@ -5132,46 +5072,6 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
         grid-column: 1 / -1;
         grid-row: 2;
-    }
-}
-
-/*
- * iPad Pro m.fl. i landskab: CSS-bredde >1024 men stadig touch — ellers rammer vi ikke reglerne ovenfor,
- * og WebKit kan stadig vise papir uden vandrette linjer (fixed lag vs. scroll).
- */
-@media (min-width: 1025px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) {
-    body.about-sketchbook-page.sketchbook-theme::before {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        min-height: -webkit-fill-available !important;
-        min-height: var(--sketchPaperMinH, 100dvh) !important;
-    }
-    body.about-sketchbook-page.sketchbook-theme::after {
-        display: none !important;
-    }
-    body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        min-height: -webkit-fill-available !important;
-        min-height: var(--sketchPaperMinH, 100dvh) !important;
-    }
-    body.about-sketchbook-page.sketchbook-theme .left-margin,
-    body.about-sketchbook-page.sketchbook-theme .right-margin {
-        position: absolute !important;
-        top: 0 !important;
-        bottom: 0 !important;
     }
 }
 
