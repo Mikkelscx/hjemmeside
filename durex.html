@@ -53,6 +53,26 @@
         .durex-page .nav-link:hover {
             color: #ffffff !important;
         }
+
+        @media (min-width: 768px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) {
+            .durex-page .navbar {
+                background: rgba(255, 255, 255, 0.96) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+                font-family: var(--font-sans, system-ui, sans-serif);
+            }
+            .durex-page .nav-link {
+                color: #333333 !important;
+                text-shadow: none !important;
+                font-weight: 600 !important;
+            }
+            .durex-page .nav-link:hover {
+                color: #111111 !important;
+                opacity: 0.85;
+            }
+        }
         
         .durex-page .page-content {
             background: rgba(255, 255, 255, 0.9) !important;
