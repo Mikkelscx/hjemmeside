@@ -10040,6 +10040,35 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     }
 }
 
+/* iPad / tablet portræt (fx iPad Pro 1024px): tre Print- + SoMe-assets på én række (HTML minmax(420px/260px) gav 2+1 eller stak) */
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
+        align-items: start !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid > .uv-media-tile,
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile {
+        min-width: 0 !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile:nth-child(3) {
+        grid-column: auto !important;
+        justify-self: stretch !important;
+        width: auto !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
+        align-items: start !important;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid > .uv-media-tile {
+        min-width: 0 !important;
+    }
+}
+
 /* SoMe posts: one column (stacked), larger — multi-col auto-fit is too small in landscape */
 @media (orientation: landscape) and (max-width: 1200px) {
     body.unge-mod-uv-page .uv-assets-grid--some {
