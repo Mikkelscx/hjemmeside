@@ -12317,17 +12317,6 @@ html body a[href="project1.html"]:hover {
     background: #000;
 }
 
-.msk-asset-lightbox__hint {
-    margin: 0;
-    font-size: 0.82rem;
-    letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.88);
-    text-align: center;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
-    pointer-events: none;
-    max-width: 36rem;
-}
-
 body.msk-asset-lightbox-open {
     overflow: hidden;
 }

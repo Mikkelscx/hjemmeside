@@ -8010,7 +8010,6 @@ window.addEventListener('load', function () {
 			'<button type="button" class="msk-asset-lightbox__close" aria-label="Luk"></button>',
 			'<div class="msk-asset-lightbox__frame">',
 			'<div class="msk-asset-lightbox__stage"></div>',
-			'<p class="msk-asset-lightbox__hint">Klik på det mørke, tryk Esc, eller ✕ for at lukke</p>',
 			'</div>',
 		].join('');
 		document.body.appendChild(root);
