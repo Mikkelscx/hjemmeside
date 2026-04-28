@@ -683,6 +683,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 			if (window.matchMedia('(max-width: 640px)').matches) return true;
 			if (window.matchMedia('(max-width: 1024px) and (hover: none) and (pointer: coarse)').matches) return true;
+			/* iPad portræt i DevTools og smalle portræt-vinduer: samme burger-layout som tablet-CSS */
+			if (window.matchMedia('(min-width: 641px) and (max-width: 1024px) and (orientation: portrait)').matches) return true;
+			if (window.matchMedia('(min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)').matches) return true;
 			if (window.matchMedia('(max-height: 520px) and (orientation: landscape) and (hover: none) and (pointer: coarse)').matches) return true;
 			return false;
 		} catch {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Repop by Depop - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=repop-brief-mobile-1col-2026">
+    <link rel="stylesheet" href="styles.css?v=repop-ipad-efter-lfw-32">
     <style>
         /* Small navbar override */
         .repop-page .navbar {
@@ -443,18 +443,26 @@
     <script>
     /* Kun LFW-billeder med data-lfw-content-frac (zoom) — layout/stemning styres af <style> ovenfor */
     (function () {
-        var mq = "(max-width: 768px)";
-        /** Bruger max-width 768 — ikke orientation (DevTools problem) */
-        var PORTRAIT_FRAC_SHRINK = 0.96;
+        var mqPhone = "(max-width: 768px)";
+        /** Synk med styles.css iPad-portræt (769–1024): samme zoom som telefon, ellers virker mockups små */
+        var mqIpadPortrait =
+            "(min-width: 769px) and (max-width: 1024px) and (orientation: portrait), " +
+            "(min-width: 769px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)";
+        var PORTRAIT_FRAC_SHRINK_PHONE = 0.96;
+        /** Fintrim iPad: under 0.96, stadig med zoom (ikke „før“ uden zoom) */
+        var PORTRAIT_FRAC_SHRINK_IPAD = 0.945;
         function apply() {
-            var narrow = window.matchMedia(mq).matches;
+            var phone = window.matchMedia(mqPhone).matches;
+            var ipadPortrait = window.matchMedia(mqIpadPortrait).matches;
+            var useFracZoom = phone || ipadPortrait;
+            var fracShrink = ipadPortrait ? PORTRAIT_FRAC_SHRINK_IPAD : PORTRAIT_FRAC_SHRINK_PHONE;
             document.querySelectorAll(".repop-lfw-segment .repop-mobile-stack__media img").forEach(function (img) {
                 var fracRaw = img.getAttribute("data-lfw-content-frac");
                 var frac = fracRaw == null ? NaN : parseFloat(fracRaw);
-                if (narrow) {
+                if (useFracZoom) {
                     if (!isNaN(frac) && frac > 0 && frac < 1) {
                         var wPct = 100 / frac;
-                        wPct = wPct * PORTRAIT_FRAC_SHRINK;
+                        wPct = wPct * fracShrink;
                         var mlPct = (100 - wPct) / 2;
                         img.style.setProperty("width", wPct + "%", "important");
                         img.style.setProperty("max-width", "none", "important");
@@ -494,6 +502,6 @@
         });
     })();
     </script>
-    <script src="script.js?v=2028-repop-inneronly-vh"></script>
+    <script src="script.js?v=2029-ipad-nav-viewport"></script>
 </body>
 </html> 

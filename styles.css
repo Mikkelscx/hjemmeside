@@ -8957,8 +8957,10 @@ body.sketchbook-theme .brainstorm-container {
     body.sketchbook-theme .left-margin { left: 36px; }
 }
 
-/* Mobile navbar on iPad / big mobile (touch): use burger menu too */
-@media (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse) {
+/* Mobile navbar on iPad / tablet-bredde portræt: burger (+ DevTools iPad, som ofte har pointer: fine) */
+@media (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse),
+    (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
+    (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
     /* Same bar height as phone burger layout (52px) + notch — matches --navBarTotal for dropdown top */
     html {
         --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
@@ -8992,6 +8994,26 @@ body.sketchbook-theme .brainstorm-container {
         box-sizing: border-box;
         z-index: 5000;
     }
+
+    /* Repop: `repop.html` sætter navbar z-index 1000 !important → dropdown under .page-content; som telefon */
+    html body.repop-page .navbar {
+        z-index: 20000 !important;
+    }
+    html body.repop-page .nav-scrim {
+        z-index: 19999 !important;
+    }
+    html body.repop-page .nav-menu {
+        z-index: 20001 !important;
+    }
+    html body.repop-page .nav-toggle {
+        position: relative;
+        z-index: 20002 !important;
+    }
+    html body.repop-page .page-content {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
     body .nav-container {
         height: 52px;
         padding: 6px 10px;
@@ -10016,8 +10038,14 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     }
 }
 
-/* iPad landscape (1024–1366): centrer tredje kort i Print + SoMe (2+1) */
-@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+/* iPad landscape (1024–1366): skub hovedindhold ned; + Unge mod UV Print/SoMe 2+1 (touch + DevTools: ingen pointer:coarse) */
+@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    .page-content,
+    .thought-bubble,
+    body.brainfarts-page .brainfarts-content,
+    body.unge-mod-uv-page .unge-mod-uv-content {
+        margin-top: calc(2rem + 1.15rem) !important;
+    }
     body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -10040,29 +10068,41 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     }
 }
 
-/* iPad / tablet portræt (fx iPad Pro 1024px): tre Print- + SoMe-assets på én række (HTML minmax(420px/260px) gav 2+1 eller stak) */
+/* iPad / tablet portræt: Print + SoMe = 2 øverst + 1 centreret nederst; fuld bredde i boksen (ophæv side-padding) */
 @media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
     body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
     body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
         display: grid !important;
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-        gap: 0.5rem !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 1.2rem !important;
         align-items: start !important;
+        width: calc(100% + 3rem) !important;
+        max-width: none !important;
+        margin-left: -1.5rem !important;
+        margin-right: -1.5rem !important;
+        box-sizing: border-box !important;
     }
     body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid > .uv-media-tile,
     body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile {
         min-width: 0 !important;
     }
+    body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid > .uv-media-tile:nth-child(3),
     body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile:nth-child(3) {
-        grid-column: auto !important;
-        justify-self: stretch !important;
-        width: auto !important;
+        grid-column: 1 / -1 !important;
+        justify-self: center !important;
+        width: min(100%, calc((100% - 1.2rem) / 2)) !important;
     }
+    /* Outdoor: hvert asset på egen række (fuld bredde som print/some-bleed) */
     body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
         display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 0.5rem !important;
+        grid-template-columns: 1fr !important;
+        gap: 1.2rem !important;
         align-items: start !important;
+        width: calc(100% + 3rem) !important;
+        max-width: none !important;
+        margin-left: -1.5rem !important;
+        margin-right: -1.5rem !important;
+        box-sizing: border-box !important;
     }
     body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid > .uv-media-tile {
         min-width: 0 !important;
@@ -10187,6 +10227,94 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 .page-content li {
     margin-bottom: 0.5rem;
     text-align: center;
+}
+
+/*
+ * iPad: projektsider (undtagen Twister) — samme skala som twister.html
+ * Brødtekst som .contact-info p (1.2rem, 500, 1.6); overskrifter som .page-content h1–h3.
+ * Viewport: typisk iPad/Pro i begge retninger (undgå fuld desktop 1440+ og telefon <768).
+ */
+@media (min-width: 768px) and (max-width: 1366px) {
+    /* --- Brødtekst + lister (kobajer, durex, repop, naturlig, byens) --- */
+    body.kobajer-page .page-content :is(p, li),
+    body.durex-page .page-content :is(p, li),
+    body.repop-page .page-content :is(p, li),
+    body.naturlig-page .page-content :is(p, li),
+    body.byens-landhandel-page .page-content :is(p, li) {
+        font-size: 1.2rem;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+
+    /* Durex: 1.1rem/infobox → Twister-linje */
+    body.durex-page .page-content .durex-infobox .durex-infobox__subhead {
+        font-size: 1.2rem;
+    }
+
+    /* KØ-Bajer: step-bokse (var 1rem / 0,95rem) */
+    body.kobajer-page .kobajer-step-box p {
+        font-size: 1.2rem;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+    body.kobajer-page .kobajer-step-box .step-detail {
+        font-size: 1.1rem;
+        line-height: 1.5;
+    }
+    /* STEP-rubrik som .step-column h4 (1,5rem) */
+    body.kobajer-page .kobajer-step-box h4 {
+        font-size: 1.5rem;
+    }
+
+    /* Unge mod UV */
+    body.unge-mod-uv-page .unge-mod-uv-content :is(p, li) {
+        font-size: 1.2rem;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content h2 {
+        font-size: 1.8rem;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content h3 {
+        font-size: 1.4rem;
+    }
+    body.unge-mod-uv-page .unge-mod-uv-content h4 {
+        font-size: 1.5rem;
+    }
+
+    body.naturlig-page .page-content h2 {
+        font-size: 1.8rem;
+    }
+    body.naturlig-page .page-content h3 {
+        font-size: 1.4rem;
+    }
+
+    /* Repop: sikr grundniveau; brief-kort var allerede ~1,24rem */
+    body.repop-page .page-content > p,
+    body.repop-page .page-content .repop-stack__text p,
+    body.repop-page .page-content .repop-mobile-stack__text p {
+        font-size: 1.2rem !important;
+        line-height: 1.6 !important;
+        font-weight: 500 !important;
+    }
+    body.repop-page .page-content .repop-brief-grid p {
+        font-size: 1.2rem !important;
+        line-height: 1.6 !important;
+    }
+    body.repop-page p.repop-brief-subtitle {
+        font-size: 1.3rem !important;
+    }
+
+    /* Brainfarts: inline 1,1rem quote → 1,2rem; h1 som øvrige projekter 2,5rem */
+    body.brainfarts-page .brainfarts-content h1 {
+        font-size: 2.5rem !important;
+    }
+    body.brainfarts-page .brainfarts-content .fart-quote {
+        font-size: 1.2rem !important;
+    }
+    body.brainfarts-page .brainfarts-content .fart-stat h3 {
+        font-size: 1.4rem !important;
+    }
 }
 
 /* Back Button (projektsider → projects.html, under navbar) */
@@ -10421,11 +10549,125 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     }
 }
 
-/* SoMe promo-billede: lidt større i tablet-portræt (ikke på smal telefon — der overflow’er infoboksen) */
-@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
-    body.repop-page .repop-mobile-stack__media img.repop-lfw-img--promo {
-        transform: scale(1.34) !important;
-        transform-origin: center center;
+/* Tablet portræt: fjern SoMe-promo scale — den overlappede brødtekst (især iPad Pro-bredde) */
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
+    (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media img.repop-lfw-img--promo {
+        transform: none !important;
+    }
+}
+
+/* iPad portræt (≥769): LFW — ens billedkolonne 58 %, tekst resten; kalender (.repop-lfw-overview) sin egen skala */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: portrait),
+    (min-width: 769px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw,
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-start !important;
+        gap: clamp(0.75rem, 2vw, 1.25rem) !important;
+    }
+
+    /* Billedkolonne: ens bredde i alle LFW-afsnit (ikke kalenderen .repop-lfw-overview) */
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
+        flex: 0 0 58% !important;
+        max-width: 58% !important;
+        min-width: 0 !important;
+        width: auto !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+    }
+
+    /* Efter LFW mockups (4–5): mellem „for små“ (ingen zoom) og „for store“ — kolonne + frac-zoom i JS */
+    html body.repop-page
+        .repop-lfw-segment:has(.repop-mobile-stack__media img[data-lfw-content-frac])
+        .repop-mobile-stack__media {
+        flex: 0 0 70% !important;
+        max-width: 70% !important;
+    }
+
+    /* Før LFW dobbelt-plakat (asset 2 — mangler data-lfw-content-frac) */
+    html body.repop-page
+        .repop-lfw-segment:has(.repop-mobile-stack__media img[src*="asset 2.png"])
+        .repop-mobile-stack__media {
+        flex: 0 0 70% !important;
+        max-width: 70% !important;
+    }
+
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        object-fit: contain !important;
+    }
+
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        width: auto !important;
+        align-self: stretch !important;
+        padding-left: 0.35rem !important;
+        padding-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* .repop-page p har ellers max-width: 50% → snæver kolonne midt i infoboksen */
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text :is(p, h4) {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Depop-video: samme vandrette målestok som LFW-billeder (kalender undtaget) */
+    html body.repop-page .repop-video-wrap {
+        width: 58% !important;
+        max-width: 58% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    html body.repop-page .repop-lfw-segment {
+        padding-left: 1.35rem !important;
+        padding-right: 1.35rem !important;
+        box-sizing: border-box !important;
+    }
+    html body.repop-page .repop-lfw-overview {
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        padding-bottom: 2.25rem !important;
+    }
+    html body.repop-page .repop-lfw-overview__track {
+        transform: scale(1.14) !important;
+        transform-origin: center top !important;
+    }
+    /* SoMe: fin lille skub mod højre vs 33 % */
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+        top: 16% !important;
+        left: 34% !important;
+    }
+    /* Post: meget lidt mod højre vs inline 67 % */
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+        top: 16% !important;
+        left: 68% !important;
+    }
+    /* Pre: samme vertikale linje som Pop-up + OOH; alle tre et skridt ned vs inline 70 % */
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+        top: 73% !important;
+        left: 17% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+        top: 73% !important;
+        left: 51.5% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+        top: 73% !important;
+        left: 86% !important;
     }
 }
 
@@ -10951,8 +11193,13 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     font-weight: 600;
 }
 
-.naturlig-page .nav-link:hover {
-    color: #42a5f5 !important;
+/* Ingen skift: samme blå + fuld dækning (afvis global .nav-link:hover { opacity: 0.7 } og tidligere lysere hover-farve) */
+.naturlig-page .nav-link:hover,
+.naturlig-page .nav-link:focus,
+.naturlig-page .nav-link:focus-visible,
+.naturlig-page .nav-link:active {
+    color: #1976d2 !important;
+    opacity: 1 !important;
 }
 
 .naturlig-page .back-button {
@@ -11485,11 +11732,12 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 }
 
 .kobajer-step-box .step-detail {
-    color: #666666;
-    font-size: 0.9rem;
+    color: #000000;
+    font-size: 0.95rem;
     margin-top: 0.5rem;
-    font-weight: 400;
+    font-weight: 500;
     font-style: italic;
+    line-height: 1.45;
 }
 
 .kobajer-step-image {
@@ -11525,12 +11773,66 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     max-height: 400px;
     object-fit: contain;
     display: block;
+    /* Bedre neddimensionering når der lægges højere opløsning i assets/ (så stor som muligt; ~2× vist størrelse til Retina) */
+    image-rendering: high-quality;
+}
+
+/* Hvordan ser det ud + frontpage — samme mønster som bund-CTA (undgå kun inline) */
+body.kobajer-page .kobajer-mockup {
+    text-align: center;
+    margin-top: 2rem;
+}
+body.kobajer-page .kobajer-mockup-img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    image-rendering: high-quality;
+}
+body.kobajer-page .kobajer-mockup--hvordan .kobajer-mockup-img {
+    max-height: 500px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
+    width: 100%;
+    max-height: 600px;
 }
 
 @media (max-width: 768px) {
     .kobajer-steps {
         grid-template-columns: 1fr;
         gap: 1rem;
+    }
+}
+
+/* KØ-BAJER: iPad-landskab — bund-CTA som kobajer.html inline (fallback; samme som frontpage 600px) */
+@media screen and (min-width: 1024px) and (max-width: 1400px) and (max-height: 1200px) {
+    body.kobajer-page .kobajer-bottom-cta {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 2rem 0 0 0 !important;
+        padding: 0 !important;
+    }
+    body.kobajer-page .kobajer-bottom-cta__item {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 0 1.25rem 0 !important;
+    }
+    body.kobajer-page .kobajer-bottom-cta__item:last-child {
+        margin-bottom: 0 !important;
+    }
+    body.kobajer-page .kobajer-bottom-cta__img {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        max-height: 600px !important;
+        object-fit: contain !important;
     }
 }
 
@@ -11958,6 +12260,17 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         0 0 0 1px rgba(255,255,255,0.35) inset,
         0 0 22px rgba(255, 105, 180, 0.10),
         0 0 22px rgba(50, 205, 50, 0.10);
+}
+
+/* Mørkere overskrifter end brødtekst (body #333) */
+.twister-page .page-content h3,
+.twister-page .page-content h4,
+.twister-page .page-content h5 {
+    color: #141414;
+}
+
+.twister-page .page-content p strong {
+    color: #141414;
 }
 
 .contact-info {
