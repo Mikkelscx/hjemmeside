@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Repop by Depop - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=repop-ipad-efter-lfw-32">
+    <link rel="stylesheet" href="styles.css?v=repop-ipad-lfw-land-52">
     <style>
         /* Small navbar override */
         .repop-page .navbar {
@@ -448,14 +448,19 @@
         var mqIpadPortrait =
             "(min-width: 769px) and (max-width: 1024px) and (orientation: portrait), " +
             "(min-width: 769px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)";
+        /** iPad Pro landskab (1366×1024): samme frac-zoom som portræt — mockups matcher andre assets */
+        var mqIpadLandscape =
+            "(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape)";
         var PORTRAIT_FRAC_SHRINK_PHONE = 0.96;
         /** Fintrim iPad: under 0.96, stadig med zoom (ikke „før“ uden zoom) */
         var PORTRAIT_FRAC_SHRINK_IPAD = 0.945;
         function apply() {
             var phone = window.matchMedia(mqPhone).matches;
             var ipadPortrait = window.matchMedia(mqIpadPortrait).matches;
-            var useFracZoom = phone || ipadPortrait;
-            var fracShrink = ipadPortrait ? PORTRAIT_FRAC_SHRINK_IPAD : PORTRAIT_FRAC_SHRINK_PHONE;
+            var ipadLandscape = window.matchMedia(mqIpadLandscape).matches;
+            var useFracZoom = phone || ipadPortrait || ipadLandscape;
+            var fracShrink =
+                ipadPortrait || ipadLandscape ? PORTRAIT_FRAC_SHRINK_IPAD : PORTRAIT_FRAC_SHRINK_PHONE;
             document.querySelectorAll(".repop-lfw-segment .repop-mobile-stack__media img").forEach(function (img) {
                 var fracRaw = img.getAttribute("data-lfw-content-frac");
                 var frac = fracRaw == null ? NaN : parseFloat(fracRaw);

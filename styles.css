@@ -10671,6 +10671,105 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     }
 }
 
+/*
+ * iPad / stor tablet landskab (fx Pro 12,9": 1366×1024): LFW-infobokse = én kolonne til asset, én til tekst.
+ * Efter LFW (frac): zoom i <script> nederst — ellers små mockups. Kolonner: 50/50.
+ */
+@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw,
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-start !important;
+        gap: clamp(1rem, 2.2vw, 1.75rem) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
+        flex: 1 1 0% !important;
+        max-width: 50% !important;
+        min-width: 0 !important;
+        width: auto !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+    }
+
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        flex: 1 1 0% !important;
+        max-width: 50% !important;
+        min-width: 0 !important;
+        width: auto !important;
+        align-self: stretch !important;
+        box-sizing: border-box !important;
+    }
+
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        object-fit: contain !important;
+    }
+
+    /* frac-zoom (JS) sætter bredde >100 % — ikke klem med max-width:100 % */
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media img[data-lfw-content-frac] {
+        max-width: none !important;
+    }
+
+    /* .repop-page p har ellers max-width: 50 % */
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text :is(p, h4) {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
+    }
+
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media img.repop-lfw-img--promo {
+        transform: none !important;
+    }
+
+    /*
+     * LFW asset 6: SoMe + Post — tekst over cirkel (zigzag). Uden vertikal translate sidder toppen af
+     * boksen ved 25 % og teksten skærer ned i cirklen; løft hele blokken op med gap til cirkelkant.
+     */
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+        transform: translate(-50%, calc(-100% - 12px)) !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+        top: 28% !important;
+        left: 34% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+        top: 28% !important;
+        left: 68% !important;
+    }
+
+    /*
+     * Bundrække: samme lodrette linje; ~73 % giver lidt mere luft under cirklerne end inline 70 %.
+     * Lidt mod højre (~+1 % vs tidligere Pre 16 % / inline Pop-up 51 %); OOH finjusteret (86 %).
+     */
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+        top: 73% !important;
+        left: 17% !important;
+        transform: translateX(-50%) !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+        top: 73% !important;
+        left: 51% !important;
+        transform: translateX(-50%) !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+        top: 73% !important;
+        left: 86% !important;
+        transform: translateX(-50%) !important;
+    }
+}
+
 .lfw-headline {
     color: #fff8e1;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
