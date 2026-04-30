@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Repop by Depop - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=repop-ipad-lfw-land-52">
+    <link rel="stylesheet" href="styles.css?v=repop-lfw-topmark-65">
     <style>
         /* Small navbar override */
         .repop-page .navbar {
@@ -22,15 +22,18 @@
             padding: 0 20px !important;
         }
         
-        .repop-page .nav-menu {
-            display: flex !important;
-            justify-content: center !important;
-            list-style: none !important;
-            padding: 0.3rem 0 !important;
-        }
-        
-        .repop-page .nav-item {
-            margin: 0 1.5rem !important;
+        /* Vandret top-menu kun på desktop — tablet burger undgår center i højt panel (dead space) */
+        @media (min-width: 1025px) {
+            .repop-page .nav-menu {
+                display: flex !important;
+                justify-content: center !important;
+                list-style: none !important;
+                padding: 0.3rem 0 !important;
+            }
+
+            .repop-page .nav-item {
+                margin: 0 1.5rem !important;
+            }
         }
         
         .repop-page .nav-link {
@@ -380,7 +383,7 @@
         
         <!-- Efter LFW Content -->
         <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; gap: 0.2rem;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; gap: 2rem;">
                 <!-- Left Side - Efter LFW Text -->
                 <div class="repop-mobile-stack__text repop-mobile-stack__text--pad-right-0-lg">
                     <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Efter LFW</h4>
@@ -444,10 +447,10 @@
     /* Kun LFW-billeder med data-lfw-content-frac (zoom) — layout/stemning styres af <style> ovenfor */
     (function () {
         var mqPhone = "(max-width: 768px)";
-        /** Synk med styles.css iPad-portræt (769–1024): samme zoom som telefon, ellers virker mockups små */
+        /** Tablet portræt fra 641px — samme som CSS Z-layout + mockup-frac */
         var mqIpadPortrait =
-            "(min-width: 769px) and (max-width: 1024px) and (orientation: portrait), " +
-            "(min-width: 769px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)";
+            "(min-width: 641px) and (max-width: 1024px) and (orientation: portrait), " +
+            "(min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)";
         /** iPad Pro landskab (1366×1024): samme frac-zoom som portræt — mockups matcher andre assets */
         var mqIpadLandscape =
             "(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape)";
