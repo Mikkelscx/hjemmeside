@@ -10416,8 +10416,11 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     }
 }
 
-/* iPad landscape (1024–1366): skub hovedindhold ned; + Unge mod UV Print/SoMe 2+1 (touch + DevTools: ingen pointer:coarse) */
-@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+/* iPad / tablet landscape (1024–1600): skub hovedindhold ned; + Unge mod UV Print/SoMe 2+1 — tredje kort centreret.
+   Max 1600 så smal laptop-landskab følger med; undgår store ultrawide.
+   Ekstra (min-aspect-ratio): når orientation: landscape fejler i DevTools, men bredden stadig er tablet. */
+@media (min-width: 1024px) and (max-width: 1600px) and (orientation: landscape),
+    (min-width: 1024px) and (max-width: 1600px) and (min-aspect-ratio: 11/10) {
     .page-content,
     .thought-bubble,
     body.brainfarts-page .brainfarts-content,
@@ -10443,6 +10446,91 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         grid-column: 1 / -1;
         justify-self: center;
         width: min(100%, calc((100% - 1.2rem) / 2));
+    }
+
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw,
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack {
+        display: grid !important;
+        grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr) !important;
+        align-items: start !important;
+        align-content: start !important;
+        gap: clamp(1rem, 2.4vw, 1.55rem) !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media,
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        min-width: 0 !important;
+        max-width: none !important;
+        width: auto !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        transform: none !important;
+        /* Fra zoom (width > 100%) må hvide rammer i mockup’et ikke klippes væk */
+        overflow: visible !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
+        margin-top: 0 !important;
+        /* Lodret finjustér mod „Efter LFW“; vandret holdt lav — zoom margin er 0 i landskab */
+        transform: translate(0.15rem, -1.2rem) !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text :is(p, h4) {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
+    }
+    /* Top-align: ophæv @media (min-width: 641px) min-height + justify-content:center på tekstkolonnen */
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        justify-content: flex-start !important;
+        min-height: 0 !important;
+    }
+    html body.repop-page .repop-lfw-segment--first .repop-mobile-stack__text {
+        min-height: 0 !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media,
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        align-self: flex-start !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text h4:first-child {
+        margin-top: 0 !important;
+        line-height: 1.2 !important;
+    }
+    html body.repop-page .repop-lfw-overview {
+        padding-top: 1.36rem !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+        transform: translateX(-50%) !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+        top: 19.9% !important;
+        left: 34% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+        top: 19.9% !important;
+        left: 68.5% !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+        top: 72.5% !important;
+        left: 18% !important;
+        transform: translateX(-50%) !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+        top: 72.5% !important;
+        left: 52% !important;
+        transform: translateX(-50%) !important;
+    }
+    html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+        top: 72.5% !important;
+        left: 85.5% !important;
+        transform: translateX(-50%) !important;
     }
 }
 
@@ -10794,16 +10882,21 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 
 /* Repop LFW: tekstkolonne ved siden af billeder (tablet + desktop; telefon ≤640 er stak) */
 @media (min-width: 641px) {
+    /* Top-align tekst + asset (center/min-h gav “hængende” billeder især når iPad-MQ ikke matchede) */
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw,
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack {
+        align-items: flex-start !important;
+    }
     html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
         flex: 1 1 auto;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        min-height: 200px;
+        justify-content: flex-start;
+        min-height: 0;
         box-sizing: border-box;
     }
     html body.repop-page .repop-lfw-segment--first .repop-mobile-stack__text {
-        min-height: 300px;
+        min-height: 0;
     }
     html body.repop-page .repop-mobile-stack__text--pad-left-0-lg {
         padding-left: 0 !important;
@@ -11052,6 +11145,41 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
         top: 72% !important;
         left: 83% !important;
+    }
+}
+
+/*
+ * Repop LFW: vandret viewport under 1024px bred — grid/top-align fallback.
+ * Mockup-for-skydning (translate) ligger kun i @media (1024–1600 landskab) ovenfor — ikke her.
+ */
+@media (min-width: 641px) and (max-width: 1600px) and (min-aspect-ratio: 11/10) {
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw,
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack {
+        display: grid !important;
+        grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr) !important;
+        align-items: start !important;
+        align-content: start !important;
+        gap: clamp(1rem, 2.4vw, 1.55rem) !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        justify-content: flex-start !important;
+        align-content: flex-start !important;
+        min-height: 0 !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
+        align-self: flex-start !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+        overflow: visible !important;
+    }
+    html body.repop-page .repop-lfw-segment .repop-mobile-stack__media img {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        display: block !important;
     }
 }
 

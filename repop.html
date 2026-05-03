@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Repop by Depop - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=repop-lfw-topmark-65">
+    <link rel="stylesheet" href="styles.css?v=repop-lfw-topmark-97">
     <style>
         /* Small navbar override */
         .repop-page .navbar {
@@ -239,6 +239,40 @@
                 left: 29% !important;
             }
         }
+        /* iPad / tablet landskab (1024–1600): SoMe + Post — lidt højere (afbalanceret) */
+        @media screen and (min-width: 1024px) and (max-width: 1600px) and (orientation: landscape),
+               screen and (min-width: 1024px) and (max-width: 1600px) and (min-aspect-ratio: 11/10) {
+            html body.repop-page .repop-lfw-overview {
+                padding-top: 1.36rem !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                transform: translateX(-50%) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+                top: 19.9% !important;
+                left: 34% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                top: 19.9% !important;
+                left: 68.5% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+                top: 72.5% !important;
+                left: 18% !important;
+                transform: translateX(-50%) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+                top: 72.5% !important;
+                left: 52% !important;
+                transform: translateX(-50%) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+                top: 72.5% !important;
+                left: 85.5% !important;
+                transform: translateX(-50%) !important;
+            }
+        }
     </style>
 
 
@@ -331,7 +365,7 @@
         <div class="repop-lfw-segment repop-lfw-segment--first" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
             <h3 style="color: white; font-size: 2rem; margin: 0 0 1.5rem 0; font-weight: bold; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); text-align: center;">London Fashion Week Aktiveringer</h3>
             
-            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; gap: 2rem;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - Image -->
                 <div class="repop-mobile-stack__media" style="text-align: center;">
                     <img src="assets/repop SoMe 1.png" alt="Repop SoMe 1" class="repop-lfw-img--promo" style="height: auto; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">
@@ -349,7 +383,7 @@
         
         <!-- Additional Før LFW Content -->
         <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; gap: 2rem;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - Text -->
                 <div class="repop-mobile-stack__text repop-mobile-stack__text--pad-left-0-lg">
                     <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Før LFW</h4>
@@ -365,7 +399,7 @@
         
         <!-- Under LFW Content -->
         <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; gap: 2rem;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - LFW Asset 3 -->
                 <div class="repop-mobile-stack__media" style="text-align: center;">
                     <img src="assets/LFW asset 3.png" alt="LFW Asset 3" style="height: auto;">
@@ -383,7 +417,7 @@
         
         <!-- Efter LFW Content -->
         <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; gap: 2rem;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - Efter LFW Text -->
                 <div class="repop-mobile-stack__text repop-mobile-stack__text--pad-right-0-lg">
                     <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Efter LFW</h4>
@@ -400,7 +434,7 @@
         
         <!-- Additional Efter LFW Content -->
         <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; gap: 2rem;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - LFW Asset 5 -->
                 <div class="repop-mobile-stack__media" style="text-align: center;">
                     <img src="assets/LFW asset 5.png" alt="LFW Asset 5" data-lfw-content-frac="0.71" style="height: auto;">
@@ -451,31 +485,42 @@
         var mqIpadPortrait =
             "(min-width: 641px) and (max-width: 1024px) and (orientation: portrait), " +
             "(min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)";
-        /** iPad Pro landskab (1366×1024): samme frac-zoom som portræt — mockups matcher andre assets */
+        /** iPad / tablet landskab: frac-zoom; matcher styles.css (orientation kan fejle i DevTools) */
         var mqIpadLandscape =
-            "(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape)";
+            "(min-width: 1024px) and (max-width: 1600px) and (orientation: landscape), " +
+            "(min-width: 1024px) and (max-width: 1600px) and (min-aspect-ratio: 11/10)";
         var PORTRAIT_FRAC_SHRINK_PHONE = 0.96;
         /** Fintrim iPad: under 0.96, stadig med zoom (ikke „før“ uden zoom) */
         var PORTRAIT_FRAC_SHRINK_IPAD = 0.945;
+        /** iPad landskab: lidt større zoom + venstrejusteret (overflow mod højre — overlap med tekst undgås) */
+        var LANDSCAPE_FRAC_SHRINK = 0.985;
         function apply() {
             var phone = window.matchMedia(mqPhone).matches;
             var ipadPortrait = window.matchMedia(mqIpadPortrait).matches;
             var ipadLandscape = window.matchMedia(mqIpadLandscape).matches;
             var useFracZoom = phone || ipadPortrait || ipadLandscape;
-            var fracShrink =
-                ipadPortrait || ipadLandscape ? PORTRAIT_FRAC_SHRINK_IPAD : PORTRAIT_FRAC_SHRINK_PHONE;
+            var fracShrink = PORTRAIT_FRAC_SHRINK_PHONE;
+            if (ipadLandscape) {
+                fracShrink = LANDSCAPE_FRAC_SHRINK;
+            } else if (ipadPortrait) {
+                fracShrink = PORTRAIT_FRAC_SHRINK_IPAD;
+            }
             document.querySelectorAll(".repop-lfw-segment .repop-mobile-stack__media img").forEach(function (img) {
                 var fracRaw = img.getAttribute("data-lfw-content-frac");
                 var frac = fracRaw == null ? NaN : parseFloat(fracRaw);
                 if (useFracZoom) {
                     if (!isNaN(frac) && frac > 0 && frac < 1) {
-                        var wPct = 100 / frac;
-                        wPct = wPct * fracShrink;
-                        var mlPct = (100 - wPct) / 2;
+                        var wPct = (100 / frac) * fracShrink;
                         img.style.setProperty("width", wPct + "%", "important");
                         img.style.setProperty("max-width", "none", "important");
-                        img.style.setProperty("margin-left", mlPct + "%", "important");
-                        img.style.setProperty("margin-right", "0", "important");
+                        if (ipadLandscape) {
+                            img.style.setProperty("margin-left", "0", "important");
+                            img.style.setProperty("margin-right", "0", "important");
+                        } else {
+                            var mlPct = (100 - wPct) / 2;
+                            img.style.setProperty("margin-left", mlPct + "%", "important");
+                            img.style.setProperty("margin-right", "0", "important");
+                        }
                     } else {
                         img.style.setProperty("width", "100%", "important");
                         img.style.setProperty("max-width", "none", "important");
