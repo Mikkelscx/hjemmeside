@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Repop by Depop - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=repop-lfw-topmark-106">
+    <link rel="stylesheet" href="styles.css?v=repop-lfw-topmark-108">
     <style>
-        /* Small navbar override */
+        /* Layout-only: farver kommer fra styles.css (repop-page navbar-tokens) */
         .repop-page .navbar {
-            background-color: #fff !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
             position: fixed !important;
             top: 0 !important;
             width: 100% !important;
-            z-index: 1000 !important;
+            z-index: 20000 !important;
         }
         
         .repop-page .nav-container {
@@ -30,24 +28,8 @@
                 list-style: none !important;
                 padding: 0.3rem 0 !important;
             }
-
-            .repop-page .nav-item {
-                margin: 0 1.5rem !important;
-            }
         }
         
-        .repop-page .nav-link {
-            text-decoration: none !important;
-            color: #333 !important;
-            font-weight: 600 !important;
-            font-size: 0.8rem !important;
-            transition: opacity 0.2s ease !important;
-        }
-        
-        .repop-page .nav-link:hover {
-            opacity: 0.7 !important;
-        }
-
         /* Kalender-markører SoMe/Post: desktop-fallback (≤768 og landskab overskrives nedenfor) */
         html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
             top: 25%;
