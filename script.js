@@ -105,6 +105,25 @@ function mskIsProjectsShortLandscapeViewport() {
 	}
 }
 
+/**
+ * Projekter: iPad / tablet portræt (641–1024px) — samme lodrette skitse-grid som mobil.
+ * Skal matche CSS (burger + mindmap portrait-styling).
+ */
+function mskIsProjectsTabletPortraitViewport() {
+	try {
+		if (!window.matchMedia) return false;
+		const mqA = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1024px) and (orientation: portrait)'
+		);
+		const mqB = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)'
+		);
+		return !!((mqA && mqA.matches) || (mqB && mqB.matches));
+	} catch (_) {
+		return false;
+	}
+}
+
 /** Projekter desktop: “Under ombygning” + pil lige under BRAINFARTS-cirklen (følger SVG-ring efter layout). */
 function positionBrainfartsBuildNote() {
 	try {
@@ -407,6 +426,50 @@ function mskSketchbookPaperLinesDraw() {
 })();
 
 /**
+ * Site-standard play-knap på alle indlejrede <video> (halvgennemsigtig cirkel + clip-path-pil i CSS).
+ * Forælderen til <video> får .video-play-frame; undlad at lægge eget overlay i HTML.
+ *
+ * Undtagelser: sæt data-no-play-overlay på <video>, eller læg den i .durex-kampagnevideo-wrap.
+ * Kalds idempotent (spring over hvis .video-play-btn allerede findes).
+ */
+function mskInitNativeVideoPlayOverlays() {
+	try {
+		document.querySelectorAll('video').forEach((vid) => {
+			if (vid.hasAttribute('data-no-play-overlay')) return;
+			if (vid.closest('.durex-kampagnevideo-wrap')) return;
+			const frame = vid.parentElement;
+			if (!frame || frame.classList.contains('video-lazy')) return;
+			if (frame.querySelector('.video-play-btn')) return;
+
+			frame.classList.add('video-play-frame');
+			try {
+				const pos = window.getComputedStyle(frame).position;
+				if (pos === 'static') frame.style.position = 'relative';
+			} catch {}
+
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'video-play-btn';
+			btn.setAttribute('aria-label', 'Afspil video');
+			/* Pil tegnes med CSS ::after (clip-path) — SVG i knap er upålidelig i WebKit */
+			frame.appendChild(btn);
+
+			function sync() {
+				frame.classList.toggle('is-playing', !vid.paused);
+			}
+			vid.addEventListener('play', sync);
+			vid.addEventListener('pause', sync);
+			btn.addEventListener('click', function () {
+				try {
+					vid.play();
+				} catch {}
+			});
+			sync();
+		});
+	} catch {}
+}
+
+/**
  * Transition-iframes (preview=1) og indlejret projects må ikke køre book-overlay init (rekursive iframes).
  */
 function mskSkipNestedProjectsBookInits() {
@@ -601,6 +664,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	})();
 
+	mskInitNativeVideoPlayOverlays();
+
 
 
 	// Desktop-only corner fold hover hint (shows on the page corner itself).
@@ -760,6 +825,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		button.addEventListener('click', () => setOpen(!isOpen()));
 		scrim.addEventListener('click', () => setOpen(false));
 
+		/*
+		 * Én navigation pr. tryk: tidligere pointerup + touchend + click kunne udløse flere location.assign
+		 * (Safari + Chrome → netværksfejl). Book-/AI-flip kører på document capture og sætter preventDefault —
+		 * her i bubble-fasen ser vi defaultPrevented og styrer kun menu + “almindelige” links.
+		 */
 		menu.addEventListener('click', (e) => {
 			try {
 				if (!isBurgerVisible() && !isOpen()) return;
@@ -889,6 +959,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {
 			return;
 		}
+		/* Preview-iframes / indlejret projects: ingen overlay-prewarm (rekursive iframes + dobbelt nav i menu). */
 		if (mskSkipNestedProjectsBookInits()) return;
 
 		const FLIP_MS = getPageFlipMs(5200); // matches CSS `--pageFlipMs`
@@ -4208,7 +4279,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				document.body &&
 				document.body.classList.contains('projects-page') &&
 				portraitOrientation &&
-				(phonePortraitMedia || cw <= 640);
+				(phonePortraitMedia || cw <= 640 || mskIsProjectsTabletPortraitViewport());
 
 			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) like the live site; ellipse for landscape / wide.
 			try {
@@ -4233,7 +4304,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					const maxX = layoutW - 52;
 					const baseLeft = Math.max(minX, Math.min(maxX, layoutW * 0.22));
 					const baseRight = Math.max(minX, Math.min(maxX, layoutW * 0.78));
-					const maxW = Math.max(120, Math.floor(layoutW * 0.48));
+					let maxW = Math.max(120, Math.floor(layoutW * 0.48));
+					try {
+						if (mskIsProjectsTabletPortraitViewport()) {
+							maxW = Math.min(300, Math.max(120, Math.floor(layoutW * 0.65)));
+						}
+					} catch (_) {}
 					const tilts = [-1, 1, -2, 0.5, -1.5, 2, -0.5, 1.5];
 
 					const rowOffsets = [
@@ -4308,16 +4384,22 @@ document.addEventListener('DOMContentLoaded', function() {
 							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
 							node.style.setProperty('font-size', `${Math.max(10, fs * 0.86)}px`, 'important');
 						}
+						let tabletPortrait = false;
+						try {
+							tabletPortrait = !!mskIsProjectsTabletPortraitViewport();
+						} catch (_) {
+							tabletPortrait = false;
+						}
 						// Durex: slightly narrower tab. UNGE: wider tab so the title image reads larger.
-						if (p.key === 'durex') {
+						if (!tabletPortrait && p.key === 'durex') {
 							node.style.setProperty('max-width', `${Math.max(100, Math.floor(maxW * 0.75))}px`, 'important');
-						} else if (p.key === 'unge') {
+						} else if (!tabletPortrait && p.key === 'unge') {
 							const ungeTabW = Math.min(
 								300,
 								Math.floor(layoutW * 0.58)
 							);
 							node.style.setProperty('max-width', `${Math.max(maxW + 32, ungeTabW)}px`, 'important');
-						} else if (p.key === 'byens') {
+						} else if (!tabletPortrait && p.key === 'byens') {
 							/* Kun Byens: bredere fane i portræt-grid (inline max-width ellers klipper titel-webp) */
 							const byensTabW = Math.min(292, Math.floor(layoutW * 0.64));
 							node.style.setProperty('max-width', `${Math.max(132, byensTabW)}px`, 'important');
@@ -4611,7 +4693,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
 				} catch {}
 				const cw = container.getBoundingClientRect().width;
-				if (!(narrow || cw <= 640 || mskIsProjectsShortLandscapeViewport())) return;
+				if (
+					!(
+						narrow ||
+						cw <= 640 ||
+						mskIsProjectsShortLandscapeViewport() ||
+						mskIsProjectsTabletPortraitViewport()
+					)
+				)
+					return;
 
 				function stackNode(el) {
 					if (!el) return;
@@ -5729,11 +5819,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches
 				);
 			} catch (_) {}
+			const tabletPortraitProjectsChain =
+				!!(
+					document.body &&
+					document.body.classList.contains('projects-page') &&
+					mskIsProjectsTabletPortraitViewport()
+				);
 			const portraitSketchLikeGrid =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
 				portraitOrientationChain &&
-				(phonePortraitMediaChain || cwLine <= 640);
+				(phonePortraitMediaChain || cwLine <= 640 || tabletPortraitProjectsChain);
 			let isMobileProjects =
 				isPortraitMindmap ||
 				portraitSketchLikeGrid ||
@@ -7917,6 +8013,20 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 });
 
+/* Samme video-play design hvis DOM allerede er klar (script sidst i body), ved tilbage fra bfcache, m.m. */
+try {
+	if (document.readyState !== 'loading') {
+		mskInitNativeVideoPlayOverlays();
+	}
+} catch {}
+try {
+	window.addEventListener('pageshow', function (ev) {
+		try {
+			if (ev.persisted) mskInitNativeVideoPlayOverlays();
+		} catch {}
+	});
+} catch {}
+
 // Ensure lazy video init runs after DOM is ready
 window.addEventListener('load', function () {
 	const lazyContainers = document.querySelectorAll('.video-lazy');
@@ -8072,8 +8182,10 @@ window.addEventListener('load', function () {
 		root.classList.add('is-open');
 		document.body.classList.add('msk-asset-lightbox-open');
 		lastFocus = document.activeElement;
+		/* Fokus på dialog-roden — ikke på luk-knappen (undgår at knappen skifter udseende 1. vs 2. åbning pga. :focus) */
 		try {
-			root.querySelector('.msk-asset-lightbox__close').focus();
+			if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+			root.focus({ preventScroll: true });
 		} catch {}
 	}
 
@@ -8085,12 +8197,16 @@ window.addEventListener('load', function () {
 		const stage = root.querySelector('.msk-asset-lightbox__stage');
 		stage.innerHTML = '';
 		stage.appendChild(buildVideoFrom(sourceEl));
+		try {
+			mskInitNativeVideoPlayOverlays();
+		} catch {}
 		root.setAttribute('aria-hidden', 'false');
 		root.classList.add('is-open');
 		document.body.classList.add('msk-asset-lightbox-open');
 		lastFocus = document.activeElement;
 		try {
-			root.querySelector('.msk-asset-lightbox__close').focus();
+			if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+			root.focus({ preventScroll: true });
 		} catch {}
 	}
 
@@ -8108,6 +8224,9 @@ window.addEventListener('load', function () {
 		root.classList.remove('is-open');
 		root.setAttribute('aria-hidden', 'true');
 		document.body.classList.remove('msk-asset-lightbox-open');
+		try {
+			root.blur();
+		} catch {}
 		if (lastFocus && typeof lastFocus.focus === 'function') {
 			try {
 				lastFocus.focus();
