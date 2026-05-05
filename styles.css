@@ -7306,9 +7306,9 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         body.projects-page.sketchbook-theme .project-node {
             font-size: 1.06rem !important;
         }
-        body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
-            width: 96px;
-            max-width: 72%;
+        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node .brainfarts-build__sign--inline {
+            width: 200px;
+            max-width: 98%;
         }
         /* Større MENU (touch) — kun Projekter-siden */
         body.projects-page.sketchbook-theme .nav-toggle {
@@ -7579,15 +7579,44 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
 
         /* iPad portræt: større Kravling + REPOP/Durex inde i portræt-grid (overskriver 12px/18px ovenfor) */
         @media (min-width: 641px) and (max-width: 1024px) {
+            /* iPad: KRAVLINGPRISEN øverst → NOMINERET midt → årstal bund (ingen negative margins der bytter rækkefølge) */
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
-                font-size: 15px !important;
+                font-size: 19px !important;
+                line-height: 1 !important;
+            }
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1 {
+                margin: 0 !important;
+                order: 1 !important;
+            }
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
+                margin: 0 !important;
+                order: 2 !important;
             }
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
-                font-size: 24px !important;
+                font-size: 30px !important;
+                line-height: 1 !important;
+                margin: 0 !important;
+                order: 3 !important;
+            }
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+                justify-content: flex-start !important;
+                align-items: center !important;
+                gap: 2px !important;
+                margin-top: 0 !important;
+                transform: translateY(-70px) scale(1.14) !important;
+            }
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title--image,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title--image {
+                margin-bottom: 14px !important;
             }
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title-img--repop,
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
@@ -7754,6 +7783,38 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline {
             transform: translate(-14px, -46px) !important;
             margin-top: -24px !important;
+        }
+        @media (min-width: 641px) and (max-width: 1024px) {
+            /* iPad portræt: Kravling-blokken lidt lavere i cirklen */
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline {
+                transform: translate(-14px, -34px) !important;
+                margin-top: -16px !important;
+            }
+            /* iPad portræt: mere luft mellem Kravling-linjer inde i Kø-Bajer-cirklen */
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text {
+                gap: 4px !important;
+            }
+            /* iPad portræt (kun mindmap): større Kravling-tekst — tættere visuelt på REPOP-badgen */
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line1,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line1,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2 {
+                font-size: 20px !important;
+                line-height: 1 !important;
+            }
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3 {
+                font-size: 32px !important;
+                line-height: 1 !important;
+            }
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3,
+            body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3 {
+                margin-top: 0 !important;
+            }
         }
     }
     /* Telefon portræt: KØ-BAJER titel-webp — kun scaleX (iPad portræt: translateY + scale(1.58) i dedikeret @media) */
