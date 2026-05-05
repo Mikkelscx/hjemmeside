@@ -105,6 +105,25 @@ function mskIsProjectsShortLandscapeViewport() {
 	}
 }
 
+/**
+ * Projekter: iPad / tablet portræt (641–1024px) — samme lodrette skitse-grid som mobil.
+ * Skal matche CSS (burger + mindmap portrait-styling).
+ */
+function mskIsProjectsTabletPortraitViewport() {
+	try {
+		if (!window.matchMedia) return false;
+		const mqA = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1024px) and (orientation: portrait)'
+		);
+		const mqB = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)'
+		);
+		return !!((mqA && mqA.matches) || (mqB && mqB.matches));
+	} catch (_) {
+		return false;
+	}
+}
+
 /** Projekter desktop: “Under ombygning” + pil lige under BRAINFARTS-cirklen (følger SVG-ring efter layout). */
 function positionBrainfartsBuildNote() {
 	try {
@@ -407,6 +426,50 @@ function mskSketchbookPaperLinesDraw() {
 })();
 
 /**
+ * Site-standard play-knap på alle indlejrede <video> (halvgennemsigtig cirkel + clip-path-pil i CSS).
+ * Forælderen til <video> får .video-play-frame; undlad at lægge eget overlay i HTML.
+ *
+ * Undtagelser: sæt data-no-play-overlay på <video>, eller læg den i .durex-kampagnevideo-wrap.
+ * Kalds idempotent (spring over hvis .video-play-btn allerede findes).
+ */
+function mskInitNativeVideoPlayOverlays() {
+	try {
+		document.querySelectorAll('video').forEach((vid) => {
+			if (vid.hasAttribute('data-no-play-overlay')) return;
+			if (vid.closest('.durex-kampagnevideo-wrap')) return;
+			const frame = vid.parentElement;
+			if (!frame || frame.classList.contains('video-lazy')) return;
+			if (frame.querySelector('.video-play-btn')) return;
+
+			frame.classList.add('video-play-frame');
+			try {
+				const pos = window.getComputedStyle(frame).position;
+				if (pos === 'static') frame.style.position = 'relative';
+			} catch {}
+
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'video-play-btn';
+			btn.setAttribute('aria-label', 'Afspil video');
+			/* Pil tegnes med CSS ::after (clip-path) — SVG i knap er upålidelig i WebKit */
+			frame.appendChild(btn);
+
+			function sync() {
+				frame.classList.toggle('is-playing', !vid.paused);
+			}
+			vid.addEventListener('play', sync);
+			vid.addEventListener('pause', sync);
+			btn.addEventListener('click', function () {
+				try {
+					vid.play();
+				} catch {}
+			});
+			sync();
+		});
+	} catch {}
+}
+
+/**
  * Transition-iframes (preview=1) og indlejret projects må ikke køre book-overlay init (rekursive iframes).
  */
 function mskSkipNestedProjectsBookInits() {
@@ -601,6 +664,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	})();
 
+	mskInitNativeVideoPlayOverlays();
+
 
 
 	// Desktop-only corner fold hover hint (shows on the page corner itself).
@@ -760,6 +825,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		button.addEventListener('click', () => setOpen(!isOpen()));
 		scrim.addEventListener('click', () => setOpen(false));
 
+		/*
+		 * Én navigation pr. tryk: tidligere pointerup + touchend + click kunne udløse flere location.assign
+		 * (Safari + Chrome → netværksfejl). Book-/AI-flip kører på document capture og sætter preventDefault —
+		 * her i bubble-fasen ser vi defaultPrevented og styrer kun menu + “almindelige” links.
+		 */
 		menu.addEventListener('click', (e) => {
 			try {
 				if (!isBurgerVisible() && !isOpen()) return;
@@ -889,6 +959,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {
 			return;
 		}
+		/* Preview-iframes / indlejret projects: ingen overlay-prewarm (rekursive iframes + dobbelt nav i menu). */
 		if (mskSkipNestedProjectsBookInits()) return;
 
 		const FLIP_MS = getPageFlipMs(5200); // matches CSS `--pageFlipMs`
@@ -4208,7 +4279,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				document.body &&
 				document.body.classList.contains('projects-page') &&
 				portraitOrientation &&
-				(phonePortraitMedia || cw <= 640);
+				(phonePortraitMedia || cw <= 640 || mskIsProjectsTabletPortraitViewport());
 
 			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) like the live site; ellipse for landscape / wide.
 			try {
@@ -4233,7 +4304,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					const maxX = layoutW - 52;
 					const baseLeft = Math.max(minX, Math.min(maxX, layoutW * 0.22));
 					const baseRight = Math.max(minX, Math.min(maxX, layoutW * 0.78));
-					const maxW = Math.max(120, Math.floor(layoutW * 0.48));
+					let maxW = Math.max(120, Math.floor(layoutW * 0.48));
+					try {
+						if (mskIsProjectsTabletPortraitViewport()) {
+							maxW = Math.min(300, Math.max(120, Math.floor(layoutW * 0.65)));
+						}
+					} catch (_) {}
 					const tilts = [-1, 1, -2, 0.5, -1.5, 2, -0.5, 1.5];
 
 					const rowOffsets = [
@@ -4308,16 +4384,22 @@ document.addEventListener('DOMContentLoaded', function() {
 							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
 							node.style.setProperty('font-size', `${Math.max(10, fs * 0.86)}px`, 'important');
 						}
+						let tabletPortrait = false;
+						try {
+							tabletPortrait = !!mskIsProjectsTabletPortraitViewport();
+						} catch (_) {
+							tabletPortrait = false;
+						}
 						// Durex: slightly narrower tab. UNGE: wider tab so the title image reads larger.
-						if (p.key === 'durex') {
+						if (!tabletPortrait && p.key === 'durex') {
 							node.style.setProperty('max-width', `${Math.max(100, Math.floor(maxW * 0.75))}px`, 'important');
-						} else if (p.key === 'unge') {
+						} else if (!tabletPortrait && p.key === 'unge') {
 							const ungeTabW = Math.min(
 								300,
 								Math.floor(layoutW * 0.58)
 							);
 							node.style.setProperty('max-width', `${Math.max(maxW + 32, ungeTabW)}px`, 'important');
-						} else if (p.key === 'byens') {
+						} else if (!tabletPortrait && p.key === 'byens') {
 							/* Kun Byens: bredere fane i portræt-grid (inline max-width ellers klipper titel-webp) */
 							const byensTabW = Math.min(292, Math.floor(layoutW * 0.64));
 							node.style.setProperty('max-width', `${Math.max(132, byensTabW)}px`, 'important');
@@ -4354,6 +4436,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.key === 'repop') y += Math.round(10 * scale);
 						/* Nederste række (Brainfarts, Byens): lidt ned — cirkler + indhold; streger følger i createConnectingLines */
 						if (p.key === 'brainfarts' || p.key === 'byens') y += Math.round(50 * scale);
+						/* iPad 641–1024 portræt: Kø-Bajer noden lidt ned */
+						if (tabletPortrait && p.key === 'kobajer') y += Math.round(16 * scale);
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
 						node.style.setProperty('top', `${y}px`, 'important');
@@ -4611,7 +4695,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
 				} catch {}
 				const cw = container.getBoundingClientRect().width;
-				if (!(narrow || cw <= 640 || mskIsProjectsShortLandscapeViewport())) return;
+				if (
+					!(
+						narrow ||
+						cw <= 640 ||
+						mskIsProjectsShortLandscapeViewport() ||
+						mskIsProjectsTabletPortraitViewport()
+					)
+				)
+					return;
 
 				function stackNode(el) {
 					if (!el) return;
@@ -5729,11 +5821,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches
 				);
 			} catch (_) {}
+			const tabletPortraitProjectsChain =
+				!!(
+					document.body &&
+					document.body.classList.contains('projects-page') &&
+					mskIsProjectsTabletPortraitViewport()
+				);
 			const portraitSketchLikeGrid =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
 				portraitOrientationChain &&
-				(phonePortraitMediaChain || cwLine <= 640);
+				(phonePortraitMediaChain || cwLine <= 640 || tabletPortraitProjectsChain);
 			let isMobileProjects =
 				isPortraitMindmap ||
 				portraitSketchLikeGrid ||
@@ -5859,11 +5957,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (repRect && durRect) {
 					const repBot = pt(repRect, 'bottom');
 					const durTop = pt(durRect, 'top');
+					let repDurexLineH = svgScale(210);
+					let repDurexIpadPortraitExtraDy = 0;
+					try {
+						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+							repDurexLineH = svgScale(252);
+							repDurexIpadPortraitExtraDy = svgScale(7);
+						}
+					} catch (_) {}
 					lineImg(
 						'assets/Linje 2.webp',
-						{ x: repBot.x, y: repBot.y + repDurexPortraitLineDy },
-						{ x: durTop.x, y: durTop.y + repDurexPortraitLineDy },
-						svgScale(210),
+						{ x: repBot.x, y: repBot.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy },
+						{ x: durTop.x, y: durTop.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy },
+						repDurexLineH,
 						{
 							gapA: svgScale(2),
 							gapB: svgScale(2),
@@ -5872,16 +5978,30 @@ document.addEventListener('DOMContentLoaded', function() {
 					);
 				}
 				if (durRect) {
-					const a = {
+					const bh = (brainBottom.y - brainTop.y) || 1;
+					let a = {
 						x: (durRect.right - containerRect.left) - (durRect.width * 0.30),
 						y: (durRect.top - containerRect.top) + (durRect.height * 0.72),
 					};
-					const bh = (brainBottom.y - brainTop.y) || 1;
-					const b = { x: brainLeft.x + svgScale(52), y: brainTop.y + bh * 0.30 };
-					lineImg('assets/linje 6.webp', a, b, svgScale(220), {
-						gapA: svgScale(8),
-						gapB: svgScale(13),
-						lenMul: portraitUpperLineMul,
+					let b = { x: brainLeft.x + svgScale(52), y: brainTop.y + bh * 0.30 };
+					let durexGapA = svgScale(8);
+					let durexGapB = svgScale(13);
+					let durexLenMul = portraitUpperLineMul;
+					let durexLineH = svgScale(220);
+					try {
+						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+							const durexBrainIpadDy = svgScale(24);
+							a.y += durexBrainIpadDy;
+							b.y += durexBrainIpadDy + svgScale(26);
+							durexGapB = -svgScale(10);
+							durexLenMul = portraitUpperLineMul * 1.16;
+							durexLineH = svgScale(318);
+						}
+					} catch (_) {}
+					lineImg('assets/linje 6.webp', a, b, durexLineH, {
+						gapA: durexGapA,
+						gapB: durexGapB,
+						lenMul: durexLenMul,
 					});
 				}
 				if (twiRect) {
@@ -5894,16 +6014,37 @@ document.addEventListener('DOMContentLoaded', function() {
 						y: brainBottom.y - svgScale(58) + twBrainLineDy - twPortraitPullUp,
 					};
 					/* Slut tættere på TWISTER-boblen (længere ud mod twister) */
-					const b = {
+					let b = {
 						x: pt(twiRect, 'left').x - svgScale(28) + shiftX,
 						y: pt(twiRect, 'top').y - svgScale(14) + twBrainLineDy - twPortraitPullUp,
 					};
 					/* Ren rotation set ovenfra (ikke flytte ankre); negativ grader = mod venstre i SVG */
-					lineImg('assets/linje 8.webp', a, b, svgScale(175), {
-						gapA: -svgScale(14),
-						gapB: -svgScale(10),
-						lenMul: underBrainLineLenMul * 0.98,
-						angleOffsetDeg: -34,
+					let twBrainAngleOffset = -34;
+					let twBrainGapA = -svgScale(14);
+					let twBrainGapB = -svgScale(10);
+					let twBrainLenMul = underBrainLineLenMul * 0.98;
+					let twBrainLineH = svgScale(175);
+					try {
+						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+							const twTop = pt(twiRect, 'top');
+							const twMid = pt(twiRect, 'center');
+							/* iPad portræt: rotation den *anden* vej end -46 (mindre negativ vinkel + slut lidt til højre for midt) */
+							b = {
+								x: twMid.x + svgScale(14) + shiftX,
+								y: twTop.y + svgScale(10) + svgScale(38) + twBrainLineDy - twPortraitPullUp,
+							};
+							twBrainAngleOffset = -10;
+							/* Længere nedefra mod Twister + tykkere linje-asset */
+							twBrainGapB = -svgScale(30);
+							twBrainLenMul = underBrainLineLenMul * 1.22;
+							twBrainLineH = svgScale(278);
+						}
+					} catch (_) {}
+					lineImg('assets/linje 8.webp', a, b, twBrainLineH, {
+						gapA: twBrainGapA,
+						gapB: twBrainGapB,
+						lenMul: twBrainLenMul,
+						angleOffsetDeg: twBrainAngleOffset,
 					});
 				}
 				if (twiRect && brfRect) {
@@ -5930,24 +6071,65 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				if (natRect && ungRect) {
 					/* Smallere (lavere height) men lidt længere (højere lenMul + lidt mindre gap) */
-					lineImg('assets/linje 7.webp', pt(natRect, 'bottom'), pt(ungRect, 'top'), svgScale(158), {
-						gapA: svgScale(6),
-						gapB: svgScale(10),
-						lenMul: portraitUpperLineMul * 1.1,
+					const natBottomPt = pt(natRect, 'bottom');
+					const ungTopPt = pt(ungRect, 'top');
+					let natUngA = natBottomPt;
+					let natUngB = ungTopPt;
+					let natUngGapA = svgScale(6);
+					let natUngGapB = svgScale(10);
+					let natUngLenMul = portraitUpperLineMul * 1.1;
+					let natUngLineH = svgScale(158);
+					/* iPad 641–1024 portræt + lodret mindmap: længere lodret streg Nat' → UNGE */
+					try {
+						if (
+							isPortraitMindmap &&
+							mskIsProjectsTabletPortraitViewport()
+						) {
+							const natUngIpadLiftY = svgScale(14);
+							natUngA = {
+								x: natBottomPt.x,
+								y: natBottomPt.y - svgScale(26) - natUngIpadLiftY,
+							};
+							natUngB = {
+								x: ungTopPt.x,
+								y: ungTopPt.y + svgScale(26) - natUngIpadLiftY,
+							};
+							natUngGapA = svgScale(2);
+							natUngGapB = svgScale(4);
+							natUngLenMul = portraitUpperLineMul * 1.32;
+							natUngLineH = svgScale(198);
+						}
+					} catch (_) {}
+					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
+						gapA: natUngGapA,
+						gapB: natUngGapB,
+						lenMul: natUngLenMul,
 					});
 				}
 				if (ungRect) {
 					const ungeLineDy = svgScale(16);
-					const a = {
+					const bh = (brainBottom.y - brainTop.y) || 1;
+					let a = {
 						x: (ungRect.left - containerRect.left) + (ungRect.width * 0.34),
 						y: (ungRect.top - containerRect.top) + (ungRect.height * 0.62) + ungeLineDy,
 					};
-					const bh = (brainBottom.y - brainTop.y) || 1;
-					const b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 + ungeLineDy };
-					lineImg('assets/linje 5.webp', a, b, svgScale(220), {
-						gapA: svgScale(4),
-						gapB: svgScale(5),
-						lenMul: portraitUpperLineMul * 1.08,
+					let b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 + ungeLineDy };
+					let ungeGapA = svgScale(4);
+					let ungeGapB = svgScale(5);
+					let ungeLenMul = portraitUpperLineMul * 1.08;
+					let ungeLineH = svgScale(220);
+					try {
+						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+							b.y += svgScale(16);
+							ungeGapB = -svgScale(6);
+							ungeLenMul = portraitUpperLineMul * 1.12;
+							ungeLineH = svgScale(268);
+						}
+					} catch (_) {}
+					lineImg('assets/linje 5.webp', a, b, ungeLineH, {
+						gapA: ungeGapA,
+						gapB: ungeGapB,
+						lenMul: ungeLenMul,
 					});
 				}
 				if (kobRect) {
@@ -5973,13 +6155,49 @@ document.addEventListener('DOMContentLoaded', function() {
 					const kobByeShiftLeft = svgScale(18);
 					const a0 = pt(kobRect, 'bottom');
 					const b0 = pt(byeRect, 'top');
-					const a = { x: a0.x - kobByeShiftLeft, y: a0.y + kobByeDown - kobByeShiftUp };
-					const b = { x: b0.x + svgScale(34) - kobByeShiftLeft, y: b0.y + kobByeDown - kobByeShiftUp };
+					/* iPad 641–1024 portræt + lodret mindmap: længere streg Kø → Byens (kun her) */
+					let kobByeTopInsetX = svgScale(34);
+					let kobByeLenMul = 1.88;
+					let kobByeStartNudgeX = 0;
+					try {
+						if (
+							isPortraitMindmap &&
+							mskIsProjectsTabletPortraitViewport()
+						) {
+							kobByeTopInsetX = svgScale(84);
+							kobByeLenMul = 2.24;
+							kobByeStartNudgeX = -svgScale(24);
+						}
+					} catch (_) {}
+					const a = {
+						x: a0.x - kobByeShiftLeft + kobByeStartNudgeX,
+						y: a0.y + kobByeDown - kobByeShiftUp,
+					};
+					const b = {
+						x: b0.x + kobByeTopInsetX - kobByeShiftLeft,
+						y: b0.y + kobByeDown - kobByeShiftUp,
+					};
+					/* iPad portræt mindmap: loddret; forkort mest fra nedefra (Byens-ende) */
+					let kobByeLineH = svgScale(220);
+					let kobByeLineGapA = -svgScale(8);
+					let kobByeLineGapB = -svgScale(8);
+					try {
+						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+							a.x += svgScale(52);
+							b.x = a.x;
+							const kobByeIpadLift = svgScale(10);
+							a.y -= kobByeIpadLift;
+							b.y -= kobByeIpadLift;
+							b.y -= svgScale(10);
+							kobByeLineGapB = svgScale(14);
+							kobByeLineH = svgScale(268);
+						}
+					} catch (_) {}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
-					lineImg('assets/linje 1.webp', a, b, svgScale(220), {
-						gapA: -svgScale(8),
-						gapB: -svgScale(8),
-						lenMul: 1.88,
+					lineImg('assets/linje 1.webp', a, b, kobByeLineH, {
+						gapA: kobByeLineGapA,
+						gapB: kobByeLineGapB,
+						lenMul: kobByeLenMul,
 					});
 				}
 
@@ -6654,6 +6872,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		const projectsDesktopRingMul = getProjectsDesktopRingMul();
 
+		/** iPad 641–1024 portræt + lodret mindmap: større/andre ringe end telefon — kun her */
+		let ipadPortraitRings = false;
+		try {
+			ipadPortraitRings =
+				!!mskIsProjectsTabletPortraitViewport() &&
+				container.classList.contains('projects-mindmap--portrait');
+		} catch (_) {}
+
 		currentNodes.forEach((node, index) => {
 			// Used to map hover -> matching frame element
 			node.dataset.nodeIndex = String(index);
@@ -6723,18 +6949,25 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brainfartsRingScale = 0.78 * (bfShortLs ? 1.09 : 1);
 				/* Kort mobil-landscape: bredere oval (kun vandret — bh / ry uændret) */
 				const bfShortLsStretchX = bfShortLs ? 1.24 : 1;
+				/* iPad portræt mindmap: ekstra vandret på ring + fill; rød linje sit eget step så den ikke vokser med.
+				 * preserveAspectRatio none på <image> — ellers default "meet" bevarer billedformat og æter ikke bw/bh uafhængigt. */
+				const bfIpadMulWRing = ipadPortraitRings ? 3.02 : 1;
+				const bfIpadMulWLine = ipadPortraitRings ? 1.9 : 1;
+				const bfIpadMulH = ipadPortraitRings ? 1.8 : 1;
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const bw = 240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX;
-				const bh = 200 * brainfartsRingScale * projectsDesktopRingMul;
+				const bw =
+					240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWRing;
+				const bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
 				image.setAttribute('x', String(centerX - bw / 2));
 				image.setAttribute('y', String(centerY - bh / 2));
 				image.setAttribute('width', String(bw));
 				image.setAttribute('height', String(bh));
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.style.pointerEvents = 'auto'; // Make image visible
@@ -6755,8 +6988,20 @@ document.addEventListener('DOMContentLoaded', function() {
 				fill.setAttribute('cx', String(centerX - 1)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
 				// Slightly smaller at the bottom: shift up a bit
 				fill.setAttribute('cy', String(centerY - 3)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
-				fill.setAttribute('rx', String((120 * 0.56 + 2) * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX));
-				fill.setAttribute('ry', String((100 * 0.56 - 1) * brainfartsRingScale * projectsDesktopRingMul));
+				fill.setAttribute(
+					'rx',
+					String(
+						(120 * 0.56 + 2) *
+							brainfartsRingScale *
+							projectsDesktopRingMul *
+							bfShortLsStretchX *
+							bfIpadMulWRing
+					)
+				);
+				fill.setAttribute(
+					'ry',
+					String((100 * 0.56 - 1) * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH)
+				);
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -6776,8 +7021,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', linePath);
 
 					// Keep it smaller and within the circle-ish area (circle image is 240x200, scaled by brainfartsRingScale)
-					const w = 205 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX;
-					const h = 160 * brainfartsRingScale * projectsDesktopRingMul;
+					const w =
+						205 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWLine;
+					const h = 160 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
 					lineImg.setAttribute('width', String(w));
 					lineImg.setAttribute('height', String(h));
 					// Place it so it goes from RIGHT side -> down to BOTTOM-LEFT
@@ -6844,6 +7090,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						/* Kun smal telefon portræt: større ring end tablet-portræt — mere luft om titel + Kravling */
 						if (window.matchMedia('(max-width: 640px)').matches) repopMul = 0.93;
 					}
+					if (ipadPortraitRings) repopMul = Math.max(repopMul, 0.96);
 				} catch {}
 
 				const baseW = s(380) * assetS;
@@ -6854,6 +7101,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (window.matchMedia && window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
 						padXPx = Math.max(padXPx, 64);
 						padYPortrait = repBadgeRect ? 92 : 72;
+					}
+					if (ipadPortraitRings) {
+						padXPx = Math.max(padXPx, 80);
+						padYPortrait = repBadgeRect ? Math.max(padYPortrait, 100) : Math.max(padYPortrait, 82);
 					}
 				} catch {}
 				const padX = s(padXPx) * assetS;
@@ -6879,7 +7130,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				/* Lidt bredere horizontalt (oval) — kun stretch på X, som NATURLI */
-				const repopStretchX = 1.12;
+				let repopStretchX = 1.12;
+				if (ipadPortraitRings) repopStretchX = 1.92;
 				w *= repopStretchX;
 
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
@@ -7001,6 +7253,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (container && container.classList.contains('projects-mindmap--portrait')) {
 						w *= 1.12;
 					}
+					if (ipadPortraitRings) {
+						w *= 2.02;
+						h *= 1.48;
+					}
 				} catch (_) {}
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
@@ -7061,6 +7317,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					/* Lille tekst-webp i CSS — ring større så der er luft omkring label */
 					if (portraitNaturli) naturliMul = 0.88;
+					if (ipadPortraitRings) naturliMul = Math.max(naturliMul, 0.98);
 				} catch {}
 				try {
 					if (mskIsProjectsShortLandscapeViewport()) naturliMul *= 1.09;
@@ -7081,6 +7338,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				try {
 					if (mskIsProjectsShortLandscapeViewport()) naturliStretchX = 1.34;
 					else if (portraitNaturli) naturliStretchX = 1.48;
+					if (ipadPortraitRings) naturliStretchX = Math.max(naturliStretchX, 3.5);
 				} catch {}
 				/* Desktop: bredere oval (kun X) — ikke tablet/mobil */
 				try {
@@ -7155,8 +7413,11 @@ document.addEventListener('DOMContentLoaded', function() {
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					if (portrait) ungeMul = 0.84;
+					if (ipadPortraitRings) ungeMul = Math.max(ungeMul, 0.94);
 				} catch {}
-				const uw = 320 * ungeMul * projectsDesktopRingMul;
+				let ungeStretchX = 1;
+				if (ipadPortraitRings) ungeStretchX = 1.82;
+				const uw = 320 * ungeMul * projectsDesktopRingMul * ungeStretchX;
 				const uh = 150 * ungeMul * projectsDesktopRingMul;
 				image.setAttribute('x', centerX - uw / 2);
 				image.setAttribute('y', centerY - uh / 2);
@@ -7176,7 +7437,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY)); // UNGE MOD UV: keep centered
-				fill.setAttribute('rx', String(160 * ungeMul * 0.54 * projectsDesktopRingMul)); // UNGE MOD UV: wider left+right
+				fill.setAttribute('rx', String(160 * ungeMul * 0.54 * projectsDesktopRingMul * ungeStretchX)); // UNGE MOD UV: wider left+right
 				fill.setAttribute('ry', String(75 * ungeMul * 0.51 * projectsDesktopRingMul));  // UNGE MOD UV: slightly more top+bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
@@ -7248,11 +7509,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
+				if (ipadPortraitRings) {
+					w *= 1.84;
+					h *= 1.52;
+				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
 				let circleDy = landscapeMindmap ? s(48) : s(20);
 				/* Kort mobil-landscape: kun ringen op (noden uændret) — mindre circleDy */
 				if (mskIsProjectsShortLandscapeViewport()) {
 					circleDy -= s(34);
+				}
+				/* iPad portræt mindmap: ring + fill lidt op */
+				if (ipadPortraitRings) {
+					circleDy -= s(12);
 				}
 				image.setAttribute('x', String(twCenterX - (w / 2)));
 				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
@@ -7293,8 +7562,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				console.log('Creating Byens Landhandel circle image...');
 				const byensLandhandelRingScale = 0.78;
 				/* Bredere oval vandret (og lidt lavere lodret) end basis 440×170 */
-				const byensStretchX = 1.22;
-				const byensStretchY = 0.94;
+				let byensStretchX = 1.22;
+				let byensStretchY = 0.94;
+				if (ipadPortraitRings) {
+					byensStretchX = 2.55;
+					byensStretchY = 1.5;
+				}
 				let byensMul = 1;
 				/* Mobil portræt: gør ovalen smallere vandret (1.22+mul ellers for bred ift. skærm) — landscape/desktop uændret */
 				let byensPortraitXNarrow = 1;
@@ -7304,8 +7577,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					const portrait =
 						(container && container.classList && container.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
-					/* Tidligere 0.88 gjorde ovalen markant mindre i portræt trods større titel-webp i CSS */
-					if (portrait) {
+					if (ipadPortraitRings) {
+						byensMul = 1.06;
+						byensPortraitXNarrow = 1;
+					} else if (portrait) {
 						byensMul = 0.98;
 						byensPortraitXNarrow = 0.7;
 					}
@@ -7323,6 +7598,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					byensLandhandelRingScale *
 					projectsDesktopRingMul *
 					byensStretchY;
+				const byensIpadDy = ipadPortraitRings ? -s(14) : 0;
 				// Create an image element for BYENS LANDHANDEL
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle omkring byens landhandel.webp";
@@ -7330,7 +7606,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
 				image.setAttribute('x', String(centerX - bw / 2));
-				image.setAttribute('y', String(centerY - bh / 2));
+				image.setAttribute('y', String(centerY - bh / 2 + byensIpadDy));
 				image.setAttribute('width', String(bw));
 				image.setAttribute('height', String(bh));
 				image.setAttribute('opacity', '0.8');
@@ -7347,7 +7623,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - 2));
+				fill.setAttribute('cy', String(centerY - 2 + byensIpadDy));
 				fill.setAttribute(
 					'rx',
 					String(
@@ -7403,10 +7679,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (portrait) durexMul = 0.98;
 				} catch {}
 				durexMul *= 0.805; /* cirkel + fill matcher Durex tekst-asset + tab */
-				const dw = 440 * durexMul * projectsDesktopRingMul;
-				const dh = 150 * durexMul * projectsDesktopRingMul;
+				let durexIpadMulW = 1;
+				let durexIpadMulH = 1;
+				if (ipadPortraitRings) {
+					durexIpadMulW = 1.66;
+					durexIpadMulH = 1.84;
+				}
+				const durexIpadDy = ipadPortraitRings ? s(8) : 0;
+				const dw = 440 * durexMul * projectsDesktopRingMul * durexIpadMulW;
+				const dh = 150 * durexMul * projectsDesktopRingMul * durexIpadMulH;
 				image.setAttribute('x', centerX - dw / 2);
-				image.setAttribute('y', centerY - dh / 2);
+				image.setAttribute('y', centerY + durexIpadDy - dh / 2);
 				image.setAttribute('width', String(dw));
 				image.setAttribute('height', String(dh));
 				image.setAttribute('opacity', '0.8');
@@ -7429,9 +7712,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						durexCyOff = 0;
 					}
 				} catch {}
-				fill.setAttribute('cy', String(centerY - durexCyOff));
-				fill.setAttribute('rx', String(220 * durexMul * 0.55 * projectsDesktopRingMul)); // DUREX: less horizontal fill
-				fill.setAttribute('ry', String((75 * durexMul * 0.68 + 1) * projectsDesktopRingMul)); // DUREX: keep top, trim bottom
+				fill.setAttribute('cy', String(centerY - durexCyOff + durexIpadDy));
+				fill.setAttribute('rx', String(220 * durexMul * 0.55 * projectsDesktopRingMul * durexIpadMulW)); // DUREX: less horizontal fill
+				fill.setAttribute('ry', String((75 * durexMul * 0.68 + 1) * projectsDesktopRingMul * durexIpadMulH)); // DUREX: keep top, trim bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -7923,6 +8206,20 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 });
 
+/* Samme video-play design hvis DOM allerede er klar (script sidst i body), ved tilbage fra bfcache, m.m. */
+try {
+	if (document.readyState !== 'loading') {
+		mskInitNativeVideoPlayOverlays();
+	}
+} catch {}
+try {
+	window.addEventListener('pageshow', function (ev) {
+		try {
+			if (ev.persisted) mskInitNativeVideoPlayOverlays();
+		} catch {}
+	});
+} catch {}
+
 // Ensure lazy video init runs after DOM is ready
 window.addEventListener('load', function () {
 	const lazyContainers = document.querySelectorAll('.video-lazy');
@@ -8078,8 +8375,10 @@ window.addEventListener('load', function () {
 		root.classList.add('is-open');
 		document.body.classList.add('msk-asset-lightbox-open');
 		lastFocus = document.activeElement;
+		/* Fokus på dialog-roden — ikke på luk-knappen (undgår at knappen skifter udseende 1. vs 2. åbning pga. :focus) */
 		try {
-			root.querySelector('.msk-asset-lightbox__close').focus();
+			if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+			root.focus({ preventScroll: true });
 		} catch {}
 	}
 
@@ -8091,12 +8390,16 @@ window.addEventListener('load', function () {
 		const stage = root.querySelector('.msk-asset-lightbox__stage');
 		stage.innerHTML = '';
 		stage.appendChild(buildVideoFrom(sourceEl));
+		try {
+			mskInitNativeVideoPlayOverlays();
+		} catch {}
 		root.setAttribute('aria-hidden', 'false');
 		root.classList.add('is-open');
 		document.body.classList.add('msk-asset-lightbox-open');
 		lastFocus = document.activeElement;
 		try {
-			root.querySelector('.msk-asset-lightbox__close').focus();
+			if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+			root.focus({ preventScroll: true });
 		} catch {}
 	}
 
@@ -8114,6 +8417,9 @@ window.addEventListener('load', function () {
 		root.classList.remove('is-open');
 		root.setAttribute('aria-hidden', 'true');
 		document.body.classList.remove('msk-asset-lightbox-open');
+		try {
+			root.blur();
+		} catch {}
 		if (lastFocus && typeof lastFocus.focus === 'function') {
 			try {
 				lastFocus.focus();
