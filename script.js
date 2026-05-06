@@ -4167,6 +4167,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				positionNodesPerfectCircle();
 				createAndPositionDandDLogo();
 				createAndPositionTwisterDandDLine();
+				hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 				createAndPositionRepopKravlingLine();
 				createAndPositionKravlingNomineretBadge();
 				createAndPositionKobajerArrow();
@@ -4224,6 +4225,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					});
 				});
 			} catch {}
+		}
+
+		/** Portrait sketch grid bruger kun inline D&AD i TWISTER. Skjul ellipse-layout badge + linje (Safari kan være bredere end 1024px og dermed ramme uden for CSS media). */
+		function hideStandaloneDandDForProjectsMindmapPortrait(container) {
+			try {
+				if (!container || !container.classList.contains('projects-mindmap--portrait')) return;
+				const badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
+				if (badge) badge.style.setProperty('display', 'none', 'important');
+				const line = container.querySelector('.twister-dandd-line');
+				if (line) line.style.setProperty('display', 'none', 'important');
+			} catch (_) {}
 		}
 
 		function applyMindmapLineImgBaseStyles(img) {
@@ -4503,6 +4515,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					createAndPositionDandDLogo();
 					createAndPositionTwisterDandDLine();
+					hideStandaloneDandDForProjectsMindmapPortrait(container);
 					createAndPositionRepopKravlingLine();
 					createAndPositionKravlingNomineretBadge();
 					createAndPositionKobajerArrow();
@@ -4707,6 +4720,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Keep the D&AD logo aligned after node layout updates
 			createAndPositionDandDLogo();
 			createAndPositionTwisterDandDLine();
+			hideStandaloneDandDForProjectsMindmapPortrait(container);
 			createAndPositionRepopKravlingLine();
 			createAndPositionKravlingNomineretBadge();
 			createAndPositionKobajerArrow();
@@ -8144,6 +8158,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		positionNodesPerfectCircle();
 		createAndPositionDandDLogo();
 		createAndPositionTwisterDandDLine();
+		hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 		createAndPositionRepopKravlingLine();
 		createAndPositionKravlingNomineretBadge();
 		createAndPositionKobajerArrow();
@@ -8165,6 +8180,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						positionNodesPerfectCircle();
 						createAndPositionDandDLogo();
 						createAndPositionTwisterDandDLine();
+						hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 						createAndPositionRepopKravlingLine();
 						createAndPositionKravlingNomineretBadge();
 						createAndPositionKobajerArrow();
