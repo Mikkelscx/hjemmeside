@@ -13280,8 +13280,18 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
 }
 
-/* KØ-BAJER: iPad-/tablet-landskab (~1024–1400 × ≤1200) — centrér dåser i infobokse, mere luft til STEP-tekst */
+/* KØ-BAJER: iPad-/tablet-landskab (~1024–1400 × ≤1200) — 3 kolonner side om side, centrér dåser, mere luft til STEP-tekst */
 @media screen and (min-width: 1024px) and (max-width: 1400px) and (max-height: 1200px) and (orientation: landscape) {
+    body.kobajer-page .kobajer-info-boxes {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 1.5rem !important;
+    }
+    body.kobajer-page .kobajer-steps {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 1.5rem !important;
+    }
     body.kobajer-page .kobajer-info-box {
         align-items: center !important;
         justify-content: center !important;
@@ -13415,7 +13425,8 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
 }
 
-/* KØ-BAJER: phone landscape (width > 640px) — stack grids + Anmeld/Boykot/Sig fra full width; matches mobile rules in @media (max-width: 640px) */
+/* KØ-BAJER: phone landscape (641–1024, kort viewport-højde) — stablet; ikke iPad-landskab (højere end 520px) */
+@media (max-width: 1024px) and (min-width: 641px) and (orientation: landscape) and (max-height: 520px) {
     body.kobajer-page .kobajer-info-boxes {
         grid-template-columns: 1fr;
         gap: 1rem;
