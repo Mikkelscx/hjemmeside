@@ -112,13 +112,24 @@ function mskIsProjectsShortLandscapeViewport() {
 function mskIsProjectsTabletPortraitViewport() {
 	try {
 		if (!window.matchMedia) return false;
-		const mqA = window.matchMedia(
+		const mqLegacyA = window.matchMedia(
 			'(min-width: 641px) and (max-width: 1024px) and (orientation: portrait)'
 		);
-		const mqB = window.matchMedia(
+		const mqLegacyB = window.matchMedia(
 			'(min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)'
 		);
-		return !!((mqA && mqA.matches) || (mqB && mqB.matches));
+		const mqWideTouchA = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1366px) and (orientation: portrait) and ((hover: none) or (pointer: coarse))'
+		);
+		const mqWideTouchB = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) and ((hover: none) or (pointer: coarse))'
+		);
+		return !!(
+			(mqLegacyA && mqLegacyA.matches) ||
+			(mqLegacyB && mqLegacyB.matches) ||
+			(mqWideTouchA && mqWideTouchA.matches) ||
+			(mqWideTouchB && mqWideTouchB.matches)
+		);
 	} catch (_) {
 		return false;
 	}
@@ -4167,11 +4178,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				positionNodesPerfectCircle();
 				createAndPositionDandDLogo();
 				createAndPositionTwisterDandDLine();
-				hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 				createAndPositionRepopKravlingLine();
 				createAndPositionKravlingNomineretBadge();
 				createAndPositionKobajerArrow();
 				ensureProjectsMobileInlineBadges();
+				hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 				createConnectingLines();
 				createHandDrawnFrames();
 			} catch {}
@@ -4202,9 +4213,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							.querySelectorAll(
 								'.dandd-badge--inline, .kravling-nomineret-badge--inline, .kobajer-kravling-2024-badge--inline'
 							)
-							.forEach((el) => el.removeAttribute('style'));
+							.forEach((el) => el.remove());
 						const bfSign = node.querySelector('.brainfarts-build__sign--inline');
-						if (bfSign) bfSign.removeAttribute('style');
+						if (bfSign) bfSign.remove();
 					} catch {}
 				});
 			} catch {}
@@ -4227,10 +4238,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 		}
 
-		/** Portrait sketch grid bruger kun inline D&AD i TWISTER. Skjul ellipse-layout badge + linje (Safari kan være bredere end 1024px og dermed ramme uden for CSS media). */
+		/** Kun inline D&AD i TWISTER: skjul fritliggende badge + connector (kalde EFTER ensureProjectsMobileInlineBadges). */
 		function hideStandaloneDandDForProjectsMindmapPortrait(container) {
 			try {
-				if (!container || !container.classList.contains('projects-mindmap--portrait')) return;
+				if (!container || !document.body.classList.contains('projects-page')) return;
+				const tw = container.querySelector('a[href*="twister"], .project-node[href*="twister"]');
+				const hasTwisterInline = !!(tw && tw.querySelector('.dandd-badge--inline'));
+				const portraitGrid = container.classList.contains('projects-mindmap--portrait');
+				if (!hasTwisterInline && !portraitGrid) return;
 				const badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 				if (badge) badge.style.setProperty('display', 'none', 'important');
 				const line = container.querySelector('.twister-dandd-line');
@@ -4515,11 +4530,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					createAndPositionDandDLogo();
 					createAndPositionTwisterDandDLine();
-					hideStandaloneDandDForProjectsMindmapPortrait(container);
 					createAndPositionRepopKravlingLine();
 					createAndPositionKravlingNomineretBadge();
 					createAndPositionKobajerArrow();
 					ensureProjectsMobileInlineBadges();
+					hideStandaloneDandDForProjectsMindmapPortrait(container);
 					return;
 				}
 			} catch {}
@@ -4720,11 +4735,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Keep the D&AD logo aligned after node layout updates
 			createAndPositionDandDLogo();
 			createAndPositionTwisterDandDLine();
-			hideStandaloneDandDForProjectsMindmapPortrait(container);
 			createAndPositionRepopKravlingLine();
 			createAndPositionKravlingNomineretBadge();
 			createAndPositionKobajerArrow();
 			ensureProjectsMobileInlineBadges();
+			hideStandaloneDandDForProjectsMindmapPortrait(container);
 		}
 
 		/** Mobile CSS hides standalone Kravling/D&AD badges; show copies inside REPOP / KØ-BAJER / TWISTER / BRAINFARTS nodes. */
@@ -8158,11 +8173,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		positionNodesPerfectCircle();
 		createAndPositionDandDLogo();
 		createAndPositionTwisterDandDLine();
-		hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 		createAndPositionRepopKravlingLine();
 		createAndPositionKravlingNomineretBadge();
 		createAndPositionKobajerArrow();
 		ensureProjectsMobileInlineBadges();
+		hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 		
 		// Create connecting lines dynamically
 		createConnectingLines();
@@ -8180,11 +8195,11 @@ document.addEventListener('DOMContentLoaded', function() {
 						positionNodesPerfectCircle();
 						createAndPositionDandDLogo();
 						createAndPositionTwisterDandDLine();
-						hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 						createAndPositionRepopKravlingLine();
 						createAndPositionKravlingNomineretBadge();
 						createAndPositionKobajerArrow();
 						ensureProjectsMobileInlineBadges();
+						hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 						createConnectingLines();
 						createHandDrawnFrames();
 						positionBrainfartsBuildNote();
