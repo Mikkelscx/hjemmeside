@@ -8653,6 +8653,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
     body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
         max-height: 260px !important;
+        margin-top: 0 !important;
     }
 
     /* UNGE MOD UV: mobile layout fixes (navbar-baggrund: gennemsigtig — se global mobil-navbar-blok) */
@@ -8965,6 +8966,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
     html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
         max-height: 260px !important;
+        margin-top: 0 !important;
     }
 
     /* KØ-BAJEREN — infobox-billeder (samme som max-width:640 når zoom gør viewport “bred”) */
@@ -13459,6 +13461,11 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     position: relative;
 }
 
+/* Første Elements-kort: Sauna 180° — centrér billedet lodret i boksen (titlen er absolute) */
+.element-box:nth-child(1) {
+    justify-content: center;
+}
+
 .element-box h4 {
     color: #333;
     font-size: 1.2rem;
@@ -13482,6 +13489,10 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     object-fit: contain;
     position: relative;
     z-index: 1;
+}
+
+.element-box:nth-child(1) .element-image {
+    margin-top: 0;
 }
 
 .element-box:nth-child(2) {
