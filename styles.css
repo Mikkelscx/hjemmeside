@@ -13303,8 +13303,8 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
     /* STEP-billeder lidt tættere på teksten (kun iPad-landskab) */
     body.kobajer-page .kobajer-step-image {
-        margin-top: 0.4rem !important;
-        transform: translateY(-8px) !important;
+        margin-top: 0.25rem !important;
+        transform: translateY(-16px) !important;
     }
     body.kobajer-page .kobajer-bottom-cta {
         display: block !important;
