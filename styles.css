@@ -8645,15 +8645,14 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         margin: 0 !important;
     }
 
-    /* TWISTER: make "Saunaen set i 180°" bigger on mobile (first Elements card) */
-    body.twister-page .elements-grid .element-box:nth-child(1) {
-        padding-top: 3.25rem !important; /* keep room for the absolute heading */
-    }
-    body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
+    /* TWISTER: Elements-kort — titel inde i boksen (samme som desktop; før kun #1 havde extra padding) */
+    body.twister-page .elements-grid .element-box .element-image {
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 260px !important;
         margin-top: 0.75rem !important;
+    }
+    body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
+        max-height: 260px !important;
     }
 
     /* UNGE MOD UV: mobile layout fixes (navbar-baggrund: gennemsigtig — se global mobil-navbar-blok) */
@@ -8959,14 +8958,13 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         line-height: 1.14 !important;
         margin: 0 !important;
     }
-    html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box:nth-child(1) {
-        padding-top: 3.25rem !important;
-    }
-    html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
+    html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box .element-image {
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 260px !important;
         margin-top: 0.75rem !important;
+    }
+    html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
+        max-height: 260px !important;
     }
 
     /* KØ-BAJEREN — infobox-billeder (samme som max-width:640 når zoom gør viewport “bred”) */
@@ -13446,6 +13444,8 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
 .element-box {
     text-align: center;
     padding: 1rem;
+    /* Lodret plads til overskrift (h4 er position: absolute — undgår at titel “flytter” uden for glass-kortet i grid/tablet) */
+    padding-top: 3.25rem;
     background: rgba(255, 255, 255, 0.2);
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 16px;
@@ -13454,7 +13454,7 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     min-height: 80px;
     position: relative;
 }
@@ -13465,22 +13465,23 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     margin: 0;
     font-weight: 600;
     line-height: 1.4;
-}
-
-.element-box:nth-child(1) h4 {
     position: absolute;
     top: 1rem;
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 2rem);
+    box-sizing: border-box;
+    z-index: 3;
 }
 
 .element-image {
     max-width: 100%;
     height: auto;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
     max-height: 150px;
     object-fit: contain;
+    position: relative;
+    z-index: 1;
 }
 
 .element-box:nth-child(2) {
@@ -13490,7 +13491,7 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
 .element-box:nth-child(2) .element-image {
     max-height: 600px;
     position: relative;
-    z-index: 10;
+    z-index: 1;
 }
 
 .element-box:nth-child(3) .element-image {
