@@ -13301,6 +13301,11 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     body.kobajer-page .kobajer-step-box h4 {
         margin-top: 0.35rem !important;
     }
+    /* STEP-billeder lidt tættere på teksten (kun iPad-landskab) */
+    body.kobajer-page .kobajer-step-image {
+        margin-top: 0.4rem !important;
+        transform: translateY(-8px) !important;
+    }
     body.kobajer-page .kobajer-bottom-cta {
         display: block !important;
         width: 100% !important;
