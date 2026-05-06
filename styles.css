@@ -13152,6 +13152,9 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     height: auto;
     max-height: 400px;
     object-fit: contain;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @media (max-width: 768px) {
@@ -13277,8 +13280,27 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
 }
 
-/* KØ-BAJER: iPad-landskab — bund-CTA som kobajer.html inline (fallback; samme som frontpage 600px) */
-@media screen and (min-width: 1024px) and (max-width: 1400px) and (max-height: 1200px) {
+/* KØ-BAJER: iPad-/tablet-landskab (~1024–1400 × ≤1200) — centrér dåser i infobokse, mere luft til STEP-tekst */
+@media screen and (min-width: 1024px) and (max-width: 1400px) and (max-height: 1200px) and (orientation: landscape) {
+    body.kobajer-page .kobajer-info-box {
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    body.kobajer-page .kobajer-can-image {
+        display: block !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: auto !important;
+        max-width: 100% !important;
+        object-position: center center !important;
+    }
+    body.kobajer-page .kobajer-step-box {
+        justify-content: flex-start !important;
+        padding-top: 2rem !important;
+    }
+    body.kobajer-page .kobajer-step-box h4 {
+        margin-top: 0.35rem !important;
+    }
     body.kobajer-page .kobajer-bottom-cta {
         display: block !important;
         width: 100% !important;
