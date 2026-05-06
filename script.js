@@ -177,6 +177,35 @@ function mskSafeAreaInsetBottomPx() {
 	}
 }
 
+/** Projekter mindmap: fjern fokus efter tap/pointerup — WebKit (Safari/iPad) viser ellers blå ramme på <a> trods CSS. */
+function mskBindProjectsMindmapLinkBlurAfterTap() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		if (document.documentElement.dataset.mskProjectsMindmapLinkBlurBound === '1') return;
+		const stage = document.querySelector('.brainstorm-container');
+		if (!stage) return;
+		document.documentElement.dataset.mskProjectsMindmapLinkBlurBound = '1';
+		const scheduleBlur = () => {
+			try {
+				window.requestAnimationFrame(() => {
+					try {
+						window.requestAnimationFrame(() => {
+							try {
+								const a = document.activeElement;
+								if (a && typeof a.matches === 'function' && a.matches('a.project-node') && stage.contains(a)) {
+									a.blur();
+								}
+							} catch (_) {}
+						});
+					} catch (_) {}
+				});
+			} catch (_) {}
+		};
+		stage.addEventListener('pointerup', scheduleBlur, { capture: true, passive: true });
+		stage.addEventListener('touchend', scheduleBlur, { capture: true, passive: true });
+	} catch (_) {}
+}
+
 /**
  * Vandrette papirlinjer — DOM-lag med CSS repeating-linear-gradient (ikke canvas-bitmap).
  * Skalerer med side-zoom/pinch uden at tynde streger forsvinder ved subpixel/rasterisering.
@@ -8184,6 +8213,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Mark as initialized to avoid duplicate event listeners on re-run.
 		brain.dataset.animInit = '1';
+		try {
+			mskBindProjectsMindmapLinkBlurAfterTap();
+		} catch (_) {}
 		if (isPreview) {
 			try {
 				const container = document.querySelector('.brainstorm-container');
