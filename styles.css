@@ -13280,9 +13280,63 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
 }
 
-/* KØ-BAJER: iPad/tablet touch — samme layout i portræt og landskab (undgår hop ved rotation) */
-@media (min-width: 641px) and (max-width: 1366px) and (hover: none),
-       (min-width: 641px) and (max-width: 1366px) and (pointer: coarse) {
+/* KØ-BAJER: iPad-/tablet-landskab (~1024–1400 × ≤1200) — centrér dåser i infobokse, mere luft til STEP-tekst */
+@media screen and (min-width: 1024px) and (max-width: 1400px) and (max-height: 1200px) and (orientation: landscape) {
+    body.kobajer-page .kobajer-info-box {
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    body.kobajer-page .kobajer-can-image {
+        display: block !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: auto !important;
+        max-width: 100% !important;
+        object-position: center center !important;
+    }
+    body.kobajer-page .kobajer-step-box {
+        justify-content: flex-start !important;
+        padding-top: 2rem !important;
+    }
+    body.kobajer-page .kobajer-step-box h4 {
+        margin-top: 0.35rem !important;
+    }
+    body.kobajer-page .kobajer-step-image {
+        margin-top: 0.25rem !important;
+        transform: translateY(-16px) !important;
+    }
+    body.kobajer-page .kobajer-bottom-cta {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 2rem 0 0 0 !important;
+        padding: 0 !important;
+    }
+    body.kobajer-page .kobajer-bottom-cta__item {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 0 1.25rem 0 !important;
+    }
+    body.kobajer-page .kobajer-bottom-cta__item:last-child {
+        margin-bottom: 0 !important;
+    }
+    body.kobajer-page .kobajer-bottom-cta__img {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        max-height: 600px !important;
+        object-fit: contain !important;
+    }
+}
+
+/* KØ-BAJER: iPad/tablet portræt (641–1024) — Anmeld/Boykot/Sig fra stablet fuld bredde, samme max-højde som frontpage (600px) */
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
+    (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
     body.kobajer-page .kobajer-info-boxes {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -13300,17 +13354,11 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     body.kobajer-page .kobajer-info-box {
         padding: 1rem 0.75rem !important;
         min-height: 0 !important;
-        align-items: center !important;
-        justify-content: center !important;
     }
     body.kobajer-page .kobajer-can-image {
-        display: block !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
         max-height: min(520px, 48vh) !important;
         width: 100% !important;
         max-width: 100% !important;
-        object-position: center center !important;
     }
 
     body.kobajer-page .kobajer-steps {
@@ -13329,26 +13377,20 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
     body.kobajer-page .kobajer-step-box {
         padding: 1rem 0.75rem !important;
-        padding-top: 2rem !important;
         min-height: 0 !important;
-        justify-content: flex-start !important;
-    }
-    body.kobajer-page .kobajer-step-box h4 {
-        margin-top: 0.35rem !important;
     }
     body.kobajer-page .kobajer-step-image {
         max-height: min(520px, 48vh) !important;
         width: 100% !important;
         max-width: 100% !important;
-        margin-top: 0.25rem !important;
-        transform: translateY(-16px) !important;
+        margin-top: 0.65rem !important;
     }
 
     body.kobajer-page .kobajer-bottom-cta {
         display: block !important;
         width: 100% !important;
         max-width: none !important;
-        margin: 2rem 0 0 0 !important;
+        margin-top: 1.25rem !important;
         padding: 0 !important;
         gap: 0 !important;
     }
@@ -13357,9 +13399,7 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
         width: 100% !important;
         max-width: none !important;
         min-height: 0 !important;
-        height: auto !important;
-        max-height: none !important;
-        margin: 0 0 1.25rem 0 !important;
+        margin: 0 0 0.85rem 0 !important;
     }
     body.kobajer-page .kobajer-bottom-cta__item:last-child {
         margin-bottom: 0 !important;
@@ -13376,7 +13416,6 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
 }
 
 /* KØ-BAJER: phone landscape (width > 640px) — stack grids + Anmeld/Boykot/Sig fra full width; matches mobile rules in @media (max-width: 640px) */
-@media (max-width: 1024px) and (orientation: landscape) and (max-height: 520px) {
     body.kobajer-page .kobajer-info-boxes {
         grid-template-columns: 1fr;
         gap: 1rem;

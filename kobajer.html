@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#3e524c">
     <title>Købajer - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=kobajer-ipad-orient-stable-20260508">
+    <link rel="stylesheet" href="styles.css?v=kobajer-ipad-step-img-nudge-2-revert-20260508">
     <!-- Bund-CTA: ens store billeder (som frontpage) — ligger inline så iPad-landskab/Chrome vinder over cache/DB -->
     <style>
-        /* iPad/tablet touch: samme grid + spacing i portræt og landskab (641–1366, coarse/hover-none) */
-        @media (min-width: 641px) and (max-width: 1366px) and (hover: none),
-            (min-width: 641px) and (max-width: 1366px) and (pointer: coarse) {
+        /* iPad/tablet portræt: stable Anmeld/Boykot/Sig fra som frontpage (fuld bredde, 600px max-højde) */
+        @media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
+            (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
             body.kobajer-page .kobajer-info-boxes {
                 display: grid !important;
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -28,17 +28,11 @@
             body.kobajer-page .kobajer-info-box {
                 padding: 1rem 0.75rem !important;
                 min-height: 0 !important;
-                align-items: center !important;
-                justify-content: center !important;
             }
             body.kobajer-page .kobajer-can-image {
-                display: block !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
                 max-height: min(520px, 48vh) !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                object-position: center center !important;
             }
             body.kobajer-page .kobajer-steps {
                 display: grid !important;
@@ -56,25 +50,19 @@
             }
             body.kobajer-page .kobajer-step-box {
                 padding: 1rem 0.75rem !important;
-                padding-top: 2rem !important;
                 min-height: 0 !important;
-                justify-content: flex-start !important;
-            }
-            body.kobajer-page .kobajer-step-box h4 {
-                margin-top: 0.35rem !important;
             }
             body.kobajer-page .kobajer-step-image {
                 max-height: min(520px, 48vh) !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                margin-top: 0.25rem !important;
-                transform: translateY(-16px) !important;
+                margin-top: 0.65rem !important;
             }
             body.kobajer-page .kobajer-bottom-cta {
                 display: block !important;
                 width: 100% !important;
                 max-width: none !important;
-                margin: 2rem 0 0 0 !important;
+                margin-top: 1.25rem !important;
                 padding: 0 !important;
                 gap: 0 !important;
             }
@@ -83,9 +71,7 @@
                 width: 100% !important;
                 max-width: none !important;
                 min-height: 0 !important;
-                height: auto !important;
-                max-height: none !important;
-                margin: 0 0 1.25rem 0 !important;
+                margin: 0 0 0.85rem 0 !important;
             }
             body.kobajer-page .kobajer-bottom-cta__item:last-child {
                 margin-bottom: 0 !important;
@@ -95,6 +81,60 @@
                 width: 100% !important;
                 max-width: 100% !important;
                 height: auto !important;
+                max-height: 600px !important;
+                object-fit: contain !important;
+                image-rendering: high-quality !important;
+            }
+        }
+        /* iPad-landskab ~1024–1400px bred, max 1200px høj viewport — dåser centreret, STEP luft + bund-CTA */
+        @media screen and (min-width: 1024px) and (max-width: 1400px) and (max-height: 1200px) and (orientation: landscape) {
+            body.kobajer-page .kobajer-info-box {
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            body.kobajer-page .kobajer-can-image {
+                display: block !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                width: auto !important;
+                max-width: 100% !important;
+                object-position: center center !important;
+            }
+            body.kobajer-page .kobajer-step-box {
+                justify-content: flex-start !important;
+                padding-top: 2rem !important;
+            }
+            body.kobajer-page .kobajer-step-box h4 {
+                margin-top: 0.35rem !important;
+            }
+            body.kobajer-page .kobajer-step-image {
+                margin-top: 0.25rem !important;
+                transform: translateY(-16px) !important;
+            }
+            body.kobajer-page .kobajer-bottom-cta {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 2rem 0 0 0 !important;
+                padding: 0 !important;
+            }
+            body.kobajer-page .kobajer-bottom-cta__item {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                margin: 0 0 1.25rem 0 !important;
+            }
+            body.kobajer-page .kobajer-bottom-cta__item:last-child {
+                margin-bottom: 0 !important;
+            }
+            body.kobajer-page .kobajer-bottom-cta__img {
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                max-width: 100% !important;
                 max-height: 600px !important;
                 object-fit: contain !important;
                 image-rendering: high-quality !important;
