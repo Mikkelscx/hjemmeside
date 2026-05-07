@@ -912,6 +912,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		window.addEventListener('resize', () => {
 			if (!isPhoneViewport()) setOpen(false);
 		});
+
+		/* iPad m.fl.: ved rotation kan layout-opdatering og burger-@media være ude af trit — luk menu og ryd overflow-lock */
+		window.addEventListener('orientationchange', () => {
+			const unlock = () => {
+				try {
+					closeMobileBurgerMenu();
+				} catch (_) {}
+				try {
+					if (!document.body.classList.contains('msk-asset-lightbox-open')) {
+						document.body.style.removeProperty('overflow');
+					}
+				} catch (_) {}
+			};
+			unlock();
+			setTimeout(unlock, 120);
+			setTimeout(unlock, 380);
+		});
 	})();
 
 	function getPageFlipMs(fallbackMs) {

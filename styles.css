@@ -250,6 +250,23 @@ body {
     overflow-x: hidden;
 }
 
+/*
+ * Menu-scrim: altid defineret — undgår at iPad efter rotation falder ud af tablet-@media og efterlader
+ * et fixed lag uden display:none / pointer-events, så scroll føles blokeret (“usynlig væg”).
+ */
+body .nav-scrim {
+    position: fixed;
+    inset: 0;
+    display: none;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.22);
+    z-index: 4999;
+}
+body.nav-open .nav-scrim {
+    display: block;
+    pointer-events: auto;
+}
+
 /* ---- Navbar theme tokens (desktop top bar + burger button on narrow viewports) ---- */
 body.home-notebook-page {
     --navBarBg: rgba(252, 251, 247, 0.94);
@@ -13686,8 +13703,16 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     background: linear-gradient(135deg,
         #32CD32 0%, #32CD32 25%, #FF69B4 40%, #FFFACD 100%
     );
-    min-height: var(--vh);
+    /* Fallback når JS fjerner --vh i bred landskab (narrow=false), så min-height ikke invalideres */
+    min-height: var(--vh, 100dvh);
     overflow-x: hidden;
+}
+
+/* Efter rotation: sikr at menu-lås ikke hænger i — kun når menu/luk ikke aktiv */
+body.twister-page:not(.nav-open):not(.msk-asset-lightbox-open) {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .twister-hero {
