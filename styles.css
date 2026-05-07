@@ -10141,10 +10141,10 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     body.sketchbook-theme .left-margin { left: 36px; }
 }
 
-/* Mobile navbar on iPad / tablet-bredde portræt: burger (+ DevTools iPad, som ofte har pointer: fine) */
-@media (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse),
-    (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
-    (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
+/* Mobile navbar on iPad / tablet: burger i portræt og landskab op til 1366px (+ DevTools med pointer: fine) */
+@media (min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse),
+    (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
+    (min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) {
     /* Same bar height as phone burger layout (52px) + notch — matches --navBarTotal for dropdown top */
     html {
         --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
@@ -10387,7 +10387,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         border-bottom: 2px solid var(--mobileMenuDivider) !important;
     }
 
-    /* Burger-dropdown: projekt-specifikke paneler + typografi (iPad/tablet portræt 641–1024px) */
+    /* Burger-dropdown: projekt-specifikke paneler + typografi (iPad/tablet 641–1366px) */
     body.naturlig-page .nav-menu {
         background: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(227, 242, 253, 0.95) 100%);
         box-shadow: 0 18px 42px rgba(25, 118, 210, 0.22);
@@ -10576,9 +10576,9 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
 }
 
-/* Portræt: iPad / stor mobil med burger (641–1024px, touch) — samme som telefon: ingen hvid bjælke */
-@media (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse) and (orientation: portrait),
-    (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse) and (max-aspect-ratio: 1/1) {
+/* Portræt: iPad / stor mobil med burger (641–1366px, touch) — samme som telefon: ingen hvid bjælke */
+@media (min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) and (orientation: portrait),
+    (min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) and (max-aspect-ratio: 1/1) {
     body .navbar,
     html body.repop-page .navbar,
     html body.durex-page .navbar,
