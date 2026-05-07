@@ -5,19 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#3e524c">
     <title>Købajer - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=kobajer-ipad-tablet-nav-1366-20260508">
+    <link rel="stylesheet" href="styles.css?v=kobajer-ipad-grid-rows-20260510">
     <!-- Bund-CTA m.m.: spejler styles.css iPad-blok — inline så Safari/Chrome på tablet slår cache -->
     <style>
         @media (min-width: 641px) and (max-width: 1366px) {
             body.kobajer-page .kobajer-info-boxes {
                 display: grid !important;
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                grid-auto-flow: row !important;
+                align-content: start !important;
                 gap: 1rem 1.05rem !important;
                 margin: 1.35rem 0 !important;
                 align-items: start !important;
             }
+            body.kobajer-page .kobajer-info-box:nth-child(1) {
+                grid-column: 1 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-info-box:nth-child(2) {
+                grid-column: 2 !important;
+                grid-row: 1 !important;
+            }
             body.kobajer-page .kobajer-info-box:nth-child(3) {
                 grid-column: 1 / -1 !important;
+                grid-row: 2 !important;
                 justify-self: center !important;
                 width: calc((100% - 1.05rem) / 2) !important;
                 max-width: calc((100% - 1.05rem) / 2) !important;
@@ -25,22 +36,35 @@
             }
             body.kobajer-page .kobajer-info-box {
                 padding: 1rem 0.75rem !important;
+                min-width: 0 !important;
                 min-height: 0 !important;
             }
             body.kobajer-page .kobajer-can-image {
                 max-height: min(520px, 42vmin) !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                min-width: 0 !important;
             }
             body.kobajer-page .kobajer-steps {
                 display: grid !important;
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                grid-auto-flow: row !important;
+                align-content: start !important;
                 gap: 1rem 1.05rem !important;
                 margin: 1.35rem 0 !important;
                 align-items: start !important;
             }
+            body.kobajer-page .kobajer-step-box:nth-child(1) {
+                grid-column: 1 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-step-box:nth-child(2) {
+                grid-column: 2 !important;
+                grid-row: 1 !important;
+            }
             body.kobajer-page .kobajer-step-box:nth-child(3) {
                 grid-column: 1 / -1 !important;
+                grid-row: 2 !important;
                 justify-self: center !important;
                 width: calc((100% - 1.05rem) / 2) !important;
                 max-width: calc((100% - 1.05rem) / 2) !important;
@@ -48,6 +72,7 @@
             }
             body.kobajer-page .kobajer-step-box {
                 padding: 1rem 0.75rem !important;
+                min-width: 0 !important;
                 min-height: 0 !important;
                 justify-content: flex-start !important;
             }
@@ -55,6 +80,7 @@
                 max-height: min(520px, 42vmin) !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                min-width: 0 !important;
                 margin-top: 0.65rem !important;
                 transform: none !important;
             }
@@ -199,6 +225,6 @@
         
     </div>
 
-    <script src="script.js?v=kobajer-ipad-tablet-nav-1366-20260508"></script>
+    <script src="script.js?v=kobajer-ipad-grid-rows-20260510"></script>
 </body>
 </html> 

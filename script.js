@@ -472,6 +472,40 @@ function mskSketchbookPaperLinesDraw() {
 	} catch {}
 })();
 
+/* Kø-Bajer: WebKit kan efter rotation lade 2+1-grids “stable” visuelt oven på hinanden — nulstil kompositor-lag */
+(function mskKobajerGridRelayoutAfterRotation() {
+	function kick() {
+		try {
+			if (!document.body || !document.body.classList.contains('kobajer-page')) return;
+			document.querySelectorAll('.kobajer-info-boxes, .kobajer-steps').forEach((el) => {
+				el.style.transform = 'translateZ(0)';
+				void el.offsetHeight;
+				el.style.removeProperty('transform');
+			});
+		} catch (_) {}
+	}
+	function schedule() {
+		kick();
+		requestAnimationFrame(kick);
+		setTimeout(kick, 100);
+		setTimeout(kick, 350);
+	}
+	window.addEventListener('orientationchange', schedule);
+	let resizeT = null;
+	window.addEventListener('resize', () => {
+		try {
+			if (!document.body || !document.body.classList.contains('kobajer-page')) return;
+		} catch {
+			return;
+		}
+		if (resizeT) clearTimeout(resizeT);
+		resizeT = setTimeout(() => {
+			resizeT = null;
+			schedule();
+		}, 80);
+	});
+})();
+
 /**
  * Site-standard play-knap på alle indlejrede <video> (halvgennemsigtig cirkel + clip-path-pil i CSS).
  * Forælderen til <video> får .video-play-frame; undlad at lægge eget overlay i HTML.
