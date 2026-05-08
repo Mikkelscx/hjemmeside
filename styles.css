@@ -13410,6 +13410,51 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
 }
 
+/*
+ * KØ-BAJER: bred tablet-landskab (fx iPad Pro 1366×1024) — tre dåser + tre steps på én række (side om side).
+ * min-width: 900px undgår tre meget smalle kolonner på telefoner i landskab; min-aspect-ratio fanger DevTools uden orientation.
+ */
+@media (min-width: 900px) and (max-width: 1366px) and (orientation: landscape),
+    (min-width: 900px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
+    body.kobajer-page .kobajer-info-boxes {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    body.kobajer-page .kobajer-info-box:nth-child(1) {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-info-box:nth-child(2) {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-info-box:nth-child(3) {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        width: auto !important;
+        max-width: none !important;
+        justify-self: stretch !important;
+    }
+
+    body.kobajer-page .kobajer-steps {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    body.kobajer-page .kobajer-step-box:nth-child(1) {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-step-box:nth-child(2) {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-step-box:nth-child(3) {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        width: auto !important;
+        max-width: none !important;
+        justify-self: stretch !important;
+    }
+}
+
 /* KØ-BAJER: phone landscape (641–1024, kort viewport-højde) — stablet; ikke iPad-landskab (højere end 520px) */
 @media (max-width: 1024px) and (min-width: 641px) and (orientation: landscape) and (max-height: 520px) {
     body.kobajer-page .kobajer-info-boxes {
