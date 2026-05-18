@@ -377,10 +377,35 @@ function mskSketchbookPaperLinesDraw() {
 				}
 				let rh = Math.round(Math.max(0, h));
 				let rw = Math.round(Math.max(0, w));
-				/* Chrome RDM / split frames: undgå at låse --vh/--vw til fx 4px (ødelægger layout + giver “hvid bjælke”). */
 				const lb = mskProjectsLayoutViewportBox();
+				/*
+				 * Brug største plausible kant — RDM/DevTools kan levere ét tal forkert (fx h≈10 mens innerHeight≈1024),
+				 * hvilket gav --vh på få px og knækkede layout + lightbox.
+				 */
+				if (ihClamp >= 200) {
+					rh = Math.round(Math.max(rh, ihClamp, lb.h));
+				}
+				if (iwClamp >= 200) {
+					rw = Math.round(Math.max(rw, iwClamp, lb.w));
+				}
 				if (rh < 80 && lb.h >= 80) rh = lb.h;
 				if (rw < 80 && lb.w >= 80) rw = lb.w;
+				/*
+				 * RDM / visualViewport-flip: rh kan ende som ~1vh i px (fx 13–14 ved 1366 højde) trods ihClamp.
+				 * Uden dette sættes --vh forkert og alt der bruger var(--vh) + lysboks-fallback (vh) opfører sig inkonsistent.
+				 */
+				if (ihClamp >= 320 && rh > 0 && rh < 120) {
+					rh = Math.round(Math.max(rh, ihClamp, lb.h));
+				}
+				if (iwClamp >= 320 && rw > 0 && rw < 120) {
+					rw = Math.round(Math.max(rw, iwClamp, lb.w));
+				}
+				if (ihClamp >= 320 && rh < ihClamp * 0.22) {
+					rh = Math.round(Math.max(rh, ihClamp, lb.h));
+				}
+				if (iwClamp >= 320 && rw < iwClamp * 0.22) {
+					rw = Math.round(Math.max(rw, iwClamp, lb.w));
+				}
 				if (narrow) {
 					if (rh < 80 || rw < 80) {
 						document.documentElement.style.removeProperty('--vh');
@@ -8424,6 +8449,123 @@ window.addEventListener('load', function () {
 		return false;
 	}
 
+	/**
+	 * Samme kant-sanitering som --vh/--vw på projektsider (layout + inner), samme tal som du ser i DevTools.
+	 * Bruges til lightbox: layout-kanter + orienterings-korrektur (RDM/WebKit).
+	 */
+	function mskAssetLightboxViewportSidesPx() {
+		const lb = mskProjectsLayoutViewportBox();
+		let rw = lb.w;
+		let rh = lb.h;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (ih >= 200) rh = Math.round(Math.max(rh, ih, lb.h));
+		if (iw >= 200) rw = Math.round(Math.max(rw, iw, lb.w));
+		if (rh < 80 && lb.h >= 80) rh = lb.h;
+		if (rw < 80 && lb.w >= 80) rw = lb.w;
+
+		/*
+		 * RDM / WebKit kan bytte clientWidth ↔ clientHeight ift. orientation.
+		 * Brug CSS orientation + fallback så “bred” altid er layout-bredde og “høj” layout-højde.
+		 */
+		let portrait;
+		try {
+			portrait = window.matchMedia ? window.matchMedia('(orientation: portrait)').matches : null;
+		} catch {
+			portrait = null;
+		}
+		if (portrait == null) {
+			try {
+				const ot = screen.orientation && screen.orientation.type;
+				if (ot && String(ot).includes('portrait')) portrait = true;
+				else if (ot && String(ot).includes('landscape')) portrait = false;
+			} catch {
+				portrait = null;
+			}
+		}
+		if (portrait == null) {
+			portrait = rh >= rw;
+		}
+		if (portrait && rw > rh) {
+			const tmp = rw;
+			rw = rh;
+			rh = tmp;
+		} else if (!portrait && rh > rw) {
+			const tmp = rw;
+			rw = rh;
+			rh = tmp;
+		}
+		return { rw, rh };
+	}
+
+	function applyMskAssetLightboxBox(root) {
+		if (!root) return;
+		let rw;
+		let rh;
+		const dRw = root.dataset.mskLbRw;
+		const dRh = root.dataset.mskLbRh;
+		if (dRw != null && dRw !== '' && dRh != null && dRh !== '') {
+			rw = parseFloat(dRw, 10);
+			rh = parseFloat(dRh, 10);
+		}
+		if (!(Number.isFinite(rw) && rw > 0 && Number.isFinite(rh) && rh > 0)) {
+			const b = mskAssetLightboxViewportSidesPx();
+			rw = b.rw;
+			rh = b.rh;
+			try {
+				root.dataset.mskLbRw = String(rw);
+				root.dataset.mskLbRh = String(rh);
+			} catch {}
+		}
+		/*
+		 * Bredde ≈ layout-bredde, højde ≈ layout-højde (normaliseret i mskAssetLightboxViewportSidesPx).
+		 */
+		const frameW = Math.min(0.96 * rw, 1020);
+		const padReserve = 72;
+		const stageH = Math.min(0.78 * rh, 900, Math.max(160, rh - padReserve));
+		const frame = root.querySelector('.msk-asset-lightbox__frame');
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		if (!frame || !stage) return;
+		const fw = `${Math.round(frameW)}px`;
+		const sh = `${Math.round(stageH)}px`;
+		/* important: slår eventuel side-specifik !important/overskrivning i RDM */
+		frame.style.setProperty('width', fw, 'important');
+		frame.style.setProperty('min-width', fw, 'important');
+		frame.style.setProperty('max-width', fw, 'important');
+		stage.style.setProperty('width', fw, 'important');
+		stage.style.setProperty('min-width', fw, 'important');
+		stage.style.setProperty('max-width', fw, 'important');
+		stage.style.setProperty('min-height', sh, 'important');
+		stage.style.setProperty('height', sh, 'important');
+		stage.style.setProperty('max-height', sh, 'important');
+	}
+
+	function clearMskAssetLightboxBox(root) {
+		if (!root) return;
+		const frame = root.querySelector('.msk-asset-lightbox__frame');
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		if (frame) {
+			frame.style.removeProperty('width');
+			frame.style.removeProperty('min-width');
+			frame.style.removeProperty('max-width');
+		}
+		if (stage) {
+			try {
+				stage.style.removeProperty('width');
+				stage.style.removeProperty('min-width');
+				stage.style.removeProperty('max-width');
+			} catch {}
+			stage.style.removeProperty('min-height');
+			stage.style.removeProperty('height');
+			stage.style.removeProperty('max-height');
+		}
+		try {
+			delete root.dataset.mskLbRw;
+			delete root.dataset.mskLbRh;
+			delete root.dataset.mskLbVmin;
+		} catch {}
+	}
+
 	function ensureShell() {
 		let root = document.getElementById(LB_ID);
 		if (root) return root;
@@ -8483,6 +8625,11 @@ window.addEventListener('load', function () {
 
 	function openFromImg(el) {
 		const root = ensureShell();
+		try {
+			delete root.dataset.mskLbRw;
+			delete root.dataset.mskLbRh;
+			delete root.dataset.mskLbVmin;
+		} catch {}
 		const stage = root.querySelector('.msk-asset-lightbox__stage');
 		stage.innerHTML = '';
 		const fullSrc = el.getAttribute('data-lightbox-src') || el.currentSrc || el.getAttribute('src');
@@ -8493,6 +8640,27 @@ window.addEventListener('load', function () {
 		img.decoding = 'async';
 		img.loading = 'eager';
 		stage.appendChild(img);
+		img.addEventListener(
+			'load',
+			() => {
+				try {
+					applyMskAssetLightboxBox(root);
+				} catch {}
+			},
+			{ once: true },
+		);
+		try {
+			if (img.decode) {
+				img.decode().then(
+					() => {
+						try {
+							applyMskAssetLightboxBox(root);
+						} catch {}
+					},
+					() => {},
+				);
+			}
+		} catch {}
 		root.setAttribute('aria-hidden', 'false');
 		root.classList.add('is-open');
 		document.body.classList.add('msk-asset-lightbox-open');
@@ -8502,6 +8670,10 @@ window.addEventListener('load', function () {
 			if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
 			root.focus({ preventScroll: true });
 		} catch {}
+		applyMskAssetLightboxBox(root);
+		try {
+			requestAnimationFrame(() => applyMskAssetLightboxBox(root));
+		} catch {}
 	}
 
 	function openFromVideo(sourceEl) {
@@ -8509,6 +8681,11 @@ window.addEventListener('load', function () {
 			sourceEl.pause();
 		} catch {}
 		const root = ensureShell();
+		try {
+			delete root.dataset.mskLbRw;
+			delete root.dataset.mskLbRh;
+			delete root.dataset.mskLbVmin;
+		} catch {}
 		const stage = root.querySelector('.msk-asset-lightbox__stage');
 		stage.innerHTML = '';
 		stage.appendChild(buildVideoFrom(sourceEl));
@@ -8523,11 +8700,16 @@ window.addEventListener('load', function () {
 			if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
 			root.focus({ preventScroll: true });
 		} catch {}
+		applyMskAssetLightboxBox(root);
+		try {
+			requestAnimationFrame(() => applyMskAssetLightboxBox(root));
+		} catch {}
 	}
 
 	function close() {
 		const root = document.getElementById(LB_ID);
 		if (!root || !root.classList.contains('is-open')) return;
+		clearMskAssetLightboxBox(root);
 		const v = root.querySelector('.msk-asset-lightbox__video');
 		if (v) {
 			try {
@@ -8616,6 +8798,27 @@ window.addEventListener('load', function () {
 		} catch {}
 		close();
 	});
+
+	function onMskAssetLightboxViewportChange() {
+		try {
+			const root = document.getElementById(LB_ID);
+			if (root && root.classList.contains('is-open')) {
+				try {
+					delete root.dataset.mskLbRw;
+					delete root.dataset.mskLbRh;
+					delete root.dataset.mskLbVmin;
+				} catch {}
+				applyMskAssetLightboxBox(root);
+			}
+		} catch {}
+	}
+	window.addEventListener('resize', onMskAssetLightboxViewportChange, { passive: true });
+	window.addEventListener('orientationchange', onMskAssetLightboxViewportChange, { passive: true });
+	try {
+		if (window.visualViewport) {
+			window.visualViewport.addEventListener('resize', onMskAssetLightboxViewportChange, { passive: true });
+		}
+	} catch {}
 
 	function refreshLightboxRootClass() {
 		try {
