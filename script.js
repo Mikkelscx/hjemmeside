@@ -406,8 +406,35 @@ function mskSketchbookPaperLinesDraw() {
 				if (iwClamp >= 320 && rw < iwClamp * 0.22) {
 					rw = Math.round(Math.max(rw, iwClamp, lb.w));
 				}
-				if (narrow) {
-					if (rh < 80 || rw < 80) {
+				/*
+				 * Kontakt/Om mig iPad landskab (1024–1366): inner* er ofte korrekt mens client* er ~10px i DevTools.
+				 * CSS på kontakt bruger 100dvh direkte, men fjern også en ødelagt inline --vh/--vw.
+				 */
+				if (sketch && (contactSketchbookPage || aboutSketchbookPage) && ihClamp >= 320) {
+					rh = Math.round(Math.max(rh, ihClamp, lb.h));
+					rw = Math.round(Math.max(rw, iwClamp, lb.w));
+				}
+				const sketchTabletLandscape =
+					sketch &&
+					(contactSketchbookPage || aboutSketchbookPage) &&
+					window.matchMedia &&
+					window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches &&
+					((window.matchMedia('(orientation: landscape)').matches ||
+						window.matchMedia('(min-aspect-ratio: 1/1)').matches));
+				const applyVhVwPx = narrow || sketchTabletLandscape;
+				/* Aldrig skriv mikroskopisk --vh (fx 10.24px) — ødelægger var(--vh) på andre sider */
+				const vhPxOk = rh >= 200 && rw >= 200;
+				/*
+				 * Kontakt: ALDRIG inline --vh/--vw. DevTools kan sætte ~10px (viewport/100) → scroll.
+				 * Landskab låses via CSS + html.msk-contact-ipad-landscape-no-scroll.
+				 */
+				if (contactSketchbookPage) {
+					document.documentElement.style.removeProperty('--vh');
+					document.documentElement.style.removeProperty('--vw');
+					lastVhPx = -1;
+					lastVwPx = -1;
+				} else if (applyVhVwPx) {
+					if (!vhPxOk) {
 						document.documentElement.style.removeProperty('--vh');
 						document.documentElement.style.removeProperty('--vw');
 						lastVhPx = -1;
@@ -428,8 +455,42 @@ function mskSketchbookPaperLinesDraw() {
 					lastVhPx = -1;
 					lastVwPx = -1;
 				}
+				const contactIpadLandscape =
+					contactSketchbookPage &&
+					window.matchMedia &&
+					window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches &&
+					(window.matchMedia('(orientation: landscape)').matches ||
+						window.matchMedia('(min-aspect-ratio: 1/1)').matches);
+				const contactIpadPortrait =
+					contactSketchbookPage &&
+					window.matchMedia &&
+					window.matchMedia('(min-width: 641px) and (max-width: 1366px)').matches &&
+					window.matchMedia('(orientation: portrait)').matches &&
+					!contactIpadLandscape;
+				try {
+					document.documentElement.classList.toggle(
+						'msk-contact-ipad-landscape-no-scroll',
+						!!contactIpadLandscape
+					);
+					document.documentElement.classList.toggle(
+						'msk-contact-ipad-portrait-no-scroll',
+						!!contactIpadPortrait
+					);
+				} catch (_) {}
 				/* Papir (::before) skal følge synlig højde ved pinch-zoom — ellers klippes/kollapser linjer */
-				if (sketch && rh >= 80) {
+				if (sketch && contactSketchbookPage) {
+					const paperH = Math.round(
+						Math.max(
+							200,
+							window.innerHeight || 0,
+							mskProjectsLayoutViewportBox().h
+						)
+					);
+					if (paperH !== lastSketchPaperMinHPx) {
+						document.documentElement.style.setProperty('--sketchPaperMinH', paperH + 'px');
+						lastSketchPaperMinHPx = paperH;
+					}
+				} else if (sketch && rh >= 80) {
 					if (rh !== lastSketchPaperMinHPx) {
 						document.documentElement.style.setProperty('--sketchPaperMinH', rh + 'px');
 						lastSketchPaperMinHPx = rh;
@@ -8922,4 +8983,87 @@ window.addEventListener('load', function () {
 		window.addEventListener('pointerup', onUp, true);
 		window.addEventListener('pointercancel', onUp, true);
 	}, { passive: false });
+})();
+
+/** Kontakt + iPad/tablet landskab/portræt: lås dokument-scroll (touch/wheel) og fjern ødelagt inline --vh. */
+(function mskContactIpadLandscapeNoScroll() {
+	function isContactPage() {
+		return (
+			document.body &&
+			document.body.classList &&
+			document.body.classList.contains('contact-sketchbook-page')
+		);
+	}
+	function isLandscapeLock() {
+		try {
+			if (!window.matchMedia) return false;
+			if (!window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches) return false;
+			return (
+				window.matchMedia('(orientation: landscape)').matches ||
+				window.matchMedia('(min-aspect-ratio: 1/1)').matches
+			);
+		} catch {
+			return false;
+		}
+	}
+	function isPortraitLock() {
+		try {
+			if (!window.matchMedia) return false;
+			if (!window.matchMedia('(min-width: 641px) and (max-width: 1366px)').matches) return false;
+			if (!window.matchMedia('(orientation: portrait)').matches) return false;
+			return !isLandscapeLock();
+		} catch {
+			return false;
+		}
+	}
+	function isLockViewport() {
+		return isLandscapeLock() || isPortraitLock();
+	}
+	function applyLock() {
+		if (!isContactPage()) return;
+		const landscapeOn = isLandscapeLock();
+		const portraitOn = isPortraitLock();
+		const on = landscapeOn || portraitOn;
+		const root = document.documentElement;
+		const body = document.body;
+		root.classList.toggle('msk-contact-ipad-landscape-no-scroll', landscapeOn);
+		root.classList.toggle('msk-contact-ipad-portrait-no-scroll', portraitOn);
+		if (on) {
+			root.style.removeProperty('--vh');
+			root.style.removeProperty('--vw');
+			root.style.overflow = 'hidden';
+			root.style.height = '100%';
+			root.style.maxHeight = '100%';
+			root.style.position = 'fixed';
+			root.style.width = '100%';
+			root.style.inset = '0';
+			body.style.overflow = 'hidden';
+			body.style.height = '100%';
+			body.style.maxHeight = '100%';
+			body.style.position = 'fixed';
+			body.style.width = '100%';
+			body.style.inset = '0';
+		} else {
+			['overflow', 'height', 'maxHeight', 'position', 'width', 'inset'].forEach((prop) => {
+				root.style[prop] = '';
+				body.style[prop] = '';
+			});
+		}
+	}
+	function blockScroll(e) {
+		if (!isContactPage() || !isLockViewport()) return;
+		e.preventDefault();
+	}
+	applyLock();
+	window.addEventListener('resize', applyLock);
+	window.addEventListener('orientationchange', function () {
+		window.setTimeout(applyLock, 50);
+	});
+	document.addEventListener('DOMContentLoaded', applyLock);
+	window.addEventListener(
+		'touchmove',
+		blockScroll,
+		{ passive: false, capture: true }
+	);
+	window.addEventListener('wheel', blockScroll, { passive: false, capture: true });
 })();
