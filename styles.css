@@ -15692,18 +15692,24 @@ html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] .project-node__title-img--durex,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] .project-node__title-img--durex {
-    transform: translateY(12px) scale(2.02) !important;
+    max-width: min(172px, 12.8vw) !important;
+    width: 100% !important;
+    transform: translate(0px, 2px) scale(1.56) !important;
+    transform-origin: center center !important;
 }
 
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli,
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli,
-html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli {
+    transform: translateY(12px) scale(var(--projectsIpadLsTitleScale)) !important;
+}
+
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts,
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts {
-    transform: translateY(12px) scale(var(--projectsIpadLsTitleScale)) !important;
+    transform: translateY(18px) scale(var(--projectsIpadLsTitleScale)) !important;
 }
 
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv,

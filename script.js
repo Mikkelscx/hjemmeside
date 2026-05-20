@@ -250,10 +250,12 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 		}
 		if (on) {
 			mskApplyUngeModUvIpadLandscapeTitleNudge();
+			mskApplyDurexIpadLandscapeTitleNudge();
 			mskApplyBrainfartsIpadLandscapeConstructionSign();
 			mskSyncBrainfartsIpadConstructionSignOpacity();
 		} else {
 			mskClearUngeModUvIpadLandscapeTitleNudge();
+			mskClearDurexIpadLandscapeTitleNudge();
 		}
 		return on;
 	} catch (_) {
@@ -344,6 +346,52 @@ function mskClearUngeModUvIpadLandscapeTitleNudge() {
 		img.style.removeProperty('transform-origin');
 		img.style.removeProperty('max-width');
 		img.style.removeProperty('width');
+	} catch (_) {}
+}
+
+/** iPad landskab: DUREX — mindre tekst + lidt mod venstre i cirklen (ring uændret). */
+function mskApplyDurexIpadLandscapeTitleNudge() {
+	try {
+		if (!mskIsProjectsTabletLandscapeViewport()) return;
+		const container = document.querySelector('.brainstorm-container');
+		if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+		const img = container.querySelector(
+			'a.project-node[href*="durex"] .project-node__title-img--durex'
+		);
+		if (!img) return;
+		let leftPx = 0;
+		let downPx = 2;
+		const scale = 1.56;
+		try {
+			const lv = mskProjectsLayoutViewportBox();
+			leftPx = Math.round(Math.max(0, Math.min(6, (lv.w || 1366) * 0.003)));
+			downPx = Math.round(Math.max(0, Math.min(4, (lv.h || 1024) * 0.003)));
+		} catch (_) {}
+		img.style.setProperty('max-width', 'min(172px, 12.8vw)', 'important');
+		img.style.setProperty('width', '100%', 'important');
+		img.style.setProperty(
+			'transform',
+			`translate(${leftPx}px, ${downPx}px) scale(${scale})`,
+			'important'
+		);
+		img.style.setProperty('transform-origin', 'center center', 'important');
+		img.style.removeProperty('margin-left');
+		img.style.removeProperty('margin-right');
+	} catch (_) {}
+}
+
+function mskClearDurexIpadLandscapeTitleNudge() {
+	try {
+		const img = document.querySelector(
+			'.brainstorm-container a.project-node[href*="durex"] .project-node__title-img--durex'
+		);
+		if (!img) return;
+		img.style.removeProperty('transform');
+		img.style.removeProperty('transform-origin');
+		img.style.removeProperty('max-width');
+		img.style.removeProperty('width');
+		img.style.removeProperty('margin-left');
+		img.style.removeProperty('margin-right');
 	} catch (_) {}
 }
 
@@ -5269,8 +5317,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						y -= Math.round(4 * scale);
 					}
 					if (href.includes('brainfarts')) {
-						x -= Math.round(2 * scale);
-						y -= Math.round(12 * scale);
+						x += Math.round(4 * scale);
+						y -= Math.round(6 * scale);
 					}
 					if (href.includes('kobajer')) {
 						x -= Math.round(2 * scale);
@@ -5356,6 +5404,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch (_) {}
 			try {
 				mskApplyUngeModUvIpadLandscapeTitleNudge();
+			} catch (_) {}
+			try {
+				mskApplyDurexIpadLandscapeTitleNudge();
 			} catch (_) {}
 		}
 
@@ -6472,6 +6523,177 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 	}
 
+	/** iPad landskab: streg hjernen → Byens — centreret mod hjernen + ring (små gaps). */
+	function mskByensIpadLandscapeLinePoints(containerRect, brainRect, ring, node, nodeRect) {
+		const brainCx = brainRect.left - containerRect.left + brainRect.width / 2;
+		const brainCy = brainRect.top - containerRect.top + brainRect.height / 2;
+		const brainR = Math.min(brainRect.width, brainRect.height) / 2;
+
+		let ringCx = brainCx - 120;
+		let ringCy = brainCy - 140;
+		let ringRx = 80;
+		let ringRy = 50;
+		if (ring) {
+			const rx = parseFloat(ring.getAttribute('x') || '0');
+			const ry = parseFloat(ring.getAttribute('y') || '0');
+			const rw = parseFloat(ring.getAttribute('width') || '0');
+			const rh = parseFloat(ring.getAttribute('height') || '0');
+			ringCx = rx + rw / 2;
+			ringCy = ry + rh / 2;
+			ringRx = rw / 2;
+			ringRy = rh / 2;
+		} else if (node && nodeRect) {
+			ringCx = nodeRect.left - containerRect.left + nodeRect.width / 2;
+			ringCy = nodeRect.top - containerRect.top + nodeRect.height / 2;
+			ringRx = nodeRect.width / 2;
+			ringRy = nodeRect.height / 2;
+		}
+
+		const dx = ringCx - brainCx;
+		const dy = ringCy - brainCy;
+		const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+		const ux = dx / dist;
+		const uy = dy / dist;
+
+		const brainStartX = brainCx + ux * (brainR * 0.5);
+		const brainStartY = brainCy + uy * (brainR * 0.5);
+		const ringGap = Math.max(ringRx, ringRy) * 0.06;
+		const lineEndX = ringCx - ux * ringGap;
+		const lineEndY = ringCy - uy * ringGap;
+
+		return { brainStartX, brainStartY, lineEndX, lineEndY };
+	}
+
+	/** iPad landskab: streg hjernen → BRAINFARTS (efter ring findes). */
+	function mskBrainfartsIpadLandscapeLinePoints(containerRect, brainRect, ring, node, nodeRect) {
+		const brainCx = brainRect.left - containerRect.left + brainRect.width / 2;
+		const brainCy = brainRect.top - containerRect.top + brainRect.height / 2;
+		const brainR = Math.min(brainRect.width, brainRect.height) / 2;
+		/* + = højre / ned (kun iPad landskab) */
+		const lineNudgeX = 14;
+		const lineNudgeY = 6;
+
+		let ringCx = brainCx - 140;
+		let ringCy = brainCy + 20;
+		let ringRx = 90;
+		let ringRy = 70;
+		if (ring) {
+			const rx = parseFloat(ring.getAttribute('x') || '0');
+			const ry = parseFloat(ring.getAttribute('y') || '0');
+			const rw = parseFloat(ring.getAttribute('width') || '0');
+			const rh = parseFloat(ring.getAttribute('height') || '0');
+			ringCx = rx + rw / 2;
+			ringCy = ry + rh / 2;
+			ringRx = rw / 2;
+			ringRy = rh / 2;
+		} else if (node && nodeRect) {
+			ringCx = nodeRect.left - containerRect.left + nodeRect.width / 2;
+			ringCy = nodeRect.top - containerRect.top + nodeRect.height / 2;
+			ringRx = nodeRect.width / 2;
+			ringRy = nodeRect.height / 2;
+		}
+
+		const dx = ringCx - brainCx;
+		const dy = ringCy - brainCy;
+		const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+		const ux = dx / dist;
+		const uy = dy / dist;
+
+		const brainStartX = brainCx + ux * (brainR * 0.48) + lineNudgeX;
+		const brainStartY = brainCy + uy * (brainR * 0.48);
+		const ringGap = Math.max(ringRx, ringRy) * 0.14;
+		const lineEndX = ringCx - ux * ringGap + lineNudgeX;
+		const lineEndY = ringCy - uy * ringGap;
+
+		return { brainStartX, brainStartY, lineEndX, lineEndY };
+	}
+
+	function mskSyncBrainfartsBrainLineIpadLandscape() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+			if (!mskIsProjectsTabletLandscapeViewport()) return;
+			const currentSvg = document.querySelector('.connecting-lines');
+			if (!currentSvg) return;
+			const line = currentSvg.querySelector('image.brainfarts-brain-line');
+			const ring = currentSvg.querySelector('image.brainfarts-image');
+			if (!line) return;
+
+			const containerRect = container.getBoundingClientRect();
+			const brain = container.querySelector('.brain');
+			if (!brain) return;
+			const brainRect = brain.getBoundingClientRect();
+			const node = container.querySelector('a[href*="brainfarts"], .project-node[href*="brainfarts"]');
+			const nodeRect = node ? node.getBoundingClientRect() : null;
+			const pts = mskBrainfartsIpadLandscapeLinePoints(
+				containerRect,
+				brainRect,
+				ring,
+				node,
+				nodeRect
+			);
+
+			const angle =
+				(Math.atan2(pts.lineEndY - pts.brainStartY, pts.lineEndX - pts.brainStartX) * 180) /
+				Math.PI;
+			const lineLength = Math.sqrt(
+				(pts.lineEndX - pts.brainStartX) ** 2 + (pts.lineEndY - pts.brainStartY) ** 2
+			);
+			const bfLineHpx = parseFloat(line.getAttribute('height') || '390');
+
+			line.setAttribute('x', String(pts.brainStartX));
+			line.setAttribute('y', String(pts.brainStartY - bfLineHpx / 2));
+			line.setAttribute('width', String(Math.max(12, lineLength)));
+			line.setAttribute(
+				'transform',
+				`rotate(${angle} ${pts.brainStartX} ${pts.brainStartY})`
+			);
+		} catch (_) {}
+	}
+
+	function mskSyncByensBrainLineIpadLandscape() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+			if (!mskIsProjectsTabletLandscapeViewport()) return;
+			const currentSvg = document.querySelector('.connecting-lines');
+			if (!currentSvg) return;
+			const line = currentSvg.querySelector('image.byens-brain-line');
+			const ring = currentSvg.querySelector('image.byens-landhandel-image');
+			if (!line) return;
+
+			const containerRect = container.getBoundingClientRect();
+			const brain = container.querySelector('.brain');
+			if (!brain) return;
+			const brainRect = brain.getBoundingClientRect();
+			const node = container.querySelector('a[href*="byens-landhandel"], .project-node[href*="byens-landhandel"]');
+			const nodeRect = node ? node.getBoundingClientRect() : null;
+			const pts = mskByensIpadLandscapeLinePoints(
+				containerRect,
+				brainRect,
+				ring,
+				node,
+				nodeRect
+			);
+
+			const angle =
+				(Math.atan2(pts.lineEndY - pts.brainStartY, pts.lineEndX - pts.brainStartX) * 180) /
+				Math.PI;
+			const lineLength = Math.sqrt(
+				(pts.lineEndX - pts.brainStartX) ** 2 + (pts.lineEndY - pts.brainStartY) ** 2
+			);
+			const byensLineHpx = parseFloat(line.getAttribute('height') || '400');
+
+			line.setAttribute('x', String(pts.brainStartX));
+			line.setAttribute('y', String(pts.brainStartY - byensLineHpx / 2));
+			line.setAttribute('width', String(Math.max(12, lineLength)));
+			line.setAttribute(
+				'transform',
+				`rotate(${angle} ${pts.brainStartX} ${pts.brainStartY})`
+			);
+		} catch (_) {}
+	}
+
 	/** iPad landskab: Repop-streg tegnes før ring — forlæng efter createHandDrawnFrames. */
 	function mskSyncRepopBrainLineIpadLandscape() {
 		try {
@@ -7025,28 +7247,46 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (nodeTextBrainfarts === 'BRAINFARTS' || nodeHrefBrainfarts.includes('brainfarts') || nodeHrefBrainfarts.includes('project1')) {
 				console.log(`✓ BRAINFARTS detected at index ${index} - creating Linje 8.webp asset line`);
 				
-				// Start from slightly backward of the brain center (extending toward brain)
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-				const deltaX = nodeX - centerX;
-				const deltaY = nodeY - centerY;
-				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				// Extend backward from brain center to make line longer toward brain (desktop: længere i begge ender)
-				const brainExtension = brainRadius * (desktopProjectsWide ? 0.52 : 0.38);
-				const brainStartX = centerX - (deltaX / distance) * brainExtension;
-				const brainStartY = centerY - (deltaY / distance) * brainExtension;
-				
-				// Calculate end point - extend closer to/past the BRAINFARTS node
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				const bfShortLs = mskIsProjectsShortLandscapeViewport();
-				const bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 2.82 : 1.28;
-				const extensionAmount = nodeRadius * bfExtensionMul;
-				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
-				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
+				let brainStartX;
+				let brainStartY;
+				let lineEndX;
+				let lineEndY;
+				if (ipadLandscapeLines) {
+					const pts = mskBrainfartsIpadLandscapeLinePoints(
+						containerRect,
+						brainRect,
+						null,
+						node,
+						nodeRect
+					);
+					brainStartX = pts.brainStartX;
+					brainStartY = pts.brainStartY;
+					lineEndX = pts.lineEndX;
+					lineEndY = pts.lineEndY;
+				} else {
+					// Start from slightly backward of the brain center (extending toward brain)
+					const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+					const deltaX = nodeX - centerX;
+					const deltaY = nodeY - centerY;
+					const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+					// Extend backward from brain center to make line longer toward brain (desktop: længere i begge ender)
+					const brainExtension = brainRadius * (desktopProjectsWide ? 0.52 : 0.38);
+					brainStartX = centerX - (deltaX / distance) * brainExtension;
+					brainStartY = centerY - (deltaY / distance) * brainExtension;
+					
+					// Calculate end point - extend closer to/past the BRAINFARTS node
+					const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+					const bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 2.82 : 1.28;
+					const extensionAmount = nodeRadius * bfExtensionMul;
+					lineEndX = nodeX + (deltaX / distance) * extensionAmount;
+					lineEndY = nodeY + (deltaY / distance) * extensionAmount;
+				}
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
-				const bfWidthMul = bfShortLs ? 1.14 : 1;
+				const bfWidthMul = ipadLandscapeLines ? 1 : bfShortLs ? 1.14 : 1;
 				
 				console.log('BRAINFARTS Linje 8 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -7061,7 +7301,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
+				lineImage.classList.add(
+					'mindmap-line',
+					'dynamic-mindmap-line',
+					'mobile-mindmap-line',
+					'brainfarts-brain-line'
+				);
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -7306,18 +7551,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// End further toward the tab (extend a bit past the tab center)
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				const nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
+				let nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
 				const deltaX = byensAnchorX - initialBrainStartX;
 				const deltaY = byensAnchorY - initialBrainStartY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				const lineEndX = byensAnchorX + (deltaX / distance) * nodeExtension;
-				const lineEndY = byensAnchorY + (deltaY / distance) * nodeExtension;
+				let lineEndX = byensAnchorX + (deltaX / distance) * nodeExtension;
+				let lineEndY = byensAnchorY + (deltaY / distance) * nodeExtension;
 				
 				// Extend backward from the initial start point to make the line longer toward the brain
 				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-				const brainExtension = brainRadius * 0.28;
+				let brainExtension = brainRadius * 0.28;
 				let brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
 				let brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				if (ipadLandscapeLines) {
+					nodeExtension = nodeRadius * 0.72;
+					brainExtension = brainRadius * 0.05;
+				}
 				/* Kort mobil-landscape: hjernens ende (peger mod hjernen) lidt ned + til venstre */
 				if (mskIsProjectsShortLandscapeViewport()) {
 					brainStartX -= 22;
@@ -7340,7 +7589,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
+				lineImage.classList.add(
+					'mindmap-line',
+					'dynamic-mindmap-line',
+					'mobile-mindmap-line',
+					'byens-brain-line'
+				);
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -7805,7 +8059,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWRing;
 				let bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
 				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
-				const bfDrawCy = centerY + (ipadLandscapeRings ? -s(8) : 0);
+				const bfDrawCy = centerY + (ipadLandscapeRings ? -s(2) : 0);
 				image.setAttribute('x', String(centerX - bw / 2));
 				image.setAttribute('y', String(bfDrawCy - bh / 2));
 				image.setAttribute('width', String(bw));
@@ -8799,7 +9053,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		mskSyncRepopBrainLineIpadLandscape();
 		try {
+			mskSyncByensBrainLineIpadLandscape();
+		} catch (_) {}
+		try {
+			mskSyncBrainfartsBrainLineIpadLandscape();
+		} catch (_) {}
+		try {
 			mskApplyUngeModUvIpadLandscapeTitleNudge();
+		} catch (_) {}
+		try {
+			mskApplyDurexIpadLandscapeTitleNudge();
 		} catch (_) {}
 		try {
 			mskSyncBrainfartsIpadConstructionSignOpacity();
