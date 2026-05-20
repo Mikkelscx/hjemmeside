@@ -4413,10 +4413,58 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 
+	function mskProjectsMindmapNeedsGraphicRebuild() {
+		try {
+			const svg = document.querySelector('.connecting-lines');
+			if (!svg || svg.dataset.mskDynamicGraphicsBuilt !== '1') return true;
+			const nodes = document.querySelectorAll('.project-node');
+			if (!nodes.length) return false;
+			for (const node of nodes) {
+				const href = (node.dataset.nodeHref || node.getAttribute('href') || '').toLowerCase();
+				if (!href) continue;
+				if (!svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`)) return true;
+			}
+			return false;
+		} catch (_) {
+			return true;
+		}
+	}
+
+	function mskProjectsMindmapShouldRedrawGraphics(force) {
+		if (force) return true;
+		if (mskProjectsMindmapLayoutResizeMeaningful()) return true;
+		return mskProjectsMindmapNeedsGraphicRebuild();
+	}
+
+	function mskProjectsMindmapMarkGraphicsBuilt() {
+		try {
+			const svg = document.querySelector('.connecting-lines');
+			if (svg) svg.dataset.mskDynamicGraphicsBuilt = '1';
+		} catch (_) {}
+	}
+
+	function mskProjectsMindmapReveal() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container || container.dataset.mskRevealed === '1') return;
+			container.dataset.mskRevealed = '1';
+			document.documentElement.classList.remove('msk-mindmap-booting');
+			document.documentElement.classList.add('msk-projects-mindmap-painted');
+		} catch (_) {}
+	}
+
 	// Brain animations and connecting lines
 	function initBrainAnimations() {
 		if (!document.body || !document.body.classList.contains('projects-page')) return;
 		const isPreview = document.documentElement.classList.contains('transition-preview');
+		try {
+			if (
+				!isPreview &&
+				!document.documentElement.classList.contains('msk-projects-mindmap-painted')
+			) {
+				document.documentElement.classList.add('msk-mindmap-booting');
+			}
+		} catch (_) {}
 		const brain = document.querySelector('.brain');
 		const nodes = document.querySelectorAll('.project-node');
 		const pupils = document.querySelectorAll('.pupil');
@@ -4482,8 +4530,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				createAndPositionKobajerArrow();
 				ensureProjectsMobileInlineBadges();
 				hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
-				createConnectingLines();
-				createHandDrawnFrames();
+				if (mskProjectsMindmapShouldRedrawGraphics(false)) {
+					const redrawOpts = { force: true };
+					createConnectingLines(redrawOpts);
+					createHandDrawnFrames(redrawOpts);
+					mskProjectsMindmapMarkGraphicsBuilt();
+				}
+				positionBrainfartsBuildNote();
+				mskProjectsMindmapReveal();
 			} catch {}
 			if (isPreview) {
 				try {
@@ -4892,11 +4946,14 @@ document.addEventListener('DOMContentLoaded', function() {
 					return;
 				}
 			} catch {}
+			const hadPortraitMindmap = container.classList.contains('projects-mindmap--portrait');
 			try { container.classList.remove('projects-mindmap--portrait'); } catch {}
-			clearProjectsMindmapPortraitInlineStylesForEllipseLayout();
-			try {
-				void brain.offsetHeight;
-			} catch {}
+			if (hadPortraitMindmap) {
+				clearProjectsMindmapPortraitInlineStylesForEllipseLayout();
+				try {
+					void brain.offsetHeight;
+				} catch {}
+			}
 
 			/* Ellipse: mål hjernens centrum EFTER portrait-inline er væk — ellers matcher rotation ikke cold load i landscape. */
 			const containerRect = container.getBoundingClientRect();
@@ -6268,7 +6325,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 	// Create connecting lines from brain to nodes
-	function createConnectingLines() {
+	function createConnectingLines(options) {
+		const forceRedraw = !!(options && options.force);
 		console.log('Creating connecting lines...');
 		
 		// Get fresh references to elements
@@ -6284,7 +6342,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.log('Missing elements for line creation');
 			return;
 		}
-		
+
+		if (!forceRedraw && currentSvg.dataset.mskDynamicGraphicsBuilt === '1') return;
+
 		// Remove ONLY dynamic lines/paths we previously created and redraw them.
 		// This preserves any static SVG lines in `projects.html` (e.g. NATURLI) and avoids double-stacking.
 		currentSvg.querySelectorAll('.dynamic-mindmap-line').forEach(el => el.remove());
@@ -7336,7 +7396,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	// Create hand-drawn circles around project tabs
-	function createHandDrawnFrames() {
+	function createHandDrawnFrames(options) {
+		const forceRedraw = !!(options && options.force);
 		console.log('Creating hand-drawn circles...');
 		
 		const currentSvg = document.querySelector('.connecting-lines');
@@ -7347,6 +7408,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.error('Missing elements for frame creation:', {currentSvg, currentNodes: currentNodes.length, container});
 			return;
 		}
+
+		if (!forceRedraw && currentSvg.dataset.mskDynamicGraphicsBuilt === '1') return;
 
 		// Remove existing circles to avoid duplicates when this function runs again (e.g., on resize)
 		const existingCircles = currentSvg.querySelectorAll('.hand-drawn-frame, [class*="hand-drawn"], .brainfarts-overlay, image[href*="cirkel"], image[href*="circle"], image[xlink\\:href*="cirkel"], image[xlink\\:href*="circle"], image[href*="brainfarts"], image[href*="repop"], image[href*="kobajer"], image[href*="naturli"], image[href*="twister"], image[href*="durex"], image[href*="unge"]');
@@ -7424,6 +7487,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				!container.classList.contains('projects-mindmap--portrait');
 		} catch (_) {}
 
+		/** iPad landskab: fladere ovaler (mindre højde, samme bredde ca.) */
+		const ipadLsRingVertMul = ipadLandscapeRings ? 0.78 : 1;
+
 		currentNodes.forEach((node, index) => {
 			// Used to map hover -> matching frame element
 			node.dataset.nodeIndex = String(index);
@@ -7497,7 +7563,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				 * preserveAspectRatio none på <image> — ellers default "meet" bevarer billedformat og æter ikke bw/bh uafhængigt. */
 				const bfIpadMulWRing = ipadPortraitRings ? 3.02 : ipadLandscapeRings ? 1.2 : 1;
 				const bfIpadMulWLine = ipadPortraitRings ? 1.9 : ipadLandscapeRings ? 1.12 : 1;
-				const bfIpadMulH = ipadPortraitRings ? 1.8 : ipadLandscapeRings ? 1.16 : 1;
+				const bfIpadMulH = ipadPortraitRings ? 1.8 : ipadLandscapeRings ? 0.9 : 1;
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";
@@ -7506,7 +7572,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
 				const bw =
 					240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWRing;
-				const bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
+				let bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
+				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
 				image.setAttribute('x', String(centerX - bw / 2));
 				image.setAttribute('y', String(centerY - bh / 2));
 				image.setAttribute('width', String(bw));
@@ -7653,11 +7720,22 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 					if (ipadLandscapeRings) {
 						padXPx = Math.max(padXPx, 76);
-						padYPortrait = repBadgeRect ? Math.max(padYPortrait, 96) : Math.max(padYPortrait, 72);
+						padYPortrait = repBadgeRect ? Math.max(padYPortrait, 68) : Math.max(padYPortrait, 52);
 					}
 				} catch {}
 				const padX = s(padXPx) * assetS;
-				const padY = s(landscapeMindmap ? 96 : padYPortrait) * assetS;
+				const padY =
+					s(
+						ipadLandscapeRings
+							? landscapeMindmap
+								? repBadgeRect
+									? 72
+									: 56
+								: padYPortrait
+							: landscapeMindmap
+								? 96
+								: padYPortrait
+					) * assetS;
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
 				/* Kort mobil-landskab (fx iPhone XR 896×414): landscapeMindmap er true selv om w>640 — isProjectsPhoneLandscape() var false → ingen skalering */
@@ -7685,8 +7763,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= repopStretchX;
 				if (ipadLandscapeRings) {
 					w *= 1.06;
-					h *= 1.05;
 				}
+				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
 
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
 				image.setAttribute('y', String(repCenterY - (h / 2)));
@@ -7813,11 +7891,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 					if (ipadLandscapeRings) {
 						w *= 1.28;
-						h *= 1.2;
+						h *= 0.92;
 					}
 				} catch (_) {}
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
+				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
 				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
 				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
 				image.setAttribute('x', String(kCenterX - (w / 2)));
@@ -7913,9 +7992,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						naturliStretchX *= 1.28;
 					}
 				} catch {}
-				const naturliLsMulH = ipadLandscapeRings ? 1.1 : 1;
+				const naturliLsMulH = ipadLandscapeRings ? 0.86 : 1;
 				const nW = 240 * naturliMul * projectsDesktopRingMul * naturliStretchX;
-				const nH = 140 * naturliMul * projectsDesktopRingMul * naturliLsMulH;
+				let nH = 140 * naturliMul * projectsDesktopRingMul * naturliLsMulH;
+				if (ipadLandscapeRings) nH *= ipadLsRingVertMul;
 				// Create an image element for NATURLI'
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring naturli'.webp";
@@ -7982,9 +8062,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				let ungeStretchX = 1;
 				if (ipadPortraitRings) ungeStretchX = 1.82;
 				else if (ipadLandscapeRings) ungeStretchX = 1.38;
-				const ungeLsMulH = ipadLandscapeRings ? 1.1 : 1;
+				const ungeLsMulH = ipadLandscapeRings ? 0.86 : 1;
 				const uw = 320 * ungeMul * projectsDesktopRingMul * ungeStretchX;
-				const uh = 150 * ungeMul * projectsDesktopRingMul * ungeLsMulH;
+				let uh = 150 * ungeMul * projectsDesktopRingMul * ungeLsMulH;
+				if (ipadLandscapeRings) uh *= ipadLsRingVertMul;
 				image.setAttribute('x', centerX - uw / 2);
 				image.setAttribute('y', centerY - uh / 2);
 				image.setAttribute('width', String(uw));
@@ -8081,10 +8162,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				if (ipadLandscapeRings) {
 					w *= 1.22;
-					h *= 1.14;
+					h *= 0.9;
 				}
+				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
 				let circleDy = landscapeMindmap ? s(48) : s(20);
+				/* iPad landskab: ring tættere på nodens centrum — teksten skubbes ned via CSS, ikke ringen */
+				if (ipadLandscapeRings) {
+					circleDy = s(16);
+				}
 				/* Kort mobil-landscape: kun ringen op (noden uændret) — mindre circleDy */
 				if (mskIsProjectsShortLandscapeViewport()) {
 					circleDy -= s(34);
@@ -8137,6 +8223,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (ipadPortraitRings) {
 					byensStretchX = 2.55;
 					byensStretchY = 1.5;
+				} else if (ipadLandscapeRings) {
+					byensStretchX = 1.38;
+					byensStretchY = 0.82;
 				}
 				let byensMul = 1;
 				/* Mobil portræt: gør ovalen smallere vandret (1.22+mul ellers for bred ift. skærm) — landscape/desktop uændret */
@@ -8150,6 +8239,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (ipadPortraitRings) {
 						byensMul = 1.06;
 						byensPortraitXNarrow = 1;
+					} else if (ipadLandscapeRings) {
+						byensMul = 1.08;
+						byensPortraitXNarrow = 1;
 					} else if (portrait) {
 						byensMul = 0.98;
 						byensPortraitXNarrow = 0.7;
@@ -8162,12 +8254,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					projectsDesktopRingMul *
 					byensStretchX *
 					byensPortraitXNarrow;
-				const bh =
+				let bh =
 					170 *
 					byensMul *
 					byensLandhandelRingScale *
 					projectsDesktopRingMul *
 					byensStretchY;
+				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
 				const byensIpadDy = ipadPortraitRings ? -s(14) : 0;
 				// Create an image element for BYENS LANDHANDEL
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -8255,9 +8348,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					durexIpadMulW = 1.66;
 					durexIpadMulH = 1.84;
 				}
+				let durexIpadLsMulW = 1;
+				let durexIpadLsMulH = 1;
+				if (ipadLandscapeRings) {
+					durexIpadLsMulW = 1.44;
+					durexIpadLsMulH = 0.94;
+				}
 				const durexIpadDy = ipadPortraitRings ? s(8) : 0;
-				const dw = 440 * durexMul * projectsDesktopRingMul * durexIpadMulW;
-				const dh = 150 * durexMul * projectsDesktopRingMul * durexIpadMulH;
+				const dw =
+					440 * durexMul * projectsDesktopRingMul * durexIpadMulW * durexIpadLsMulW;
+				let dh =
+					150 * durexMul * projectsDesktopRingMul * durexIpadMulH * durexIpadLsMulH;
+				if (ipadLandscapeRings) dh *= ipadLsRingVertMul;
 				image.setAttribute('x', centerX - dw / 2);
 				image.setAttribute('y', centerY + durexIpadDy - dh / 2);
 				image.setAttribute('width', String(dw));
@@ -8283,8 +8385,19 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				} catch {}
 				fill.setAttribute('cy', String(centerY - durexCyOff + durexIpadDy));
-				fill.setAttribute('rx', String(220 * durexMul * 0.55 * projectsDesktopRingMul * durexIpadMulW)); // DUREX: less horizontal fill
-				fill.setAttribute('ry', String((75 * durexMul * 0.68 + 1) * projectsDesktopRingMul * durexIpadMulH)); // DUREX: keep top, trim bottom
+				fill.setAttribute(
+					'rx',
+					String(220 * durexMul * 0.55 * projectsDesktopRingMul * durexIpadMulW * durexIpadLsMulW)
+				);
+				fill.setAttribute(
+					'ry',
+					String(
+						(75 * durexMul * 0.68 + 1) *
+							projectsDesktopRingMul *
+							durexIpadMulH *
+							durexIpadLsMulH
+					)
+				);
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -8691,20 +8804,32 @@ document.addEventListener('DOMContentLoaded', function() {
 		ensureProjectsMobileInlineBadges();
 		hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
 		
-		// Create connecting lines dynamically
-		createConnectingLines();
+		// Create connecting lines dynamically (force: layout måles mens container er skjult med visibility, ikke display:none)
+		const firstPaintOpts = { force: true };
+		createConnectingLines(firstPaintOpts);
 		
 		// Create hand-drawn frames around project tabs
-		createHandDrawnFrames();
+		createHandDrawnFrames(firstPaintOpts);
+		mskProjectsMindmapMarkGraphicsBuilt();
 		positionBrainfartsBuildNote();
+		mskProjectsMindmapReveal();
 
 		document.addEventListener('mousemove', updatePupilPosition);
 
-		function runProjectsMindmapLayoutTick() {
+		function runProjectsMindmapLayoutTick(force) {
 			requestAnimationFrame(() => {
 				requestAnimationFrame(() => {
 					try {
-						positionNodesPerfectCircle();
+						const layoutChanged = !!(force || mskProjectsMindmapLayoutResizeMeaningful());
+						const needsGraphics = layoutChanged || mskProjectsMindmapNeedsGraphicRebuild();
+						const alreadyPainted = document.documentElement.classList.contains(
+							'msk-projects-mindmap-painted'
+						);
+						if (!layoutChanged && !needsGraphics && alreadyPainted) return;
+
+						if (layoutChanged) {
+							positionNodesPerfectCircle();
+						}
 						createAndPositionDandDLogo();
 						createAndPositionTwisterDandDLine();
 						createAndPositionRepopKravlingLine();
@@ -8712,8 +8837,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						createAndPositionKobajerArrow();
 						ensureProjectsMobileInlineBadges();
 						hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
-						createConnectingLines();
-						createHandDrawnFrames();
+						if (needsGraphics) {
+							const redrawOpts = { force: true };
+							createConnectingLines(redrawOpts);
+							createHandDrawnFrames(redrawOpts);
+							mskProjectsMindmapMarkGraphicsBuilt();
+						}
 						positionBrainfartsBuildNote();
 						const lv = mskProjectsLayoutViewportBox();
 						mskProjectsMindmapLastLayoutIw = lv.w;
@@ -8742,9 +8871,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		try {
 			window.__mskProjectsRelayout = runProjectsMindmapLayoutTick;
 		} catch (_) {}
-		runProjectsMindmapLayoutTick();
-		window.setTimeout(runProjectsMindmapLayoutTick, 80);
-		window.setTimeout(runProjectsMindmapLayoutTick, 320);
 
 		if (!document.documentElement.dataset.mskProjectsMindmapRelisten) {
 			document.documentElement.dataset.mskProjectsMindmapRelisten = '1';
@@ -8755,7 +8881,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 				try {
 					mskApplyProjectsIpadLandscapeDocumentMode();
-					runProjectsMindmapLayoutTick();
+					runProjectsMindmapLayoutTick(true);
 				} catch {}
 			});
 		}
@@ -8783,7 +8909,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (isPreview) {
 			try {
 				const container = document.querySelector('.brainstorm-container');
-				if (container) container.classList.add('preview-ready');
+				if (container) {
+					container.classList.add('preview-ready');
+					container.dataset.mskRevealed = '1';
+					document.documentElement.classList.remove('msk-mindmap-booting');
+					document.documentElement.classList.add('msk-projects-mindmap-painted');
+				}
 			} catch {}
 		}
 	}
@@ -9482,19 +9613,13 @@ window.addEventListener('load', function () {
 		}
 	}
 	function scheduleMindmapRelayoutAfterLock() {
-		const fire = () => {
-			try {
-				if (typeof window.__mskProjectsRelayout === 'function') window.__mskProjectsRelayout();
-			} catch {}
-			try {
-				window.dispatchEvent(new Event('msk-relayout-projects-mindmap'));
-			} catch {}
-		};
-		fire();
-		window.setTimeout(fire, 50);
-		window.setTimeout(fire, 220);
-		window.setTimeout(fire, 500);
-		window.setTimeout(fire, 900);
+		try {
+			const c = document.querySelector('.brainstorm-container');
+			if (c && c.dataset.mskRevealed === '1') return;
+		} catch (_) {}
+		try {
+			if (typeof window.__mskProjectsRelayout === 'function') window.__mskProjectsRelayout();
+		} catch {}
 	}
 	function applyLock() {
 		if (!isProjectsPage()) return;
@@ -9518,7 +9643,6 @@ window.addEventListener('load', function () {
 	});
 	document.addEventListener('DOMContentLoaded', () => {
 		window.setTimeout(applyLockAfterReady, 0);
-		window.setTimeout(applyLockAfterReady, 120);
 	});
 	window.addEventListener(
 		'touchmove',
@@ -9528,57 +9652,4 @@ window.addEventListener('load', function () {
 	window.addEventListener('wheel', blockScroll, { passive: false, capture: true });
 })();
 
-/** Nød-boot: gentagne relayouts i iPad landskab (DevTools kan bytte innerWidth/innerHeight). */
-(function mskProjectsIpadLandscapeMindmapBoot() {
-	function nudge() {
-		try {
-			if (!document.body || !document.body.classList.contains('projects-page')) return;
-			mskApplyProjectsIpadLandscapeDocumentMode();
-			if (typeof window.__mskProjectsRelayout === 'function') {
-				window.__mskProjectsRelayout();
-				return;
-			}
-			window.dispatchEvent(new Event('msk-relayout-projects-mindmap'));
-		} catch (_) {}
-	}
-	function schedule() {
-		nudge();
-		window.setTimeout(nudge, 60);
-		window.setTimeout(nudge, 240);
-		window.setTimeout(nudge, 600);
-	}
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', schedule);
-	} else {
-		schedule();
-	}
-	window.addEventListener('load', schedule);
-	window.addEventListener('resize', () => window.setTimeout(nudge, 80));
-	window.addEventListener('orientationchange', () => window.setTimeout(schedule, 120));
-})();
-
-/** Projekter: ekstra init-forsøg hvis DOMContentLoaded-handleren stoppede før initBrainAnimations. */
-(function mskProjectsMindmapGuaranteedRunner() {
-	function run() {
-		try {
-			if (!document.body || !document.body.classList.contains('projects-page')) return;
-			if (typeof window.__mskProjectsMindmapInitFn === 'function') window.__mskProjectsMindmapInitFn();
-		} catch (e) {
-			try {
-				console.error('mskProjectsMindmapGuaranteedRunner', e);
-			} catch (_) {}
-		}
-	}
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', () => {
-			setTimeout(run, 0);
-			setTimeout(run, 400);
-			setTimeout(run, 1200);
-		});
-	} else {
-		setTimeout(run, 0);
-		setTimeout(run, 400);
-		setTimeout(run, 1200);
-	}
-	window.addEventListener('load', run);
-})();
+/* Fjernet mskProjectsIpadLandscapeMindmapBoot + mskProjectsMindmapGuaranteedRunner — gav blink ved refresh. */

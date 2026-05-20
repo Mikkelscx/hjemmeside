@@ -5,13 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="theme-color" content="#ffffff">
     <title>Projects - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260519q">
+    <script>
+    (function () {
+      try {
+        var iw = window.innerWidth || 1;
+        var ih = window.innerHeight || 1;
+        var landscape =
+          window.matchMedia &&
+          (window.matchMedia('(orientation: landscape)').matches ||
+            window.matchMedia('(min-aspect-ratio: 1/1)').matches);
+        var max = Math.max(iw, ih);
+        var min = Math.min(iw, ih);
+        if (landscape && max >= 1024 && max <= 1366 && min >= 600) {
+          document.documentElement.classList.add(
+            'msk-projects-ipad-landscape',
+            'msk-projects-ipad-landscape-no-scroll',
+            'msk-mindmap-booting'
+          );
+        }
+      } catch (e) {}
+    })();
+    </script>
+    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260520c">
+    <style id="msk-mindmap-gate">
+    html.msk-mindmap-booting body.projects-page.sketchbook-theme .brainstorm-container {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+    </style>
+    <link rel="preload" as="image" href="assets/brain-cartoon.png">
+    <link rel="preload" as="image" href="assets/circle%20around%20repop%20by%20depop.webp">
+    <link rel="preload" as="image" href="assets/cirkel%20om%20brainfarts.webp">
+    <link rel="preload" as="image" href="assets/cirkel%20k%C3%B8bajer.webp">
+    <link rel="preload" as="image" href="assets/cirkel%20omkring%20naturli'.webp">
+    <link rel="preload" as="image" href="assets/cirkel%20omkring%20twister.webp">
+    <link rel="preload" as="image" href="assets/circle%20omkring%20durex%20x%20guess%20who.webp">
+    <link rel="preload" as="image" href="assets/unge%20mod%20uv%20cirkel.webp">
+    <link rel="preload" as="image" href="assets/circle%20omkring%20byens%20landhandel.webp">
     <style id="msk-projects-mindmap-guaranteed-css">
-    /* Projekter iPad landskab: mindmap SKAL være synligt (uafhængigt af cache) */
+    /* Projekter iPad landskab: layout — synlighed først når .msk-projects-mindmap-painted */
     @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
            (min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
       body.projects-page.sketchbook-theme .projects-mobile { display: none !important; }
-      body.projects-page.sketchbook-theme .brainstorm-container {
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -26,15 +63,21 @@
         background-image: none !important;
         pointer-events: none;
       }
-      body.projects-page.sketchbook-theme .brainstorm-container .brain,
-      body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
-      body.projects-page.sketchbook-theme .brainstorm-container .project-node {
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .brain,
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node {
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto;
       }
-      body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
         display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image,
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path {
         visibility: visible !important;
         opacity: 1 !important;
       }
@@ -160,9 +203,6 @@
             <!-- BYENS LANDHANDEL line is created dynamically by JavaScript -->
             
             
-            <!-- naturli* node — linje 1.webp from brain toward node (top: 20%, right: 15%) -->
-            <image href="assets/linje 1.webp" xlink:href="assets/linje 1.webp" x="50%" y="50%" width="25%" height="400" transform="translate(0, -200) rotate(-40.6)" class="mindmap-line mobile-mindmap-line" preserveAspectRatio="none" opacity="1" style="display: block !important; visibility: visible !important; image-rendering: crisp-edges; filter: none !important;"></image>
-            
             <!-- TWISTER line is created dynamically by JavaScript -->
             
             <!-- KØ-BAJER line is created dynamically by JavaScript -->
@@ -245,96 +285,6 @@
         </a>
     </div>
 
-    <script src="script.js?v=projects-mindmap-guaranteed-20260519q"></script>
-    <script id="msk-projects-mindmap-guaranteed-js">
-    /* Failsafe: ellipse-mindmap (hjernen + 8 projekter) — kører altid efter script.js */
-    (function () {
-      function tabletLandscapePx() {
-        var iw = window.innerWidth || 1;
-        var ih = window.innerHeight || 1;
-        var landscape =
-          window.matchMedia &&
-          (window.matchMedia('(orientation: landscape)').matches ||
-            window.matchMedia('(min-aspect-ratio: 1/1)').matches);
-        var max = Math.max(iw, ih);
-        var min = Math.min(iw, ih);
-        if (landscape && max >= 1024 && max <= 1366 && min >= 600) {
-          if (ih > iw) return { w: ih, h: iw };
-          if (iw > ih + 16) return { w: iw, h: ih };
-          return { w: max, h: min };
-        }
-        return { w: iw, h: ih };
-      }
-      function layoutEllipseFailsafe() {
-        if (!document.body || !document.body.classList.contains('projects-page')) return;
-        var dim = tabletLandscapePx();
-        if (dim.w < 1024 || dim.w > 1366) return;
-        document.documentElement.classList.add('msk-projects-ipad-landscape', 'msk-projects-ipad-landscape-no-scroll');
-        var container = document.querySelector('.brainstorm-container');
-        var brain = container && container.querySelector('.brain');
-        var nodes = container ? container.querySelectorAll('a.project-node') : [];
-        if (!container || !brain || !nodes.length) return;
-        if (brain.dataset.animInit === '1') return;
-        container.classList.remove('projects-mindmap--portrait');
-        container.classList.add('projects-mindmap--ipad-landscape');
-        var w = dim.w;
-        var h = dim.h;
-        var navH = 52;
-        try {
-          var nb = document.querySelector('.navbar');
-          if (nb && nb.getBoundingClientRect) navH = Math.round(nb.getBoundingClientRect().bottom);
-        } catch (e) {}
-        var cx = Math.round(w / 2);
-        var bandTop = navH + 12;
-        var bandBottom = h - 12;
-        var cy = Math.round((bandTop + bandBottom) / 2);
-        brain.style.setProperty('position', 'absolute', 'important');
-        brain.style.setProperty('left', cx + 'px', 'important');
-        brain.style.setProperty('top', cy + 'px', 'important');
-        brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-        brain.style.setProperty('visibility', 'visible', 'important');
-        brain.style.setProperty('opacity', '1', 'important');
-        var rx = Math.max(128, w / 2 - 172);
-        var ry = Math.min(Math.max(118, h / 2 - 152), h * 0.39);
-        rx = Math.max(rx, Math.round(ry * 1.18));
-        rx = Math.min(rx, w * 0.41);
-        var n = nodes.length;
-        var start = -Math.PI / 2;
-        for (var i = 0; i < n; i++) {
-          var ang = start + (i * 2 * Math.PI) / n;
-          var x = Math.max(40, Math.min(w - 40, cx + rx * Math.cos(ang)));
-          var y = Math.max(navH + 20, Math.min(h - 36, cy + ry * Math.sin(ang)));
-          nodes[i].style.setProperty('position', 'absolute', 'important');
-          nodes[i].style.setProperty('left', Math.round(x) + 'px', 'important');
-          nodes[i].style.setProperty('top', Math.round(y) + 'px', 'important');
-          nodes[i].style.setProperty('right', 'auto', 'important');
-          nodes[i].style.setProperty('bottom', 'auto', 'important');
-          nodes[i].style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-          nodes[i].style.setProperty('visibility', 'visible', 'important');
-          nodes[i].style.setProperty('opacity', '1', 'important');
-        }
-        container.dataset.mskMindmapFailsafe = w + 'x' + h;
-      }
-      function kick() {
-        layoutEllipseFailsafe();
-        try {
-          if (typeof window.__mskProjectsMindmapInitFn === 'function') window.__mskProjectsMindmapInitFn();
-          else if (typeof window.__mskProjectsRelayout === 'function') window.__mskProjectsRelayout();
-          else window.dispatchEvent(new Event('msk-relayout-projects-mindmap'));
-        } catch (e) {}
-      }
-      function schedule() {
-        kick();
-        setTimeout(kick, 80);
-        setTimeout(kick, 350);
-        setTimeout(kick, 900);
-      }
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule);
-      else schedule();
-      window.addEventListener('load', schedule);
-      window.addEventListener('resize', function () { setTimeout(kick, 120); });
-      window.addEventListener('orientationchange', function () { setTimeout(schedule, 150); });
-    })();
-    </script>
+    <script src="script.js?v=projects-mindmap-guaranteed-20260520c"></script>
 </body>
 </html> 

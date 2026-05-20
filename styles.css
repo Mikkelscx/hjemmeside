@@ -6919,9 +6919,20 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
     body.projects-page.sketchbook-theme .projects-mobile {
         display: none !important;
     }
-    body.projects-page.sketchbook-theme .brainstorm-container {
+    html:not(.msk-projects-mindmap-painted) body.projects-page.sketchbook-theme .brainstorm-container {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    html:not(.msk-projects-mindmap-painted) body.projects-page.sketchbook-theme .brainstorm-container * {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;
         visibility: visible !important;
+        opacity: 1 !important;
         position: fixed !important;
         inset: 0 !important;
         z-index: 3 !important;
@@ -6939,13 +6950,13 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         transform-origin: 50% 50%;
         transform: none !important;
     }
-    body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
         width: var(--projectsBrainSize) !important;
         height: var(--projectsBrainSize) !important;
     }
-    body.projects-page.sketchbook-theme .brainstorm-container .brain,
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node,
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .brain,
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -6974,14 +6985,14 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
     body.projects-page.sketchbook-theme .brainstorm-container .node-label {
         display: none !important;
     }
-    body.projects-page.sketchbook-theme .brainstorm-container .brain,
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title,
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title--image,
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .brain,
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title,
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title--image,
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
         opacity: 1 !important;
         visibility: visible !important;
     }
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+    html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
         display: block !important;
         width: 100% !important;
         height: auto !important;
@@ -15442,8 +15453,23 @@ html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .projects-m
     display: none !important;
 }
 
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container,
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--ipad-landscape {
+html.msk-projects-ipad-landscape:not(.msk-projects-mindmap-painted) body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-landscape-no-scroll:not(.msk-projects-mindmap-painted) body.projects-page.sketchbook-theme .brainstorm-container {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+html.msk-projects-ipad-landscape:not(.msk-projects-mindmap-painted) body.projects-page.sketchbook-theme .brainstorm-container *,
+html.msk-projects-ipad-landscape-no-scroll:not(.msk-projects-mindmap-painted) body.projects-page.sketchbook-theme .brainstorm-container * {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--ipad-landscape {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -15469,9 +15495,9 @@ html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm
     transform: none !important;
 }
 
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .brain,
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node,
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .brain,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto;
@@ -15545,8 +15571,8 @@ html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .
     transform: translate(-50%, -50%) rotate(-1deg);
     display: block !important;
     visibility: visible !important;
-    width: 72px;
-    max-width: 78%;
+    width: 44px;
+    max-width: 52%;
     height: auto;
     margin: 0;
     pointer-events: none;
@@ -15560,10 +15586,10 @@ html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .
     z-index: 1;
 }
 
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title,
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title--image,
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img,
-html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title--image,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img,
+html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
@@ -15635,7 +15661,9 @@ html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-    transform: translateY(14px) scale(var(--projectsIpadLsTitleScale)) scaleX(1.04) !important;
+    /* Kun ordet TWISTER — cirkel + D&AD uændret (positiv translateY = ned) */
+    transform: translateY(112px) scale(var(--projectsIpadLsTitleScale)) scaleX(1.04) !important;
+    transform-origin: center center !important;
 }
 
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--kobajer,
