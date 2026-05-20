@@ -34,6 +34,36 @@ function mskProjectsLayoutViewportBox() {
 	}
 }
 
+/** Synlig viewport til mindmap (inner* + visualViewport) — vigtig i iPad DevTools landskab. */
+function mskProjectsVisibleViewportPx() {
+	try {
+		if (
+			document.body &&
+			document.body.classList.contains('projects-page') &&
+			mskIsProjectsTabletLandscapeViewport()
+		) {
+			const dim = mskProjectsTabletLandscapeLayoutPx();
+			return { w: dim.w, h: dim.h };
+		}
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		const vv = window.visualViewport;
+		if (vv && vv.width >= 200 && vv.height >= 200) {
+			return {
+				w: Math.round(Math.max(1, Math.min(iw, vv.width))),
+				h: Math.round(Math.max(1, Math.min(ih, vv.height))),
+			};
+		}
+		const lv = mskProjectsLayoutViewportBox();
+		return {
+			w: Math.round(Math.max(1, Math.min(iw, lv.w))),
+			h: Math.round(Math.max(1, Math.min(ih, lv.h))),
+		};
+	} catch {
+		return mskProjectsLayoutViewportBox();
+	}
+}
+
 /**
  * Chrome DevTools (mobil-emulering): `visualViewport.height` kan fejlagtigt blive den **smalle** dimension (~414px),
  * så `--vh` sættes til bredden i stedet for højden → sider med `min-height: var(--vh)` kollapser og spacing ser “død” ud.
@@ -112,6 +142,7 @@ function mskIsProjectsShortLandscapeViewport() {
 function mskIsProjectsTabletPortraitViewport() {
 	try {
 		if (!window.matchMedia) return false;
+		if (mskIsProjectsTabletLandscapeViewport()) return false;
 		const mqLegacyA = window.matchMedia(
 			'(min-width: 641px) and (max-width: 1024px) and (orientation: portrait)'
 		);
@@ -135,6 +166,104 @@ function mskIsProjectsTabletPortraitViewport() {
 	}
 }
 
+/**
+ * DevTools iPad landskab: orientation: landscape matcher, men innerWidth/innerHeight kan stadig være byttet (1024×1366).
+ * Returner layout-bredde/højde med korteste kant som højde når vi er i tablet-landskab-tilstand.
+ */
+function mskProjectsTabletLandscapeLayoutPx() {
+	try {
+		let iw = Math.round(Math.max(1, window.innerWidth || 0));
+		let ih = Math.round(Math.max(1, window.innerHeight || 0));
+		const vv = window.visualViewport;
+		if (vv && vv.width >= 200 && vv.height >= 200) {
+			iw = Math.round(Math.max(1, Math.min(iw, vv.width)));
+			ih = Math.round(Math.max(1, Math.min(ih, vv.height)));
+		}
+		const landscapeMq =
+			!!(
+				window.matchMedia &&
+				(window.matchMedia('(orientation: landscape)').matches ||
+					window.matchMedia('(min-aspect-ratio: 1/1)').matches)
+			);
+		const inTabletBand =
+			Math.max(iw, ih) >= 1024 &&
+			Math.max(iw, ih) <= 1366 &&
+			Math.min(iw, ih) >= 600;
+		if (
+			(document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
+				document.documentElement.classList.contains('msk-projects-ipad-landscape-no-scroll')) &&
+			ih > iw
+		) {
+			return { w: ih, h: iw, swapped: true };
+		}
+		if (landscapeMq && inTabletBand && ih > iw) {
+			return { w: ih, h: iw, swapped: true };
+		}
+		if (iw > ih + 16 && iw >= 1024 && iw <= 1366) return { w: iw, h: ih, swapped: false };
+		if (ih > iw + 16 && ih >= 1024 && ih <= 1366) return { w: ih, h: iw, swapped: true };
+		return { w: iw, h: ih, swapped: false };
+	} catch (_) {
+		return {
+			w: Math.round(Math.max(1, window.innerWidth || 1)),
+			h: Math.round(Math.max(1, window.innerHeight || 1)),
+			swapped: false,
+		};
+	}
+}
+
+/**
+ * Projekter: iPad / tablet landskab (1024–1366 bred) — desktop-ellipse, ikke lodret portræt-grid.
+ */
+function mskIsProjectsTabletLandscapeViewport() {
+	try {
+		const dim = mskProjectsTabletLandscapeLayoutPx();
+		if (dim.w >= 1024 && dim.w <= 1366 && dim.h >= 600 && dim.w > dim.h + 16) return true;
+		if (!window.matchMedia) return false;
+		const mqA = window.matchMedia(
+			'(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape)'
+		);
+		const mqB = window.matchMedia(
+			'(min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1)'
+		);
+		return !!((mqA && mqA.matches) || (mqB && mqB.matches));
+	} catch (_) {
+		return false;
+	}
+}
+
+/** iPad landskab: ellipse-mindmap (hjernen i midten, 8 projekter i ring) — aldrig portræt-grid. */
+function mskApplyProjectsIpadLandscapeDocumentMode() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return false;
+		let on = mskIsProjectsTabletLandscapeViewport();
+		/* DevTools: html-klasser kan sættes mens inner* stadig er byttet — tjek begge */
+		try {
+			const dim = mskProjectsTabletLandscapeLayoutPx();
+			if (dim.w >= 1024 && dim.w <= 1366 && dim.h >= 600 && dim.w > dim.h + 16) on = true;
+		} catch (_) {}
+		document.documentElement.classList.toggle('msk-projects-ipad-landscape', on);
+		document.documentElement.classList.toggle('msk-projects-ipad-landscape-no-scroll', on);
+		const container = document.querySelector('.brainstorm-container');
+		if (container) {
+			if (on) container.classList.remove('projects-mindmap--portrait');
+			container.classList.toggle('projects-mindmap--ipad-landscape', on);
+		}
+		return on;
+	} catch (_) {
+		return false;
+	}
+}
+
+(function mskProjectsIpadLandscapeBootstrap() {
+	function tick() {
+		mskApplyProjectsIpadLandscapeDocumentMode();
+	}
+	tick();
+	window.addEventListener('resize', tick);
+	window.addEventListener('orientationchange', () => window.setTimeout(tick, 40));
+	document.addEventListener('DOMContentLoaded', tick);
+})();
+
 /** Projekter desktop: “Under ombygning” + pil lige under BRAINFARTS-cirklen (følger SVG-ring efter layout). */
 function positionBrainfartsBuildNote() {
 	try {
@@ -142,7 +271,11 @@ function positionBrainfartsBuildNote() {
 		const build = document.querySelector('.brainfarts-build');
 		if (!build) return;
 		const w = mskProjectsLayoutViewportBox().w || 0;
-		if (w < 1025 || mskIsProjectsShortLandscapeViewport()) {
+		if (
+			w < 1025 ||
+			mskIsProjectsShortLandscapeViewport() ||
+			mskIsProjectsTabletLandscapeViewport()
+		) {
 			build.style.removeProperty('left');
 			build.style.removeProperty('top');
 			build.style.removeProperty('right');
@@ -433,6 +566,12 @@ function mskSketchbookPaperLinesDraw() {
 					document.documentElement.style.removeProperty('--vw');
 					lastVhPx = -1;
 					lastVwPx = -1;
+				} else if (projectsPage && sketch && mskIsProjectsTabletLandscapeViewport()) {
+					/* Projekter iPad landskab: brug 100dvh i CSS — undgå ødelagt inline --vh ved dimension-swap */
+					document.documentElement.style.removeProperty('--vh');
+					document.documentElement.style.removeProperty('--vw');
+					lastVhPx = -1;
+					lastVwPx = -1;
 				} else if (applyVhVwPx) {
 					if (!vhPxOk) {
 						document.documentElement.style.removeProperty('--vh');
@@ -467,6 +606,13 @@ function mskSketchbookPaperLinesDraw() {
 					window.matchMedia('(min-width: 641px) and (max-width: 1366px)').matches &&
 					window.matchMedia('(orientation: portrait)').matches &&
 					!contactIpadLandscape;
+				const projectsIpadLandscape =
+					projectsPage &&
+					sketch &&
+					window.matchMedia &&
+					window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches &&
+					(window.matchMedia('(orientation: landscape)').matches ||
+						window.matchMedia('(min-aspect-ratio: 1/1)').matches);
 				try {
 					document.documentElement.classList.toggle(
 						'msk-contact-ipad-landscape-no-scroll',
@@ -476,6 +622,7 @@ function mskSketchbookPaperLinesDraw() {
 						'msk-contact-ipad-portrait-no-scroll',
 						!!contactIpadPortrait
 					);
+					mskApplyProjectsIpadLandscapeDocumentMode();
 				} catch (_) {}
 				/* Papir (::before) skal følge synlig højde ved pinch-zoom — ellers klippes/kollapser linjer */
 				if (sketch && contactSketchbookPage) {
@@ -486,6 +633,13 @@ function mskSketchbookPaperLinesDraw() {
 							mskProjectsLayoutViewportBox().h
 						)
 					);
+					if (paperH !== lastSketchPaperMinHPx) {
+						document.documentElement.style.setProperty('--sketchPaperMinH', paperH + 'px');
+						lastSketchPaperMinHPx = paperH;
+					}
+				} else if (sketch && projectsPage) {
+					/* Projekter: papirhøjde = synlig viewport (aldrig oppustet rh/bred kant) */
+					const paperH = Math.round(Math.max(200, window.innerHeight || 0));
 					if (paperH !== lastSketchPaperMinHPx) {
 						document.documentElement.style.setProperty('--sketchPaperMinH', paperH + 'px');
 						lastSketchPaperMinHPx = paperH;
@@ -4424,9 +4578,59 @@ document.addEventListener('DOMContentLoaded', function() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 
+			const forceIpadLandscapeEllipse = mskApplyProjectsIpadLandscapeDocumentMode();
+			const ipadDocEllipse =
+				forceIpadLandscapeEllipse ||
+				document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
+				document.documentElement.classList.contains('msk-projects-ipad-landscape-no-scroll');
+			if (ipadDocEllipse) {
+				try {
+					container.classList.remove('projects-mindmap--portrait');
+				} catch (_) {}
+			}
+
 			const containerRectForLayout = container.getBoundingClientRect();
-			const layoutW = Math.round(Math.max(1, container.clientWidth || containerRectForLayout.width));
-			const layoutH = Math.round(Math.max(1, container.clientHeight || containerRectForLayout.height));
+			const lv = mskProjectsLayoutViewportBox();
+			const vis = mskProjectsVisibleViewportPx();
+			const iw = vis.w;
+			const ih = vis.h;
+			let tabletLandscapeLayout = false;
+			try {
+				tabletLandscapeLayout = !!mskIsProjectsTabletLandscapeViewport();
+			} catch (_) {
+				tabletLandscapeLayout = false;
+			}
+			if (!tabletLandscapeLayout && iw > ih + 16 && iw >= 1024 && iw <= 1366) {
+				tabletLandscapeLayout = true;
+			}
+			const scrollLockLandscape = document.documentElement.classList.contains(
+				'msk-projects-ipad-landscape-no-scroll'
+			);
+			/*
+			 * Fixed fullscreen-container: clientHeight kan følge oppustet dokument (papir min-height)
+			 * eller kollapse til 0 når html/body er position:fixed → tom/scrollable side.
+			 * iPad landskab: brug altid synlig viewport (inner*), ikke container.clientHeight.
+			 */
+			let layoutW;
+			let layoutH;
+			if (tabletLandscapeLayout || scrollLockLandscape || ipadDocEllipse) {
+				const dim = mskProjectsTabletLandscapeLayoutPx();
+				layoutW = dim.w;
+				layoutH = dim.h;
+			} else {
+				layoutW = Math.round(
+					Math.max(
+						1,
+						Math.min(lv.w, iw, container.clientWidth || containerRectForLayout.width)
+					)
+				);
+				layoutH = Math.round(
+					Math.max(
+						1,
+						Math.min(lv.h, ih, container.clientHeight || containerRectForLayout.height)
+					)
+				);
+			}
 			const w = layoutW;
 			const h = layoutH;
 			let narrow = false;
@@ -4452,23 +4656,25 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (!touchLandscape && mskIsProjectsShortLandscapeViewport()) touchLandscape = true;
 			} catch {}
 			/* Touch-landscape layout-tweaks (flad ry, mindre padding) — ikke i kort landscape; dér følger vi desktop */
-			const touchLayout = touchLandscape && !isShortLandscape;
+			let touchLayout = touchLandscape && !isShortLandscape;
 
 			const nodeArray = Array.from(nodes);
 			const scale = 1;
 
-			const lv = mskProjectsLayoutViewportBox();
-			const iw = lv.w;
-			const ih = lv.h;
 			const cw = layoutW;
 			/* Under rotation kan clientWidth/Height kort give ih<iw selv i portræt — orientation media matcher CSS */
 			let portraitOrientation = false;
+			let landscapeOrientation = false;
 			try {
 				portraitOrientation = !!(window.matchMedia && window.matchMedia('(orientation: portrait)').matches);
+				landscapeOrientation = !!(window.matchMedia && window.matchMedia('(orientation: landscape)').matches);
 			} catch (_) {
 				portraitOrientation = false;
+				landscapeOrientation = false;
 			}
-			if (!portraitOrientation && ih >= iw) portraitOrientation = true;
+			/* Kun smal telefon: aspect-fallback — ikke tablet (fx byttede mål 1024×1366 i landskab gav portræt-grid) */
+			if (!portraitOrientation && ih >= iw && cw <= 640) portraitOrientation = true;
+			if (landscapeOrientation || mskIsProjectsTabletLandscapeViewport()) portraitOrientation = false;
 			let phonePortraitMedia = false;
 			try {
 				phonePortraitMedia = !!(
@@ -4477,9 +4683,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				);
 			} catch (_) {}
 			const usePortraitSketchGrid =
+				!ipadDocEllipse &&
+				!forceIpadLandscapeEllipse &&
 				document.body &&
 				document.body.classList.contains('projects-page') &&
 				portraitOrientation &&
+				!mskIsProjectsTabletLandscapeViewport() &&
 				(phonePortraitMedia || cw <= 640 || mskIsProjectsTabletPortraitViewport());
 
 			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) like the live site; ellipse for landscape / wide.
@@ -4694,8 +4903,35 @@ document.addEventListener('DOMContentLoaded', function() {
 			const brainRect = brain.getBoundingClientRect();
 			const svgForLayout = document.querySelector('.connecting-lines');
 			const brainCenter = svgCenterFromRect(svgForLayout, brainRect, containerRect);
-			const centerX = Math.round(brainCenter.x);
-			const centerY = Math.round(brainCenter.y);
+			let centerX = Math.round(brainCenter.x);
+			let centerY = Math.round(brainCenter.y);
+
+			let tabletLandscape = !!ipadDocEllipse || !!forceIpadLandscapeEllipse;
+			try {
+				if (!tabletLandscape) tabletLandscape = !!mskIsProjectsTabletLandscapeViewport();
+			} catch (_) {
+				tabletLandscape = !!ipadDocEllipse;
+			}
+			if (tabletLandscape) touchLayout = false;
+			if (tabletLandscape) {
+				let navH = 52;
+				try {
+					const nb = document.querySelector('.navbar');
+					if (nb && nb.getBoundingClientRect) navH = Math.round(nb.getBoundingClientRect().bottom);
+				} catch (_) {}
+				const bandTop = navH + Math.round(12 * scale);
+				const bandBottom = layoutH - Math.round(12 * scale);
+				centerY = Math.round((bandTop + bandBottom) / 2);
+				centerX = Math.round(layoutW / 2);
+				try {
+					brain.style.setProperty('position', 'absolute', 'important');
+					brain.style.setProperty('left', `${centerX}px`, 'important');
+					brain.style.setProperty('top', `${centerY}px`, 'important');
+					brain.style.setProperty('right', 'auto', 'important');
+					brain.style.setProperty('bottom', 'auto', 'important');
+					brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+				} catch (_) {}
+			}
 
 			// Use an ellipse ring (rx > ry). On phones, drop the desktop min radius (200px) or left/right nodes clip off-screen.
 			/* Mindre side-padding → større rx → ringen bredere mod venstre/højre */
@@ -4704,6 +4940,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			let extraRy = 120;
 			let minRx = 200;
 			let minRy = 170;
+			if (tabletLandscape) {
+				/* iPad landskab: stor ellipse — bruger både bredde og højde på åben notesbog */
+				paddingX = 172;
+				paddingY = 152;
+				extraRy = 0;
+				minRx = 128;
+				minRy = 118;
+			}
 			if (narrow) {
 				paddingX = Math.max(36, w * 0.10);
 				paddingY = Math.max(42, h * 0.09);
@@ -4717,6 +4961,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			let rx = Math.max(minRx, (w / 2) - paddingX);
 			let ry = Math.max(minRy, (h / 2) - paddingY) + extraRy;
+			if (tabletLandscape) {
+				ry = Math.min(ry, Math.max(minRy, layoutH * 0.39));
+				rx = Math.min(rx, layoutW * 0.41);
+				/* Bred notesbog: lidt bredere end høj (typisk rx/ry ≈ 1.18 på 1366×1024) */
+				rx = Math.max(rx, Math.round(ry * 1.18));
+				rx = Math.min(rx, layoutW * 0.41);
+			}
 			if (narrow) {
 				const capX = Math.max(64, w * 0.36);
 				const capY = Math.max(72, h * 0.36);
@@ -4783,18 +5034,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				/* Øvre bue: mindre træk mod midten i kort landscape → mere plads til top/bund */
 				if (Math.sin(angle) < -0.12) {
-					const topPull = shortLs ? 16 : isShortLandscape ? 12 : 26;
+					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 12 : 26;
 					y += Math.round(topPull * scale);
 				}
 
 				if (Math.sin(angle) > 0.38) {
-					const botPull = shortLs ? 0 : isShortLandscape ? 22 : 38;
+					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 22 : 38;
 					y -= botPull;
 				}
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
-				if (href.includes('repop')) y += touchLayout ? 14 : 35;
+				if (href.includes('repop')) y += touchLayout ? 14 : tabletLandscape ? 12 : 35;
 				/* Kort mobil-landscape: cirkel + indhold lidt op */
 				if (href.includes('repop') && isShortLandscape) y -= 20;
 				/* Kort landscape: skub højre-side (Naturli / Durex / Unge) fra hinanden — mindre overlap på tværs af enheder */
@@ -4811,9 +5062,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						x += 6;
 					}
 				}
-				/* Desktop (≥1025): venstresidens bobler længere ud mod papirmargin — kun ellipse-layout */
+				/* Desktop (≥1025): venstresidens bobler længere ud — ikke iPad landskab (hold ring cirkulær) */
 				try {
-					if (!narrow && !isShortLandscape && w >= 1025) {
+					if (!tabletLandscape && !narrow && !isShortLandscape && w >= 1025) {
 						const leftPush = Math.round(56 * scale);
 						if (
 							href.includes('byens-landhandel') ||
@@ -4824,22 +5075,68 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					}
 				} catch {}
-				/* Desktop: UNGE MOD UV — ned + mod højre (ellipse-node ellers for tæt på Durex / midten) */
+				/* Desktop: UNGE MOD UV — ned + mod højre — ikke iPad landskab */
 				try {
-					if (!narrow && !isShortLandscape && w >= 1025 && href.includes('unge-mod-uv')) {
+					if (
+						!tabletLandscape &&
+						!narrow &&
+						!isShortLandscape &&
+						w >= 1025 &&
+						href.includes('unge-mod-uv')
+					) {
 						y += Math.round(46 * scale);
 						x += Math.round(56 * scale);
 					}
 				} catch {}
-				/* Desktop: TWISTER — tekst + ring lidt længere ned i ovalen (tekst finjusteres i CSS translateY) */
+				/* Desktop: TWISTER — lidt ned — ikke iPad landskab */
 				try {
-					if (!narrow && !isShortLandscape && w >= 1025 && href.includes('twister')) {
+					if (!tabletLandscape && !narrow && !isShortLandscape && w >= 1025 && href.includes('twister')) {
 						y += Math.round(14 * scale);
 					}
 				} catch {}
 
 				x = Math.round(x);
 				y = Math.round(y);
+
+				if (tabletLandscape) {
+					if (href.includes('repop')) {
+						x += Math.round(4 * scale);
+						y += Math.round(4 * scale);
+					}
+					if (href.includes('naturli')) {
+						x += Math.round(10 * scale);
+						y -= Math.round(6 * scale);
+					}
+					if (href.includes('byens-landhandel') || href.includes('byens')) {
+						x -= Math.round(4 * scale);
+						y -= Math.round(4 * scale);
+					}
+					if (href.includes('brainfarts')) {
+						x -= Math.round(2 * scale);
+					}
+					if (href.includes('kobajer')) {
+						x -= Math.round(2 * scale);
+						y += Math.round(6 * scale);
+					}
+					if (href.includes('unge-mod-uv')) {
+						x += Math.round(6 * scale);
+						y += Math.round(4 * scale);
+					}
+					if (href.includes('durex')) {
+						x += Math.round(6 * scale);
+					}
+					const padX = Math.round(22 * scale);
+					let bandTopClamp = Math.round(44 * scale);
+					try {
+						const nb = document.querySelector('.navbar');
+						if (nb && nb.getBoundingClientRect) {
+							bandTopClamp = Math.max(bandTopClamp, Math.round(nb.getBoundingClientRect().bottom + 14));
+						}
+					} catch (_) {}
+					const bandBottomClamp = layoutH - Math.round(18 * scale);
+					x = Math.max(padX, Math.min(layoutW - padX, x));
+					y = Math.max(bandTopClamp, Math.min(bandBottomClamp, y));
+				}
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -4885,6 +5182,33 @@ document.addEventListener('DOMContentLoaded', function() {
 			createAndPositionKobajerArrow();
 			ensureProjectsMobileInlineBadges();
 			hideStandaloneDandDForProjectsMindmapPortrait(container);
+			try {
+				if (ipadDocEllipse || tabletLandscape) {
+					container.classList.add('projects-mindmap--ready');
+					container.dataset.mskMindmapLayout = `${layoutW}x${layoutH}`;
+				}
+			} catch (_) {}
+			try {
+				ensureBrainfartsInlineSignForTabletLandscape();
+			} catch (_) {}
+		}
+
+		/** iPad landskab: “Under ombygning” inde i BRAINFARTS-cirklen — ikke den store desktop-pil. */
+		function ensureBrainfartsInlineSignForTabletLandscape() {
+			try {
+				if (!mskIsProjectsTabletLandscapeViewport()) return;
+				const bf = document.querySelector('a[href*="brainfarts"]');
+				if (!bf) return;
+				if (!bf.querySelector('.brainfarts-build__sign--inline')) {
+					const img = document.createElement('img');
+					img.className = 'brainfarts-build__sign brainfarts-build__sign--inline';
+					img.alt = '';
+					img.draggable = false;
+					img.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
+					img.setAttribute('aria-hidden', 'true');
+					bf.appendChild(img);
+				}
+			} catch (_) {}
 		}
 
 		/** Mobile CSS hides standalone Kravling/D&AD badges; show copies inside REPOP / KØ-BAJER / TWISTER / BRAINFARTS nodes. */
@@ -5385,7 +5709,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			const containerRect = container.getBoundingClientRect();
 			const r = kobajerNode.getBoundingClientRect();
 
-			const width = 66; // shorter (scaled with KØ-BAJER ring ~0.78)
+			let width = 66;
+			try {
+				if (mskIsProjectsTabletLandscapeViewport()) width = 52;
+			} catch (_) {}
 			const gap = -35; // move slightly down
 			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - 42; // more to the right
 			const top = (r.bottom - containerRect.top) + gap;
@@ -7040,7 +7367,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		const scale = 1;
 		const s = (n) => n * scale;
 		/* Kort landscape: mindre håndtegnede cirkler (SVG) så de matcher mindre titelbilleder */
-		const assetS = mskIsProjectsShortLandscapeViewport() ? 0.76 : 1;
+		let assetS = 1;
+		try {
+			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.76;
+		} catch (_) {
+			assetS = 1;
+		}
 		function isProjectsPhoneLandscape() {
 			try {
 				const { w, h } = mskViewportSize();
@@ -7068,6 +7400,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const w = mskViewportSize().w || mskProjectsLayoutViewportBox().w || 0;
 				if (w < 1025) return 1;
 				if (mskIsProjectsShortLandscapeViewport()) return 1;
+				if (mskIsProjectsTabletLandscapeViewport()) return 1.16;
 				return 1.14;
 			} catch (_) {
 				return 1;
@@ -7081,6 +7414,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			ipadPortraitRings =
 				!!mskIsProjectsTabletPortraitViewport() &&
 				container.classList.contains('projects-mindmap--portrait');
+		} catch (_) {}
+
+		/** iPad 1024–1366 landskab + ellipse-mindmap: større håndtegnede ringe om titlerne — kun her */
+		let ipadLandscapeRings = false;
+		try {
+			ipadLandscapeRings =
+				!!mskIsProjectsTabletLandscapeViewport() &&
+				!container.classList.contains('projects-mindmap--portrait');
 		} catch (_) {}
 
 		currentNodes.forEach((node, index) => {
@@ -7154,9 +7495,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const bfShortLsStretchX = bfShortLs ? 1.24 : 1;
 				/* iPad portræt mindmap: ekstra vandret på ring + fill; rød linje sit eget step så den ikke vokser med.
 				 * preserveAspectRatio none på <image> — ellers default "meet" bevarer billedformat og æter ikke bw/bh uafhængigt. */
-				const bfIpadMulWRing = ipadPortraitRings ? 3.02 : 1;
-				const bfIpadMulWLine = ipadPortraitRings ? 1.9 : 1;
-				const bfIpadMulH = ipadPortraitRings ? 1.8 : 1;
+				const bfIpadMulWRing = ipadPortraitRings ? 3.02 : ipadLandscapeRings ? 1.2 : 1;
+				const bfIpadMulWLine = ipadPortraitRings ? 1.9 : ipadLandscapeRings ? 1.12 : 1;
+				const bfIpadMulH = ipadPortraitRings ? 1.8 : ipadLandscapeRings ? 1.16 : 1;
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";
@@ -7294,6 +7635,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (window.matchMedia('(max-width: 640px)').matches) repopMul = 0.93;
 					}
 					if (ipadPortraitRings) repopMul = Math.max(repopMul, 0.96);
+					if (ipadLandscapeRings) repopMul = Math.max(repopMul, 1.02);
 				} catch {}
 
 				const baseW = s(380) * assetS;
@@ -7308,6 +7650,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (ipadPortraitRings) {
 						padXPx = Math.max(padXPx, 80);
 						padYPortrait = repBadgeRect ? Math.max(padYPortrait, 100) : Math.max(padYPortrait, 82);
+					}
+					if (ipadLandscapeRings) {
+						padXPx = Math.max(padXPx, 76);
+						padYPortrait = repBadgeRect ? Math.max(padYPortrait, 96) : Math.max(padYPortrait, 72);
 					}
 				} catch {}
 				const padX = s(padXPx) * assetS;
@@ -7335,7 +7681,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Lidt bredere horizontalt (oval) — kun stretch på X, som NATURLI */
 				let repopStretchX = 1.12;
 				if (ipadPortraitRings) repopStretchX = 1.92;
+				else if (ipadLandscapeRings) repopStretchX = 1.34;
 				w *= repopStretchX;
+				if (ipadLandscapeRings) {
+					w *= 1.06;
+					h *= 1.05;
+				}
 
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
 				image.setAttribute('y', String(repCenterY - (h / 2)));
@@ -7460,6 +7811,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						w *= 2.02;
 						h *= 1.48;
 					}
+					if (ipadLandscapeRings) {
+						w *= 1.28;
+						h *= 1.2;
+					}
 				} catch (_) {}
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
@@ -7531,10 +7886,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (
 						iwDesk >= 1025 &&
 						!portraitNaturli &&
-						!mskIsProjectsShortLandscapeViewport()
+						!mskIsProjectsShortLandscapeViewport() &&
+						!ipadLandscapeRings
 					) {
 						naturliMul *= 0.85;
 					}
+					if (ipadLandscapeRings) naturliMul = Math.max(naturliMul, 1.04);
 				} catch {}
 				/* Bredere horizontalt (apostrof + tekst inde i ringen) — kun stretch på X (nH uden stretch) */
 				let naturliStretchX = 1.22;
@@ -7542,6 +7899,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (mskIsProjectsShortLandscapeViewport()) naturliStretchX = 1.34;
 					else if (portraitNaturli) naturliStretchX = 1.48;
 					if (ipadPortraitRings) naturliStretchX = Math.max(naturliStretchX, 3.5);
+					else if (ipadLandscapeRings) naturliStretchX = Math.max(naturliStretchX, 1.48);
 				} catch {}
 				/* Desktop: bredere oval (kun X) — ikke tablet/mobil */
 				try {
@@ -7549,13 +7907,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (
 						iwWide >= 1025 &&
 						!portraitNaturli &&
-						!mskIsProjectsShortLandscapeViewport()
+						!mskIsProjectsShortLandscapeViewport() &&
+						!ipadLandscapeRings
 					) {
 						naturliStretchX *= 1.28;
 					}
 				} catch {}
+				const naturliLsMulH = ipadLandscapeRings ? 1.1 : 1;
 				const nW = 240 * naturliMul * projectsDesktopRingMul * naturliStretchX;
-				const nH = 140 * naturliMul * projectsDesktopRingMul;
+				const nH = 140 * naturliMul * projectsDesktopRingMul * naturliLsMulH;
 				// Create an image element for NATURLI'
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring naturli'.webp";
@@ -7617,11 +7977,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					if (portrait) ungeMul = 0.84;
 					if (ipadPortraitRings) ungeMul = Math.max(ungeMul, 0.94);
+					if (ipadLandscapeRings) ungeMul = Math.max(ungeMul, 1.06);
 				} catch {}
 				let ungeStretchX = 1;
 				if (ipadPortraitRings) ungeStretchX = 1.82;
+				else if (ipadLandscapeRings) ungeStretchX = 1.38;
+				const ungeLsMulH = ipadLandscapeRings ? 1.1 : 1;
 				const uw = 320 * ungeMul * projectsDesktopRingMul * ungeStretchX;
-				const uh = 150 * ungeMul * projectsDesktopRingMul;
+				const uh = 150 * ungeMul * projectsDesktopRingMul * ungeLsMulH;
 				image.setAttribute('x', centerX - uw / 2);
 				image.setAttribute('y', centerY - uh / 2);
 				image.setAttribute('width', String(uw));
@@ -7715,6 +8078,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (ipadPortraitRings) {
 					w *= 1.84;
 					h *= 1.52;
+				}
+				if (ipadLandscapeRings) {
+					w *= 1.22;
+					h *= 1.14;
 				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
 				let circleDy = landscapeMindmap ? s(48) : s(20);
@@ -8372,6 +8739,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			mskProjectsMindmapLastLayoutIw = _lv0.w;
 			mskProjectsMindmapLastLayoutIh = _lv0.h;
 		} catch {}
+		try {
+			window.__mskProjectsRelayout = runProjectsMindmapLayoutTick;
+		} catch (_) {}
+		runProjectsMindmapLayoutTick();
+		window.setTimeout(runProjectsMindmapLayoutTick, 80);
+		window.setTimeout(runProjectsMindmapLayoutTick, 320);
+
+		if (!document.documentElement.dataset.mskProjectsMindmapRelisten) {
+			document.documentElement.dataset.mskProjectsMindmapRelisten = '1';
+			window.addEventListener('msk-relayout-projects-mindmap', () => {
+				try {
+					mskProjectsMindmapLastLayoutIw = -1;
+					mskProjectsMindmapLastLayoutIh = -1;
+				} catch {}
+				try {
+					mskApplyProjectsIpadLandscapeDocumentMode();
+					runProjectsMindmapLayoutTick();
+				} catch {}
+			});
+		}
+
 		window.addEventListener('resize', refreshProjectsMindmapLayout);
 		/* Chrome: flere resize-ticks efter rotation — ekstra pass når mål er stabile */
 		window.addEventListener('orientationchange', () => {
@@ -8400,7 +8788,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 
-	// Initialize brain animations
+	// Initialize brain animations (eksponeret til failsafe i projects.html)
+	try {
+		window.__mskProjectsMindmapInitFn = initBrainAnimations;
+	} catch (_) {}
 	initBrainAnimations();
 
 	// Re-run init when navigating to the projects section (e.g. clicking "projekter")
@@ -9066,4 +9457,128 @@ window.addEventListener('load', function () {
 		{ passive: false, capture: true }
 	);
 	window.addEventListener('wheel', blockScroll, { passive: false, capture: true });
+})();
+
+/** Projekter + iPad/tablet landskab: lås dokument-scroll (som kontakt). */
+(function mskProjectsIpadLandscapeNoScroll() {
+	function isProjectsPage() {
+		return (
+			document.body &&
+			document.body.classList &&
+			document.body.classList.contains('projects-page') &&
+			document.body.classList.contains('sketchbook-theme')
+		);
+	}
+	function isLandscapeLock() {
+		try {
+			if (!window.matchMedia) return false;
+			if (!window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches) return false;
+			return (
+				window.matchMedia('(orientation: landscape)').matches ||
+				window.matchMedia('(min-aspect-ratio: 1/1)').matches
+			);
+		} catch {
+			return false;
+		}
+	}
+	function scheduleMindmapRelayoutAfterLock() {
+		const fire = () => {
+			try {
+				if (typeof window.__mskProjectsRelayout === 'function') window.__mskProjectsRelayout();
+			} catch {}
+			try {
+				window.dispatchEvent(new Event('msk-relayout-projects-mindmap'));
+			} catch {}
+		};
+		fire();
+		window.setTimeout(fire, 50);
+		window.setTimeout(fire, 220);
+		window.setTimeout(fire, 500);
+		window.setTimeout(fire, 900);
+	}
+	function applyLock() {
+		if (!isProjectsPage()) return;
+		const on = mskApplyProjectsIpadLandscapeDocumentMode();
+		if (on) {
+			document.documentElement.style.removeProperty('--vh');
+			document.documentElement.style.removeProperty('--vw');
+			scheduleMindmapRelayoutAfterLock();
+		}
+	}
+	function blockScroll(e) {
+		if (!isProjectsPage() || !isLandscapeLock()) return;
+		e.preventDefault();
+	}
+	function applyLockAfterReady() {
+		applyLock();
+	}
+	window.addEventListener('resize', applyLock);
+	window.addEventListener('orientationchange', function () {
+		window.setTimeout(applyLock, 50);
+	});
+	document.addEventListener('DOMContentLoaded', () => {
+		window.setTimeout(applyLockAfterReady, 0);
+		window.setTimeout(applyLockAfterReady, 120);
+	});
+	window.addEventListener(
+		'touchmove',
+		blockScroll,
+		{ passive: false, capture: true }
+	);
+	window.addEventListener('wheel', blockScroll, { passive: false, capture: true });
+})();
+
+/** Nød-boot: gentagne relayouts i iPad landskab (DevTools kan bytte innerWidth/innerHeight). */
+(function mskProjectsIpadLandscapeMindmapBoot() {
+	function nudge() {
+		try {
+			if (!document.body || !document.body.classList.contains('projects-page')) return;
+			mskApplyProjectsIpadLandscapeDocumentMode();
+			if (typeof window.__mskProjectsRelayout === 'function') {
+				window.__mskProjectsRelayout();
+				return;
+			}
+			window.dispatchEvent(new Event('msk-relayout-projects-mindmap'));
+		} catch (_) {}
+	}
+	function schedule() {
+		nudge();
+		window.setTimeout(nudge, 60);
+		window.setTimeout(nudge, 240);
+		window.setTimeout(nudge, 600);
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', schedule);
+	} else {
+		schedule();
+	}
+	window.addEventListener('load', schedule);
+	window.addEventListener('resize', () => window.setTimeout(nudge, 80));
+	window.addEventListener('orientationchange', () => window.setTimeout(schedule, 120));
+})();
+
+/** Projekter: ekstra init-forsøg hvis DOMContentLoaded-handleren stoppede før initBrainAnimations. */
+(function mskProjectsMindmapGuaranteedRunner() {
+	function run() {
+		try {
+			if (!document.body || !document.body.classList.contains('projects-page')) return;
+			if (typeof window.__mskProjectsMindmapInitFn === 'function') window.__mskProjectsMindmapInitFn();
+		} catch (e) {
+			try {
+				console.error('mskProjectsMindmapGuaranteedRunner', e);
+			} catch (_) {}
+		}
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', () => {
+			setTimeout(run, 0);
+			setTimeout(run, 400);
+			setTimeout(run, 1200);
+		});
+	} else {
+		setTimeout(run, 0);
+		setTimeout(run, 400);
+		setTimeout(run, 1200);
+	}
+	window.addEventListener('load', run);
 })();

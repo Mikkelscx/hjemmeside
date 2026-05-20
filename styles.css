@@ -22,6 +22,23 @@
     --vw: 100vw;
     /* Form controls / progress: closer look across Chrome, Safari, Firefox */
     accent-color: #333333;
+
+    /* Navbar / burger: per-page tokens on body.* (desktop bar + mobile/tablet pill) */
+    --navBarBg: rgba(255, 255, 255, 0.92);
+    --navBarBlur: 10px;
+    --navBarBorderBottom: 1px solid rgba(0, 0, 0, 0.06);
+    --navBarShadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    --navLinkColor: #333;
+    --navLinkHoverColor: #050505;
+    --navLinkHoverOpacity: 1;
+    /* Ekstra synlighed ved hover (virker på tværs af backdrop-filter i .navbar) */
+    --navLinkHoverGlow: 0 0 22px rgba(0, 0, 0, 0.14), 0 0 1px rgba(0, 0, 0, 0.22);
+    --navLinkShadow: none;
+    --navToggleBg: rgba(255, 255, 255, 0.92);
+    --navToggleBorder: rgba(0, 0, 0, 0.18);
+    --navToggleBar: rgba(0, 0, 0, 0.9);
+    --navToggleLabel: rgba(0, 0, 0, 0.9);
+    --navToggleShadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 @supports (height: 100dvh) {
@@ -231,6 +248,202 @@ body {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+}
+
+/*
+ * Menu-scrim: altid defineret — undgår at iPad efter rotation falder ud af tablet-@media og efterlader
+ * et fixed lag uden display:none / pointer-events, så scroll føles blokeret (“usynlig væg”).
+ */
+body .nav-scrim {
+    position: fixed;
+    inset: 0;
+    display: none;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.22);
+    z-index: 4999;
+}
+body.nav-open .nav-scrim {
+    display: block;
+    pointer-events: auto;
+}
+
+/* ---- Navbar theme tokens (desktop top bar + burger button on narrow viewports) ---- */
+body.home-notebook-page {
+    --navBarBg: rgba(252, 251, 247, 0.94);
+    --navBarBlur: 12px;
+    --navBarBorderBottom: 1px solid rgba(93, 64, 55, 0.12);
+    --navBarShadow: 0 2px 14px rgba(44, 36, 28, 0.08);
+    --navLinkColor: #2c241c;
+    --navLinkHoverColor: #a0522d;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 22px rgba(160, 82, 45, 0.55), 0 0 2px rgba(255, 235, 210, 0.65);
+    --navToggleBg: rgba(252, 251, 247, 0.94);
+    --navToggleBorder: rgba(93, 64, 55, 0.22);
+    --navToggleBar: #2c241c;
+    --navToggleLabel: #2c241c;
+}
+body.sketchbook-theme {
+    --navBarBg: rgba(253, 251, 246, 0.94);
+    --navBarBlur: 12px;
+    --navBarBorderBottom: 1px solid rgba(139, 69, 19, 0.18);
+    --navBarShadow: 0 2px 14px rgba(139, 69, 19, 0.08);
+    --navLinkColor: #2a1810;
+    --navLinkHoverColor: #e86818;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 24px rgba(255, 130, 72, 0.75), 0 0 3px rgba(255, 235, 200, 0.9);
+    --navToggleBg: rgba(253, 251, 246, 0.94);
+    --navToggleBorder: rgba(139, 69, 19, 0.22);
+    --navToggleBar: #2a1810;
+    --navToggleLabel: #2a1810;
+}
+html body.repop-page,
+body.repop-page {
+    --navBarBg: linear-gradient(180deg, #ff5252 0%, #e53935 100%);
+    --navBarBlur: 0px;
+    --navBarBorderBottom: 1px solid rgba(0, 0, 0, 0.08);
+    --navBarShadow: 0 4px 20px rgba(180, 40, 40, 0.35);
+    --navLinkColor: #ffffff;
+    --navLinkHoverColor: #fffde7;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 28px rgba(255, 255, 255, 1), 0 0 14px rgba(255, 248, 200, 0.95), 0 0 4px rgba(255, 255, 255, 0.9);
+    --navLinkShadow: none;
+    --navToggleBg: #f44336;
+    --navToggleBorder: rgba(255, 255, 255, 0.45);
+    --navToggleBar: #ffffff;
+    --navToggleLabel: #ffffff;
+    --navToggleShadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+body.naturlig-page {
+    --navBarBg: rgba(255, 255, 255, 0.95);
+    --navBarBlur: 15px;
+    --navBarBorderBottom: 1px solid rgba(25, 118, 210, 0.2);
+    --navBarShadow: 0 4px 20px rgba(25, 118, 210, 0.12);
+    --navLinkColor: #1976d2;
+    --navLinkHoverColor: #42a5f5;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 22px rgba(66, 165, 245, 0.65), 0 0 2px rgba(255, 255, 255, 0.9);
+    --navToggleBg: rgba(255, 255, 255, 0.95);
+    --navToggleBorder: rgba(25, 118, 210, 0.35);
+    --navToggleBar: #0d47a1;
+    --navToggleLabel: #0d47a1;
+}
+body.durex-page {
+    --navBarBg: transparent;
+    --navBarBlur: 0px;
+    --navBarBorderBottom: none;
+    --navBarShadow: none;
+    --navLinkColor: rgba(255, 255, 255, 0.92);
+    --navLinkHoverColor: #ffffff;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 26px rgba(255, 255, 255, 0.72), 0 1px 3px rgba(0, 0, 0, 0.45);
+    --navLinkShadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --navToggleBg: rgba(0, 34, 68, 0.88);
+    --navToggleBorder: rgba(227, 242, 255, 0.35);
+    --navToggleBar: #e3f2ff;
+    --navToggleLabel: #e3f2ff;
+}
+body.kobajer-page {
+    --navBarBg: rgba(14, 16, 15, 0.9);
+    --navBarBlur: 14px;
+    --navBarBorderBottom: 1px solid rgba(0, 255, 153, 0.22);
+    --navBarShadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+    --navLinkColor: #f4fff6;
+    --navLinkHoverColor: #ffffff;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 22px rgba(0, 255, 180, 0.55), 0 0 8px rgba(160, 255, 210, 0.45);
+    --navToggleBg: rgba(14, 16, 15, 0.95);
+    --navToggleBorder: rgba(0, 255, 153, 0.45);
+    --navToggleBar: #f4fff6;
+    --navToggleLabel: #f4fff6;
+}
+body.brainfarts-page {
+    --navBarBg: rgba(20, 18, 24, 0.94);
+    --navBarBlur: 12px;
+    --navBarBorderBottom: 1px solid rgba(255, 213, 79, 0.25);
+    --navBarShadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+    --navLinkColor: #ffd54f;
+    --navLinkHoverColor: #fff8e1;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 24px rgba(255, 224, 130, 0.85), 0 0 4px rgba(255, 255, 255, 0.65);
+    --navToggleBg: rgba(20, 18, 24, 0.92);
+    --navToggleBorder: rgba(255, 213, 79, 0.4);
+    --navToggleBar: #ffd54f;
+    --navToggleLabel: #ffd54f;
+}
+body.twister-page {
+    --navBarBg: rgba(210, 248, 200, 0.96);
+    --navBarBlur: 10px;
+    --navBarBorderBottom: 1px solid rgba(4, 35, 12, 0.12);
+    --navBarShadow: 0 2px 14px rgba(4, 35, 12, 0.1);
+    --navLinkColor: #04230c;
+    --navLinkHoverColor: #0a6e24;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 20px rgba(70, 200, 90, 0.45), 0 0 1px rgba(255, 255, 255, 0.8);
+    --navToggleBg: rgba(210, 248, 200, 0.96);
+    --navToggleBorder: rgba(4, 35, 12, 0.2);
+    --navToggleBar: #04230c;
+    --navToggleLabel: #04230c;
+}
+body.byens-landhandel-page {
+    --navBarBg: rgba(232, 224, 212, 0.96);
+    --navBarBlur: 10px;
+    --navBarBorderBottom: 1px solid rgba(93, 64, 55, 0.25);
+    --navBarShadow: 0 2px 14px rgba(42, 24, 16, 0.1);
+    --navLinkColor: #2a1810;
+    --navLinkHoverColor: #8b4513;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 20px rgba(139, 69, 19, 0.45), 0 0 2px rgba(255, 235, 200, 0.55);
+    --navToggleBg: rgba(232, 224, 212, 0.97);
+    --navToggleBorder: rgba(93, 64, 55, 0.35);
+    --navToggleBar: #2a1810;
+    --navToggleLabel: #2a1810;
+}
+body.ai-universe-page {
+    --navBarBg: rgba(12, 8, 28, 0.92);
+    --navBarBlur: 14px;
+    --navBarBorderBottom: 1px solid rgba(186, 104, 255, 0.35);
+    --navBarShadow: 0 4px 28px rgba(0, 0, 0, 0.5);
+    --navLinkColor: #7aebf0;
+    --navLinkHoverColor: #f3e5ff;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 24px rgba(186, 104, 255, 0.75), 0 0 14px rgba(122, 235, 240, 0.55);
+    --navToggleBg: rgba(12, 8, 28, 0.92);
+    --navToggleBorder: rgba(122, 235, 240, 0.4);
+    --navToggleBar: #7aebf0;
+    --navToggleLabel: #7aebf0;
+}
+body.unge-mod-uv-page {
+    --navBarBg: rgba(0, 8, 18, 0.92);
+    --navBarBlur: 14px;
+    --navBarBorderBottom: 1px solid rgba(0, 255, 255, 0.22);
+    --navBarShadow: 0 4px 26px rgba(0, 0, 0, 0.55);
+    --navLinkColor: #7efdfd;
+    --navLinkHoverColor: #ffffff;
+    --navLinkHoverOpacity: 1;
+    --navLinkHoverGlow: 0 0 26px rgba(0, 255, 255, 0.8), 0 0 12px rgba(126, 253, 253, 0.55);
+    --navToggleBg: rgba(0, 8, 18, 0.92);
+    --navToggleBorder: rgba(126, 253, 253, 0.4);
+    --navToggleBar: #7efdfd;
+    --navToggleLabel: #7efdfd;
+}
+
+/* Durex: grov pekplade (typisk iPad) — samme visuelle DNA som siden; frostet dybblå bar + lyse links */
+@media (min-width: 768px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) {
+    body.durex-page {
+        --navBarBg: rgba(0, 34, 68, 0.92);
+        --navBarBlur: 14px;
+        --navBarBorderBottom: 1px solid rgba(79, 195, 247, 0.28);
+        --navBarShadow: 0 4px 22px rgba(0, 17, 40, 0.45);
+        --navLinkColor: rgba(227, 242, 255, 0.95);
+        --navLinkHoverColor: #ffffff;
+        --navLinkHoverOpacity: 1;
+        --navLinkHoverGlow: 0 0 26px rgba(255, 255, 255, 0.72), 0 1px 3px rgba(0, 0, 0, 0.4);
+        --navLinkShadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+        --navToggleBg: rgba(0, 34, 68, 0.9);
+        --navToggleBorder: rgba(144, 202, 249, 0.42);
+        --navToggleBar: #e3f2ff;
+        --navToggleLabel: #e3f2ff;
+    }
 }
 
 /* Cross-platform: inherit typography on form controls (avoids system default fonts) */
@@ -681,7 +894,14 @@ body.about-projects-flip-active > :not(.about-projects-transition):not(.navbar) 
     transition: opacity 90ms ease-out;
 }
 .ai-close-transition.is-ready { opacity: 1; pointer-events: auto; }
-body.ai-close-active > :not(.ai-close-transition):not(.navbar) {
+/*
+ * AI-handoff-overlay (z ~9999) ligger over burger-dropdown (z ~5k). Når menuen er åben,
+ * skal overlay ikke fange klik — ellers „virker menuen ikke“ på fx iPad.
+ */
+body.nav-open .ai-close-transition {
+    pointer-events: none !important;
+}
+body.ai-close-active > :not(.ai-close-transition):not(.navbar):not(.nav-scrim) {
     opacity: 0;
     pointer-events: none;
     transition: opacity 90ms ease-out;
@@ -2037,9 +2257,8 @@ body.ai-close-active .navbar {
     opacity: 0;
     transition: opacity 80ms linear;
 }
-/* Vigtigt: under/flip Projekter må ikke få opacity:1 alene fra is-loaded (iframe load),
-   for så vistes Projekter med det samme når is-turning slår til (fx ved drag), før søm-swap.
-   Brugere ser først Projekter når .swap-under-left / .swap-flip-mid sættes i JS. */
+/* Under/flip Projekter må ikke få opacity:1 alene fra is-loaded — ellers vistes Projekter
+   straks når is-turning slår til (bl.a. under drag) før søm-swap. */
 .about-projects-transition .about-projects-turn__flip-face--back iframe.is-loaded {
     opacity: 1;
 }
@@ -3268,10 +3487,11 @@ body.home-notebook-page.home-opening-layout.home-opening-center .home-notebook__
 
 /* Navigation */
 .navbar {
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    background: var(--navBarBg);
+    backdrop-filter: blur(var(--navBarBlur));
+    -webkit-backdrop-filter: blur(var(--navBarBlur));
+    border-bottom: var(--navBarBorderBottom);
+    box-shadow: var(--navBarShadow);
     position: fixed;
     top: 0;
     left: 0;
@@ -3376,7 +3596,6 @@ body.sketchbook-theme .nav-menu {
 }
 body.sketchbook-theme .nav-link {
     font-family: var(--font-sans);
-    font-size: 0.8rem;
 }
 
 .nav-container {
@@ -3405,23 +3624,53 @@ body.sketchbook-theme .nav-link {
     height: 100%;
     align-items: center;
     margin: 0;
+    column-gap: clamp(1.4rem, 3.1vw, 2.85rem);
+    row-gap: 0.12rem;
 }
 
 .nav-item {
-    margin: 0 1.5rem;
+    margin: 0;
 }
 
 .nav-link {
     text-decoration: none;
-    color: #333;
+    color: var(--navLinkColor);
     font-weight: 600;
-    font-size: 0.8rem;
-    transition: opacity 0.2s ease;
+    font-size: clamp(0.84rem, 1.08vw, 1.06rem);
+    letter-spacing: 0.038em;
+    transition:
+        opacity 0.2s ease,
+        color 0.2s ease,
+        text-shadow 0.2s ease;
     line-height: var(--navBarH);
+    text-shadow: var(--navLinkShadow);
 }
 
+/* Hover (inkl. DevTools iPad med mus: ingen pointer:fine-krav) */
 .nav-link:hover {
-    opacity: 0.7;
+    color: var(--navLinkHoverColor);
+    opacity: var(--navLinkHoverOpacity);
+    text-shadow: var(--navLinkHoverGlow);
+}
+
+/* Burger/dropdown: basis-linkfarve har `!important` — hover skal stadig kunne lyse */
+body .nav-menu .nav-link:hover {
+    color: var(--navLinkHoverColor) !important;
+    opacity: var(--navLinkHoverOpacity) !important;
+    text-shadow: var(--navLinkHoverGlow) !important;
+}
+
+html body.repop-page .nav-menu .nav-link:hover {
+    color: var(--navLinkHoverColor) !important;
+    opacity: var(--navLinkHoverOpacity) !important;
+    text-shadow: var(--navLinkHoverGlow) !important;
+}
+
+/* Tastatur: tydelig fokus uden samme “lys” som hover */
+.nav-link:focus-visible {
+    outline: 2px solid var(--navLinkHoverColor);
+    outline-offset: 3px;
+    border-radius: 3px;
 }
 
 /* Utility: show only on phones (used for manual line breaks) */
@@ -3433,14 +3682,10 @@ body.sketchbook-theme .nav-link {
     opacity: 1 !important;
     pointer-events: auto !important;
     max-width: none !important;
-    margin: 0 1.5rem !important;
+    margin: 0 !important;
     overflow: visible !important;
     transform: none !important;
     transition: none !important;
-}
-
-@media (max-width: 768px) {
-    .nav-item--hover-chapter { margin: 0 0.8rem !important; }
 }
 
 /* Main Logo Styles */
@@ -3566,6 +3811,9 @@ body.sketchbook-theme .nav-link {
 /* Projekter: korn-animation er bred — undgå at overflow:hidden klipper til venstre/højre */
 body.projects-page.sketchbook-theme .brainstorm-container {
     overflow: visible;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
 }
 
 /* Brain blush (cheeks) */
@@ -5192,7 +5440,7 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         background: #f5f5f0;
         overflow-x: hidden;
         overflow-y: hidden;
-        /* Mindst én skærmhøjde: papir/linjer (absolute top/bottom) skal ikke klippes når indholdet er kortere end viewport */
+        /* Mindst én skærmhøjde: linjer/::before fylder body via top/bottom — ellers klipper overflow-y:hidden lag der strækker ud over kort indhold */
         min-height: 100vh;
         min-height: 100dvh;
         min-height: -webkit-fill-available;
@@ -5204,6 +5452,7 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     /* Baseline lige over stregerne: løft hele main en smule (linjelaget er uændret på body) */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
         margin-top: -7px;
+        /* Undgå tom scroll: fuld viewport-min på main + auto body-overflow giver ofte 1–2px overscrol */
         min-height: auto;
     }
     /* Papir + linjer scroller med indhold (som mobil OM MIG) — ellers glide tekst og gitter fra hinanden */
@@ -5249,6 +5498,7 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         padding: 75px calc(18px + min(200px, 42vw) + 0.65rem) 24px 44px;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
+        /* Tidligere 75px gav for stort hul under brødtekst; træk sektion én linje op på gitteret */
         padding-top: 25px;
         margin-top: -25px;
     }
@@ -5331,7 +5581,6 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         font-size: clamp(2.2rem, 3.05vw, 3.25rem);
         line-height: 48px;
     }
-}
 
 /* (OM MIG) sketchbook/polaroid layout reverted */
 
@@ -5814,6 +6063,212 @@ body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
     }
 }
 
+/* Kontakt: iPad/tablet portræt — centreret indhold, store kort (desktop-agtige), ét viewport */
+@media (min-width: 641px) and (max-width: 1366px) and (orientation: portrait) {
+    html:has(body.contact-sketchbook-page.sketchbook-theme) {
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        touch-action: none;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        min-height: 0 !important;
+        overscroll-behavior: none;
+        touch-action: none;
+        background: #f5f5f0 !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme::after {
+        display: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme::before {
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        box-shadow: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .right-margin {
+        display: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .left-margin {
+        left: clamp(28px, 5vw, 48px) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme main.contact-sketchbook,
+    body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook {
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: calc(100dvh - var(--navBarTotal)) !important;
+        height: calc(100dvh - var(--navBarTotal)) !important;
+        max-height: calc(100dvh - var(--navBarTotal)) !important;
+        margin: 0 !important;
+        padding: clamp(32px, 5vh, 56px) clamp(24px, 5vw, 44px) !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: clamp(32px, 4.8vh, 52px) !important;
+        text-align: center !important;
+        z-index: 20 !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook__title {
+        width: 100% !important;
+        max-width: min(640px, 92vw) !important;
+        margin: 0 auto !important;
+        flex: 0 0 auto !important;
+        text-align: center !important;
+        font-family: 'Bradley Hand', 'Brush Script MT', 'Segoe Script', 'Comic Sans MS', cursive !important;
+        font-weight: 900 !important;
+        font-size: clamp(2.5rem, 7.5vw, 3.4rem) !important;
+        letter-spacing: 0.3px !important;
+        line-height: 1.05 !important;
+        color: #1a1a1a !important;
+        -webkit-text-fill-color: #1a1a1a !important;
+        text-decoration: none !important;
+        filter: blur(0.05px) drop-shadow(0 0.05px 0.1px rgba(0, 0, 0, 0.12)) !important;
+        transform: rotate(-0.6deg) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .navbar .nav-link,
+    body.contact-sketchbook-page.sketchbook-theme .navbar .nav-link:link,
+    body.contact-sketchbook-page.sketchbook-theme .navbar .nav-link:visited,
+    body.contact-sketchbook-page.sketchbook-theme .nav-menu .nav-link,
+    body.contact-sketchbook-page.sketchbook-theme .nav-menu .nav-link:visited {
+        color: #2a1810 !important;
+        -webkit-text-fill-color: #2a1810 !important;
+        text-decoration: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .nav-item:not(:last-child) .nav-link {
+        border-bottom: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-info {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: center !important;
+        gap: clamp(28px, 4.2vh, 48px) !important;
+        width: min(600px, 88vw) !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        flex: 0 1 auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme a.contact-item,
+    body.contact-sketchbook-page.sketchbook-theme a.contact-item:link,
+    body.contact-sketchbook-page.sketchbook-theme a.contact-item:visited {
+        color: #1a1a1a !important;
+        -webkit-text-fill-color: #1a1a1a !important;
+        text-decoration: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item {
+        display: block !important;
+        position: relative !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        flex: 0 0 auto !important;
+        padding: 22px clamp(88px, 11vw, 120px) !important;
+        min-height: 118px !important;
+        border-radius: 14px !important;
+        box-sizing: border-box !important;
+        background: transparent !important;
+        border: none !important;
+        text-decoration: none !important;
+        overflow: visible !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item--mail {
+        --contactAccent: rgba(20, 110, 230, 0.45) !important;
+        --contactAccentInk: rgba(14, 79, 166, 0.52) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item--phone {
+        --contactAccent: rgba(40, 170, 90, 0.45) !important;
+        --contactAccentInk: rgba(28, 122, 64, 0.52) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item--linkedin {
+        --contactAccent: rgba(0, 120, 190, 0.45) !important;
+        --contactAccentInk: rgba(0, 86, 136, 0.52) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item::before,
+    body.contact-sketchbook-page.sketchbook-theme .contact-item::after {
+        content: '' !important;
+        display: block !important;
+        position: absolute !important;
+        inset: 0 !important;
+        border-radius: inherit !important;
+        pointer-events: none !important;
+        border-width: 2px !important;
+        border-style: dashed !important;
+        border-color: var(--contactAccent) !important;
+        opacity: 0.62 !important;
+        z-index: 0 !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item::after {
+        border-color: var(--contactAccentInk) !important;
+        opacity: 0.36 !important;
+        transform: translate(1px, -1px) rotate(-0.15deg) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon {
+        position: absolute !important;
+        left: clamp(14px, 2.5vw, 20px) !important;
+        top: 50% !important;
+        width: 118px !important;
+        height: 118px !important;
+        max-width: 118px !important;
+        max-height: 118px !important;
+        transform: translateY(-50%) rotate(-2deg) !important;
+        z-index: 1 !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--phone {
+        transform: translateY(-50%) rotate(1.5deg) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--linkedin {
+        transform: translateY(-50%) rotate(-1deg) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
+        display: block !important;
+        text-align: center !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item h3 {
+        font-family: 'Bradley Hand', 'Brush Script MT', 'Segoe Script', 'Comic Sans MS', cursive !important;
+        font-size: 1.6rem !important;
+        font-weight: 900 !important;
+        margin: 0 0 6px 0 !important;
+        color: #1a1a1a !important;
+        -webkit-text-fill-color: #1a1a1a !important;
+        text-decoration: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item p {
+        font-family: 'Courier New', monospace !important;
+        font-size: 1.3rem !important;
+        margin: 0 !important;
+        color: rgba(0, 0, 0, 0.78) !important;
+        -webkit-text-fill-color: rgba(0, 0, 0, 0.78) !important;
+        text-decoration: none !important;
+        overflow-wrap: normal !important;
+        word-break: normal !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item--mail p {
+        white-space: nowrap !important;
+    }
+}
+
 /* Sketchbook project tabs - no border, will use SVG frames */
 body.sketchbook-theme .project-node {
     background: transparent !important;
@@ -6019,16 +6474,6 @@ body.projects-page.sketchbook-theme .brainstorm-container .project-node:focus {
     body.projects-page.sketchbook-theme .brainstorm-container .project-node:focus,
     body.projects-page.sketchbook-theme .brainstorm-container .project-node:focus-visible {
         outline: none !important;
-    }
-}
-
-/* iPad portræt: TWISTER-teksten lidt ned (matcher hoved-styles.css — hjemmesiden havde ikke fuld iPad-blok) */
-@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
-       (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title-img--twister,
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-        transform: translateY(54px) scale(1.92) scaleX(1.04) !important;
-        transform-origin: center center !important;
     }
 }
 
@@ -6246,7 +6691,9 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
     }
 }
 
-@media (max-width: 640px), (max-width: 1024px) and (max-height: 520px) and (orientation: landscape), (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
+@media (max-width: 640px), (max-width: 1024px) and (max-height: 520px) and (orientation: landscape), (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1),
+       (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
+       (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
     body.sketchbook-theme .brainstorm-container .project-node__title-img {
         width: min(190px, 92%);
     }
@@ -6265,8 +6712,8 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         width: min(158px, 78%);
         max-width: 78%;
     }
-    /* Portrait: UNGE — text graphic (webp) scaled up inside tab; charcoal circle unchanged in JS */
-    @media (orientation: portrait) {
+    /* Portrait telefon: UNGE — text graphic (webp) scaled up inside tab (iPad portræt: separat blok nedenfor) */
+    @media (orientation: portrait) and (max-width: 640px) {
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href="unge-mod-uv.html"],
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href="unge-mod-uv.html"] {
             width: auto !important;
@@ -6292,8 +6739,8 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
             transform-origin: center center !important;
         }
     }
-    /* Portrait mobil: TWISTER — større titel-webp + placering (cirkel følger layout-boks, ikke img-transform) */
-    @media (orientation: portrait) {
+    /* Portrait telefon: TWISTER — større titel-webp (iPad portræt: samme scale som UNGE i dedikeret @media) */
+    @media (orientation: portrait) and (max-width: 640px) {
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .project-node__title-img--twister,
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .project-node__title-img--twister,
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title-img--twister,
@@ -6304,16 +6751,16 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
             transform-origin: center center;
         }
     }
-    /* Portrait mobil: KØ-BAJER titel-webp — let tykkere (kun scaleX; filter fjernet som for groft) */
-    @media (orientation: portrait) {
+    /* Portrait telefon: KØ-BAJER titel-webp — let tykkere (iPad: fælles scale med UNGE) */
+    @media (orientation: portrait) and (max-width: 640px) {
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title-img--kobajer,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
             transform: scaleX(1.11) !important;
             transform-origin: center center !important;
         }
     }
-    /* Portrait mobil: BRAINFARTS — større tekst-webp i mindmap-cirklen */
-    @media (orientation: portrait) {
+    /* Portrait telefon: BRAINFARTS — større tekst-webp (iPad: fælles UNGE-opskrift) */
+    @media (orientation: portrait) and (max-width: 640px) {
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"] .project-node__title-img--brainfarts,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts {
             width: min(154px, 96%) !important;
@@ -6462,6 +6909,98 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
     }
 }
 
+/* Projekter: iPad/tablet landskab — desktop-ellipse på to sider (som reference), ikke portræt-grid */
+@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
+       (min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
+    body.projects-page.sketchbook-theme {
+        overflow-x: hidden;
+        overflow-y: hidden;
+    }
+    body.projects-page.sketchbook-theme .projects-mobile {
+        display: none !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container {
+        display: block !important;
+        visibility: visible !important;
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 3 !important;
+        width: 100vw !important;
+        min-height: 0 !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: visible !important;
+        background: transparent !important;
+        background-image: none !important;
+        box-shadow: none !important;
+        --projectsSx: 1 !important;
+        --projectsSy: 1 !important;
+        --projectsBrainSize: 168px;
+        transform-origin: 50% 50%;
+        transform: none !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
+        width: var(--projectsBrainSize) !important;
+        height: var(--projectsBrainSize) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+        max-width: min(240px, 17vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .brain,
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    /* Åben notesbog: to papirsider + højre margen (touch single-page må ikke skjule højre side) */
+    body.projects-page.sketchbook-theme::before,
+    body.projects-page.sketchbook-theme::after {
+        display: block !important;
+    }
+    body.projects-page.sketchbook-theme::before {
+        width: 50% !important;
+        left: 0 !important;
+        right: auto !important;
+    }
+    body.projects-page.sketchbook-theme::after {
+        width: 50% !important;
+        right: 0 !important;
+        left: auto !important;
+    }
+    body.projects-page.sketchbook-theme .right-margin {
+        display: block !important;
+    }
+    body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+        display: flex !important;
+    }
+    /* Ellipse-mindmap: skjul kun fallback-tekst — billed-titler skal altid være synlige */
+    body.projects-page.sketchbook-theme .brainstorm-container .node-label {
+        display: none !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .brain,
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title,
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title--image,
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+        display: block !important;
+        width: auto !important;
+        height: auto !important;
+        max-width: min(300px, 22vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
+        max-width: min(320px, 24vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
+        max-width: min(230px, 18vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
+        max-width: min(218px, 17vw) !important;
+    }
+}
+
 /* Projekter (mobile list): allow image labels too */
 .projects-mobile__name--image { line-height: 0; }
 .projects-mobile__name--image .projects-mobile__name-img {
@@ -6601,9 +7140,11 @@ body.sketchbook-theme .brainstorm-container {
     z-index: 3;
 
     /* Override the generic brainstorm page styling */
-    min-height: var(--vh);
+    min-height: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
     display: block;
     background: transparent;
     border: none;
@@ -6634,6 +7175,23 @@ body.sketchbook-theme .brainstorm-container {
     --projectsScaleBaseH: 860;
     --projectsScaleExp: 2.2;
     --projectsScaleMin: 0.18;
+}
+
+/*
+ * Projekter: fixed fullscreen-lag + transform kan få et usynligt hit-target til at spise hover/klik
+ * under topnav — især i DevTools tablet-sim. Lav laget pass-through; genaktiver på indhold der skal bruges.
+ */
+body.projects-page.sketchbook-theme .brainstorm-container {
+    pointer-events: none;
+}
+
+body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+    pointer-events: auto;
+}
+
+body.projects-page.sketchbook-theme .brainstorm-container .brain {
+    pointer-events: auto;
 }
 
 /* Projekter desktop: større kornkrans uden at ændre hjernen (--projectsBrainSize uændret) */
@@ -6781,8 +7339,8 @@ body.sketchbook-theme .brainstorm-container {
     body .nav-toggle {
         appearance: none;
         -webkit-appearance: none;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(0, 0, 0, 0.18);
+        background: var(--navToggleBg);
+        border: 1px solid var(--navToggleBorder);
         border-radius: 10px;
         width: auto;
         height: 44px;
@@ -6793,7 +7351,7 @@ body.sketchbook-theme .brainstorm-container {
         justify-content: center;
         gap: 10px;
         flex: 0 0 auto;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+        box-shadow: var(--navToggleShadow);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
     }
@@ -6812,7 +7370,7 @@ body.sketchbook-theme .brainstorm-container {
         right: 0;
         height: 2px;
         border-radius: 2px;
-        background: rgba(0, 0, 0, 0.9);
+        background: var(--navToggleBar);
         transform-origin: 50% 50%;
         transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
     }
@@ -6829,7 +7387,7 @@ body.sketchbook-theme .brainstorm-container {
         letter-spacing: 0.06em;
         font-weight: 700;
         text-transform: uppercase;
-        color: rgba(0, 0, 0, 0.9);
+        color: var(--navToggleLabel);
         line-height: 1;
     }
 
@@ -6907,7 +7465,6 @@ body.sketchbook-theme .brainstorm-container {
         border-bottom: 2px solid var(--mobileMenuDivider);
     }
 
-    /* Repop: inline i repop.html tvinger .repop-page .nav-link { font-size: 0.8rem !important } */
     html body.repop-page .nav-menu .nav-link {
         font-size: clamp(1.05rem, 4.2vw, 1.32rem) !important;
         padding: 16px 12px !important;
@@ -7126,6 +7683,462 @@ body.sketchbook-theme .brainstorm-container {
     }
 }
 
+/* Telefon portræt (alle sider): zoom kan gøre layout-viewport >640px — gentag kerne-mobil (burger, tema-vars, sketchbook).
+   Klassen `phone-portrait-zoom-stable` sættes i script.js ud fra screen.* + orientation. */
+@media (min-width: 641px) {
+    html.phone-portrait-zoom-stable {
+        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
+    }
+
+    html.phone-portrait-zoom-stable .mobile-only {
+        display: inline;
+    }
+
+    html.phone-portrait-zoom-stable body {
+        --mobileMenuBg: rgba(255, 255, 255, 0.96);
+        --mobileMenuLink: rgba(0, 0, 0, 0.92);
+        --mobileMenuDivider: rgba(0, 0, 0, 0.26);
+    }
+    html.phone-portrait-zoom-stable body.ai-universe-page {
+        --mobileMenuBg: rgba(0, 0, 0, 0.92);
+        --mobileMenuLink: rgba(0, 255, 255, 0.95);
+        --mobileMenuDivider: rgba(0, 255, 255, 0.4);
+    }
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page {
+        --mobileMenuBg: rgba(0, 8, 18, 0.94);
+        --mobileMenuLink: #7efdfd;
+        --mobileMenuDivider: rgba(0, 255, 255, 0.58);
+    }
+    html.phone-portrait-zoom-stable body.twister-page {
+        --mobileMenuBg: rgba(210, 248, 200, 0.98);
+        --mobileMenuLink: #04230c;
+        --mobileMenuDivider: rgba(255, 255, 255, 0.55);
+    }
+    html.phone-portrait-zoom-stable body.kobajer-page {
+        --mobileMenuBg: #0e100f;
+        --mobileMenuLink: #f4fff6;
+        --mobileMenuDivider: rgba(0, 255, 153, 0.7);
+    }
+    html.phone-portrait-zoom-stable body.byens-landhandel-page {
+        --mobileMenuBg: #e8e0d4;
+        --mobileMenuLink: #2a1810;
+        --mobileMenuDivider: rgba(93, 64, 55, 0.5);
+    }
+    html.phone-portrait-zoom-stable body.repop-page {
+        --mobileMenuBg: #ff4444;
+        --mobileMenuLink: #ffffff;
+        --mobileMenuDivider: rgba(255, 255, 255, 0.5);
+    }
+
+    html.phone-portrait-zoom-stable body.sketchbook-theme::before {
+        width: 100%;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        min-height: var(--sketchPaperMinH, 100dvh);
+        box-shadow: none;
+    }
+    html.phone-portrait-zoom-stable body.sketchbook-theme::after {
+        display: none;
+    }
+
+    html.phone-portrait-zoom-stable body.sketchbook-theme .right-margin {
+        display: none;
+    }
+    html.phone-portrait-zoom-stable body.sketchbook-theme .left-margin {
+        left: 36px;
+    }
+
+    /* OM MIG (telefon portræt + zoom): papir + linjer følger scroll — samme som max-width:640 */
+    html.phone-portrait-zoom-stable body.about-sketchbook-page.sketchbook-theme::before {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
+    }
+    html.phone-portrait-zoom-stable body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
+    }
+    html.phone-portrait-zoom-stable body.about-sketchbook-page.sketchbook-theme .left-margin {
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
+    }
+
+    html.phone-portrait-zoom-stable body.about-sketchbook-page.sketchbook-theme .about-sketchbook__text {
+        padding-top: 7px !important;
+    }
+
+    html.phone-portrait-zoom-stable:has(body.contact-sketchbook-page.sketchbook-theme) {
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+    }
+    html.phone-portrait-zoom-stable body.contact-sketchbook-page.sketchbook-theme {
+        overflow: hidden !important;
+        height: var(--vh, 100dvh);
+        max-height: var(--vh, 100dvh);
+        overscroll-behavior: none;
+    }
+    html.phone-portrait-zoom-stable body.contact-sketchbook-page.sketchbook-theme main.contact-sketchbook {
+        overflow: hidden !important;
+        min-height: calc(var(--vh, 100dvh) - var(--navBarTotal)) !important;
+        max-height: calc(var(--vh, 100dvh) - var(--navBarTotal)) !important;
+        height: calc(var(--vh, 100dvh) - var(--navBarTotal)) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
+    }
+    html.phone-portrait-zoom-stable body.contact-sketchbook-page.sketchbook-theme .contact-info {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        justify-content: space-between !important;
+        gap: 0 !important;
+        overflow: visible !important;
+    }
+
+    html.phone-portrait-zoom-stable body .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+        height: var(--navBarTotal);
+        box-sizing: border-box;
+        z-index: 5000;
+    }
+
+    html.phone-portrait-zoom-stable body.repop-page .navbar {
+        z-index: 20000 !important;
+    }
+    html.phone-portrait-zoom-stable body.repop-page .page-content {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    html.phone-portrait-zoom-stable body .nav-container {
+        height: 52px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    html.phone-portrait-zoom-stable body .nav-toggle {
+        appearance: none;
+        -webkit-appearance: none;
+        background: var(--navToggleBg);
+        border: 1px solid var(--navToggleBorder);
+        border-radius: 10px;
+        width: auto;
+        height: 38px;
+        padding: 0 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex: 0 0 auto;
+        box-shadow: var(--navToggleShadow);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    html.phone-portrait-zoom-stable body .nav-toggle__bars {
+        width: 18px;
+        height: 12px;
+        position: relative;
+        display: block;
+    }
+    html.phone-portrait-zoom-stable body .nav-toggle__bars::before,
+    html.phone-portrait-zoom-stable body .nav-toggle__bars::after,
+    html.phone-portrait-zoom-stable body .nav-toggle__bars span {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--navToggleBar);
+        transform-origin: 50% 50%;
+        transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
+    }
+    html.phone-portrait-zoom-stable body .nav-toggle__bars::before {
+        top: 0;
+    }
+    html.phone-portrait-zoom-stable body .nav-toggle__bars span {
+        top: 5px;
+    }
+    html.phone-portrait-zoom-stable body .nav-toggle__bars::after {
+        top: 10px;
+    }
+
+    html.phone-portrait-zoom-stable body.nav-open .nav-toggle__bars::before {
+        top: 5px;
+        transform: rotate(45deg);
+    }
+    html.phone-portrait-zoom-stable body.nav-open .nav-toggle__bars span {
+        opacity: 0;
+    }
+    html.phone-portrait-zoom-stable body.nav-open .nav-toggle__bars::after {
+        top: 5px;
+        transform: rotate(-45deg);
+    }
+
+    html.phone-portrait-zoom-stable body .nav-toggle__label {
+        font-size: 0.92rem;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--navToggleLabel);
+        line-height: 1;
+    }
+
+    html.phone-portrait-zoom-stable body .nav-menu {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: var(--navBarTotal);
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch;
+        justify-content: space-evenly;
+        gap: 0 !important;
+        text-align: center;
+        padding: 0 12px 6px;
+        margin: 0;
+        list-style: none;
+        height: calc(var(--vh) * 0.5);
+        max-height: calc(var(--vh) * 0.5);
+        overflow: hidden;
+        background: var(--mobileMenuBg);
+        border-top: none;
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        white-space: normal !important;
+        z-index: 5001;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-10px);
+        transform-origin: top center;
+        transition: transform 200ms ease, opacity 160ms ease, visibility 0ms linear 200ms;
+    }
+
+    html.phone-portrait-zoom-stable body.repop-page .nav-menu {
+        justify-content: space-evenly !important;
+        padding: 0 12px 6px !important;
+        background: linear-gradient(145deg, #ff4444 0%, #ff6238 45%, #ff8844 100%) !important;
+        box-shadow:
+            0 0 44px rgba(255, 68, 68, 0.45),
+            0 22px 52px rgba(0, 0, 0, 0.38) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    html.phone-portrait-zoom-stable body.repop-page .nav-menu .nav-link {
+        font-size: clamp(1.05rem, 4.2vw, 1.32rem) !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.08em !important;
+        text-transform: uppercase !important;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.28) !important;
+    }
+    html.phone-portrait-zoom-stable body.nav-open .nav-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition: transform 220ms ease, opacity 180ms ease, visibility 0ms;
+    }
+
+    html.phone-portrait-zoom-stable body .nav-item {
+        width: 100%;
+        display: block;
+        margin: 0 !important;
+    }
+    html.phone-portrait-zoom-stable body .nav-link {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.86rem;
+        padding: 10px 0;
+        line-height: 1.1;
+        border-radius: 0;
+        white-space: normal !important;
+        text-align: center !important;
+    }
+    html.phone-portrait-zoom-stable body .nav-menu .nav-link {
+        color: var(--mobileMenuLink) !important;
+    }
+    html.phone-portrait-zoom-stable body .nav-item:not(:last-child) .nav-link {
+        border-bottom: 2px solid var(--mobileMenuDivider);
+    }
+
+    html.phone-portrait-zoom-stable body .nav-scrim {
+        position: fixed;
+        inset: 0;
+        display: none;
+        background: rgba(0, 0, 0, 0.22);
+        z-index: 4999;
+    }
+    html.phone-portrait-zoom-stable body.nav-open .nav-scrim {
+        display: block;
+    }
+    html.phone-portrait-zoom-stable body.nav-open {
+        overflow: hidden;
+    }
+
+    /* Som portræt ≤640: gennemsigtig navbar + venstrestillet menu-knap */
+    html.phone-portrait-zoom-stable body .navbar,
+    html.phone-portrait-zoom-stable body.repop-page .navbar,
+    html.phone-portrait-zoom-stable body.durex-page .navbar,
+    html.phone-portrait-zoom-stable body.brainfarts-page .navbar,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .navbar,
+    html.phone-portrait-zoom-stable body.naturlig-page .navbar,
+    html.phone-portrait-zoom-stable body.kobajer-page .navbar,
+    html.phone-portrait-zoom-stable body.twister-page .navbar,
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .navbar {
+        background: transparent !important;
+        border-bottom: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    html.phone-portrait-zoom-stable body .nav-container,
+    html.phone-portrait-zoom-stable body.repop-page .nav-container,
+    html.phone-portrait-zoom-stable body.durex-page .nav-container,
+    html.phone-portrait-zoom-stable body.brainfarts-page .nav-container,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .nav-container,
+    html.phone-portrait-zoom-stable body.naturlig-page .nav-container,
+    html.phone-portrait-zoom-stable body.kobajer-page .nav-container,
+    html.phone-portrait-zoom-stable body.twister-page .nav-container,
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .nav-container {
+        justify-content: flex-start !important;
+        max-width: none !important;
+        width: auto !important;
+        margin-left: 0 !important;
+        margin-right: auto !important;
+    }
+
+    html.phone-portrait-zoom-stable body.repop-page .nav-container {
+        padding: 6px 10px !important;
+    }
+
+    /* Unge mod UV: samme neon-panel som øvrig mobil/tablet (zoom-viewport) */
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .nav-menu {
+        background: linear-gradient(180deg, rgba(0, 6, 14, 0.97) 0%, rgba(0, 20, 34, 0.99) 100%);
+        box-shadow:
+            0 0 48px rgba(0, 255, 255, 0.16),
+            0 24px 56px rgba(0, 0, 0, 0.6);
+    }
+
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .nav-menu .nav-link {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        text-shadow: 0 0 16px rgba(0, 255, 255, 0.42);
+    }
+
+    /* Twister: vibrerende lime som kampagnen (zoom-viewport) */
+    html.phone-portrait-zoom-stable body.twister-page .nav-menu {
+        background: linear-gradient(
+            168deg,
+            rgba(252, 255, 248, 0.99) 0%,
+            rgba(185, 242, 150, 0.97) 32%,
+            rgba(70, 210, 88, 0.96) 68%,
+            rgba(45, 185, 62, 0.98) 100%
+        );
+        box-shadow:
+            0 0 44px rgba(50, 220, 70, 0.48),
+            0 0 32px rgba(180, 255, 120, 0.28),
+            0 0 28px rgba(255, 105, 180, 0.16),
+            0 26px 52px rgba(0, 0, 0, 0.2);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    html.phone-portrait-zoom-stable body.twister-page .nav-menu .nav-link {
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        text-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.65),
+            0 2px 14px rgba(255, 255, 255, 0.45),
+            0 1px 4px rgba(4, 35, 12, 0.25);
+    }
+
+    /* Kø-bajer: mørkt lærred + neon (som dåse-labels), ikke gennemsigtigt panel */
+    html.phone-portrait-zoom-stable body.kobajer-page .nav-menu {
+        background: linear-gradient(
+            145deg,
+            #09090b 0%,
+            #0c1511 38%,
+            #100818 100%
+        );
+        box-shadow:
+            0 0 40px rgba(0, 255, 140, 0.32),
+            0 0 32px rgba(186, 104, 255, 0.22),
+            0 24px 52px rgba(0, 0, 0, 0.55);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    html.phone-portrait-zoom-stable body.kobajer-page .nav-menu .nav-link {
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-shadow:
+            0 0 20px rgba(0, 255, 153, 0.38),
+            0 1px 3px rgba(0, 0, 0, 0.85);
+    }
+
+    /* Byens Landhandel: uigennemsigtig varm grå-beige (som indholdskort) */
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .nav-menu {
+        background: linear-gradient(
+            180deg,
+            #f2ebe2 0%,
+            #e0d5c8 45%,
+            #d4c4b4 100%
+        );
+        box-shadow: 0 22px 48px rgba(47, 27, 20, 0.35);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .nav-menu .nav-link {
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+}
+
 /* Projekter: telefon + iPad portræt — samme mindmap som mobil (burger + lodret grid); øvrige sider følger stadig kun max-width 640 nedenfor */
 @media (max-width: 640px),
        (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
@@ -7142,10 +8155,8 @@ body.sketchbook-theme .brainstorm-container {
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
     }
-    body.projects-page.sketchbook-theme .projects-mobile {
-        display: none !important;
-    }
-        /* iPad portræt: samme “ét ark” som mobil (touch + DevTools med mus) */
+
+    /* iPad portræt: samme “ét ark” som mobil (touch + DevTools med mus) */
     @media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
            (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1),
            (min-width: 641px) and (max-width: 1366px) and (orientation: portrait) and (hover: none),
@@ -7173,6 +8184,49 @@ body.sketchbook-theme .brainstorm-container {
         }
         body.projects-page.sketchbook-theme .left-margin {
             left: 36px;
+        }
+    }
+
+    body.projects-page.sketchbook-theme .projects-mobile {
+        display: none !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container {
+        display: block !important;
+        min-height: var(--vh);
+        /* Samme som body: nogle motorer respekterer ikke nedarvning ind i fixed/transform-lag */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        /* One uniform scale for phone: mindmap + lines + brain shrink together; more top/bottom margin */
+        --projectsMobileVisScale: 0.88;
+        /* Mobile fit tuning (JS reads these and sets --projectsSx/--projectsSy) */
+        --projectsScaleUniform: 1;
+        /* Portrait: bases near typical phone viewport so the mind map stays large and airy (like live) */
+        --projectsScaleBaseW: 400;
+        --projectsScaleBaseH: 920;
+        --projectsScaleExp: 1.02;
+        --projectsScaleMin: 0.78;
+        transform-origin: 50% 50%;
+        /* Move the whole design down a bit so top/bottom are visible on iPhone Safari */
+        /* Lift it slightly so bottom nodes aren't clipped */
+        transform:
+            translateX(calc(-10px + env(safe-area-inset-left)))
+            translateY(calc(-12px + env(safe-area-inset-top)))
+            scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
+    }
+
+    /* Portrait: full-scale mind map (JS også 1). Portrait-grid: .projects-mindmap--portrait + safe-area bund til node-Y i script.js */
+    /* orientation + max-aspect-ratio: DevTools kan vise portræt men matche ikke orientation: portrait — ellers forbliver hjernen 200×200 fra HTML */
+    @media (orientation: portrait), (max-aspect-ratio: 1/1) {
+        body.projects-page.sketchbook-theme .brainstorm-container {
+            --projectsSx: 1 !important;
+            --projectsSy: 1 !important;
+            /* Kun mobil portræt: mindre hjerne (ikke landscape ellipse / ikke desktop 204px) */
+            --projectsBrainSize: 112px;
+        }
+        /* Overskriv SVG width/height-attributter (200) — ellers ser hjernen ikke mindre ud */
+        body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
+            width: var(--projectsBrainSize) !important;
+            height: var(--projectsBrainSize) !important;
         }
     }
 
@@ -7216,46 +8270,6 @@ body.sketchbook-theme .brainstorm-container {
         body.projects-page.sketchbook-theme .nav-toggle__label {
             font-size: 1.16rem;
             letter-spacing: 0.065em;
-        }
-    }
-
-    body.projects-page.sketchbook-theme .brainstorm-container {
-        display: block !important;
-        min-height: var(--vh);
-        /* Samme som body: nogle motorer respekterer ikke nedarvning ind i fixed/transform-lag */
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-        /* One uniform scale for phone: mindmap + lines + brain shrink together; more top/bottom margin */
-        --projectsMobileVisScale: 0.88;
-        /* Mobile fit tuning (JS reads these and sets --projectsSx/--projectsSy) */
-        --projectsScaleUniform: 1;
-        /* Portrait: bases near typical phone viewport so the mind map stays large and airy (like live) */
-        --projectsScaleBaseW: 400;
-        --projectsScaleBaseH: 920;
-        --projectsScaleExp: 1.02;
-        --projectsScaleMin: 0.78;
-        transform-origin: 50% 50%;
-        /* Move the whole design down a bit so top/bottom are visible on iPhone Safari */
-        /* Lift it slightly so bottom nodes aren't clipped */
-        transform:
-            translateX(calc(-10px + env(safe-area-inset-left)))
-            translateY(calc(-12px + env(safe-area-inset-top)))
-            scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
-    }
-
-    /* Portrait: full-scale mind map (JS også 1). Portrait-grid: .projects-mindmap--portrait + safe-area bund til node-Y i script.js */
-    /* orientation + max-aspect-ratio: DevTools kan vise portræt men matche ikke orientation: portrait — ellers forbliver hjernen 200×200 fra HTML */
-    @media (orientation: portrait), (max-aspect-ratio: 1/1) {
-        body.projects-page.sketchbook-theme .brainstorm-container {
-            --projectsSx: 1 !important;
-            --projectsSy: 1 !important;
-            /* Kun mobil portræt: mindre hjerne (ikke landscape ellipse / ikke desktop 204px) */
-            --projectsBrainSize: 112px;
-        }
-        /* Overskriv SVG width/height-attributter (200) — ellers ser hjernen ikke mindre ud */
-        body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
-            width: var(--projectsBrainSize) !important;
-            height: var(--projectsBrainSize) !important;
         }
     }
 
@@ -7558,7 +8572,7 @@ body.sketchbook-theme .brainstorm-container {
                 width: 100% !important;
                 transform: translateY(10px) scale(2.02) !important;
             }
-
+        }
     }
 
     /* TWISTER / D&AD: portrait — D&AD i ovalen */
@@ -7678,6 +8692,19 @@ body.sketchbook-theme .brainstorm-container {
         margin-left: auto !important;
         margin-right: auto !important;
     }
+    @media (max-width: 640px) {
+        body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text,
+        body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1.02 !important;
+            /* Tidligere 0.725 gjorde Kravling næsten usynlig; lidt større i cirklen */
+            transform: scale(0.88) !important;
+            transform-origin: center center !important;
+        }
+    }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text {
         display: flex !important;
@@ -7685,8 +8712,6 @@ body.sketchbook-theme .brainstorm-container {
         align-items: center !important;
         justify-content: center !important;
         line-height: 1.02 !important;
-        /* Tidligere 0.725 gjorde Kravling næsten usynlig; lidt større i cirklen */
-        transform: scale(0.88) !important;
         transform-origin: center center !important;
     }
     @media (orientation: portrait) {
@@ -7733,7 +8758,7 @@ body.sketchbook-theme .brainstorm-container {
             }
         }
     }
-    /* Telefon portræt: KØ-BAJER titel-webp — kun scaleX (iPad portræt: scale i dedikeret @media) */
+    /* Telefon portræt: KØ-BAJER titel-webp — kun scaleX (iPad portræt: translateY + scale(1.58) i dedikeret @media) */
     @media (orientation: portrait) and (max-width: 640px) {
         body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title-img--kobajer,
         body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
@@ -7795,7 +8820,7 @@ body.sketchbook-theme .brainstorm-container {
             box-sizing: border-box;
         }
 
-        @media (min-width: 641px) and (max-width: 1024px) {
+        @media (min-width: 641px) and (max-width: 1366px) {
             body.projects-page.sketchbook-theme .brainstorm-container .project-node .dandd-badge--inline .dandd-logo,
             body.projects-page.sketchbook-theme .brainstorm-container a.project-node .dandd-badge--inline .dandd-logo {
                 width: 66px !important;
@@ -7811,10 +8836,30 @@ body.sketchbook-theme .brainstorm-container {
             }
         }
     }
+}
 
+/* TWISTER: inline D&AD — skjul fritliggende badge + linje når :has understøttes (backup for bred Safari-viewport) */
+@supports selector(:has(a)) {
+    body.projects-page.sketchbook-theme .brainstorm-container:has(a[href*="twister"] .dandd-badge--inline) > .dandd-badge:not(.dandd-badge--inline),
+    body.projects-page.sketchbook-theme .brainstorm-container:has(.project-node[href*="twister"] .dandd-badge--inline) > .dandd-badge:not(.dandd-badge--inline) {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container:has(a[href*="twister"] .dandd-badge--inline) > .twister-dandd-line,
+    body.projects-page.sketchbook-theme .brainstorm-container:has(.project-node[href*="twister"] .dandd-badge--inline) > .twister-dandd-line {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+}
+
+@media (max-width: 640px) {
     /* About page: stack to one column on phones */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        align-content: start;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page {
         padding: 72px 20px 30px 44px;
@@ -8447,23 +9492,20 @@ body.sketchbook-theme .brainstorm-container {
         margin: 0 !important;
     }
 
-    /* TWISTER: make "Saunaen set i 180°" bigger on mobile (first Elements card) */
-    body.twister-page .elements-grid .element-box:nth-child(1) {
-        padding-top: 3.25rem !important; /* keep room for the absolute heading */
-    }
-    body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
+    /* TWISTER: Elements-kort — titel inde i boksen (samme som desktop; før kun #1 havde extra padding) */
+    body.twister-page .elements-grid .element-box .element-image {
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 260px !important;
         margin-top: 0.75rem !important;
+    }
+    body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
+        max-height: 260px !important;
+        margin-top: 0 !important;
     }
 
     /* UNGE MOD UV: mobile layout fixes (navbar-baggrund: gennemsigtig — se global mobil-navbar-blok) */
     body.unge-mod-uv-page .navbar {
         z-index: 5000 !important;
-    }
-    body.unge-mod-uv-page .nav-link {
-        color: #00ffff !important;
     }
 
     /* Give the main content more horizontal room on phones */
@@ -8579,528 +9621,344 @@ body.sketchbook-theme .brainstorm-container {
     }
 }
 
-/* NATURLI' — telefon i portræt: zoom kan gøre layout-viewport bredere end 640px, så
-   @media (max-width: 640px) og burger-layout slipper. Klassen sættes via JS ud fra
-   screen.* (stabilt ved zoom, i modsætning til innerWidth). */
+/* NATURLI' — indhold når layout-viewport er “bred” pga. zoom (fælles mobil-navbar: phone-portrait-zoom-stable) */
 @media (min-width: 641px) {
-    html.naturlig-portrait-zoom-stable {
-        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
-    }
-
-    html.naturlig-portrait-zoom-stable .mobile-only {
-        display: inline;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page {
-        --mobileMenuBg: rgba(255, 255, 255, 0.97);
-        --mobileMenuLink: #0d47a1;
-        --mobileMenuDivider: rgba(25, 118, 210, 0.34);
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-left: env(safe-area-inset-left, 0px);
-        padding-right: env(safe-area-inset-right, 0px);
-        height: var(--navBarTotal);
-        box-sizing: border-box;
-        z-index: 5000;
-        background: transparent !important;
-        border-bottom: none !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-container {
-        height: 52px;
-        padding: 6px 10px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 10px;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle {
-        appearance: none;
-        -webkit-appearance: none;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(0, 0, 0, 0.18);
-        border-radius: 10px;
-        width: auto;
-        height: 38px;
-        padding: 0 12px;
-        cursor: pointer;
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        flex: 0 0 auto;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars {
-        width: 18px;
-        height: 12px;
-        position: relative;
-        display: block;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::before,
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::after,
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars span {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2px;
-        border-radius: 2px;
-        background: rgba(0, 0, 0, 0.9);
-        transform-origin: 50% 50%;
-        transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::before {
-        top: 0;
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars span {
-        top: 5px;
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__bars::after {
-        top: 10px;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars::before {
-        top: 5px;
-        transform: rotate(45deg);
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars span {
-        opacity: 0;
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-toggle__bars::after {
-        top: 5px;
-        transform: rotate(-45deg);
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-toggle__label {
-        font-size: 1.02rem;
-        letter-spacing: 0.06em;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: rgba(0, 0, 0, 0.9);
-        line-height: 1;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-menu {
-        position: fixed;
-        left: 0;
-        right: 0;
-        top: var(--navBarTotal);
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch;
-        justify-content: space-evenly;
-        gap: 0 !important;
-        text-align: center;
-        padding: 0 18px 12px;
-        margin: 0;
-        list-style: none;
-        height: calc(var(--vh) * 0.68);
-        max-height: calc(var(--vh) * 0.68);
-        overflow: hidden;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(227, 242, 253, 0.95) 100%);
-        border-left: none;
-        border-right: none;
-        border-radius: 0;
-        box-shadow: 0 18px 42px rgba(25, 118, 210, 0.22);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        white-space: normal !important;
-        z-index: 5001;
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        transform: translateY(-10px);
-        transform-origin: top center;
-        transition:
-            transform 200ms ease,
-            opacity 160ms ease,
-            visibility 0ms linear 200ms;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-menu {
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
-        transform: translateY(0);
-        transition:
-            transform 220ms ease,
-            opacity 180ms ease,
-            visibility 0ms;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-item {
-        width: 100%;
-        display: block;
-        margin: 0 !important;
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-link {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: clamp(1.05rem, 4.2vw, 1.32rem);
-        padding: 16px 12px;
-        line-height: 1.28;
-        border-radius: 0;
-        white-space: normal !important;
-        text-align: center !important;
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-menu .nav-link {
-        color: var(--mobileMenuLink) !important;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-item:not(:last-child) .nav-link {
-        border-bottom: 2px solid var(--mobileMenuDivider);
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .nav-scrim {
-        position: fixed;
-        inset: 0;
-        display: none;
-        background: rgba(0, 0, 0, 0.22);
-        z-index: 4999;
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open .nav-scrim {
-        display: block;
-    }
-    html.naturlig-portrait-zoom-stable body.naturlig-page.nav-open {
-        overflow: hidden;
-    }
-
-    html.naturlig-portrait-zoom-stable body.naturlig-page .page-content {
+    html.phone-portrait-zoom-stable body.naturlig-page .page-content {
         padding: 64px 14px 18px !important;
         margin: 12px auto !important;
         border-radius: 16px !important;
     }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .page-content img[alt="Naturli Logo"] {
+    html.phone-portrait-zoom-stable body.naturlig-page .page-content img[alt="Naturli Logo"] {
         max-width: 270px !important;
         margin-top: 10px !important;
     }
 
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-infobox {
         padding: 18px !important;
     }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox h3 {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-infobox h3 {
         font-size: 1.6rem !important;
         margin-bottom: 1rem !important;
     }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox__assets {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-infobox__assets {
         gap: 12px !important;
         margin-top: 12px !important;
     }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-infobox__asset {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-infobox__asset {
         border-radius: 12px !important;
         box-shadow: none !important;
     }
 
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video {
         flex-direction: column !important;
         gap: 1rem !important;
         align-items: stretch !important;
     }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta,
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta,
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
         flex: 0 1 auto !important;
         width: 100% !important;
         max-width: 100% !important;
     }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta img {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video__meta img {
         width: 100% !important;
         max-width: 100% !important;
     }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-meta-video__video {
         margin-top: 0 !important;
     }
 
     /* Større OUTDOOR/SoMe-plakater når viewport er “bred” pga. zoom (klassen er kun telefon portræt) */
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-inline-infobox {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-inline-infobox {
         padding: 0.95rem 0.32rem 1.05rem !important;
         margin-left: -14px !important;
         margin-right: -14px !important;
         width: calc(100% + 28px) !important;
         box-sizing: border-box !important;
     }
-    html.naturlig-portrait-zoom-stable body.naturlig-page .naturli-inline-asset-row {
+    html.phone-portrait-zoom-stable body.naturlig-page .naturli-inline-asset-row {
         gap: 0.26rem !important;
     }
 
-    /* UNGE MOD UV — telefon portræt: zoom kan gøre layout-viewport >640px → mobil-layout + burger */
-    html.unge-mod-uv-portrait-zoom-stable {
-        --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
+    /* DUREX — indhold når layout-viewport er “bred” pga. zoom */
+    html.phone-portrait-zoom-stable body.durex-page .page-content {
+        margin-top: 12px !important;
+        padding: 64px 14px 18px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        border-radius: 16px !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable .mobile-only {
-        display: inline;
+    html.phone-portrait-zoom-stable body.durex-page h2,
+    html.phone-portrait-zoom-stable body.durex-page h3 {
+        margin-top: 0.75rem !important;
+        margin-bottom: 0 !important;
+        line-height: 1.08 !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page h3 {
+        line-height: 1.1 !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page h2 + p,
+    html.phone-portrait-zoom-stable body.durex-page h3 + p {
+        margin-top: -0.12em !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page p {
+        line-height: 1.3 !important;
+        margin: 0 0 0.38rem 0 !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page p + p {
+        margin-top: -0.22rem !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page {
-        --mobileMenuBg: rgba(0, 8, 18, 0.94);
-        --mobileMenuLink: #7efdfd;
-        --mobileMenuDivider: rgba(0, 255, 255, 0.58);
+    html.phone-portrait-zoom-stable body.durex-page .durex-rules h4 {
+        margin-top: 0.5rem !important;
+        margin-bottom: 0 !important;
+        line-height: 1.08 !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page .durex-rules h4:first-of-type {
+        margin-top: 0 !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page .durex-rules h4 + h4 {
+        margin-top: 0.3rem !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page .durex-rules h4 + p {
+        margin-top: -0.12em !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page .durex-infobox .durex-infobox__subhead {
+        margin-top: 0.3rem !important;
+        margin-bottom: 0 !important;
+        line-height: 1.08 !important;
+    }
+    html.phone-portrait-zoom-stable body.durex-page .durex-infobox .durex-infobox__subhead + p {
+        margin-top: -0.12em !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-left: env(safe-area-inset-left, 0px);
-        padding-right: env(safe-area-inset-right, 0px);
-        height: var(--navBarTotal);
-        box-sizing: border-box;
-        z-index: 5000 !important;
-        background: transparent !important;
-        border-bottom: none !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
+    html.phone-portrait-zoom-stable body.durex-page .durex-infobox-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.9rem !important;
     }
-
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-container {
-        height: 52px;
-        padding: 6px 10px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 10px;
-    }
-
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle {
-        appearance: none;
-        -webkit-appearance: none;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(0, 0, 0, 0.18);
-        border-radius: 10px;
-        width: auto;
-        height: 38px;
-        padding: 0 12px;
-        cursor: pointer;
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        flex: 0 0 auto;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars {
-        width: 18px;
-        height: 12px;
-        position: relative;
-        display: block;
-    }
-
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars::before,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars::after,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars span {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2px;
-        border-radius: 2px;
-        background: rgba(0, 0, 0, 0.9);
-        transform-origin: 50% 50%;
-        transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
-    }
-
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars::before {
-        top: 0;
-    }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars span {
-        top: 5px;
-    }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__bars::after {
-        top: 10px;
-    }
-
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-toggle__bars::before {
-        top: 5px;
-        transform: rotate(45deg);
-    }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-toggle__bars span {
-        opacity: 0;
-    }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-toggle__bars::after {
-        top: 5px;
-        transform: rotate(-45deg);
-    }
-
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-toggle__label {
-        font-size: 1.02rem;
-        letter-spacing: 0.06em;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: rgba(0, 0, 0, 0.9);
-        line-height: 1;
-    }
-
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-menu {
-        position: fixed;
-        left: 0;
-        right: 0;
-        top: var(--navBarTotal);
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch;
-        justify-content: space-evenly;
-        gap: 0 !important;
+    html.phone-portrait-zoom-stable body.durex-page .durex-board-section {
+        margin-top: 1rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
         text-align: center;
-        padding: 0 18px 12px;
-        margin: 0;
-        list-style: none;
-        height: calc(var(--vh) * 0.68);
-        max-height: calc(var(--vh) * 0.68);
-        overflow: hidden;
-        background: linear-gradient(180deg, rgba(0, 6, 14, 0.97) 0%, rgba(0, 20, 34, 0.99) 100%);
-        border-left: none;
-        border-right: none;
-        border-radius: 0;
-        box-shadow:
-            0 0 48px rgba(0, 255, 255, 0.16),
-            0 24px 56px rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        white-space: normal !important;
-        z-index: 5001;
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        transform: translateY(-10px);
-        transform-origin: top center;
-        transition:
-            transform 200ms ease,
-            opacity 160ms ease,
-            visibility 0ms linear 200ms;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-menu {
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
-        transform: translateY(0);
-        transition:
-            transform 220ms ease,
-            opacity 180ms ease,
-            visibility 0ms;
+    /* Én fælles twin-boks som i max-width 1024 portræt — også når zoom gør viewport “bred” */
+    html.phone-portrait-zoom-stable body.durex-page .durex-twin-cards {
+        display: block !important;
+        padding: 1.25rem 1.15rem !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 3px solid rgba(255, 255, 255, 0.8) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-item {
-        width: 100%;
-        display: block;
+    html.phone-portrait-zoom-stable body.durex-page .durex-twin-cards__card {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    html.phone-portrait-zoom-stable body.durex-page .durex-twin-cards__card + .durex-twin-cards__card {
+        margin-top: 1.35rem !important;
+        padding-top: 1.35rem !important;
+        border-top: 1px solid rgba(25, 118, 210, 0.22) !important;
+    }
+
+    html.phone-portrait-zoom-stable body.durex-page .durex-twin-cards__character-img {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+    }
+
+    /* TWISTER — samme mobil-layout som max-width:640 når viewport er “bred” pga. zoom */
+    html.phone-portrait-zoom-stable body.twister-page .page-content {
+        padding: 64px 14px 16px !important;
+        margin: 12px auto !important;
+        border-radius: 16px !important;
+    }
+    html.phone-portrait-zoom-stable body.twister-page .contact-info h3 {
+        margin: 0.42rem 0 0 !important;
+        line-height: 1.1 !important;
+    }
+    html.phone-portrait-zoom-stable body.twister-page .contact-info > p {
+        line-height: 1.12 !important;
+        margin: 0 0 0.18rem 0 !important;
+    }
+    html.phone-portrait-zoom-stable body.twister-page .contact-info h3 + p {
+        margin-top: -0.12em !important;
+    }
+    html.phone-portrait-zoom-stable body.twister-page .step-column h4 {
+        margin: 0 0 0.08rem !important;
+        line-height: 1.08 !important;
+    }
+    html.phone-portrait-zoom-stable body.twister-page .step-column h5 {
+        margin: 0 0 0.14rem !important;
+        line-height: 1.08 !important;
+    }
+    html.phone-portrait-zoom-stable body.twister-page .step-column h5 + p {
+        margin-top: -0.1em !important;
+    }
+    html.phone-portrait-zoom-stable body.twister-page .step-column p {
+        line-height: 1.14 !important;
         margin: 0 !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-link {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: clamp(1.05rem, 4.2vw, 1.32rem);
-        padding: 16px 12px;
-        line-height: 1.28;
-        border-radius: 0;
-        white-space: normal !important;
-        text-align: center !important;
+    html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box .element-image {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 0.75rem !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-menu .nav-link {
-        color: var(--mobileMenuLink) !important;
-        font-weight: 800;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        text-shadow: 0 0 16px rgba(0, 255, 255, 0.42);
-    }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-item:not(:last-child) .nav-link {
-        border-bottom: 2px solid var(--mobileMenuDivider);
+    html.phone-portrait-zoom-stable body.twister-page .elements-grid .element-box:nth-child(1) .element-image {
+        max-height: 260px !important;
+        margin-top: 0 !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .nav-scrim {
-        position: fixed;
-        inset: 0;
-        display: none;
-        background: rgba(0, 0, 0, 0.22);
-        z-index: 4999;
+    /* KØ-BAJEREN — infobox-billeder (samme som max-width:640 når zoom gør viewport “bred”) */
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-info-boxes {
+        gap: 0.55rem !important;
+        margin: 1.25rem 0 !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open .nav-scrim {
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-info-box {
+        padding: 0.18rem 0.1rem !important;
+        min-height: 0 !important;
+    }
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-can-image {
+        display: block !important;
+        width: calc(100% + 22px) !important;
+        max-width: none !important;
+        margin-left: -11px !important;
+        margin-right: -11px !important;
+        max-height: min(140vw, 640px) !important;
+        object-fit: contain !important;
+    }
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-step-box {
+        padding: 0.45rem 0.22rem !important;
+    }
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-step-image {
+        display: block !important;
+        width: calc(100% + 22px) !important;
+        max-width: none !important;
+        margin-left: -11px !important;
+        margin-right: -11px !important;
+        max-height: min(140vw, 640px) !important;
+        margin-top: 0.5rem !important;
+        object-fit: contain !important;
+    }
+
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-bottom-cta {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        margin-top: 1.5rem !important;
+    }
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-bottom-cta__item:nth-child(3) {
+        grid-column: 1 !important;
+    }
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-bottom-cta__item {
+        min-height: min(44vw, 210px) !important;
+    }
+    html.phone-portrait-zoom-stable body.kobajer-page .kobajer-bottom-cta__img {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: min(92vw, 340px) !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+
+    /* BYENS LANDHANDEL — samme mobil-layout som max-width:640 når viewport er “bred” pga. zoom */
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .page-content {
+        padding: 88px 14px 16px !important;
+        margin: 12px auto 14px !important;
+        border-radius: 16px !important;
+    }
+    html.phone-portrait-zoom-stable body.byens-landhandel-page h1.byens-headline {
+        margin-top: 1.1rem !important;
+        margin-bottom: 0.55rem !important;
+        line-height: 1.05 !important;
+        font-size: clamp(1.45rem, 6.0vw, 2.05rem) !important;
+    }
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .byens-headline__top {
         display: block;
+        white-space: nowrap;
+        font-weight: 900;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page.nav-open {
-        overflow: hidden;
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .byens-headline__sub {
+        display: block;
+        font-weight: 900;
+    }
+    html.phone-portrait-zoom-stable body.byens-landhandel-page p {
+        line-height: 1.12 !important;
+        margin: 0 0 0.22rem 0 !important;
+    }
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .poster-container {
+        margin: 0.9rem 0 0 !important;
+        width: calc(100% + 28px) !important;
+        margin-left: -14px !important;
+        margin-right: -14px !important;
+    }
+    html.phone-portrait-zoom-stable body.byens-landhandel-page .project-poster {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 0 !important;
     }
 
-    /* Samme mobil-layout som @media (max-width: 640px) — også når zoom gør viewport “bred” */
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content {
-        padding: 0.05rem 1.05rem 1rem !important;
+    /* UNGE MOD UV — samme mobil-layout som max-width:640 når viewport er “bred” pga. zoom */
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content {
+        padding: 0 1.05rem 1rem !important;
         margin: 56px auto 14px !important;
         border-radius: 16px !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-grid {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-grid {
         grid-template-columns: 1fr !important;
         grid-template-rows: auto !important;
         gap: 0.75rem !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card p {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card p {
         max-width: 100% !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content h1.uv-headline {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content h1.uv-headline {
         margin: 0 auto -1.85rem auto !important;
         line-height: 0 !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-hero {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-hero {
         margin-top: 0 !important;
         gap: 0 !important;
         margin-bottom: 0.15rem !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-hero .uv-credit {
-        margin-top: -1.65rem !important;
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page h1.uv-headline + p.uv-credit {
+        margin: -128px auto 0.25rem auto !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-credit {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-credit {
         margin-left: auto !important;
         margin-right: auto !important;
         margin-bottom: 0 !important;
         line-height: 1.1 !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-credit + h4 {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-credit + h4 {
         margin-top: 0 !important;
         margin-bottom: 0 !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-credit + h4 + p {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-credit + h4 + p {
         margin-top: -0.12em !important;
         margin-bottom: 0.28rem !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-headline__logo {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-headline__logo {
         width: min(78vw, 360px) !important;
         -webkit-clip-path: inset(16% 8% 28% 5%) !important;
         clip-path: inset(16% 8% 28% 5%) !important;
-        transform: translateY(-14px);
+        transform: translateY(-46px) !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-box {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-box {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -9108,7 +9966,7 @@ body.sketchbook-theme .brainstorm-container {
         margin: 0.05rem 0 1rem 0 !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-section-box {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-section-box {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -9116,14 +9974,14 @@ body.sketchbook-theme .brainstorm-container {
         margin: 1rem 0 0 !important;
         border-radius: 0 !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-card {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-card {
         padding: 0.55rem 0.35rem !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-card p {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-brief-card p {
         max-width: 100% !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid {
         grid-template-columns: 1fr !important;
         max-width: none !important;
         margin-left: -1.1rem !important;
@@ -9131,35 +9989,35 @@ body.sketchbook-theme .brainstorm-container {
         gap: 0.85rem !important;
         width: calc(100% + 2.2rem) !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid > div {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid > div {
         border-radius: 0 !important;
     }
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid img {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .uv-assets-grid img {
         width: 100% !important;
         height: auto !important;
         display: block;
         border-radius: 0 !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
         grid-template-columns: 1fr !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
         grid-template-columns: 1fr !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid > .uv-media-tile,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid > .uv-media-tile {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid > .uv-media-tile,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid > .uv-media-tile,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid > .uv-media-tile {
         min-width: 0 !important;
         max-width: 100% !important;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid img,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid img,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid img {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid img,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid img,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid img {
         width: 100% !important;
         max-width: 100% !important;
         height: auto !important;
@@ -9167,14 +10025,68 @@ body.sketchbook-theme .brainstorm-container {
         object-position: center top;
     }
 
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid,
-    html.unge-mod-uv-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid,
+    html.phone-portrait-zoom-stable body.unge-mod-uv-page .unge-mod-uv-content .uv-outdoor-grid {
         width: calc(100% + 3rem) !important;
         max-width: none !important;
         margin-left: -1.5rem !important;
         margin-right: -1.5rem !important;
         box-sizing: border-box !important;
+    }
+}
+
+/* Repop LFW: iPad/lille tablet i portræt (641–768px) matcher ikke max-width:640, men skal samme kolonne + fuld billedbredde */
+@media (min-width: 641px) and (max-width: 768px) and (orientation: portrait) {
+    body.repop-page .repop-lfw-segment {
+        padding: 1.15rem 0 !important;
+        margin: 1rem 0 !important;
+        overflow: hidden;
+    }
+    body.repop-page .repop-lfw-segment > h3 {
+        padding-left: 1.15rem !important;
+        padding-right: 1.15rem !important;
+        box-sizing: border-box !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 14px !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+        order: 1;
+        min-height: auto !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 1.15rem !important;
+        padding-right: 1.15rem !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
+        order: 2;
+        flex: none !important;
+        align-self: stretch !important;
+        text-align: center;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media img {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        display: block !important;
+        object-fit: contain !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    body.repop-page .repop-lfw-segment .repop-mobile-stack__media img.repop-lfw-img--promo {
+        transform: none !important;
+        border-radius: 0 0 12px 12px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
     }
 }
 
@@ -9192,6 +10104,17 @@ body.sketchbook-theme .brainstorm-container {
         overflow-wrap: anywhere !important;
         word-break: break-word !important;
         hyphens: auto !important;
+    }
+    html body.repop-page .repop-brief-grid,
+    html body.repop-page .repop-inline-brief-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-rows: auto !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    html body.repop-page .repop-brief-grid > div,
+    html body.repop-page .repop-inline-brief-grid > div {
+        min-width: 0 !important;
     }
     html body.repop-page .repop-lfw-segment {
         margin: 1.5rem 0 !important;
@@ -9761,7 +10684,7 @@ body.sketchbook-theme .brainstorm-container {
     html body.repop-page .nav-scrim { z-index: 19999 !important; }
     html body.repop-page .nav-menu { z-index: 20001 !important; }
 
-    /* Repop: sammepalette som LFW-bokse — fast panel, ikke hvid “glas” */
+    /* Repop: sammepalette som LFW-bokse — fast panel */
     html body.repop-page {
         --mobileMenuBg: #ff4444;
         --mobileMenuLink: #ffffff;
@@ -9845,6 +10768,7 @@ body.sketchbook-theme .brainstorm-container {
         margin-right: 0.4rem !important;
         width: auto !important;
         transform: translateX(-6px) !important;
+        /* Større billeder i kort landskab — stadig inden for typisk ~390–430px høj viewport */
         max-height: min(82vh, calc(var(--vh, 100dvh) - var(--navBarTotal) - 22px));
         overflow: hidden;
         align-self: flex-start;
@@ -9857,6 +10781,7 @@ body.sketchbook-theme .brainstorm-container {
         object-fit: contain !important;
         object-position: center top;
     }
+    /* Ingen scale her: scale() ændrer ikke layout-boksen og overflow’ede i kort landskab */
     html body.repop-page .repop-mobile-stack__media img.repop-lfw-img--promo {
         transform: none !important;
     }
@@ -10046,17 +10971,17 @@ body.sketchbook-theme .brainstorm-container {
     body.sketchbook-theme .left-margin { left: 36px; }
 }
 
-/* Mobile navbar on iPad / tablet-bredde portræt: burger (+ DevTools iPad, som ofte har pointer: fine) */
-@media (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse),
-    (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
-    (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
+/* Mobile navbar on iPad / tablet: burger i portræt og landskab op til 1366px (+ DevTools med pointer: fine) */
+@media (min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse),
+    (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
+    (min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) {
     /* Same bar height as phone burger layout (52px) + notch — matches --navBarTotal for dropdown top */
     html {
         --navBarTotal: calc(52px + env(safe-area-inset-top, 0px));
     }
 
     body {
-        --mobileMenuBg: rgba(255, 255, 255, 0.96);
+        --mobileMenuBg: #ffffff;
         --mobileMenuLink: rgba(0, 0, 0, 0.92);
         --mobileMenuDivider: rgba(0, 0, 0, 0.26);
     }
@@ -10166,8 +11091,8 @@ body.sketchbook-theme .brainstorm-container {
     body .nav-toggle {
         appearance: none;
         -webkit-appearance: none;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(0, 0, 0, 0.18);
+        background: var(--navToggleBg);
+        border: 1px solid var(--navToggleBorder);
         border-radius: 10px;
         width: auto;
         height: 46px;
@@ -10178,7 +11103,7 @@ body.sketchbook-theme .brainstorm-container {
         justify-content: center;
         gap: 10px;
         flex: 0 0 auto;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+        box-shadow: var(--navToggleShadow);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
     }
@@ -10197,7 +11122,7 @@ body.sketchbook-theme .brainstorm-container {
         right: 0;
         height: 2px;
         border-radius: 2px;
-        background: rgba(0, 0, 0, 0.9);
+        background: var(--navToggleBar);
         transform-origin: 50% 50%;
         transition: transform 160ms ease, top 160ms ease, opacity 160ms ease;
     }
@@ -10214,7 +11139,7 @@ body.sketchbook-theme .brainstorm-container {
         letter-spacing: 0.06em;
         font-weight: 700;
         text-transform: uppercase;
-        color: rgba(0, 0, 0, 0.9);
+        color: var(--navToggleLabel);
         line-height: 1;
     }
 
@@ -10232,6 +11157,9 @@ body.sketchbook-theme .brainstorm-container {
         padding: 12px 24px 22px;
         margin: 0;
         list-style: none;
+        /*
+         * Større panel + større skrift (nav-link) i tablet-portræt — cap så korte viewports stadig kan scrolle.
+         */
         height: auto;
         max-height: min(640px, 88vh);
         overflow: auto;
@@ -10240,8 +11168,9 @@ body.sketchbook-theme .brainstorm-container {
         border-top: none;
         border-bottom: none;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        /* Blur ovenpå Repops røde baggrund gjorde panelet gråt/mudret */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
         z-index: 5001;
         opacity: 0;
         visibility: hidden;
@@ -10288,7 +11217,7 @@ body.sketchbook-theme .brainstorm-container {
         border-bottom: 2px solid var(--mobileMenuDivider) !important;
     }
 
-    /* Burger-dropdown: projekt-specifikke paneler + typografi (iPad/tablet portræt 641–1024px) */
+    /* Burger-dropdown: projekt-specifikke paneler + typografi (iPad/tablet 641–1366px) */
     body.naturlig-page .nav-menu {
         background: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(227, 242, 253, 0.95) 100%);
         box-shadow: 0 18px 42px rgba(25, 118, 210, 0.22);
@@ -10453,11 +11382,33 @@ body.sketchbook-theme .brainstorm-container {
     }
     body.nav-open .nav-scrim { display: block; }
     body.nav-open { overflow: hidden; }
+
+    /*
+     * Menuen skal ligge OVER alt andet (ai-handoff 9999, asset-lightbox 300050, m.m.).
+     * Hele .navbar løftes — ul.nav-menu er fixed child og følger stacking context.
+     */
+    body.nav-open .navbar {
+        z-index: 450000 !important;
+    }
+    html body.repop-page.nav-open .navbar {
+        z-index: 450000 !important;
+    }
+    body.nav-open .nav-scrim {
+        z-index: 449900 !important;
+    }
+    html body.repop-page.nav-open .nav-scrim {
+        z-index: 449900 !important;
+    }
+
+    body.nav-open .navbar,
+    body.nav-open .nav-container {
+        pointer-events: auto !important;
+    }
 }
 
-/* Portræt: iPad / stor mobil med burger (641–1024px, touch) — samme som telefon: ingen hvid bjælke */
-@media (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse) and (orientation: portrait),
-    (min-width: 641px) and (max-width: 1024px) and (hover: none) and (pointer: coarse) and (max-aspect-ratio: 1/1) {
+/* Portræt: iPad / stor mobil med burger (641–1366px, touch) — samme som telefon: ingen hvid bjælke */
+@media (min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) and (orientation: portrait),
+    (min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) and (max-aspect-ratio: 1/1) {
     body .navbar,
     html body.repop-page .navbar,
     html body.durex-page .navbar,
@@ -11195,6 +12146,19 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 /* Unge mod UV — portræt mobil: Print/Outdoor/SoMe — fuld billedvisning (én kolonne, minmax undgås, contain) */
 @media (max-width: 640px) and (orientation: portrait),
     (max-width: 640px) and (max-aspect-ratio: 1/1) {
+    /* Hero: logo tættere på øverste infoboks-kant (kun portræt) */
+    body.unge-mod-uv-page .unge-mod-uv-content {
+        padding-top: 0 !important;
+    }
+    body.unge-mod-uv-page .uv-headline__logo {
+        transform: translateY(-46px) !important;
+    }
+
+    /* “Lavet med …” — samme idé som i unge-mod-uv.html (-128px @768); -2.45rem overskrev det med !important */
+    body.unge-mod-uv-page h1.uv-headline + p.uv-credit {
+        margin: -128px auto 0.25rem auto !important;
+    }
+
     body.unge-mod-uv-page .unge-mod-uv-content .uv-print-grid,
     body.unge-mod-uv-page .unge-mod-uv-content .uv-some-grid {
         grid-template-columns: 1fr !important;
@@ -11345,7 +12309,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     }
 }
 
-/* iPad / tablet landscape (1024–1600): skub hovedindhold ned; + Unge mod UV Print/SoMe 2+1 — tredje kort centreret.
+/* iPad / tablet landscape (1024–1600): skub hovedindhold ned; + Print/SoMe 2+1 — tredje kort centreret.
    Max 1600 så smal laptop-landskab følger med; undgår store ultrawide.
    Ekstra (min-aspect-ratio): når orientation: landscape fejler i DevTools, men bredden stadig er tablet. */
 @media (min-width: 1024px) and (max-width: 1600px) and (orientation: landscape),
@@ -11377,6 +12341,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         width: min(100%, calc((100% - 1.2rem) / 2));
     }
 
+    /* Repop × LFW: iPad landskab — bredere mockup-kolonne (tekst overlap ikke), overflow fra zoom mod højre */
     html body.repop-page .repop-lfw-segment .repop-mobile-stack--lfw,
     html body.repop-page .repop-lfw-segment .repop-mobile-stack {
         display: grid !important;
@@ -11407,6 +12372,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         /* Lodret finjustér mod „Efter LFW“; vandret holdt lav — zoom margin er 0 i landskab */
         transform: translate(0.15rem, -1.2rem) !important;
     }
+    /* Global .repop-page p { max-width: 50% } gør tekstkolonnen visuelt for “small” */
     html body.repop-page .repop-lfw-segment .repop-mobile-stack__text :is(p, h4) {
         max-width: 100% !important;
         width: 100% !important;
@@ -11431,6 +12397,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         margin-top: 0 !important;
         line-height: 1.2 !important;
     }
+    /* LFW asset 6: øverste markører (SoMe + Post) — iPad landskab */
     html body.repop-page .repop-lfw-overview {
         padding-top: 1.36rem !important;
     }
@@ -11446,6 +12413,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         top: 19.9% !important;
         left: 68.5% !important;
     }
+    /* Nederste tre (Pre, Pop-up, OOH): fælles lodret linje */
     html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
         top: 72.5% !important;
         left: 18% !important;
@@ -11622,94 +12590,6 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 .page-content li {
     margin-bottom: 0.5rem;
     text-align: center;
-}
-
-/*
- * iPad: projektsider (undtagen Twister) — samme skala som twister.html
- * Brødtekst som .contact-info p (1.2rem, 500, 1.6); overskrifter som .page-content h1–h3.
- * Viewport: typisk iPad/Pro i begge retninger (undgå fuld desktop 1440+ og telefon <768).
- */
-@media (min-width: 768px) and (max-width: 1366px) {
-    /* --- Brødtekst + lister (kobajer, durex, repop, naturlig, byens) --- */
-    body.kobajer-page .page-content :is(p, li),
-    body.durex-page .page-content :is(p, li),
-    body.repop-page .page-content :is(p, li),
-    body.naturlig-page .page-content :is(p, li),
-    body.byens-landhandel-page .page-content :is(p, li) {
-        font-size: 1.2rem;
-        line-height: 1.6;
-        font-weight: 500;
-    }
-
-    /* Durex: 1.1rem/infobox → Twister-linje */
-    body.durex-page .page-content .durex-infobox .durex-infobox__subhead {
-        font-size: 1.2rem;
-    }
-
-    /* KØ-Bajer: step-bokse (var 1rem / 0,95rem) */
-    body.kobajer-page .kobajer-step-box p {
-        font-size: 1.2rem;
-        line-height: 1.6;
-        font-weight: 500;
-    }
-    body.kobajer-page .kobajer-step-box .step-detail {
-        font-size: 1.1rem;
-        line-height: 1.5;
-    }
-    /* STEP-rubrik som .step-column h4 (1,5rem) */
-    body.kobajer-page .kobajer-step-box h4 {
-        font-size: 1.5rem;
-    }
-
-    /* Unge mod UV */
-    body.unge-mod-uv-page .unge-mod-uv-content :is(p, li) {
-        font-size: 1.2rem;
-        line-height: 1.6;
-        font-weight: 500;
-    }
-    body.unge-mod-uv-page .unge-mod-uv-content h2 {
-        font-size: 1.8rem;
-    }
-    body.unge-mod-uv-page .unge-mod-uv-content h3 {
-        font-size: 1.4rem;
-    }
-    body.unge-mod-uv-page .unge-mod-uv-content h4 {
-        font-size: 1.5rem;
-    }
-
-    body.naturlig-page .page-content h2 {
-        font-size: 1.8rem;
-    }
-    body.naturlig-page .page-content h3 {
-        font-size: 1.4rem;
-    }
-
-    /* Repop: sikr grundniveau; brief-kort var allerede ~1,24rem */
-    body.repop-page .page-content > p,
-    body.repop-page .page-content .repop-stack__text p,
-    body.repop-page .page-content .repop-mobile-stack__text p {
-        font-size: 1.2rem !important;
-        line-height: 1.6 !important;
-        font-weight: 500 !important;
-    }
-    body.repop-page .page-content .repop-brief-grid p {
-        font-size: 1.2rem !important;
-        line-height: 1.6 !important;
-    }
-    body.repop-page p.repop-brief-subtitle {
-        font-size: 1.3rem !important;
-    }
-
-    /* Brainfarts: inline 1,1rem quote → 1,2rem; h1 som øvrige projekter 2,5rem */
-    body.brainfarts-page .brainfarts-content h1 {
-        font-size: 2.5rem !important;
-    }
-    body.brainfarts-page .brainfarts-content .fart-quote {
-        font-size: 1.2rem !important;
-    }
-    body.brainfarts-page .brainfarts-content .fart-stat h3 {
-        font-size: 1.4rem !important;
-    }
 }
 
 /* Back Button (projektsider → projects.html, under navbar) */
@@ -11968,7 +12848,6 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         gap: clamp(1.25rem, 3vw, 2rem) !important;
     }
 
-    /* Primært ~50/50 som på mockups (undgå smal tekstkolonne fra 58/70) */
     html body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
         flex: 0 0 50% !important;
         max-width: 50% !important;
@@ -11978,7 +12857,6 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         margin: 0 !important;
     }
 
-    /* Mockups m. frac: lidt bredere billede, stadig rimelig tekstbredde */
     html body.repop-page
         .repop-lfw-segment:has(.repop-mobile-stack__media img[data-lfw-content-frac])
         .repop-mobile-stack__media {
@@ -12025,7 +12903,6 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         box-sizing: border-box !important;
     }
 
-    /* Video: næsten fuld kortbredde som i reference (ikke smal 58 %) */
     html body.repop-page .repop-video-wrap {
         width: 100% !important;
         max-width: 100% !important;
@@ -12034,18 +12911,15 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         box-sizing: border-box !important;
     }
 
-    /* Bevar inline padding på kortene — ikke overdriv med !important her */
     html body.repop-page .repop-lfw-overview {
         overflow-x: visible !important;
         overflow-y: visible !important;
         padding-bottom: 2.25rem !important;
     }
-    /* Kalender: diskret skala så markører følger grafikken tættere på layout-filen */
     html body.repop-page .repop-lfw-overview__track {
         transform: scale(1.04) !important;
         transform-origin: center top !important;
     }
-    /* Toprække: labels over cirkler */
     html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
     html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
         transform: translate(-50%, calc(-100% - 10px)) !important;
@@ -12624,25 +13498,6 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     position: relative;
 }
 
-.naturlig-page .navbar {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(15px);
-}
-
-.naturlig-page .nav-link {
-    color: #1976d2 !important;
-    font-weight: 600;
-}
-
-/* Ingen skift: samme blå + fuld dækning (afvis global .nav-link:hover { opacity: 0.7 } og tidligere lysere hover-farve) */
-.naturlig-page .nav-link:hover,
-.naturlig-page .nav-link:focus,
-.naturlig-page .nav-link:focus-visible,
-.naturlig-page .nav-link:active {
-    color: #1976d2 !important;
-    opacity: 1 !important;
-}
-
 .naturlig-page .back-button {
     background: rgba(255, 255, 255, 0.9);
     color: #1976d2;
@@ -12727,6 +13582,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     aspect-ratio: 544 / 762;
 }
 
+/* Inline plakater / SoMe-mockups: ingen drop-shadow fra stylesheet */
 .naturlig-page .naturli-inline-asset-row img {
     box-shadow: none !important;
     filter: none !important;
@@ -12772,6 +13628,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
         margin-bottom: 1.1rem !important;
     }
 
+    /* Ingen side-bleed på iPad portræt — hold OUTDOOR/SoMe inden for page-content / infoboks */
     html body.naturlig-page .naturli-inline-infobox {
         margin-left: 0 !important;
         margin-right: 0 !important;
@@ -12873,43 +13730,8 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     position: relative;
 }
 
-/* Ingen hvid plade under status/safe area — gradient fra body/html skinner igennem (alle breakpoints). */
 .durex-page .navbar {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border-bottom: none;
-    box-shadow: none;
     color-scheme: light;
-}
-
-.durex-page .nav-link {
-    color: rgba(255, 255, 255, 0.92);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
-.durex-page .nav-link:hover {
-    color: #ffffff;
-}
-
-@media (min-width: 768px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) {
-    .durex-page .navbar {
-        background: rgba(255, 255, 255, 0.96) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
-        border-bottom: none !important;
-        box-shadow: none !important;
-        font-family: var(--font-sans);
-    }
-    .durex-page .nav-link {
-        color: #333 !important;
-        text-shadow: none !important;
-        font-weight: 600 !important;
-    }
-    .durex-page .nav-link:hover {
-        color: #111 !important;
-        opacity: 0.8;
-    }
 }
 
 .durex-page .back-button {
@@ -13068,19 +13890,6 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     z-index: 0;
 }
 
-.kobajer-page .navbar {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-}
-
-.kobajer-page .nav-link {
-    color: #333333;
-}
-
-.kobajer-page .nav-link:hover {
-    color: #666666;
-}
-
 .kobajer-page .back-button {
     color: #FF6B6B;
     background: rgba(255, 255, 255, 0.9);
@@ -13146,7 +13955,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 /* KØ-BAJER Info Boxes Section */
 .kobajer-info-boxes {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
     margin: 2rem 0;
 }
@@ -13166,6 +13975,8 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     align-items: center;
     justify-content: flex-start;
     min-height: 140px;
+    /* Undgå at store billed-intrinsics sprænger CSS Grid i WebKit efter rotation */
+    min-width: 0;
 }
 
 .kobajer-info-box h4 {
@@ -13190,6 +14001,10 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     height: auto;
     max-height: 400px;
     object-fit: contain;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    min-width: 0;
 }
 
 @media (max-width: 768px) {
@@ -13202,7 +14017,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
 /* KØ-BAJER Steps Section */
 .kobajer-steps {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
     margin: 2rem 0;
 }
@@ -13222,6 +14037,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     align-items: center;
     justify-content: center;
     min-height: 120px;
+    min-width: 0;
 }
 
 .kobajer-step-box h4 {
@@ -13256,6 +14072,7 @@ body.unge-mod-uv-page .unge-mod-uv-content .uv-brief-card {
     max-height: 400px;
     object-fit: contain;
     margin-top: 1rem;
+    min-width: 0;
 }
 
 /* Anmeld / Boykot / Sig fra — desktop/tablet: 2 kolonner + tredje fuld bredde */
@@ -13315,49 +14132,28 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
 }
 
-/* KØ-BAJER: iPad-landskab — bund-CTA som kobajer.html inline (fallback; samme som frontpage 600px) */
-@media screen and (min-width: 1024px) and (max-width: 1400px) and (max-height: 1200px) {
-    body.kobajer-page .kobajer-bottom-cta {
-        display: block !important;
-        width: 100% !important;
-        max-width: none !important;
-        margin: 2rem 0 0 0 !important;
-        padding: 0 !important;
-    }
-    body.kobajer-page .kobajer-bottom-cta__item {
-        display: block !important;
-        width: 100% !important;
-        max-width: none !important;
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        margin: 0 0 1.25rem 0 !important;
-    }
-    body.kobajer-page .kobajer-bottom-cta__item:last-child {
-        margin-bottom: 0 !important;
-    }
-    body.kobajer-page .kobajer-bottom-cta__img {
-        display: block !important;
-        width: 100% !important;
-        height: auto !important;
-        max-width: 100% !important;
-        max-height: 600px !important;
-        object-fit: contain !important;
-    }
-}
-
-/* KØ-BAJER: iPad/tablet portræt (641–1024) — Anmeld/Boykot/Sig fra stablet fuld bredde, samme max-højde som frontpage (600px) */
-@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
-    (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
+/* KØ-BAJER: iPad/tablet (641–1366px) — samme 2+1-grid, gap og billed-cap i portræt og landskab (vmin undgår vh-hop ved rotation) */
+@media (min-width: 641px) and (max-width: 1366px) {
     body.kobajer-page .kobajer-info-boxes {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-auto-flow: row !important;
+        align-content: start !important;
         gap: 1rem 1.05rem !important;
         margin: 1.35rem 0 !important;
         align-items: start !important;
     }
+    body.kobajer-page .kobajer-info-box:nth-child(1) {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-info-box:nth-child(2) {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+    }
     body.kobajer-page .kobajer-info-box:nth-child(3) {
         grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
         justify-self: center !important;
         width: calc((100% - 1.05rem) / 2) !important;
         max-width: calc((100% - 1.05rem) / 2) !important;
@@ -13365,23 +14161,36 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
     body.kobajer-page .kobajer-info-box {
         padding: 1rem 0.75rem !important;
+        min-width: 0 !important;
         min-height: 0 !important;
     }
     body.kobajer-page .kobajer-can-image {
-        max-height: min(520px, 48vh) !important;
+        max-height: min(520px, 42vmin) !important;
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
     }
 
     body.kobajer-page .kobajer-steps {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-auto-flow: row !important;
+        align-content: start !important;
         gap: 1rem 1.05rem !important;
         margin: 1.35rem 0 !important;
         align-items: start !important;
     }
+    body.kobajer-page .kobajer-step-box:nth-child(1) {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-step-box:nth-child(2) {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+    }
     body.kobajer-page .kobajer-step-box:nth-child(3) {
         grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
         justify-self: center !important;
         width: calc((100% - 1.05rem) / 2) !important;
         max-width: calc((100% - 1.05rem) / 2) !important;
@@ -13389,20 +14198,24 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
     body.kobajer-page .kobajer-step-box {
         padding: 1rem 0.75rem !important;
+        min-width: 0 !important;
         min-height: 0 !important;
+        justify-content: flex-start !important;
     }
     body.kobajer-page .kobajer-step-image {
-        max-height: min(520px, 48vh) !important;
+        max-height: min(520px, 42vmin) !important;
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         margin-top: 0.65rem !important;
+        transform: none !important;
     }
 
     body.kobajer-page .kobajer-bottom-cta {
         display: block !important;
         width: 100% !important;
         max-width: none !important;
-        margin-top: 1.25rem !important;
+        margin-top: 1.35rem !important;
         padding: 0 !important;
         gap: 0 !important;
     }
@@ -13427,8 +14240,53 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     }
 }
 
-/* KØ-BAJER: phone landscape (width > 640px) — stack grids + Anmeld/Boykot/Sig fra full width; matches mobile rules in @media (max-width: 640px) */
-@media (max-width: 1024px) and (orientation: landscape) and (max-height: 520px) {
+/*
+ * KØ-BAJER: bred tablet-landskab (fx iPad Pro 1366×1024) — tre dåser + tre steps på én række (side om side).
+ * min-width: 900px undgår tre meget smalle kolonner på telefoner i landskab; min-aspect-ratio fanger DevTools uden orientation.
+ */
+@media (min-width: 900px) and (max-width: 1366px) and (orientation: landscape),
+    (min-width: 900px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
+    body.kobajer-page .kobajer-info-boxes {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    body.kobajer-page .kobajer-info-box:nth-child(1) {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-info-box:nth-child(2) {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-info-box:nth-child(3) {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        width: auto !important;
+        max-width: none !important;
+        justify-self: stretch !important;
+    }
+
+    body.kobajer-page .kobajer-steps {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    body.kobajer-page .kobajer-step-box:nth-child(1) {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-step-box:nth-child(2) {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+    }
+    body.kobajer-page .kobajer-step-box:nth-child(3) {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        width: auto !important;
+        max-width: none !important;
+        justify-self: stretch !important;
+    }
+}
+
+/* KØ-BAJER: phone landscape (641–1024, kort viewport-højde) — stablet; ikke iPad-landskab (højere end 520px) */
+@media (max-width: 1024px) and (min-width: 641px) and (orientation: landscape) and (max-height: 520px) {
     body.kobajer-page .kobajer-info-boxes {
         grid-template-columns: 1fr;
         gap: 1rem;
@@ -13484,6 +14342,8 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
 .element-box {
     text-align: center;
     padding: 1rem;
+    /* Lodret plads til overskrift (h4 er position: absolute — undgår at titel “flytter” uden for glass-kortet i grid/tablet) */
+    padding-top: 3.25rem;
     background: rgba(255, 255, 255, 0.2);
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 16px;
@@ -13492,9 +14352,14 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     min-height: 80px;
     position: relative;
+}
+
+/* Første Elements-kort: Sauna 180° — centrér billedet lodret i boksen (titlen er absolute) */
+.element-box:nth-child(1) {
+    justify-content: center;
 }
 
 .element-box h4 {
@@ -13503,22 +14368,27 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     margin: 0;
     font-weight: 600;
     line-height: 1.4;
-}
-
-.element-box:nth-child(1) h4 {
     position: absolute;
     top: 1rem;
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 2rem);
+    box-sizing: border-box;
+    z-index: 3;
 }
 
 .element-image {
     max-width: 100%;
     height: auto;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
     max-height: 150px;
     object-fit: contain;
+    position: relative;
+    z-index: 1;
+}
+
+.element-box:nth-child(1) .element-image {
+    margin-top: 0;
 }
 
 .element-box:nth-child(2) {
@@ -13528,7 +14398,7 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
 .element-box:nth-child(2) .element-image {
     max-height: 600px;
     position: relative;
-    z-index: 10;
+    z-index: 1;
 }
 
 .element-box:nth-child(3) .element-image {
@@ -13739,8 +14609,16 @@ body.kobajer-page .kobajer-mockup--frontpage .kobajer-mockup-img {
     background: linear-gradient(135deg,
         #32CD32 0%, #32CD32 25%, #FF69B4 40%, #FFFACD 100%
     );
-    min-height: var(--vh);
+    /* Fallback når JS fjerner --vh i bred landskab (narrow=false), så min-height ikke invalideres */
+    min-height: var(--vh, 100dvh);
     overflow-x: hidden;
+}
+
+/* Efter rotation: sikr at menu-lås ikke hænger i — kun når menu/luk ikke aktiv */
+body.twister-page:not(.nav-open):not(.msk-asset-lightbox-open) {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .twister-hero {
@@ -14238,40 +15116,82 @@ html body a[href="project1.html"]:hover {
 .msk-asset-lightbox__frame {
     position: relative;
     z-index: 1;
-    max-width: min(96vw, 1600px);
-    width: 100%;
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    /*
+     * Fallback før JS: 96vw × min(78vh, 900px). JS matcher med 96%×78% af layout (efter evt. side-swap).
+     */
+    width: min(96vw, 1020px);
+    min-width: min(96vw, 1020px);
+    max-width: min(96vw, 1020px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 0.65rem;
     pointer-events: none;
+    filter: drop-shadow(0 20px 56px rgba(0, 0, 0, 0.52));
 }
 
 .msk-asset-lightbox__stage {
+    --msk-lb-stage-h: min(78vh, 900px);
     position: relative;
+    box-sizing: border-box;
+    width: 100%;
     max-width: 100%;
-    max-height: min(82vh, 1200px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    align-self: stretch;
+    flex-shrink: 0;
+    /* Fast ydre kasse: min-height = height så rammen ikke kollapser til billedets intrinsics */
+    min-height: var(--msk-lb-stage-h);
+    height: var(--msk-lb-stage-h);
+    max-height: var(--msk-lb-stage-h);
+    display: block;
+    overflow: hidden;
     pointer-events: auto;
+    /* Baggrund = kort glimt før medie loader */
+    background: rgba(14, 18, 26, 0.65);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
-.msk-asset-lightbox__img,
-.msk-asset-lightbox__video {
-    max-width: 100%;
-    max-height: min(82vh, 1200px);
-    width: auto;
-    height: auto;
-    object-fit: contain;
+/* absolute + inset: fylder altid den faste scene (grid+img gav undertiden intrinsisk “lille” boks i WebKit) */
+.msk-asset-lightbox__stage .msk-asset-lightbox__img,
+.msk-asset-lightbox__stage .msk-asset-lightbox__video {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    min-width: 0;
+    min-height: 0;
+    object-fit: cover;
+    object-position: center;
     border-radius: 6px;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    box-shadow: none;
 }
 
 .msk-asset-lightbox__video {
-    width: min(96vw, 1400px);
     background: #000;
+}
+
+/*
+ * ID + .is-open: slår side-specifikke !important-regler (fx Repop tablet img { height:auto })
+ * så mediet fylder hele scenen.
+ */
+#msk-asset-lightbox.is-open .msk-asset-lightbox__stage .msk-asset-lightbox__img,
+#msk-asset-lightbox.is-open .msk-asset-lightbox__stage .msk-asset-lightbox__video {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    object-fit: cover !important;
+    object-position: center !important;
 }
 
 body.msk-asset-lightbox-open {
@@ -14371,6 +15291,7 @@ html.msk-contact-ipad-landscape-no-scroll body.contact-sketchbook-page.sketchboo
     display: block !important;
 }
 
+/* Touch-tablet single-page regel (max-width: 1024) må ikke skjule højre side på Kontakt iPad landskab */
 @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
     (min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
     html.msk-contact-ipad-landscape-no-scroll body.contact-sketchbook-page.sketchbook-theme::after,
@@ -14387,4 +15308,274 @@ html.msk-contact-ipad-landscape-no-scroll body.contact-sketchbook-page.sketchboo
     body.contact-sketchbook-page.sketchbook-theme .right-margin {
         display: block !important;
     }
+
+    html.msk-contact-ipad-landscape-no-scroll body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook__title,
+    body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook__title {
+        font-family: 'Bradley Hand', 'Brush Script MT', 'Segoe Script', 'Comic Sans MS', cursive !important;
+    }
+
+    html.msk-contact-ipad-landscape-no-scroll body.contact-sketchbook-page.sketchbook-theme .navbar .nav-link,
+    html.msk-contact-ipad-landscape-no-scroll body.contact-sketchbook-page.sketchbook-theme .nav-menu .nav-link,
+    html.msk-contact-ipad-landscape-no-scroll body.contact-sketchbook-page.sketchbook-theme .nav-menu .nav-link:visited,
+    body.contact-sketchbook-page.sketchbook-theme .navbar .nav-link,
+    body.contact-sketchbook-page.sketchbook-theme .nav-menu .nav-link,
+    body.contact-sketchbook-page.sketchbook-theme .nav-menu .nav-link:visited {
+        color: #2a1810 !important;
+        -webkit-text-fill-color: #2a1810 !important;
+        text-decoration: none !important;
+    }
+}
+
+html.msk-contact-ipad-portrait-no-scroll {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+}
+
+html.msk-contact-ipad-portrait-no-scroll body.contact-sketchbook-page.sketchbook-theme {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+}
+
+/* iPad portræt: titel + kort som én centreret gruppe (ikke space-between til kanterne) */
+html.msk-contact-ipad-portrait-no-scroll body.contact-sketchbook-page.sketchbook-theme main.contact-sketchbook,
+html.msk-contact-ipad-portrait-no-scroll body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook {
+    justify-content: center !important;
+    align-items: center !important;
+    gap: clamp(32px, 4.8vh, 52px) !important;
+}
+
+html.msk-contact-ipad-portrait-no-scroll body.contact-sketchbook-page.sketchbook-theme .contact-info {
+    justify-content: center !important;
+    flex: 0 1 auto !important;
+    max-height: none !important;
+    gap: clamp(28px, 4.2vh, 48px) !important;
+}
+
+/*
+ * Projekter + iPad/tablet landskab: ingen dokument-scroll (JS: html.msk-projects-ipad-landscape-no-scroll).
+ * Undgå position:fixed på html/body — det kollapser/clippper .brainstorm-container i DevTools.
+ */
+html.msk-projects-ipad-landscape-no-scroll {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none;
+    height: 100%;
+    max-height: 100dvh;
+}
+
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none;
+    position: relative;
+    min-height: 100dvh;
+    height: 100dvh;
+    max-height: 100dvh;
+}
+
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .msk-paper-lines-layer,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme::before,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme::after {
+    display: block !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+}
+
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme::before {
+    left: 0 !important;
+    right: auto !important;
+    width: 50% !important;
+}
+
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme::after {
+    right: 0 !important;
+    left: auto !important;
+    width: 50% !important;
+}
+
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+    display: flex !important;
+}
+
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .right-margin {
+    display: block !important;
+}
+
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container {
+    display: block !important;
+    visibility: visible !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 3 !important;
+    background: transparent !important;
+    background-image: none !important;
+    width: 100vw !important;
+    min-height: 100dvh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: visible !important;
+    pointer-events: none;
+}
+
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .brain {
+    pointer-events: auto;
+}
+
+/*
+ * iPad landskab: TVING ellipse-mindmap (hjernen centreret, 8 projekter i ring på to sider).
+ * JS sætter html.msk-projects-ipad-landscape — overstyrer portræt-grid og skjulte noder.
+ */
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme {
+    overflow: hidden !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .projects-mobile {
+    display: none !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--ipad-landscape {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 3 !important;
+    background: transparent !important;
+    background-image: none !important;
+    width: 100vw !important;
+    min-height: 100dvh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: visible !important;
+    pointer-events: none;
+    --projectsSx: 1 !important;
+    --projectsSy: 1 !important;
+    --projectsBrainSize: 168px;
+    transform-origin: 50% 50% !important;
+    transform: none !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+    transform: none !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .brain,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
+    width: 168px !important;
+    height: 168px !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme::before,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme::after {
+    display: block !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme::before {
+    width: 50% !important;
+    left: 0 !important;
+    right: auto !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme::after {
+    width: 50% !important;
+    right: 0 !important;
+    left: auto !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .right-margin {
+    display: block !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+    display: flex !important;
+}
+
+/* Overstyr mobil/portræt-transform — kompakt ring om hjernen i iPad landskab */
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container {
+    transform: none !important;
+    translate: none !important;
+    transform-origin: 50% 50% !important;
+    min-height: 100dvh !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+    transform: none !important;
+}
+
+/* iPad landskab: skjul stor desktop-pil — brug lille skilt inde i BRAINFARTS-cirklen */
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .project-node[href*="brainfarts"],
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] {
+    position: absolute !important;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
+    position: absolute;
+    left: 50%;
+    top: 52%;
+    transform: translate(-50%, -50%) rotate(-1deg);
+    display: block !important;
+    visibility: visible !important;
+    width: 72px;
+    max-width: 78%;
+    height: auto;
+    margin: 0;
+    pointer-events: none;
+    opacity: 0.52 !important;
+    z-index: 0;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
+    position: relative;
+    z-index: 1;
+}
+
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title--image,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    max-width: min(240px, 17vw) !important;
 }
