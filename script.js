@@ -15,6 +15,8 @@ const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
 const MSK_PROJECTS_LANDSCAPE_FIT = 0.66;
+/** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
+const MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX = 28;
 
 /**
  * Ét stabilt mål for layout (afrundet heltal) — documentElement.client*, ikke visualViewport.
@@ -5126,7 +5128,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch (_) {}
 				const bandTop = navH + Math.round(12 * scale);
 				const bandBottom = layoutH - Math.round(12 * scale);
-				centerY = Math.round((bandTop + bandBottom) / 2);
+				centerY = Math.round((bandTop + bandBottom) / 2) - MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX;
 				centerX = Math.round(layoutW / 2);
 				try {
 					brain.style.setProperty('position', 'absolute', 'important');
