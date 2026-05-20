@@ -5158,7 +5158,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (tabletLandscape) {
 					if (href.includes('repop')) {
 						x += Math.round(4 * scale);
-						y += Math.round(4 * scale);
+						y += Math.round(10 * scale);
 					}
 					if (href.includes('naturli')) {
 						x += Math.round(10 * scale);
@@ -5615,17 +5615,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			const titleImg = repopNode.querySelector('.project-node__title-img--repop');
 			const titleRect = titleImg ? titleImg.getBoundingClientRect() : r;
 			/* Pilens højre kant skal møde venstre kant af REPOP-teksten (ikke hele fanen) */
-			const anchorLeft = titleRect.left - containerRect.left;
+			let anchorLeft = titleRect.left - containerRect.left;
 
 			// Size (can be tuned) — kortere pil så Kravling + pil ikke sidder “udenfor” cirklen
 			const width = 138;
 			const height = 80; // slimmer
 			const tipOverlapPx = 4;
 			/* Skub pil + Kravling-badge mod højre (badge følger via pilens rect) */
-			const shiftRightPx = 76;
+			let shiftRightPx = 76;
+			try {
+				if (mskIsProjectsTabletLandscapeViewport()) {
+					anchorLeft += Math.round(titleRect.width * 0.06);
+					shiftRightPx = 10;
+				}
+			} catch (_) {}
 			const left = anchorLeft - width + tipOverlapPx + shiftRightPx;
 
-			const top = (r.top - containerRect.top) + (r.height / 2) + 12; // a bit more down
+			let arrowTopOffset = 12;
+			try {
+				if (mskIsProjectsTabletLandscapeViewport()) arrowTopOffset = -4;
+			} catch (_) {}
+			const top = (r.top - containerRect.top) + (r.height / 2) + arrowTopOffset;
 
 			line.style.width = `${width}px`;
 			line.style.height = `${height}px`;
@@ -6372,9 +6382,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		const mindmapLineLenMul = 0.92;
 
 		let desktopProjectsWide = false;
+		let ipadLandscapeLines = false;
 		try {
 			const iw = mskProjectsLayoutViewportBox().w || 0;
 			desktopProjectsWide = iw >= 1025 && !mskIsProjectsShortLandscapeViewport();
+			ipadLandscapeLines =
+				!!mskIsProjectsTabletLandscapeViewport() &&
+				!container.classList.contains('projects-mindmap--portrait');
+			if (ipadLandscapeLines) desktopProjectsWide = false;
 		} catch (_) {}
 		/* Desktop: 0.77 efterlader synligt hul til venstre — næsten fuld længde ud til cirkler */
 		const spokeLenMul = desktopProjectsWide ? 0.99 : underBrainLineLenMul;
@@ -7156,37 +7171,42 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeHrefRepop = (node.getAttribute('href') || '').toLowerCase();
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
-				// Start from below the top of the brain, extended backward toward brain
-				const initialBrainStartX = centerX;
-				const initialBrainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
-				
-				// End closer to the tab (smaller gap)
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				const tabGapDistance = nodeRadius * 0.1;
-				const deltaX = nodeX - initialBrainStartX;
-				const deltaY = nodeY - initialBrainStartY;
-				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				const lineEndX = nodeX - (deltaX / distance) * tabGapDistance;
-				const lineEndY = nodeY - (deltaY / distance) * tabGapDistance;
-				
-				// Extend backward from brain start point to make line longer toward brain
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-				const brainExtension = brainRadius * 0.32; // Extend further toward brain (longer line)
-				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
-				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
-				
-				// Calculate angle for rotation
-				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
-				/* Hjernen → REPOP: samme tykkelse som øvrige asset-linjer (fx linje 1/4 = lineH(400)) på desktop */
+				const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
+
+				// Start from below the top of the brain, extended backward toward brain
+				const initialBrainStartX = centerX;
+				let initialBrainStartY = brainRect.top - containerRect.top + 50;
+				let brainExtension = brainRadiusLine * 0.32;
 				let repopLineHpx;
-				if (mskIsProjectsShortLandscapeViewport()) {
+				let repopLineLenMul = desktopProjectsWide ? 0.99 : 0.92;
+
+				if (ipadLandscapeLines) {
+					initialBrainStartY = centerY - brainRadiusLine * 0.3;
+					brainExtension = brainRadiusLine * 0.14;
+					repopLineHpx = lineH(332);
+					repopLineLenMul = 0.92;
+				} else if (mskIsProjectsShortLandscapeViewport()) {
 					repopLineHpx = 200;
 				} else if (desktopProjectsWide) {
 					repopLineHpx = lineH(400);
 				} else {
 					repopLineHpx = lineH(52);
 				}
+
+				const deltaX = nodeX - initialBrainStartX;
+				const deltaY = nodeY - initialBrainStartY;
+				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+				const lineEndX = nodeX - (deltaX / distance) * tabGapDistance;
+				const lineEndY = nodeY - (deltaY / distance) * tabGapDistance;
+
+				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
+				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+
+				// Calculate angle for rotation
+				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
 				
 				// Create image element for the line
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -7195,7 +7215,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('y', String(brainStartY - repopLineHpx / 2));
 				lineImage.setAttribute(
 					'width',
-					String(lineLength * (desktopProjectsWide ? 0.99 : 0.92) * mindmapLineLenMul)
+					String(lineLength * repopLineLenMul * mindmapLineLenMul)
 				);
 				lineImage.setAttribute('height', String(repopLineHpx));
 				lineImage.setAttribute('opacity', '1');
@@ -7693,6 +7713,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						repCenterY = unionCenter.y;
 					}
 				} catch {}
+				if (ipadLandscapeRings) {
+					repCenterY += s(8);
+				}
 
 				let repopMul = 0.88;
 				try {
@@ -7702,7 +7725,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (window.matchMedia('(max-width: 640px)').matches) repopMul = 0.93;
 					}
 					if (ipadPortraitRings) repopMul = Math.max(repopMul, 0.96);
-					if (ipadLandscapeRings) repopMul = Math.max(repopMul, 1.02);
+					if (ipadLandscapeRings) repopMul = 0.96;
 				} catch {}
 
 				const baseW = s(380) * assetS;
@@ -7719,19 +7742,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						padYPortrait = repBadgeRect ? Math.max(padYPortrait, 100) : Math.max(padYPortrait, 82);
 					}
 					if (ipadLandscapeRings) {
-						padXPx = Math.max(padXPx, 76);
-						padYPortrait = repBadgeRect ? Math.max(padYPortrait, 68) : Math.max(padYPortrait, 52);
+						padXPx = Math.max(padXPx, 72);
+						padYPortrait = repBadgeRect ? 42 : 34;
 					}
 				} catch {}
 				const padX = s(padXPx) * assetS;
 				const padY =
 					s(
 						ipadLandscapeRings
-							? landscapeMindmap
-								? repBadgeRect
-									? 72
-									: 56
-								: padYPortrait
+							? padYPortrait
 							: landscapeMindmap
 								? 96
 								: padYPortrait
@@ -7742,7 +7761,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				let repopLsMulW = 1;
 				let repopLsMulH = 1;
 				try {
-					if (
+					if (ipadLandscapeRings) {
+						repopLsMulW = 1.1;
+						repopLsMulH = 0.76;
+					} else if (
 						landscapeMindmap &&
 						window.matchMedia &&
 						window.matchMedia('(orientation: landscape)').matches
@@ -7759,12 +7781,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Lidt bredere horizontalt (oval) — kun stretch på X, som NATURLI */
 				let repopStretchX = 1.12;
 				if (ipadPortraitRings) repopStretchX = 1.92;
-				else if (ipadLandscapeRings) repopStretchX = 1.34;
+				else if (ipadLandscapeRings) repopStretchX = 1.28;
 				w *= repopStretchX;
 				if (ipadLandscapeRings) {
-					w *= 1.06;
+					w *= 1.04;
+					h *= ipadLsRingVertMul * 0.74;
 				}
-				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
 
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
 				image.setAttribute('y', String(repCenterY - (h / 2)));

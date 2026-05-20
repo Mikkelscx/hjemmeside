@@ -15595,6 +15595,15 @@ html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.pro
     visibility: visible !important;
 }
 
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.hand-drawn-frame,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.dynamic-mindmap-line,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path.hand-drawn-frame {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 /*
  * iPad landskab: ens titelstørrelse — alle webp-labels skaleres til samme visuelle størrelse
  * (Twister 1.92 = reference; per-projekt scale udligner forskellig indtegning i asset-filer).
@@ -15700,7 +15709,7 @@ html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--repop,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title-img--repop {
     /* Repop-webp er allerede stor i filen — lidt under Twister-scale */
-    transform: translateY(12px) scale(1.58) !important;
+    transform: translateY(34px) scale(1.58) !important;
 }
 
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens,
