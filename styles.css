@@ -15559,25 +15559,31 @@ html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .
 }
 
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .project-node[href*="brainfarts"],
-html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] {
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .project-node[href*="brainfarts"],
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"],
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] {
     position: absolute !important;
 }
 
+/* iPad landskab: kun SVG-trekant — skjul HTML-dublet */
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline,
-html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
-    position: absolute;
-    left: 50%;
-    top: 52%;
-    transform: translate(-50%, -50%) rotate(-1deg);
-    display: block !important;
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines image.brainfarts-ipad-construction-sign,
+html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines image.brainfarts-ipad-construction-sign,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines g.brainfarts-ipad-construction-wrap,
+html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines g.brainfarts-ipad-construction-wrap {
     visibility: visible !important;
-    width: 44px;
-    max-width: 52%;
-    height: auto;
-    margin: 0;
-    pointer-events: none;
-    opacity: 0.52 !important;
-    z-index: 0;
+    opacity: 0.74 !important;
+    display: block !important;
+    pointer-events: none !important;
 }
 
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title,
@@ -15597,7 +15603,7 @@ html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.pro
 
 html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
 html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
-html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.hand-drawn-frame,
+html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.hand-drawn-frame:not(.brainfarts-ipad-construction-sign),
 html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.dynamic-mindmap-line,
 html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path.hand-drawn-frame {
     visibility: visible !important;
@@ -15693,10 +15699,6 @@ html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli,
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv,
-html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
-html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv,
-html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts,
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts,
@@ -15704,12 +15706,22 @@ html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .
     transform: translateY(12px) scale(var(--projectsIpadLsTitleScale)) !important;
 }
 
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv,
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
+    max-width: min(164px, 12.2vw) !important;
+    width: 100% !important;
+    transform: translate(10px, 12px) scale(1.44) !important;
+    transform-origin: center center !important;
+}
+
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--repop,
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title-img--repop,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--repop,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title-img--repop {
     /* Repop-webp er allerede stor i filen — lidt under Twister-scale */
-    transform: translateY(34px) scale(1.58) !important;
+    transform: translateY(24px) scale(1.58) !important;
 }
 
 html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens,
@@ -15717,4 +15729,17 @@ html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens,
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens"] .project-node__title-img--byens {
     transform: translateY(12px) scale(1.84) !important;
+}
+
+/* iPad landskab: pil Twister → D&AD tykkere */
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line {
+    height: 172px !important;
+}
+
+/* iPad landskab: pil under KØ-BAJER bredere/tykkere */
+html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
+html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow {
+    width: 72px !important;
+    transform: rotate(115deg) scale(1.06, 1.48) !important;
 }

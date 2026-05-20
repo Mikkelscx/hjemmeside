@@ -26,7 +26,7 @@
       } catch (e) {}
     })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260520i">
+    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260521r">
     <style id="msk-mindmap-gate">
     html.msk-mindmap-booting body.projects-page.sketchbook-theme .brainstorm-container {
       opacity: 0 !important;
@@ -76,7 +76,7 @@
         opacity: 1 !important;
       }
       html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
-      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image,
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image:not(.brainfarts-ipad-construction-sign),
       html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path {
         visibility: visible !important;
         opacity: 1 !important;
@@ -97,6 +97,26 @@
       }
       body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
         max-width: min(240px, 17vw) !important;
+      }
+      html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
+      html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
+        max-width: min(164px, 12.2vw) !important;
+        width: 100% !important;
+        transform: translate(10px, 12px) scale(1.44) !important;
+        transform-origin: center center !important;
+      }
+      html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline,
+      html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines image.brainfarts-ipad-construction-sign,
+      html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines image.brainfarts-ipad-construction-sign,
+      html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines g.brainfarts-ipad-construction-wrap,
+      html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines g.brainfarts-ipad-construction-wrap {
+        visibility: visible !important;
+        opacity: 0.74 !important;
       }
     }
     </style>
@@ -285,6 +305,6 @@
         </a>
     </div>
 
-    <script src="script.js?v=projects-mindmap-guaranteed-20260520i"></script>
+    <script src="script.js?v=projects-mindmap-guaranteed-20260521r"></script>
 </body>
 </html> 
