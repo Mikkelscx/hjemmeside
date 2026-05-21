@@ -49,6 +49,16 @@ function mskProjectsVisibleViewportPx() {
 		}
 		const iw = Math.round(Math.max(1, window.innerWidth || 0));
 		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (
+			document.body &&
+			document.body.classList.contains('projects-page') &&
+			(mskIsProjectsPhonePortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+				mskIsProjectsTabletPortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-ipad-portrait'))
+		) {
+			return { w: iw, h: ih };
+		}
 		const vv = window.visualViewport;
 		if (vv && vv.width >= 200 && vv.height >= 200) {
 			return {
@@ -229,19 +239,109 @@ function mskIsProjectsPortraitSketchGridViewport() {
 	}
 }
 
-/** Stabilt layout-mål til portræt-grid — aldrig oppustet container/clientHeight. */
+/** Aktivt portræt-skitse-grid (telefon + tablet) — samme design, samme ringe/streger. */
+function mskIsProjectsPortraitGridRingsMode() {
+	try {
+		return !!(
+			mskIsProjectsPortraitGridDocumentMode() ||
+			(document.querySelector('.brainstorm-container') &&
+				document.querySelector('.brainstorm-container').classList.contains('projects-mindmap--portrait'))
+		);
+	} catch (_) {
+		return false;
+	}
+}
+
+/** HTML-klasse + viewport: portræt-grid aktiv uanset timing i init/resize. */
+function mskIsProjectsPortraitGridDocumentMode() {
+	try {
+		return !!(
+			document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+			document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+			mskIsProjectsPortraitSketchGridViewport()
+		);
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Stabilt layout-mål til portræt-grid — KUN synlig viewport (inner*), aldrig clientHeight/papir. */
 function mskProjectsPortraitLayoutViewportPx() {
 	try {
-		const vis = mskProjectsVisibleViewportPx();
-		const lv = mskProjectsLayoutViewportBox();
-		const iw = Math.round(Math.max(1, window.innerWidth || vis.w || lv.w || 1));
-		const ih = Math.round(Math.max(1, window.innerHeight || vis.h || lv.h || 1));
-		return {
-			w: Math.round(Math.max(1, Math.min(lv.w || iw, vis.w || iw, iw))),
-			h: Math.round(Math.max(1, Math.min(lv.h || ih, vis.h || ih, ih))),
-		};
+		const iw = Math.round(Math.max(1, window.innerWidth || 1));
+		const ih = Math.round(Math.max(1, window.innerHeight || 1));
+		return { w: iw, h: ih };
 	} catch (_) {
-		return mskProjectsLayoutViewportBox();
+		return { w: 375, h: 667 };
+	}
+}
+
+/** iPad portræt = 1; telefon portræt = layoutW/768 (lidt strammere så det passer på små skærme). */
+function mskProjectsPortraitReferenceScale() {
+	try {
+		if (mskIsProjectsTabletPortraitViewport()) return 1;
+		if (!mskIsProjectsPhonePortraitViewport()) return 1;
+		const w = mskProjectsPortraitLayoutViewportPx().w || window.innerWidth || 375;
+		return Math.max(0.44, Math.min(0.60, (w / 768) * 0.96));
+	} catch (_) {
+		return 1;
+	}
+}
+
+function mskProjectsPortraitGridLayoutPx() {
+	return mskProjectsPortraitLayoutViewportPx();
+}
+
+function mskProjectsPortraitReferenceCanvasPx() {
+	return mskProjectsPortraitGridLayoutPx();
+}
+
+/** Telefon: fuld viewport, ingen canvas-transform — ryd evt. gammel inline styling. */
+function mskApplyProjectsPortraitPhoneCanvasStyles() {
+	try {
+		const container = document.querySelector('.brainstorm-container');
+		if (!container) return;
+		container.classList.remove('projects-mindmap--phone-canvas');
+		container.removeAttribute('data-msk-portrait-canvas');
+		if (!mskIsProjectsPhonePortraitViewport() && !document.documentElement.classList.contains('msk-projects-phone-portrait')) {
+			return;
+		}
+		if (!container.classList.contains('projects-mindmap--portrait')) return;
+		container.style.setProperty('position', 'fixed', 'important');
+		container.style.setProperty('inset', '0', 'important');
+		container.style.setProperty('width', '100%', 'important');
+		container.style.setProperty('height', '100dvh', 'important');
+		container.style.setProperty('display', 'block', 'important');
+		container.style.setProperty('visibility', 'visible', 'important');
+		container.style.setProperty('opacity', '1', 'important');
+		container.style.setProperty('overflow', 'visible', 'important');
+		container.style.setProperty('z-index', '3', 'important');
+		container.style.setProperty('transform', 'none', 'important');
+		container.style.removeProperty('left');
+		container.style.removeProperty('top');
+		container.style.removeProperty('max-width');
+		container.style.removeProperty('max-height');
+	} catch (_) {}
+}
+
+function mskClearProjectsPortraitPhoneCanvasStyles() {
+	mskApplyProjectsPortraitPhoneCanvasStyles();
+}
+
+/** Tving telefon-portræt-klasser (DevTools resize, file://). */
+function mskEnsureProjectsPhonePortraitCanvasMode() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return false;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (iw > 640 || ih <= iw + 8) return false;
+		if (mskIsProjectsTabletLandscapeViewport() || mskIsProjectsShortLandscapeViewport()) return false;
+		document.documentElement.classList.add('msk-projects-phone-portrait', 'msk-projects-phone-portrait-no-scroll');
+		const container = document.querySelector('.brainstorm-container');
+		if (container) container.classList.add('projects-mindmap--portrait');
+		return true;
+	} catch (_) {
+		return false;
 	}
 }
 
@@ -350,9 +450,10 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 		const container = document.querySelector('.brainstorm-container');
 		if (container) {
 			if (tabletLandscape || phoneLandscape) {
-				container.classList.remove('projects-mindmap--portrait');
+				container.classList.remove('projects-mindmap--portrait', 'projects-mindmap--phone-canvas');
 			} else if (portraitGrid) {
 				container.classList.add('projects-mindmap--portrait');
+				container.classList.remove('projects-mindmap--phone-canvas');
 			}
 			container.classList.toggle('projects-mindmap--ipad-landscape', tabletLandscape);
 		}
@@ -364,6 +465,8 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 		} else {
 			mskClearUngeModUvIpadLandscapeTitleNudge();
 			mskClearDurexIpadLandscapeTitleNudge();
+			if (portraitGrid) mskApplyProjectsPortraitPhoneCanvasStyles();
+			else mskClearProjectsPortraitPhoneCanvasStyles();
 		}
 		return on;
 	} catch (_) {
@@ -4665,15 +4768,175 @@ document.addEventListener('DOMContentLoaded', function() {
 	function mskProjectsMindmapNeedsGraphicRebuild() {
 		try {
 			const svg = document.querySelector('.connecting-lines');
+			const container = document.querySelector('.brainstorm-container');
 			if (!svg || svg.dataset.mskDynamicGraphicsBuilt !== '1') return true;
 			const nodes = document.querySelectorAll('.project-node');
 			if (!nodes.length) return false;
+			if (mskShouldUsePortraitHtmlRings() && container) {
+				const rings = container.querySelectorAll(
+					'.msk-portrait-ring-overlay.hand-drawn-frame'
+				);
+				if (rings.length < nodes.length) return true;
+				return false;
+			}
+			const sw = parseFloat(svg.getAttribute('width') || '0') || svg.clientWidth || 0;
+			const sh = parseFloat(svg.getAttribute('height') || '0') || svg.clientHeight || 0;
 			for (const node of nodes) {
 				const href = (node.dataset.nodeHref || node.getAttribute('href') || '').toLowerCase();
 				if (!href) continue;
-				if (!svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`)) return true;
+				const frame = svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`);
+				if (!frame) return true;
+				if (
+					container &&
+					(container.classList.contains('projects-mindmap--portrait') ||
+						mskIsProjectsPortraitGridDocumentMode()) &&
+					!mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container)
+				) {
+					return true;
+				}
+				const fw = parseFloat(frame.getAttribute('width') || '0');
+				const fh = parseFloat(frame.getAttribute('height') || '0');
+				const fx = parseFloat(frame.getAttribute('x') || '0');
+				const fy = parseFloat(frame.getAttribute('y') || '0');
+				if (fw > 0 && fh > 0 && (fw < 12 || fh < 12)) return true;
+				if (fw > 0 && fh > 0 && fx + fw < 6 && fy + fh < 6) return true;
+				if (sw > 0 && sh > 0 && fw > 0 && fh > 0) {
+					if (fx > sw + 40 || fy > sh + 40 || fx + fw < -40 || fy + fh < -40) return true;
+				}
 			}
 			return false;
+		} catch (_) {
+			return true;
+		}
+	}
+
+	function mskIsProjectsPortraitTouchGridMode() {
+		try {
+			return !!(
+				mskIsProjectsPhonePortraitViewport() ||
+				mskIsProjectsTabletPortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+				document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+				mskIsProjectsPortraitGridDocumentMode()
+			);
+		} catch (_) {
+			return false;
+		}
+	}
+
+	function mskEnsureProjectsPortraitSvgBox() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			const svg = document.querySelector('.connecting-lines');
+			if (!container || !svg) return;
+			const cr = container.getBoundingClientRect();
+			const w = Math.round(Math.max(1, container.clientWidth || cr.width || window.innerWidth || 375));
+			const h = Math.round(Math.max(1, container.clientHeight || cr.height || window.innerHeight || 667));
+			svg.setAttribute('width', String(w));
+			svg.setAttribute('height', String(h));
+			svg.style.setProperty('width', '100%', 'important');
+			svg.style.setProperty('height', '100%', 'important');
+			svg.style.setProperty('overflow', 'visible', 'important');
+			svg.style.setProperty('visibility', 'visible', 'important');
+			svg.style.setProperty('opacity', '1', 'important');
+		} catch (_) {}
+	}
+
+	function mskProjectsSyncLayoutBeforePaint() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			const svg = document.querySelector('.connecting-lines');
+			if (container) {
+				void container.offsetHeight;
+				void container.getBoundingClientRect();
+			}
+			mskEnsureProjectsPortraitSvgBox();
+			if (svg) void svg.getBoundingClientRect();
+		} catch (_) {}
+	}
+
+	function mskSvgPointFromClientPx(svgEl, clientX, clientY) {
+		try {
+			if (!svgEl || !svgEl.getBoundingClientRect) {
+				return { x: clientX, y: clientY };
+			}
+			const svgRect = svgEl.getBoundingClientRect();
+			const sw = Math.max(svgRect.width, 1e-6);
+			const sh = Math.max(svgRect.height, 1e-6);
+			const cw = Math.max(svgEl.clientWidth || svgRect.width || 1, 1);
+			const ch = Math.max(svgEl.clientHeight || svgRect.height || 1, 1);
+			return {
+				x: (clientX - svgRect.left) * (cw / sw),
+				y: (clientY - svgRect.top) * (ch / sh),
+			};
+		} catch (_) {
+			return { x: clientX, y: clientY };
+		}
+	}
+
+	function mskSvgCenterFromRect(svgEl, domRect, containerRect) {
+		try {
+			if (!domRect) return { x: 0, y: 0 };
+			if (!svgEl || !svgEl.getBoundingClientRect) {
+				return {
+					x: domRect.left - containerRect.left + domRect.width / 2,
+					y: domRect.top - containerRect.top + domRect.height / 2,
+				};
+			}
+			const cx = domRect.left + domRect.width / 2;
+			const cy = domRect.top + domRect.height / 2;
+			return mskSvgPointFromClientPx(svgEl, cx, cy);
+		} catch (_) {
+			return {
+				x: domRect.left - containerRect.left + domRect.width / 2,
+				y: domRect.top - containerRect.top + domRect.height / 2,
+			};
+		}
+	}
+
+	function mskProjectsMindmapNodeCenterSvg(node, svg, container, containerRect) {
+		try {
+			const portraitGrid =
+				!!(
+					container &&
+					(container.classList.contains('projects-mindmap--portrait') ||
+						mskIsProjectsPortraitGridDocumentMode())
+				);
+			if (portraitGrid) {
+				let gx = parseFloat(node.dataset.mskGridCx || '');
+				let gy = parseFloat(node.dataset.mskGridCy || '');
+				if (!Number.isFinite(gx)) gx = parseFloat(node.style.left);
+				if (!Number.isFinite(gy)) gy = parseFloat(node.style.top);
+				if (Number.isFinite(gx) && Number.isFinite(gy)) {
+					const cr = container.getBoundingClientRect();
+					return mskSvgPointFromClientPx(svg, cr.left + gx, cr.top + gy);
+				}
+			}
+			const titleEl = node.querySelector('.project-node__title');
+			const anchorRect = titleEl ? titleEl.getBoundingClientRect() : node.getBoundingClientRect();
+			return mskSvgCenterFromRect(svg, anchorRect, containerRect);
+		} catch (_) {
+			return { x: 0, y: 0 };
+		}
+	}
+
+	function mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container) {
+		try {
+			if (!frame || !node || !svg || !container) return true;
+			const fx = parseFloat(frame.getAttribute('x') || '0');
+			const fy = parseFloat(frame.getAttribute('y') || '0');
+			const fw = parseFloat(frame.getAttribute('width') || '0');
+			const fh = parseFloat(frame.getAttribute('height') || '0');
+			if (!(fw > 0 && fh > 0)) return false;
+			const fcx = fx + fw / 2;
+			const fcy = fy + fh / 2;
+			const nodeRect = node.getBoundingClientRect();
+			if (!(nodeRect.width > 2 && nodeRect.height > 2)) return false;
+			const nc = mskSvgCenterFromRect(svg, nodeRect, container.getBoundingClientRect());
+			const dx = fcx - nc.x;
+			const dy = fcy - nc.y;
+			const maxDist = Math.max(96, Math.min(fw, fh) * 0.52);
+			return Math.sqrt(dx * dx + dy * dy) <= maxDist;
 		} catch (_) {
 			return true;
 		}
@@ -4685,10 +4948,261 @@ document.addEventListener('DOMContentLoaded', function() {
 		return mskProjectsMindmapNeedsGraphicRebuild();
 	}
 
+	function mskShouldUsePortraitHtmlRings() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			return !!(
+				mskIsProjectsPortraitGridDocumentMode() ||
+				(container && container.classList.contains('projects-mindmap--portrait'))
+			);
+		} catch (_) {
+			return false;
+		}
+	}
+
+	function mskClearPortraitHtmlRings(container, svg) {
+		try {
+			if (container) {
+				container
+					.querySelectorAll('.msk-portrait-ring-overlay')
+					.forEach((el) => el.remove());
+			}
+			if (svg) {
+				svg
+					.querySelectorAll(
+						'.hand-drawn-frame, .frame-fill, .brainfarts-overlay, .brainfarts-construction-line, .brainfarts-ipad-construction-wrap, .brainfarts-ipad-construction-sign'
+					)
+					.forEach((el) => {
+						if (el.classList.contains('mobile-mindmap-line')) return;
+						el.remove();
+					});
+			}
+		} catch (_) {}
+	}
+
+	function mskAppendPortraitHtmlRing(container, node, spec) {
+		const href = (node.getAttribute('href') || '').toLowerCase();
+		const targetHref = (node.getAttribute('href') || '').trim();
+		let cx = parseFloat(node.dataset.mskGridCx || '');
+		let cy = parseFloat(node.dataset.mskGridCy || '');
+		if (!Number.isFinite(cx)) cx = parseFloat(node.style.left);
+		if (!Number.isFinite(cy)) cy = parseFloat(node.style.top);
+		if (!Number.isFinite(cx) || !Number.isFinite(cy)) return null;
+
+		const dx = spec.dx || 0;
+		const dy = spec.dy || 0;
+		const img = document.createElement('img');
+		img.className =
+			'msk-portrait-ring-overlay hand-drawn-frame ' + (spec.cls || '').trim();
+		img.src = spec.src;
+		img.alt = '';
+		img.decoding = 'async';
+		img.draggable = false;
+		img.dataset.nodeHref = href;
+		img.dataset.nodeIndex = node.dataset.nodeIndex || '';
+
+		const rot = spec.rotate ? ` rotate(${spec.rotate}deg)` : '';
+		img.style.cssText = [
+			'position:absolute',
+			`left:${cx + dx}px`,
+			`top:${cy + dy}px`,
+			`width:${spec.w}px`,
+			`height:${spec.h}px`,
+			`transform:translate(-50%,-50%)${rot}`,
+			'transform-origin:center center',
+			'pointer-events:auto',
+			href.includes('brainfarts') ? 'cursor:not-allowed' : 'cursor:pointer',
+			'z-index:2',
+			'opacity:0.88',
+			'display:block',
+			'visibility:visible',
+			'object-fit:fill',
+			'image-rendering:crisp-edges',
+		].join(';');
+
+		img.addEventListener(
+			'click',
+			(e) => {
+				if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+				try {
+					e.preventDefault();
+				} catch (_) {}
+				try {
+					e.stopPropagation();
+				} catch (_) {}
+				if (href.includes('brainfarts')) return;
+				if (targetHref) window.location.href = targetHref;
+			},
+			true
+		);
+
+		container.appendChild(img);
+		return img;
+	}
+
+	function mskCreatePortraitGridRingOverlays() {
+		const container = document.querySelector('.brainstorm-container');
+		const svg = document.querySelector('.connecting-lines');
+		const nodes = document.querySelectorAll('.project-node');
+		if (!container || !nodes.length) return;
+
+		mskClearPortraitHtmlRings(container, svg);
+
+		const phone = !!(
+			mskIsProjectsPhonePortraitViewport() ||
+			document.documentElement.classList.contains('msk-projects-phone-portrait')
+		);
+		const ipadP = !!(
+			mskIsProjectsTabletPortraitViewport() ||
+			document.documentElement.classList.contains('msk-projects-ipad-portrait')
+		);
+		const scale = phone ? mskProjectsPortraitReferenceScale() : 1;
+		const prs = (n) => n * scale;
+		const shrink = (w, h) => {
+			if (!phone) return [w, h];
+			const m = Math.max(0.72, scale);
+			return [w * m, h * m];
+		};
+
+		nodes.forEach((node, index) => {
+			node.dataset.nodeIndex = String(index);
+			const href = (node.getAttribute('href') || '').toLowerCase();
+			node.dataset.nodeHref = href;
+
+			if (href.includes('repop')) {
+				let w = ipadP ? 380 * 0.96 * 1.92 : 380 * 0.8 * 1.04;
+				let h = ipadP ? 165 * 0.96 * 1.8 : 165 * 0.8;
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/circle around repop by depop.webp',
+					w,
+					h,
+					rotate: 180,
+					cls: 'repop-image',
+				});
+			} else if (href.includes('naturli')) {
+				let w = ipadP ? 240 * 1.82 : 240 * 0.9;
+				let h = ipadP ? 140 * 1.52 : 140 * 0.9;
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				const natHWMul = ipadP ? 1.14 : 1.1;
+				w *= natHWMul;
+				mskAppendPortraitHtmlRing(container, node, {
+					src: "assets/cirkel omkring naturli'.webp",
+					w,
+					h,
+					rotate: 180,
+					dx: ipadP ? 10 : 6,
+					dy: ipadP ? -12 : -8,
+					cls: 'naturli-image',
+				});
+			} else if (href.includes('durex')) {
+				let w = 440 * 0.98 * 0.805 * (ipadP ? 1.66 : 1);
+				let h = 150 * 0.98 * 0.805 * (ipadP ? 1.84 : 1);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/circle omkring durex x guess who.webp',
+					w,
+					h,
+					dy: ipadP ? 8 : 0,
+					cls: 'durex-image',
+				});
+			} else if (href.includes('unge-mod-uv')) {
+				let w = 320 * (ipadP ? 0.94 : 0.84) * (ipadP ? 1.82 : 1);
+				let h = 150 * (ipadP ? 0.94 : 0.84) * (ipadP ? 1.52 : 1);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/unge mod uv cirkel.webp',
+					w,
+					h,
+					cls: 'unge-mod-uv-image',
+				});
+			} else if (href.includes('twister')) {
+				let w = 280 * 0.88 * (ipadP ? 2.24 : 1.24);
+				let h = 170 * 0.88 * 0.74 * (ipadP ? 1.84 : 1.24);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/cirkel omkring twister.webp',
+					w,
+					h,
+					dy: phone ? 20 : 12,
+					cls: 'twister-image',
+				});
+			} else if (href.includes('kobajer')) {
+				let w = 232 * 0.78 * (ipadP ? 2.02 : 1.22);
+				let h =
+					232 * 0.78 * 0.74 * (ipadP ? 1.48 : 1.16) * (ipadP ? 1.76 : 1.52);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				const kobRightWMul = ipadP ? 1.1 : 1.08;
+				const wExtra = w * (kobRightWMul - 1);
+				w *= kobRightWMul;
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/cirkel købajer.webp',
+					w,
+					h,
+					rotate: 180,
+					dx: (ipadP ? -18 : -10) - wExtra * 0.5 + (ipadP ? 14 : 10),
+					dy: ipadP ? -64 : -30,
+					cls: 'kobajer-image',
+				});
+			} else if (href.includes('brainfarts')) {
+				let w = 240 * 0.78 * (ipadP ? 3.02 : 1);
+				let h = 200 * 0.78 * (ipadP ? 1.8 : 1);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/cirkel om brainfarts.webp',
+					w,
+					h,
+					cls: 'brainfarts-image',
+				});
+			} else if (href.includes('byens-landhandel')) {
+				let w = 440 * 0.78 * (ipadP ? 2.55 : 1.22);
+				let h = 170 * 0.78 * 0.94 * (ipadP ? 1.5 : 1);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/circle omkring byens landhandel.webp',
+					w,
+					h,
+					dy: ipadP ? -14 : 0,
+					cls: 'byens-landhandel-image',
+				});
+			}
+		});
+	}
+
+	function mskProjectsMindmapPortraitFramesReady() {
+		try {
+			if (!mskIsProjectsPortraitTouchGridMode()) return true;
+			const container = document.querySelector('.brainstorm-container');
+			if (!container) return false;
+			const nodes = document.querySelectorAll('.project-node');
+			if (!nodes.length) return false;
+			if (mskShouldUsePortraitHtmlRings()) {
+				const rings = container.querySelectorAll(
+					'.msk-portrait-ring-overlay.hand-drawn-frame'
+				);
+				return rings.length >= nodes.length;
+			}
+			const svg = document.querySelector('.connecting-lines');
+			if (!svg || !container) return false;
+			for (const node of nodes) {
+				const href = (node.dataset.nodeHref || node.getAttribute('href') || '').toLowerCase();
+				if (!href) continue;
+				const frame = svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`);
+				if (!frame) return false;
+				if (!mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container)) return false;
+			}
+			return true;
+		} catch (_) {
+			return false;
+		}
+	}
+
 	function mskProjectsMindmapMarkGraphicsBuilt() {
 		try {
 			const svg = document.querySelector('.connecting-lines');
-			if (svg) svg.dataset.mskDynamicGraphicsBuilt = '1';
+			if (!svg) return;
+			if (!mskProjectsMindmapPortraitFramesReady()) return;
+			svg.dataset.mskDynamicGraphicsBuilt = '1';
 		} catch (_) {}
 	}
 
@@ -4708,6 +5222,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Brain animations and connecting lines
 	function initBrainAnimations() {
 		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		mskEnsureProjectsPhonePortraitCanvasMode();
 		const isPreview = document.documentElement.classList.contains('transition-preview');
 		try {
 			if (
@@ -4741,34 +5256,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
-		/** Viewport → SVG user coords når forælder har CSS transform.
-		 *  Bruger altid proportional mapping (SVG-boks ↔ clientWidth/Height), ikke getScreenCTM(),
-		 *  så Chrome og Safari giver samme tal (CTM kan afvige mellem motorer). */
 		function svgCenterFromRect(svgEl, domRect, containerRect) {
-			try {
-				if (!svgEl || !domRect || !svgEl.getBoundingClientRect) {
-					return {
-						x: domRect.left - containerRect.left + domRect.width / 2,
-						y: domRect.top - containerRect.top + domRect.height / 2,
-					};
-				}
-				const svgRect = svgEl.getBoundingClientRect();
-				const sw = Math.max(svgRect.width, 1e-6);
-				const sh = Math.max(svgRect.height, 1e-6);
-				const cw = Math.max(svgEl.clientWidth || 1, 1);
-				const ch = Math.max(svgEl.clientHeight || 1, 1);
-				const cx = domRect.left + domRect.width / 2;
-				const cy = domRect.top + domRect.height / 2;
-				return {
-					x: (cx - svgRect.left) * (cw / sw),
-					y: (cy - svgRect.top) * (ch / sh),
-				};
-			} catch (_) {
-				return {
-					x: domRect.left - containerRect.left + domRect.width / 2,
-					y: domRect.top - containerRect.top + domRect.height / 2,
-				};
-			}
+			return mskSvgCenterFromRect(svgEl, domRect, containerRect);
 		}
 
 		// If we've already bound listeners once, just re-position/redraw.
@@ -4776,15 +5265,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				// Refresh pass to ensure custom assets are present after navigation.
 				positionNodesPerfectCircle();
-				createAndPositionDandDLogo();
-				createAndPositionTwisterDandDLine();
-				createAndPositionRepopKravlingLine();
-				createAndPositionKravlingNomineretBadge();
-				createAndPositionKobajerArrow();
-				ensureProjectsMobileInlineBadges();
-				hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
-				if (mskProjectsMindmapShouldRedrawGraphics(false)) {
+				refreshProjectsMindmapStandaloneExtras();
+				mskProjectsSyncLayoutBeforePaint();
+				const portraitTouch = mskIsProjectsPortraitTouchGridMode();
+				if (portraitTouch || mskProjectsMindmapShouldRedrawGraphics(false)) {
 					const redrawOpts = { force: true };
+					try {
+						const svg = document.querySelector('.connecting-lines');
+						if (svg) delete svg.dataset.mskDynamicGraphicsBuilt;
+					} catch (_) {}
 					createConnectingLines(redrawOpts);
 					createHandDrawnFrames(redrawOpts);
 					mskProjectsMindmapMarkGraphicsBuilt();
@@ -4863,6 +5352,64 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch (_) {}
 		}
 
+		/** Portræt-grid: skjul ellipse-only DOM (pil, D&AD-badge, radiale streger) der skaber overlap på mobil. */
+		function mskHideProjectsPortraitEllipseExtras(container) {
+			try {
+				if (!container) return;
+				if (
+					!container.classList.contains('projects-mindmap--portrait') &&
+					!mskIsProjectsPortraitGridDocumentMode()
+				) {
+					return;
+				}
+				try {
+					container.classList.add('projects-mindmap--portrait');
+				} catch (_) {}
+				const hide = (sel) => {
+					container.querySelectorAll(sel).forEach((el) => {
+						try {
+							el.style.setProperty('display', 'none', 'important');
+							el.style.setProperty('visibility', 'hidden', 'important');
+							el.style.setProperty('opacity', '0', 'important');
+						} catch (_) {}
+					});
+				};
+				hide('.twister-dandd-line');
+				hide('.repop-kravling-line');
+				hide('.kobajer-arrow');
+				hide('.dandd-badge:not(.dandd-badge--inline)');
+				hide('.brainfarts-build');
+				hide('.brainfarts-build__arrow');
+				const svg = container.querySelector('.connecting-lines');
+				if (svg) {
+					svg.querySelectorAll('.brainfarts-brain-line').forEach((el) => {
+						try {
+							el.remove();
+						} catch (_) {}
+					});
+				}
+			} catch (_) {}
+		}
+
+		function refreshProjectsMindmapStandaloneExtras() {
+			const bc = document.querySelector('.brainstorm-container');
+			ensureProjectsMobileInlineBadges();
+			if (bc && (bc.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode())) {
+				try {
+					bc.classList.add('projects-mindmap--portrait');
+				} catch (_) {}
+				hideStandaloneDandDForProjectsMindmapPortrait(bc);
+				mskHideProjectsPortraitEllipseExtras(bc);
+				return;
+			}
+			createAndPositionDandDLogo();
+			createAndPositionTwisterDandDLine();
+			createAndPositionRepopKravlingLine();
+			createAndPositionKravlingNomineretBadge();
+			createAndPositionKobajerArrow();
+			hideStandaloneDandDForProjectsMindmapPortrait(bc);
+		}
+
 		function applyMindmapLineImgBaseStyles(img) {
 			if (!img) return;
 			img.style.position = 'absolute';
@@ -4888,6 +5435,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		function positionNodesPerfectCircle() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+
+			mskEnsureProjectsPhonePortraitCanvasMode();
 
 			const forceIpadLandscapeEllipse = mskApplyProjectsIpadLandscapeDocumentMode();
 			const ipadDocEllipse = !!forceIpadLandscapeEllipse;
@@ -4920,7 +5469,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			let layoutH;
 			let portraitSketchGridLayout = false;
 			try {
-				portraitSketchGridLayout = !!mskIsProjectsPortraitSketchGridViewport();
+				portraitSketchGridLayout = mskIsProjectsPortraitGridDocumentMode();
 			} catch (_) {
 				portraitSketchGridLayout = false;
 			}
@@ -4931,20 +5480,25 @@ document.addEventListener('DOMContentLoaded', function() {
 				const dim = mskProjectsTabletLandscapeLayoutPx();
 				layoutW = dim.w;
 				layoutH = dim.h;
-			} else if (portraitSketchGridLayout || phonePortraitScrollLock) {
-				/*
-				 * Telefon/tablet portræt: position:fixed på html/body kan give clientHeight 0 på container,
-				 * og papir min-height kan oppuste rect — brug kun synlig viewport til grid-Y.
-				 */
-				const pv = mskProjectsPortraitLayoutViewportPx();
+			} else if (
+				portraitSketchGridLayout ||
+				phonePortraitScrollLock ||
+				mskIsProjectsPortraitGridDocumentMode()
+			) {
+				const pv = mskProjectsPortraitGridLayoutPx();
 				layoutW = pv.w;
 				layoutH = pv.h;
 			} else {
 				const rawCW = container.clientWidth || containerRectForLayout.width || lv.w;
 				let rawCH = container.clientHeight || containerRectForLayout.height || lv.h;
 				if (rawCH > ih * 1.35) rawCH = ih;
-				layoutW = Math.round(Math.max(1, Math.min(lv.w, iw, rawCW)));
-				layoutH = Math.round(Math.max(1, Math.min(lv.h, ih, rawCH)));
+				layoutW = Math.round(Math.max(1, Math.min(iw, rawCW)));
+				layoutH = Math.round(Math.max(1, Math.min(ih, rawCH)));
+			}
+			/* Aldrig layout højere end viewport — undtagen telefon-canvas (768×1024 reference) */
+			if (document.body && document.body.classList.contains('projects-page')) {
+				layoutW = Math.round(Math.max(1, Math.min(layoutW, iw)));
+				layoutH = Math.round(Math.max(1, Math.min(layoutH, ih)));
 			}
 			const w = layoutW;
 			const h = layoutH;
@@ -4974,7 +5528,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			let touchLayout = touchLandscape && !isShortLandscape;
 
 			const nodeArray = Array.from(nodes);
-			const scale = 1;
 
 			const cw = layoutW;
 			/* Under rotation kan clientWidth/Height kort give ih<iw selv i portræt — orientation media matcher CSS */
@@ -4997,43 +5550,60 @@ document.addEventListener('DOMContentLoaded', function() {
 					window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches
 				);
 			} catch (_) {}
-			const usePortraitSketchGrid =
+			const portraitGridMode =
 				!ipadDocEllipse &&
 				!forceIpadLandscapeEllipse &&
 				document.body &&
 				document.body.classList.contains('projects-page') &&
 				!mskIsProjectsTabletLandscapeViewport() &&
 				!mskIsProjectsShortLandscapeViewport() &&
-				mskIsProjectsPortraitSketchGridViewport();
+				(mskIsProjectsPortraitSketchGridViewport() ||
+					document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+					document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+					(iw <= 640 && ih > iw + 8));
 
-			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) like the live site; ellipse for landscape / wide.
-			try {
-				if (usePortraitSketchGrid) {
-					try { container.classList.add('projects-mindmap--portrait'); } catch {}
+			const phonePortraitGrid =
+				portraitGridMode &&
+				(mskIsProjectsPhonePortraitViewport() ||
+					document.documentElement.classList.contains('msk-projects-phone-portrait'));
+
+			/* Telefon: strammere skala end iPad — samme grid, mindre elementer */
+			const scale = portraitGridMode
+				? phonePortraitGrid
+					? Math.max(0.44, Math.min(0.60, ((layoutW || cw || 375) / 768) * 0.96))
+					: Math.max(0.46, Math.min(1, (layoutW || cw || 375) / 768))
+				: 1;
+
+			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) — identisk telefon + iPad portræt.
+			if (portraitGridMode) {
+				try { container.classList.add('projects-mindmap--portrait'); } catch {}
+					layoutW = Math.round(Math.max(1, window.innerWidth || layoutW || 375));
+					layoutH = Math.round(Math.max(1, window.innerHeight || layoutH || 667));
+					const brainEl = brain || container.querySelector('.brain');
 					let NAV_H = 52;
 					try {
 						const nb = document.querySelector('.navbar');
 						if (nb && nb.getBoundingClientRect) NAV_H = Math.round(nb.getBoundingClientRect().bottom);
 					} catch {}
-					const pvBand = mskProjectsPortraitLayoutViewportPx();
-					const capH = pvBand.h || layoutH || 0;
-					const portraitBandH = capH > 0 ? capH : layoutH;
+					const pvBand = mskProjectsPortraitGridLayoutPx();
+					const capH = Math.min(pvBand.h || layoutH || ih, ih, layoutH || ih);
+					const portraitBandH = capH > 0 ? capH : Math.min(layoutH, ih);
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const safeTop = NAV_H + Math.round(36 * scale);
 					let safeBottom = portraitBandH - Math.round(40 * scale) - mskSafeAreaInsetBottomPx();
 					if (safeBottom < safeTop + 120) {
 						safeBottom = portraitBandH - Math.round(40 * scale);
 					}
-					const minX = 52;
-					const maxX = layoutW - 52;
-					const baseLeft = Math.max(minX, Math.min(maxX, layoutW * 0.22));
-					const baseRight = Math.max(minX, Math.min(maxX, layoutW * 0.78));
-					let maxW = Math.max(120, Math.floor(layoutW * 0.48));
-					try {
-						if (mskIsProjectsTabletPortraitViewport()) {
-							maxW = Math.min(300, Math.max(120, Math.floor(layoutW * 0.65)));
-						}
-					} catch (_) {}
+					const edgePad = Math.max(22, Math.round((phonePortraitGrid ? 48 : 52) * scale));
+					const minX = edgePad;
+					const maxX = layoutW - edgePad;
+					const baseLeft = Math.max(minX, Math.min(maxX, layoutW * (phonePortraitGrid ? 0.24 : 0.22)));
+					const baseRight = Math.max(minX, Math.min(maxX, layoutW * (phonePortraitGrid ? 0.76 : 0.78)));
+					let maxW = Math.min(
+						Math.floor((phonePortraitGrid ? 270 : 300) * scale),
+						Math.max(80, Math.floor(layoutW * (phonePortraitGrid ? 0.40 : 0.42)))
+					);
+					const nudgeMul = phonePortraitGrid ? 0.82 : 1;
 					const tilts = [-1, 1, -2, 0.5, -1.5, 2, -0.5, 1.5];
 
 					const rowOffsets = [
@@ -5058,16 +5628,18 @@ document.addEventListener('DOMContentLoaded', function() {
 						return { lx, rx };
 					}
 
+					const portraitGridLiftY = Math.round((phonePortraitGrid ? 18 : 24) * scale);
+
 					function rowY(rowIndex) {
 						const pad = Math.round(4 * scale);
 						const y1 = safeTop + pad;
 						const y5 = safeBottom - pad;
 						const full = y5 - y1;
-						const span = full * 0.88;
+						const span = full * (phonePortraitGrid ? 0.86 : 0.88);
 						const mid = (y1 + y5) / 2;
 						const y1c = mid - span / 2;
 						const step = span / 4;
-						return y1c + (rowIndex - 1) * step;
+						return y1c + (rowIndex - 1) * step - portraitGridLiftY;
 					}
 
 					function styleNode(node, tiltIndex) {
@@ -5108,50 +5680,34 @@ document.addEventListener('DOMContentLoaded', function() {
 							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
 							node.style.setProperty('font-size', `${Math.max(10, fs * 0.86)}px`, 'important');
 						}
-						let tabletPortrait = false;
-						try {
-							tabletPortrait = !!mskIsProjectsTabletPortraitViewport();
-						} catch (_) {
-							tabletPortrait = false;
-						}
-						// Durex: slightly narrower tab. UNGE: wider tab so the title image reads larger.
-						if (!tabletPortrait && p.key === 'durex') {
-							node.style.setProperty('max-width', `${Math.max(100, Math.floor(maxW * 0.75))}px`, 'important');
-						} else if (!tabletPortrait && p.key === 'unge') {
-							const ungeTabW = Math.min(
-								300,
-								Math.floor(layoutW * 0.58)
-							);
-							node.style.setProperty('max-width', `${Math.max(maxW + 32, ungeTabW)}px`, 'important');
-						} else if (!tabletPortrait && p.key === 'byens') {
-							/* Kun Byens: bredere fane i portræt-grid (inline max-width ellers klipper titel-webp) */
-							const byensTabW = Math.min(292, Math.floor(layoutW * 0.64));
-							node.style.setProperty('max-width', `${Math.max(132, byensTabW)}px`, 'important');
+						if (p.key === 'brainfarts' || p.key === 'byens') {
+							node.style.setProperty('width', 'auto', 'important');
+							node.style.setProperty('min-width', '0', 'important');
 						}
 						let y = rowY(p.row);
 						if (p.key === 'repop') y -= Math.round(8 * scale);
 						if (p.key === 'kobajer') y -= Math.round(6 * scale);
 						const { lx, rx } = rowXs(p.row);
 						let x = (p.side === 'left') ? lx : rx;
-						if (p.key === 'kobajer') y += Math.round(40 * scale);
+						if (p.key === 'kobajer') y += Math.round(40 * scale * nudgeMul);
 						/* Brainfarts: lidt mod højre så boblen ikke klipper i venstre kant */
-						if (p.key === 'brainfarts') x += Math.round(32 * scale);
+						if (p.key === 'brainfarts') x += Math.round(32 * scale * nudgeMul);
 						/* Twister: mod højre + lidt højere (cirkel + indhold, kun portræt-grid) */
 						if (p.key === 'twister') {
-							x += Math.round(28 * scale);
+							x += Math.round(28 * scale * nudgeMul);
 							y -= Math.round(12 * scale);
 						}
 						/* Repop: mod højre så boblen + Kravling ikke klipper i venstre kant */
-						if (p.key === 'repop') x += Math.round(28 * scale);
+						if (p.key === 'repop') x += Math.round(28 * scale * nudgeMul);
 						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
-						if (p.key === 'byens') x -= Math.round(38 * scale);
+						if (p.key === 'byens') x -= Math.round(38 * scale * nudgeMul);
 						/* Alt under hjernen (række 4–5): endnu tættere på hjernen (kun portræt-grid) */
 						if (p.row >= 4) y -= Math.round(22 * scale);
 						if (p.row === 5) y -= Math.round(18 * scale);
 						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
-						if (p.key === 'durex') x += Math.round(38 * scale);
+						if (p.key === 'durex') x += Math.round(38 * scale * nudgeMul);
 						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
-						if (p.key === 'unge') x -= Math.round(28 * scale);
+						if (p.key === 'unge') x -= Math.round(28 * scale * nudgeMul);
 						/* Øverste rækker (over hjernen): finjuster mod hjernen (mindre ned = højere op på skærmen) */
 						if (p.row <= 2) y += Math.round(12 * scale);
 						/* Række 1 (Repop + Naturlig) */
@@ -5159,31 +5715,40 @@ document.addEventListener('DOMContentLoaded', function() {
 						/* Repop: ekstra i portrait-grid (kun denne node, ikke Naturlig) */
 						if (p.key === 'repop') y += Math.round(10 * scale);
 						/* Nederste række (Brainfarts, Byens): lidt ned — cirkler + indhold; streger følger i createConnectingLines */
-						if (p.key === 'brainfarts' || p.key === 'byens') y += Math.round(50 * scale);
+						if (p.key === 'brainfarts' || p.key === 'byens') y += Math.round(50 * scale * nudgeMul);
+						let tabletPortrait = false;
+						try {
+							tabletPortrait = !!mskIsProjectsTabletPortraitViewport();
+						} catch (_) {
+							tabletPortrait = false;
+						}
 						/* iPad 641–1024 portræt: Kø-Bajer noden lidt ned */
 						if (tabletPortrait && p.key === 'kobajer') y += Math.round(16 * scale);
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
 						node.style.setProperty('top', `${y}px`, 'important');
+						try {
+							node.dataset.mskGridCx = String(Math.round(x));
+							node.dataset.mskGridCy = String(Math.round(y));
+						} catch (_) {}
 						placed.push(node);
 					}
 
 					try {
-						let portraitGridBrain = false;
-						try {
-							portraitGridBrain = mskIsProjectsPortraitSketchGridViewport();
-						} catch (_) {}
-						brain.style.setProperty('position', 'absolute', 'important');
-						if (portraitGridBrain) {
-							brain.style.setProperty('left', `${Math.round(layoutW / 2)}px`, 'important');
-							brain.style.setProperty('top', `${Math.round(rowY(3))}px`, 'important');
-						} else {
-							brain.style.setProperty('left', 'calc(50% + 30px)', 'important');
-							brain.style.setProperty('top', 'calc(50% + 42px)', 'important');
+						let portraitGridBrain = portraitGridMode || mskIsProjectsPortraitGridDocumentMode();
+						if (brainEl) {
+							brainEl.style.setProperty('position', 'absolute', 'important');
+							if (portraitGridBrain) {
+								brainEl.style.setProperty('left', `${Math.round(layoutW / 2)}px`, 'important');
+								brainEl.style.setProperty('top', `${Math.round(rowY(3))}px`, 'important');
+							} else {
+								brainEl.style.setProperty('left', 'calc(50% + 30px)', 'important');
+								brainEl.style.setProperty('top', 'calc(50% + 42px)', 'important');
+							}
+							brainEl.style.setProperty('right', 'auto', 'important');
+							brainEl.style.setProperty('bottom', 'auto', 'important');
+							brainEl.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
 						}
-						brain.style.setProperty('right', 'auto', 'important');
-						brain.style.setProperty('bottom', 'auto', 'important');
-						brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
 					} catch {}
 
 					try {
@@ -5204,16 +5769,13 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch {}
 
-					createAndPositionDandDLogo();
-					createAndPositionTwisterDandDLine();
-					createAndPositionRepopKravlingLine();
-					createAndPositionKravlingNomineretBadge();
-					createAndPositionKobajerArrow();
 					ensureProjectsMobileInlineBadges();
 					hideStandaloneDandDForProjectsMindmapPortrait(container);
+					mskHideProjectsPortraitEllipseExtras(container);
+					mskApplyProjectsPortraitPhoneCanvasStyles();
 					return;
 				}
-			} catch {}
+
 			const hadPortraitMindmap = container.classList.contains('projects-mindmap--portrait');
 			try { container.classList.remove('projects-mindmap--portrait'); } catch {}
 			if (hadPortraitMindmap) {
@@ -5553,7 +6115,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						narrow ||
 						cw <= 640 ||
 						mskIsProjectsShortLandscapeViewport() ||
-						mskIsProjectsTabletPortraitViewport()
+						mskIsProjectsTabletPortraitViewport() ||
+						mskIsProjectsPhonePortraitViewport()
 					)
 				)
 					return;
@@ -5688,6 +6251,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionDandDLogo() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			if (!twisterNode) return;
 
@@ -5818,6 +6382,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionTwisterDandDLine() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			const badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 			if (!twisterNode || !badge) return;
@@ -5874,6 +6439,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionRepopKravlingLine() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 			const repopNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('repop'));
 			if (!repopNode) return;
 
@@ -5972,6 +6538,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionKravlingNomineretBadge() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 			const arrow = container.querySelector('.repop-kravling-line');
 			if (!arrow) return;
 
@@ -6020,6 +6587,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionKobajerArrow() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 
 			const kobajerNode = Array.from(nodes).find(n => {
 				const href = (n.getAttribute('href') || '').toLowerCase();
@@ -6878,6 +7446,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		if (!forceRedraw && currentSvg.dataset.mskDynamicGraphicsBuilt === '1') return;
 
+		const container = document.querySelector('.brainstorm-container');
+		mskEnsureProjectsPortraitSvgBox();
+		mskProjectsSyncLayoutBeforePaint();
+		if (container && mskIsProjectsPortraitGridDocumentMode()) {
+			try {
+				container.classList.add('projects-mindmap--portrait');
+			} catch (_) {}
+		}
+
 		// Remove ONLY dynamic lines/paths we previously created and redraw them.
 		// This preserves any static SVG lines in `projects.html` (e.g. NATURLI) and avoids double-stacking.
 		currentSvg.querySelectorAll('.dynamic-mindmap-line').forEach(el => el.remove());
@@ -6885,7 +7462,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Note: All existing lines are cleared above, so we start with a clean slate
 		
-		const container = document.querySelector('.brainstorm-container');
 		const brainRect = currentBrain.getBoundingClientRect();
 		const containerRect = container.getBoundingClientRect();
 
@@ -6967,6 +7543,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				!mskIsProjectsTabletLandscapeViewport() &&
 				!mskIsProjectsShortLandscapeViewport() &&
 				(isPortraitMindmap ||
+					mskIsProjectsPortraitGridDocumentMode() ||
 					mskIsProjectsPortraitSketchGridViewport() ||
 					(portraitOrientationChain &&
 						(phonePortraitMediaChain ||
@@ -6988,15 +7565,27 @@ document.addEventListener('DOMContentLoaded', function() {
 					isMobileProjects = false;
 				}
 			} catch (_) {}
+			try {
+				if (mskIsProjectsPhonePortraitViewport() || mskIsProjectsTabletPortraitViewport()) {
+					isMobileProjects = true;
+				}
+			} catch (_) {}
+			if (mskIsProjectsPortraitGridDocumentMode()) isMobileProjects = true;
+			const portraitGridLines =
+				isPortraitMindmap || portraitSketchLikeGrid || mskIsProjectsPortraitSketchGridViewport();
+			let portraitLineScale = 1;
+			try {
+				if (portraitGridLines) portraitLineScale = mskProjectsPortraitReferenceScale();
+			} catch (_) {}
 			if (isMobileProjects) {
 				const scale = 1;
-				const svgScale = (n) => n * scale;
+				const svgScale = (n) => n * scale * (portraitGridLines ? portraitLineScale : 1);
 				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
 				const portraitUnderBrainStrokePullUp =
-					isPortraitMindmap || portraitSketchLikeGrid ? svgScale(16) : 0;
+					portraitGridLines ? svgScale(16) : 0;
 				/* Kun portræt: venstre streg (Twister) lidt højere end højre (Kø-Bajer) */
 				const portraitUnderBrainLeftStrokeExtraPullUp =
-					isPortraitMindmap || portraitSketchLikeGrid ? svgScale(12) : 0;
+					portraitGridLines ? svgScale(12) : 0;
 				/* Øvre kæde (Rep↔Dur, Dur↔hjerne, Nat↔Ung, Ung↔hjerne): ekstra forkortelse */
 				const portraitUpperLineMul = 0.88;
 				try {
@@ -7023,15 +7612,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				const byens = findNode('byens-landhandel');
 
 				const pt = (rect, kind) => {
-					const x0 = rect.left - containerRect.left;
-					const y0 = rect.top - containerRect.top;
-					const cx = x0 + rect.width / 2;
-					const cy = y0 + rect.height / 2;
-					if (kind === 'top') return { x: cx, y: y0 };
-					if (kind === 'bottom') return { x: cx, y: y0 + rect.height };
-					if (kind === 'left') return { x: x0, y: cy };
-					if (kind === 'right') return { x: x0 + rect.width, y: cy };
-					return { x: cx, y: cy };
+					if (!rect || rect.width <= 0 || rect.height <= 0) return { x: 0, y: 0 };
+					const cx = rect.left + rect.width / 2;
+					const cy = rect.top + rect.height / 2;
+					let px = cx;
+					let py = cy;
+					if (kind === 'top') py = rect.top;
+					else if (kind === 'bottom') py = rect.top + rect.height;
+					else if (kind === 'left') px = rect.left;
+					else if (kind === 'right') px = rect.left + rect.width;
+					return mskSvgPointFromClientPx(currentSvg, px, py);
 				};
 
 				const lineImg = (assetPath, a, b, heightPx, opts) => {
@@ -7090,20 +7680,23 @@ document.addEventListener('DOMContentLoaded', function() {
 				const byeRect = byens && byens.getBoundingClientRect();
 
 				/* Kun portræt: Repop↔Durex-stregen lidt ned */
-				const repDurexPortraitLineDy =
-					isPortraitMindmap || portraitSketchLikeGrid ? svgScale(10) : 0;
+				const repDurexPortraitLineDy = portraitGridLines ? svgScale(10) : 0;
 				/* Kun portræt: Tw↔Brainfarts og Kø↔Byens — mindre “shift up” så stregen sætter lidt lavere */
-				const portraitBottomRowLineTune = isPortraitMindmap || portraitSketchLikeGrid;
+				const portraitBottomRowLineTune = portraitGridLines;
 
 				if (repRect && durRect) {
 					const repBot = pt(repRect, 'bottom');
 					const durTop = pt(durRect, 'top');
 					let repDurexLineH = svgScale(210);
 					let repDurexIpadPortraitExtraDy = 0;
+					let repDurexGapA = svgScale(2);
+					let repDurexGapB = svgScale(2);
+					let repDurexLenMul = 1.04 * portraitUpperLineMul;
 					try {
-						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+						if (portraitGridLines) {
 							repDurexLineH = svgScale(252);
 							repDurexIpadPortraitExtraDy = svgScale(7);
+							repDurexGapA = svgScale(34);
 						}
 					} catch (_) {}
 					lineImg(
@@ -7112,25 +7705,26 @@ document.addEventListener('DOMContentLoaded', function() {
 						{ x: durTop.x, y: durTop.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy },
 						repDurexLineH,
 						{
-							gapA: svgScale(2),
-							gapB: svgScale(2),
-							lenMul: 1.04 * portraitUpperLineMul,
+							gapA: repDurexGapA,
+							gapB: repDurexGapB,
+							lenMul: repDurexLenMul,
 						}
 					);
 				}
 				if (durRect) {
 					const bh = (brainBottom.y - brainTop.y) || 1;
-					let a = {
-						x: (durRect.right - containerRect.left) - (durRect.width * 0.30),
-						y: (durRect.top - containerRect.top) + (durRect.height * 0.72),
-					};
+					let a = mskSvgPointFromClientPx(
+						currentSvg,
+						durRect.right - durRect.width * 0.30,
+						durRect.top + durRect.height * 0.72
+					);
 					let b = { x: brainLeft.x + svgScale(52), y: brainTop.y + bh * 0.30 };
 					let durexGapA = svgScale(8);
 					let durexGapB = svgScale(13);
 					let durexLenMul = portraitUpperLineMul;
 					let durexLineH = svgScale(220);
 					try {
-						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+						if (portraitGridLines) {
 							const durexBrainIpadDy = svgScale(24);
 							a.y += durexBrainIpadDy;
 							b.y += durexBrainIpadDy + svgScale(26);
@@ -7166,7 +7760,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainLenMul = underBrainLineLenMul * 0.98;
 					let twBrainLineH = svgScale(175);
 					try {
-						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+						if (portraitGridLines) {
 							const twTop = pt(twiRect, 'top');
 							const twMid = pt(twiRect, 'center');
 							/* iPad portræt: rotation den *anden* vej end -46 (mindre negativ vinkel + slut lidt til højre for midt) */
@@ -7190,23 +7784,36 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				if (twiRect && brfRect) {
 					const twBrfDown = svgScale(8);
-					/* Standard: streg trukket lidt op i gap; portræt: mindre træk så den matcher lavere bund-række */
-					const twBrfShiftUp = svgScale(portraitBottomRowLineTune ? 19 : 22);
+					let twBrfShiftUp = svgScale(portraitBottomRowLineTune ? 28 : 22);
+					let twBrfGapA = -svgScale(16);
+					let twBrfGapB = svgScale(0);
+					let twBrfLenMul = 1.58;
 					const twBot = pt(twiRect, 'bottom');
 					const bfTop = pt(brfRect, 'top');
 					let twBrfLineH = svgScale(232);
+					let a = { x: twBot.x, y: twBot.y + twBrfDown - twBrfShiftUp };
+					let b = { x: bfTop.x, y: bfTop.y + twBrfDown - twBrfShiftUp };
 					try {
-						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
-							twBrfLineH = svgScale(305);
+						if (portraitGridLines) {
+							twBrfShiftUp = svgScale(48);
+							a.y = twBot.y + twBrfDown - twBrfShiftUp - svgScale(12);
+							b.y = bfTop.y + twBrfDown - twBrfShiftUp - svgScale(12) + svgScale(10);
+							twBrfLineH = svgScale(322);
+							twBrfGapA = svgScale(8);
+							twBrfGapB = svgScale(2);
+							twBrfLenMul = 1.34;
 						}
 					} catch (_) {}
 					lineImg(
 						'assets/linje 3.webp',
-						{ x: twBot.x, y: twBot.y + twBrfDown - twBrfShiftUp },
-						{ x: bfTop.x, y: bfTop.y + twBrfDown - twBrfShiftUp },
+						a,
+						b,
 						twBrfLineH,
-						/* negativ gapA: stregen starter længere op mod Twister-cirklen */
-						{ gapA: -svgScale(16), gapB: svgScale(0), lenMul: 1.58 }
+						{
+							gapA: twBrfGapA,
+							gapB: twBrfGapB,
+							lenMul: twBrfLenMul,
+						}
 					);
 				}
 
@@ -7223,8 +7830,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					/* iPad 641–1024 portræt + lodret mindmap: længere lodret streg Nat' → UNGE */
 					try {
 						if (
-							isPortraitMindmap &&
-							mskIsProjectsTabletPortraitViewport()
+							portraitGridLines
 						) {
 							const natUngIpadLiftY = svgScale(14);
 							natUngA = {
@@ -7250,17 +7856,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (ungRect) {
 					const ungeLineDy = svgScale(16);
 					const bh = (brainBottom.y - brainTop.y) || 1;
-					let a = {
-						x: (ungRect.left - containerRect.left) + (ungRect.width * 0.34),
-						y: (ungRect.top - containerRect.top) + (ungRect.height * 0.62) + ungeLineDy,
-					};
+					let a = mskSvgPointFromClientPx(
+						currentSvg,
+						ungRect.left + ungRect.width * 0.34,
+						ungRect.top + ungRect.height * 0.62
+					);
+					a.y += ungeLineDy;
 					let b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 + ungeLineDy };
 					let ungeGapA = svgScale(4);
 					let ungeGapB = svgScale(5);
 					let ungeLenMul = portraitUpperLineMul * 1.08;
 					let ungeLineH = svgScale(220);
 					try {
-						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+						if (portraitGridLines) {
 							b.y += svgScale(16);
 							ungeGapB = -svgScale(6);
 							ungeLenMul = portraitUpperLineMul * 1.12;
@@ -7278,10 +7886,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						x: brainRight.x - svgScale(52),
 						y: brainBottom.y - svgScale(58) - portraitUnderBrainStrokePullUp,
 					};
-					const kcx = (kobRect.left - containerRect.left) + kobRect.width * 0.32 - svgScale(4);
+					const kobTop = pt(kobRect, 'top');
 					const b = {
-						x: kcx,
-						y: pt(kobRect, 'top').y - svgScale(14) - portraitUnderBrainStrokePullUp,
+						x:
+							mskSvgPointFromClientPx(
+								currentSvg,
+								kobRect.left + kobRect.width * 0.32,
+								kobRect.top
+							).x - svgScale(4),
+						y: kobTop.y - svgScale(14) - portraitUnderBrainStrokePullUp,
 					};
 					lineImg('assets/Linje 4.webp', a, b, svgScale(235), {
 						gapA: -svgScale(14),
@@ -7302,8 +7915,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobByeStartNudgeX = 0;
 					try {
 						if (
-							isPortraitMindmap &&
-							mskIsProjectsTabletPortraitViewport()
+							portraitGridLines
 						) {
 							kobByeTopInsetX = svgScale(84);
 							kobByeLenMul = 2.24;
@@ -7323,13 +7935,16 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobByeLineGapA = -svgScale(8);
 					let kobByeLineGapB = -svgScale(8);
 					try {
-						if (isPortraitMindmap && mskIsProjectsTabletPortraitViewport()) {
+						if (portraitGridLines) {
 							a.x += svgScale(52);
 							b.x = a.x;
 							const kobByeIpadLift = svgScale(10);
 							a.y -= kobByeIpadLift;
 							b.y -= kobByeIpadLift;
 							b.y -= svgScale(10);
+							const kobByePortraitDown = svgScale(14);
+							a.y += kobByePortraitDown;
+							b.y += kobByePortraitDown;
 							kobByeLineGapB = svgScale(14);
 							kobByeLineH = svgScale(268);
 						}
@@ -7346,6 +7961,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		} catch {}
 
+		/* Portræt-grid (telefon + tablet): aldrig 8 radiale desktop-streger ovenpå kæde-layoutet */
+		try {
+			if (
+				container &&
+				(container.classList.contains('projects-mindmap--portrait') ||
+					mskIsProjectsPortraitGridDocumentMode() ||
+					mskIsProjectsPortraitSketchGridViewport())
+			) {
+				return;
+			}
+		} catch (_) {}
+
 		// If we previously hid static lines for mobile, restore them for desktop/tablet.
 		try {
 			currentSvg.querySelectorAll('.mindmap-line[data-mobile-hidden="1"]').forEach((el) => {
@@ -7361,6 +7988,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Create hand-drawn lines to each project node
 		currentNodes.forEach((node, index) => {
+			if (container && container.classList.contains('projects-mindmap--portrait')) return;
 			const nodeRect = node.getBoundingClientRect();
 			const nodeCenterSvg = svgCenterFromRect(currentSvg, nodeRect, containerRect);
 			const nodeX = nodeCenterSvg.x;
@@ -8015,7 +8643,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
-		if (!forceRedraw && currentSvg.dataset.mskDynamicGraphicsBuilt === '1') return;
+		if (!forceRedraw && currentSvg.dataset.mskDynamicGraphicsBuilt === '1') {
+			if (
+				mskShouldUsePortraitHtmlRings() &&
+				container.querySelectorAll('.msk-portrait-ring-overlay.hand-drawn-frame').length >=
+					currentNodes.length
+			) {
+				return;
+			}
+			if (!mskShouldUsePortraitHtmlRings()) return;
+		}
+
+		if (mskShouldUsePortraitHtmlRings()) {
+			mskProjectsSyncLayoutBeforePaint();
+			mskCreatePortraitGridRingOverlays();
+			return;
+		}
 
 		// Remove existing circles to avoid duplicates when this function runs again (e.g., on resize)
 		const existingCircles = currentSvg.querySelectorAll('.hand-drawn-frame, [class*="hand-drawn"], .brainfarts-overlay, .brainfarts-ipad-construction-sign, image[href*="cirkel"], image[href*="circle"], image[xlink\\:href*="cirkel"], image[xlink\\:href*="circle"], image[href*="brainfarts"], image[href*="repop"], image[href*="kobajer"], image[href*="naturli"], image[href*="twister"], image[href*="durex"], image[href*="unge"], image[href*="ombygning"]');
@@ -8044,7 +8687,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		const containerRect = container.getBoundingClientRect();
 		console.log('Container rect:', containerRect);
-		try { void container.offsetHeight; } catch {}
+		mskProjectsSyncLayoutBeforePaint();
 		const scale = 1;
 		const s = (n) => n * scale;
 		/* Kort landscape: mindre håndtegnede cirkler (SVG) så de matcher mindre titelbilleder */
@@ -8054,6 +8697,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch (_) {
 			assetS = 1;
 		}
+		let portraitGridRingsEarly = false;
+		try {
+			portraitGridRingsEarly = mskIsProjectsPortraitGridRingsMode();
+		} catch (_) {}
 		function isProjectsPhoneLandscape() {
 			try {
 				const { w, h } = mskViewportSize();
@@ -8089,13 +8736,28 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		const projectsDesktopRingMul = getProjectsDesktopRingMul();
 
-		/** iPad 641–1024 portræt + lodret mindmap: større/andre ringe end telefon — kun her */
-		let ipadPortraitRings = false;
+		/** Portræt-grid (telefon + iPad): samme håndtegnede ringe — telefon skaleres med layoutW/768 */
+		let portraitGridRings = false;
+		let portraitRingScale = 1;
 		try {
-			ipadPortraitRings =
-				!!mskIsProjectsTabletPortraitViewport() &&
-				container.classList.contains('projects-mindmap--portrait');
+			portraitGridRings = mskIsProjectsPortraitGridRingsMode();
+			if (portraitGridRings) portraitRingScale = mskProjectsPortraitReferenceScale();
 		} catch (_) {}
+		const ipadPortraitRings =
+			portraitGridRings &&
+			!mskIsProjectsPhonePortraitViewport() &&
+			!document.documentElement.classList.contains('msk-projects-phone-portrait') &&
+			(mskIsProjectsTabletPortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-ipad-portrait'));
+		const phonePortraitRings =
+			portraitGridRings &&
+			(mskIsProjectsPhonePortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-phone-portrait'));
+		const phoneRingMul = phonePortraitRings ? Math.max(0.72, portraitRingScale) : 1;
+		function shrinkPhoneRing(w, h) {
+			if (!phonePortraitRings || phoneRingMul >= 0.999) return [w, h];
+			return [w * phoneRingMul, h * phoneRingMul];
+		}
 
 		/** iPad 1024–1366 landskab + ellipse-mindmap: større håndtegnede ringe om titlerne — kun her */
 		let ipadLandscapeRings = false;
@@ -8107,6 +8769,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		/** iPad landskab: fladere ovaler (mindre højde, samme bredde ca.) */
 		const ipadLsRingVertMul = ipadLandscapeRings ? 0.78 : 1;
+		const pRing = portraitGridRings ? portraitRingScale : 1;
+		const prs = (n) => n * pRing;
 
 		currentNodes.forEach((node, index) => {
 			// Used to map hover -> matching frame element
@@ -8162,8 +8826,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeText = node.textContent.trim();
 
 			const titleEl = node.querySelector('.project-node__title');
-			const anchorRect = titleEl ? titleEl.getBoundingClientRect() : nodeRect;
-			const anchorCenterSvg = svgCenterFromRect(currentSvg, anchorRect, containerRect);
+			const anchorCenterSvg = mskProjectsMindmapNodeCenterSvg(
+				node,
+				currentSvg,
+				container,
+				containerRect
+			);
 			const centerX = anchorCenterSvg.x;
 			const centerY = anchorCenterSvg.y;
 
@@ -8179,9 +8847,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const bfShortLsStretchX = bfShortLs ? 1.24 : 1;
 				/* iPad portræt mindmap: ekstra vandret på ring + fill; rød linje sit eget step så den ikke vokser med.
 				 * preserveAspectRatio none på <image> — ellers default "meet" bevarer billedformat og æter ikke bw/bh uafhængigt. */
-				const bfIpadMulWRing = ipadPortraitRings ? 3.02 : ipadLandscapeRings ? 1.92 : 1;
-				const bfIpadMulWLine = ipadPortraitRings ? 1.9 : ipadLandscapeRings ? 1.38 : 1;
-				const bfIpadMulH = ipadPortraitRings ? 1.8 : ipadLandscapeRings ? 0.9 : 1;
+				const bfIpadMulWRing = ipadPortraitRings ? 3.02 * pRing : ipadLandscapeRings ? 1.92 : 1;
+				const bfIpadMulWLine = ipadPortraitRings ? 1.9 * pRing : ipadLandscapeRings ? 1.38 : 1;
+				const bfIpadMulH = ipadPortraitRings ? 1.8 * pRing : ipadLandscapeRings ? 0.9 : 1;
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";
@@ -8192,6 +8860,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWRing;
 				let bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
 				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
+				[bw, bh] = shrinkPhoneRing(bw, bh);
 				const bfDrawCy = centerY + (ipadLandscapeRings ? -s(2) : 0);
 				image.setAttribute('x', String(centerX - bw / 2));
 				image.setAttribute('y', String(bfDrawCy - bh / 2));
@@ -8348,9 +9017,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				let repopMul = 0.88;
 				try {
-					if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) {
+					if (phonePortraitRings) repopMul = 0.8;
+					else if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) {
 						repopMul = 0.82;
-						/* Kun smal telefon portræt: større ring end tablet-portræt — mere luft om titel + Kravling */
 						if (window.matchMedia('(max-width: 640px)').matches) repopMul = 0.93;
 					}
 					if (ipadPortraitRings) repopMul = Math.max(repopMul, 0.96);
@@ -8362,7 +9031,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				let padXPx = landscapeMindmap ? 48 : 40;
 				let padYPortrait = repBadgeRect ? 58 : 46;
 				try {
-					if (window.matchMedia && window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
+					if (phonePortraitRings) {
+						padXPx = 28;
+						padYPortrait = repBadgeRect ? 36 : 28;
+					} else if (window.matchMedia && window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
 						padXPx = Math.max(padXPx, 64);
 						padYPortrait = repBadgeRect ? 92 : 72;
 					}
@@ -8408,14 +9080,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				/* Lidt bredere horizontalt (oval) — kun stretch på X, som NATURLI */
-				let repopStretchX = 1.12;
-				if (ipadPortraitRings) repopStretchX = 1.92;
+				let repopStretchX = phonePortraitRings ? 1.04 : 1.12;
+				if (ipadPortraitRings) repopStretchX = 1.92 * pRing;
 				else if (ipadLandscapeRings) repopStretchX = 1.28;
 				w *= repopStretchX;
 				if (ipadLandscapeRings) {
 					w *= 1.04;
 					h *= ipadLsRingVertMul * 0.74;
 				}
+				[w, h] = shrinkPhoneRing(w, h);
 
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
 				image.setAttribute('y', String(repCenterY - (h / 2)));
@@ -8533,12 +9206,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				/* Portræt mindmap: bredere ring vandret (højde uændret) */
 				try {
-					if (container && container.classList.contains('projects-mindmap--portrait')) {
-						w *= 1.12;
-					}
 					if (ipadPortraitRings) {
-						w *= 2.02;
-						h *= 1.48;
+						w *= 1 + (2.02 - 1) * pRing;
+						h *= 1 + (1.48 - 1) * pRing;
 					}
 					if (ipadLandscapeRings) {
 						w *= 1.58;
@@ -8548,6 +9218,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
+				[w, h] = shrinkPhoneRing(w, h);
 				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
 				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
 				let drawCx = kCenterX;
@@ -8630,7 +9301,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				try {
 					if (mskIsProjectsShortLandscapeViewport()) naturliStretchX = 1.34;
 					else if (portraitNaturli) naturliStretchX = 1.48;
-					if (ipadPortraitRings) naturliStretchX = Math.max(naturliStretchX, 3.5);
+					if (ipadPortraitRings) naturliStretchX = Math.max(naturliStretchX, 3.5 * pRing);
 					else if (ipadLandscapeRings) naturliStretchX = Math.max(naturliStretchX, 1.74);
 				} catch {}
 				/* Desktop: bredere oval (kun X) — ikke tablet/mobil */
@@ -8651,16 +9322,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					240 * naturliMul * projectsDesktopRingMul * naturliStretchX * naturliLsMulW;
 				let nH = 140 * naturliMul * projectsDesktopRingMul * naturliLsMulH;
 				if (ipadLandscapeRings) nH *= ipadLsRingVertMul;
+				let [nWf, nHf] = shrinkPhoneRing(nW, nH);
 				// Create an image element for NATURLI'
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring naturli'.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - nW / 2);
-				image.setAttribute('y', centerY - nH * (65 / 140));
-				image.setAttribute('width', String(nW));
-				image.setAttribute('height', String(nH));
+				image.setAttribute('x', centerX - nWf / 2);
+				image.setAttribute('y', centerY - nHf * (65 / 140));
+				image.setAttribute('width', String(nWf));
+				image.setAttribute('height', String(nHf));
 				image.setAttribute('preserveAspectRatio', 'none'); // Prevent aspect ratio from scaling width
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -8719,17 +9391,19 @@ document.addEventListener('DOMContentLoaded', function() {
 					const portrait =
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
-					if (portrait) ungeMul = 0.84;
+					if (phonePortraitRings) ungeMul = 0.82;
+					else if (portrait) ungeMul = 0.84;
 					if (ipadPortraitRings) ungeMul = Math.max(ungeMul, 0.94);
 					if (ipadLandscapeRings) ungeMul = Math.max(ungeMul, 1.06);
 				} catch {}
 				let ungeStretchX = 1;
-				if (ipadPortraitRings) ungeStretchX = 1.82;
+				if (ipadPortraitRings) ungeStretchX = 1.82 * pRing;
 				else if (ipadLandscapeRings) ungeStretchX = 1.38;
 				const ungeLsMulH = ipadLandscapeRings ? 0.86 : 1;
-				const uw = 320 * ungeMul * projectsDesktopRingMul * ungeStretchX;
+				let uw = 320 * ungeMul * projectsDesktopRingMul * ungeStretchX;
 				let uh = 150 * ungeMul * projectsDesktopRingMul * ungeLsMulH;
 				if (ipadLandscapeRings) uh *= ipadLsRingVertMul;
+				[uw, uh] = shrinkPhoneRing(uw, uh);
 				image.setAttribute('x', centerX - uw / 2);
 				image.setAttribute('y', centerY - uh / 2);
 				image.setAttribute('width', String(uw));
@@ -8821,8 +9495,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadPortraitRings) {
-					w *= 1.84;
-					h *= 1.52;
+					w *= 1 + (1.84 - 1) * pRing;
+					h *= 1 + (1.52 - 1) * pRing;
 				}
 				let twisterLsMulW = 1;
 				if (ipadLandscapeRings) {
@@ -8845,6 +9519,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (ipadPortraitRings) {
 					circleDy -= s(12);
 				}
+				[w, h] = shrinkPhoneRing(w, h);
 				image.setAttribute('x', String(twCenterX - (w / 2)));
 				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
 				image.setAttribute('width', String(w));
@@ -8887,8 +9562,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				let byensStretchX = 1.22;
 				let byensStretchY = 0.94;
 				if (ipadPortraitRings) {
-					byensStretchX = 2.55;
-					byensStretchY = 1.5;
+					byensStretchX = 1 + (2.55 - 1) * pRing;
+					byensStretchY = 1 + (1.5 - 1) * pRing;
 				} else if (ipadLandscapeRings) {
 					byensStretchX = 1.38;
 					byensStretchY = 0.82;
@@ -8927,6 +9602,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					projectsDesktopRingMul *
 					byensStretchY;
 				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
+				[bw, bh] = shrinkPhoneRing(bw, bh);
 				/* Kun ring/fill — ikke noden (tekst forbliver) */
 				const byensIpadDy = ipadPortraitRings ? -s(14) : ipadLandscapeRings ? -s(12) : 0;
 				// Create an image element for BYENS LANDHANDEL
@@ -9006,14 +9682,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
 						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
 					/* Portræt: større ring vs. tekst så “GUESS WHO” m.m. sidder mere inde i cirklen */
-					if (portrait) durexMul = 0.98;
+					if (phonePortraitRings) durexMul = 0.82;
+					else if (portrait) durexMul = 0.98;
 				} catch {}
-				durexMul *= 0.805; /* cirkel + fill matcher Durex tekst-asset + tab */
+				durexMul *= phonePortraitRings ? 0.96 : 0.805; /* cirkel + fill matcher Durex tekst-asset + tab */
 				let durexIpadMulW = 1;
 				let durexIpadMulH = 1;
 				if (ipadPortraitRings) {
-					durexIpadMulW = 1.66;
-					durexIpadMulH = 1.84;
+					durexIpadMulW = 1 + (1.66 - 1) * pRing;
+					durexIpadMulH = 1 + (1.84 - 1) * pRing;
 				}
 				let durexIpadLsMulW = 1;
 				let durexIpadLsMulH = 1;
@@ -9027,6 +9704,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				let dh =
 					150 * durexMul * projectsDesktopRingMul * durexIpadMulH * durexIpadLsMulH;
 				if (ipadLandscapeRings) dh *= 1.1;
+				[dw, dh] = shrinkPhoneRing(dw, dh);
 				image.setAttribute('x', centerX - dw / 2);
 				image.setAttribute('y', centerY + durexIpadDy - dh / 2);
 				image.setAttribute('width', String(dw));
@@ -9295,11 +9973,24 @@ document.addEventListener('DOMContentLoaded', function() {
 				else stopBrainFart();
 
 				// Make it clear the tab is clickable: pulse the matching hand-drawn circle frame
+				const container = document.querySelector('.brainstorm-container');
 				const currentSvg = document.querySelector('.connecting-lines');
 				const idx = this.dataset.nodeIndex;
 				const nodeHref = (this.dataset.nodeHref || href).toLowerCase();
 				const frame =
-					(currentSvg && nodeHref && currentSvg.querySelector(`.hand-drawn-frame[data-node-href="${nodeHref}"]`)) ||
+					(container &&
+						nodeHref &&
+						container.querySelector(
+							`.msk-portrait-ring-overlay.hand-drawn-frame[data-node-href="${nodeHref}"]`
+						)) ||
+					(currentSvg &&
+						nodeHref &&
+						currentSvg.querySelector(`.hand-drawn-frame[data-node-href="${nodeHref}"]`)) ||
+					(container &&
+						idx &&
+						container.querySelector(
+							`.msk-portrait-ring-overlay.hand-drawn-frame[data-node-index="${idx}"]`
+						)) ||
 					(currentSvg && idx && currentSvg.querySelector(`.hand-drawn-frame[data-node-index="${idx}"]`));
 				const fill =
 					(currentSvg && nodeHref && currentSvg.querySelector(`.frame-fill[data-node-href="${nodeHref}"]`)) ||
@@ -9415,11 +10106,24 @@ document.addEventListener('DOMContentLoaded', function() {
 			node.addEventListener('mouseleave', function() {
 				if (!mskMindmapHoverFx) return;
 				const href = this.getAttribute('href');
+				const container = document.querySelector('.brainstorm-container');
 				const currentSvg = document.querySelector('.connecting-lines');
 				const idx = this.dataset.nodeIndex;
 				const nodeHref = (this.dataset.nodeHref || (href || '')).toLowerCase();
 				const frame =
-					(currentSvg && nodeHref && currentSvg.querySelector(`.hand-drawn-frame[data-node-href="${nodeHref}"]`)) ||
+					(container &&
+						nodeHref &&
+						container.querySelector(
+							`.msk-portrait-ring-overlay.hand-drawn-frame[data-node-href="${nodeHref}"]`
+						)) ||
+					(currentSvg &&
+						nodeHref &&
+						currentSvg.querySelector(`.hand-drawn-frame[data-node-href="${nodeHref}"]`)) ||
+					(container &&
+						idx &&
+						container.querySelector(
+							`.msk-portrait-ring-overlay.hand-drawn-frame[data-node-index="${idx}"]`
+						)) ||
 					(currentSvg && idx && currentSvg.querySelector(`.hand-drawn-frame[data-node-index="${idx}"]`));
 				const fill =
 					(currentSvg && nodeHref && currentSvg.querySelector(`.frame-fill[data-node-href="${nodeHref}"]`)) ||
@@ -9479,33 +10183,71 @@ document.addEventListener('DOMContentLoaded', function() {
 		createTwisterTongues();
 
 		// Ensure nodes are placed before drawing lines/frames.
+		mskApplyProjectsPortraitPhoneCanvasStyles();
 		positionNodesPerfectCircle();
-		createAndPositionDandDLogo();
-		createAndPositionTwisterDandDLine();
-		createAndPositionRepopKravlingLine();
-		createAndPositionKravlingNomineretBadge();
-		createAndPositionKobajerArrow();
-		ensureProjectsMobileInlineBadges();
-		hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
-		
-		// Create connecting lines dynamically (force: layout måles mens container er skjult med visibility, ikke display:none)
-		const firstPaintOpts = { force: true };
-		createConnectingLines(firstPaintOpts);
-		
+		refreshProjectsMindmapStandaloneExtras();
+		mskEnsureProjectsPortraitSvgBox();
+
+		let mskPortraitPaintRetryCount = 0;
+
+		function paintProjectsMindmapGraphics(force) {
+			const redrawOpts = { force: !!force };
+			if (force) {
+				try {
+					const svg = document.querySelector('.connecting-lines');
+					if (svg) delete svg.dataset.mskDynamicGraphicsBuilt;
+				} catch (_) {}
+			}
+			mskProjectsSyncLayoutBeforePaint();
+			createConnectingLines(redrawOpts);
+			createHandDrawnFrames(redrawOpts);
+			mskProjectsMindmapMarkGraphicsBuilt();
+			try {
+				if (
+					mskIsProjectsPortraitTouchGridMode() &&
+					!mskProjectsMindmapPortraitFramesReady() &&
+					mskPortraitPaintRetryCount < 8
+				) {
+					mskPortraitPaintRetryCount += 1;
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							try {
+								positionNodesPerfectCircle();
+								mskProjectsSyncLayoutBeforePaint();
+								paintProjectsMindmapGraphics(true);
+							} catch (_) {}
+						});
+					});
+				}
+			} catch (_) {}
+		}
+
+		paintProjectsMindmapGraphics(true);
+
 		// Create hand-drawn frames around project tabs
 		try {
-			createHandDrawnFrames(firstPaintOpts);
-			mskProjectsMindmapMarkGraphicsBuilt();
 			positionBrainfartsBuildNote();
 			try {
 				mskApplyBrainfartsIpadLandscapeConstructionSign();
 				mskSyncBrainfartsIpadConstructionSignOpacity();
 			} catch (_) {}
 		} finally {
+			mskApplyProjectsPortraitPhoneCanvasStyles();
 			mskProjectsMindmapReveal();
 			try {
-				if (mskIsProjectsPhonePortraitViewport() || mskIsProjectsTabletPortraitViewport()) {
+				if (mskIsProjectsPortraitTouchGridMode()) {
 					window.scrollTo(0, 0);
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							try {
+								positionNodesPerfectCircle();
+								refreshProjectsMindmapStandaloneExtras();
+								mskEnsureProjectsPortraitSvgBox();
+								paintProjectsMindmapGraphics(true);
+								positionBrainfartsBuildNote();
+							} catch (_) {}
+						});
+					});
 				}
 			} catch (_) {}
 		}
@@ -9517,7 +10259,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				requestAnimationFrame(() => {
 					try {
 						const layoutChanged = !!(force || mskProjectsMindmapLayoutResizeMeaningful());
-						const needsGraphics = layoutChanged || mskProjectsMindmapNeedsGraphicRebuild();
+						const needsGraphics =
+							layoutChanged ||
+							mskProjectsMindmapNeedsGraphicRebuild() ||
+							(force && mskIsProjectsPortraitTouchGridMode());
 						const alreadyPainted = document.documentElement.classList.contains(
 							'msk-projects-mindmap-painted'
 						);
@@ -9526,15 +10271,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (layoutChanged) {
 							positionNodesPerfectCircle();
 						}
-						createAndPositionDandDLogo();
-						createAndPositionTwisterDandDLine();
-						createAndPositionRepopKravlingLine();
-						createAndPositionKravlingNomineretBadge();
-						createAndPositionKobajerArrow();
-						ensureProjectsMobileInlineBadges();
-						hideStandaloneDandDForProjectsMindmapPortrait(document.querySelector('.brainstorm-container'));
+						refreshProjectsMindmapStandaloneExtras();
+						mskApplyProjectsPortraitPhoneCanvasStyles();
+						mskProjectsSyncLayoutBeforePaint();
 						if (needsGraphics) {
 							const redrawOpts = { force: true };
+							try {
+								const svg = document.querySelector('.connecting-lines');
+								if (svg) delete svg.dataset.mskDynamicGraphicsBuilt;
+							} catch (_) {}
 							createConnectingLines(redrawOpts);
 							createHandDrawnFrames(redrawOpts);
 							mskProjectsMindmapMarkGraphicsBuilt();
@@ -9570,6 +10315,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {}
 		try {
 			window.__mskProjectsRelayout = runProjectsMindmapLayoutTick;
+			window.__mskProjectsRepaintPortraitGraphics = function (force) {
+				try {
+					runProjectsMindmapLayoutTick(!!force);
+				} catch (_) {}
+			};
 		} catch (_) {}
 
 		if (!document.documentElement.dataset.mskProjectsMindmapRelisten) {

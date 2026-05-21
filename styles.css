@@ -6712,23 +6712,21 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         width: min(158px, 78%);
         max-width: 78%;
     }
-    /* Portrait telefon: UNGE — text graphic (webp) scaled up inside tab (iPad portræt: separat blok nedenfor) */
+    /* Portrait telefon (kun uden portræt-grid — ellers fælles iPad/telefon-regler nedenfor) */
     @media (orientation: portrait) and (max-width: 640px) {
-        body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href="unge-mod-uv.html"],
-        body.projects-page.sketchbook-theme .brainstorm-container .project-node[href="unge-mod-uv.html"] {
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) a.project-node[href="unge-mod-uv.html"],
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) .project-node[href="unge-mod-uv.html"] {
             width: auto !important;
             min-width: 0 !important;
             max-width: min(300px, 65vw) !important;
             padding: 6px 10px !important;
         }
-        body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="unge-mod-uv"] .project-node__title,
-        body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title {
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) .project-node[href*="unge-mod-uv"] .project-node__title,
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) a.project-node[href*="unge-mod-uv"] .project-node__title {
             overflow: visible !important;
         }
-        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
-        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
-        body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
-        body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) .project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
             width: 100% !important;
             max-width: 100% !important;
             height: auto !important;
@@ -6739,30 +6737,25 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
             transform-origin: center center !important;
         }
     }
-    /* Portrait telefon: TWISTER — større titel-webp (iPad portræt: samme scale som UNGE i dedikeret @media) */
     @media (orientation: portrait) and (max-width: 640px) {
-        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .project-node__title-img--twister,
-        body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .project-node__title-img--twister,
-        body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title-img--twister,
-        body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) .project-node[href*="twister"] .project-node__title-img--twister,
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) a.project-node[href*="twister"] .project-node__title-img--twister {
             width: min(164px, 94%);
             max-width: 100%;
             transform: translateY(42px) scaleX(1.05);
             transform-origin: center center;
         }
     }
-    /* Portrait telefon: KØ-BAJER titel-webp — let tykkere (iPad: fælles scale med UNGE) */
     @media (orientation: portrait) and (max-width: 640px) {
-        body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title-img--kobajer,
-        body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) .project-node[href*="kobajer"] .project-node__title-img--kobajer,
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
             transform: scaleX(1.11) !important;
             transform-origin: center center !important;
         }
     }
-    /* Portrait telefon: BRAINFARTS — større tekst-webp (iPad: fælles UNGE-opskrift) */
     @media (orientation: portrait) and (max-width: 640px) {
-        body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"] .project-node__title-img--brainfarts,
-        body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts {
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) .project-node[href*="brainfarts"] .project-node__title-img--brainfarts,
+        body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts {
             width: min(154px, 96%) !important;
             max-width: 96% !important;
             transform: translateY(16px);
@@ -6789,11 +6782,107 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
     /* Byens portræt-størrelse: kun i @media (max-width: 640px) and (orientation: portrait) nedenfor (telefon) */
 }
 
-/* Projekter, iPad portræt: samme visuelle label-størrelse som UNGE MOD UV (én fælles scale + node-bredde) */
-@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
-       (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node {
+/* Projekter, iPad + telefon portræt: samme visuelle label-størrelse (én fælles scale + node-bredde) */
+html.msk-projects-ipad-portrait { --pLabelMul: 1; }
+html.msk-projects-phone-portrait { --pLabelMul: clamp(0.48, calc(100vw / 768 * 1.04), 0.62); }
+
+@media (max-width: 640px) and (orientation: portrait),
+       (max-width: 640px) and (max-aspect-ratio: 1/1),
+       (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
+       (min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) {
+    /* iPad portræt: fuld viewport */
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        --projectsSx: 1 !important;
+        --projectsSy: 1 !important;
+        --projectsBrainSize: min(172px, 20vw) !important;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        max-width: none !important;
+        max-height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        z-index: 3 !important;
+        pointer-events: none;
+        transform: none !important;
+    }
+
+    /*
+     * Telefon portræt: fuld viewport (som iPad) — elementer skaleres via --pLabelMul + --projectsBrainSize.
+     */
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+        --projectsSx: 1 !important;
+        --projectsSy: 1 !important;
+        --projectsBrainSize: min(96px, calc(168 * 100vw / 768)) !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        max-width: none !important;
+        max-height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        z-index: 3 !important;
+        pointer-events: none;
+        transform: none !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .brain,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node {
+        pointer-events: auto;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path {
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.hand-drawn-frame,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines image.hand-drawn-frame,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.hand-drawn-frame,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines image.hand-drawn-frame {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.88 !important;
+        pointer-events: auto !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.88 !important;
+        pointer-events: auto !important;
+        position: absolute !important;
+        z-index: 2 !important;
+        image-rendering: crisp-edges;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.mobile-mindmap-line {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node {
+        max-width: min(calc(280 * 100vw / 768), 44vw) !important;
+    }
+
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node,
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node {
         max-width: min(300px, 65vw) !important;
     }
 
@@ -6833,43 +6922,44 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
         transform-origin: center center !important;
     }
 
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
-        transform: translateY(10px) scale(1.58) !important;
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="naturli"] .project-node__title-img--naturli,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli {
+        transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(calc(1.95 * var(--pLabelMul, 1))) !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .project-node__title-img--repop,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title-img--repop {
-        transform: translateY(10px) scale(1.22) !important;
+        transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(calc(1.22 * var(--pLabelMul, 1))) !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="durex"] .project-node__title-img--durex,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] .project-node__title-img--durex {
-        transform: translateY(10px) scale(2.02) !important;
+        transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(calc(2.02 * var(--pLabelMul, 1))) !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
-        transform: translateY(12px) scale(1.58) !important;
+        transform: translateY(calc(12px * var(--pLabelMul, 1))) scale(calc(1.58 * var(--pLabelMul, 1))) !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title-img--twister,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-        transform: translateY(54px) scale(1.92) scaleX(1.04) !important;
+        transform: translateY(calc(54px * var(--pLabelMul, 1))) scale(calc(1.92 * var(--pLabelMul, 1))) scaleX(calc(1.04 * var(--pLabelMul, 1))) !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title-img--kobajer,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
-        transform: translateY(10px) scale(1.9) !important;
+        transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(calc(1.9 * var(--pLabelMul, 1))) !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"] .project-node__title-img--brainfarts,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts {
-        transform: translateY(9px) scale(1.24) !important;
+        transform: translateY(calc(9px * var(--pLabelMul, 1))) scale(calc(1.24 * var(--pLabelMul, 1))) !important;
     }
 
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="byens-landhandel"] .project-node__title-img--byens,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] .project-node__title-img--byens {
-        transform: translateY(10px) scale(1.84) !important;
+        transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(calc(1.84 * var(--pLabelMul, 1))) !important;
     }
 
     /* Kravling (tekst): ca. samme billedhøjde som de skalerede webp-labels */
@@ -6980,6 +7070,8 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
     }
     body.projects-page.sketchbook-theme .msk-paper-lines-layer {
         display: flex !important;
+        transform: translate3d(0, -22px, 0) !important;
+        -webkit-transform: translate3d(0, -22px, 0) !important;
     }
     /* Ellipse-mindmap: skjul kun fallback-tekst — billed-titler skal altid være synlige */
     body.projects-page.sketchbook-theme .brainstorm-container .node-label {
@@ -7101,7 +7193,7 @@ body.repop-page .repop-headline--image .repop-headline__img {
 }
 
 /* Projects: BRAINFARTS is under construction (not clickable); image label matches default tab width */
-body.sketchbook-theme .brainstorm-container a.project-node[href="brainfarts.html"] {
+body.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) a.project-node[href="brainfarts.html"] {
     cursor: not-allowed !important;
     width: 140px !important;
     min-width: 140px !important;
@@ -8188,6 +8280,33 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         }
     }
 
+    /* Telefon portræt: samme enkelt-side notesbog som iPad portræt */
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::before {
+        width: 100% !important;
+        left: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        box-shadow: none !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::after {
+        display: none !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .right-margin {
+        display: none !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .left-margin {
+        left: 36px !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+
     body.projects-page.sketchbook-theme .projects-mobile {
         display: none !important;
     }
@@ -8212,14 +8331,10 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         max-height: 100dvh !important;
         min-height: 100dvh !important;
     }
-    html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container {
-        position: fixed !important;
-        inset: 0 !important;
-        width: 100% !important;
-        height: 100dvh !important;
-        max-height: 100dvh !important;
-        min-height: 0 !important;
-        overflow: visible !important;
+    html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         z-index: 3 !important;
     }
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
@@ -8253,22 +8368,36 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         --projectsScaleExp: 1.02;
         --projectsScaleMin: 0.78;
         transform-origin: 50% 50%;
-        /* Move the whole design down a bit so top/bottom are visible on iPhone Safari */
-        /* Lift it slightly so bottom nodes aren't clipped */
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container:not(.projects-mindmap--portrait) {
+        /* Kun ellipse/legacy: skaler hele container — portræt-grid bruger JS-positionering uden transform */
         transform:
             translateX(calc(-10px + env(safe-area-inset-left)))
             translateY(calc(-12px + env(safe-area-inset-top)))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container {
+        transform: none !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+        transform: none !important;
+    }
 
     /* Portrait: full-scale mind map (JS også 1). Portrait-grid: .projects-mindmap--portrait + safe-area bund til node-Y i script.js */
     /* orientation + max-aspect-ratio: DevTools kan vise portræt men matche ikke orientation: portrait — ellers forbliver hjernen 200×200 fra HTML */
     @media (orientation: portrait), (max-aspect-ratio: 1/1) {
+        html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+            transform: none !important;
+            --projectsSx: 1 !important;
+            --projectsSy: 1 !important;
+        }
         body.projects-page.sketchbook-theme .brainstorm-container {
             --projectsSx: 1 !important;
             --projectsSy: 1 !important;
-            /* Kun mobil portræt: mindre hjerne (ikke landscape ellipse / ikke desktop 204px) */
-            --projectsBrainSize: 112px;
+            --projectsBrainSize: min(172px, 20vw);
+        }
+        html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container {
+            --projectsBrainSize: min(96px, calc(168 * 100vw / 768));
         }
         /* Overskriv SVG width/height-attributter (200) — ellers ser hjernen ikke mindre ud */
         body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
@@ -8357,6 +8486,24 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         filter: none !important;
         pointer-events: none !important;
         image-rendering: crisp-edges;
+    }
+
+    /* Portræt-grid: skjul ellipse-only pile/badges/radiale streger (overlap på mobil) */
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .connecting-lines image.brainfarts-brain-line,
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .brainfarts-brain-line {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .twister-dandd-line,
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .repop-kravling-line,
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .kobajer-arrow,
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .dandd-badge:not(.dandd-badge--inline),
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .kravling-nomineret-badge:not(.kravling-nomineret-badge--inline),
+    body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .kobajer-kravling-2024-badge:not(.kobajer-kravling-2024-badge--inline) {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
     }
 
     /* Mobile Projects: "Under ombygning" should be inside BRAINFARTS circle */
@@ -8488,7 +8635,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
             align-items: center !important;
             gap: 0 !important;
             margin-top: -8px !important;
-            transform: translateY(-22px) scale(1.1) !important;
+            transform: translateY(2px) scale(1.1) !important;
             transform-origin: center center !important;
         }
         body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
@@ -8552,7 +8699,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
             max-width: 260px !important;
             margin-left: auto !important;
             margin-right: auto !important;
-            transform: translateY(10px) !important;
+            transform: translateY(32px) !important;
             transform-origin: center top !important;
         }
         /* Durex: tekst-asset centreret (ingen translate — ellers rykket ud af midten) */
@@ -8600,7 +8747,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
                 align-items: center !important;
                 gap: 2px !important;
                 margin-top: 0 !important;
-                transform: translateY(-70px) scale(1.14) !important;
+                transform: translateY(-46px) scale(1.14) !important;
             }
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title--image,
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title--image {
@@ -8610,7 +8757,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
                 max-width: 100% !important;
                 width: 100% !important;
-                transform: translateY(10px) scale(1.22) !important;
+                transform: translateY(32px) scale(1.22) !important;
                 transform-origin: center center !important;
             }
             body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="durex"] .project-node__title-img--durex,
@@ -11634,15 +11781,15 @@ body.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhand
 @media (max-width: 640px) and (orientation: portrait) {
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"],
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] {
-        width: min(152px, 58vw) !important;
+        width: min(172px, 62vw) !important;
         min-width: 0 !important;
-        max-width: min(152px, 58vw) !important;
+        max-width: min(172px, 62vw) !important;
         padding: 3px 6px !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] .project-node__title-img--naturli {
         width: auto !important;
-        max-width: min(136px, 52vw) !important;
+        max-width: min(158px, 58vw) !important;
         height: auto !important;
     }
     .projects-mobile__name--image .projects-mobile__name-img--naturli {
