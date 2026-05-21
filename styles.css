@@ -6790,6 +6790,7 @@ html.msk-projects-phone-portrait { --pLabelMul: clamp(0.48, calc(100vw / 768 * 1
        (max-width: 640px) and (max-aspect-ratio: 1/1),
        (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
        (min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) {
+    /* Fælles telefon + tablet portræt. iPad-portræt låses i projects-ipad-portrait-lock.css (+ lock.js). */
     /* iPad portræt: fuld viewport */
     html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container,
     html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
@@ -6858,7 +6859,7 @@ html.msk-projects-phone-portrait { --pLabelMul: clamp(0.48, calc(100vw / 768 * 1
         display: block !important;
         visibility: visible !important;
         opacity: 0.88 !important;
-        pointer-events: auto !important;
+        pointer-events: none !important;
     }
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay,
     html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay {
@@ -6867,7 +6868,7 @@ html.msk-projects-phone-portrait { --pLabelMul: clamp(0.48, calc(100vw / 768 * 1
         opacity: 0.88 !important;
         pointer-events: auto !important;
         position: absolute !important;
-        z-index: 2 !important;
+        z-index: 24 !important;
         image-rendering: crisp-edges;
     }
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.mobile-mindmap-line {

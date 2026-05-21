@@ -1,0 +1,58 @@
+/**
+ * LÅST: iPad/tablet portræt — projects.html mindmap (godkendt 20260525-lock2).
+ * Ændr KUN denne fil for tablet-portræt visuelle overrides og klik-lag.
+ * Loades EFTER styles.css så html.msk-projects-ipad-portrait vinder.
+ */
+
+/* Streger må ikke fange tap (fuldskærms-SVG lå  over noderne) */
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path {
+	pointer-events: none !important;
+}
+
+/* Klikbare projekter: noder over streger, ringe over noder */
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node {
+	position: relative !important;
+	z-index: 25 !important;
+	pointer-events: auto !important;
+	cursor: pointer !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] {
+	cursor: not-allowed !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay {
+	z-index: 24 !important;
+	pointer-events: auto !important;
+	cursor: pointer;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay[data-node-href*="brainfarts"] {
+	cursor: not-allowed;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+	transform: translate3d(0, -22px, 0) !important;
+	-webkit-transform: translate3d(0, -22px, 0) !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="naturli"] .project-node__title-img--naturli,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli {
+	transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(calc(1.95 * var(--pLabelMul, 1))) !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title-img--repop,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
+	max-width: 100% !important;
+	width: 100% !important;
+	transform: translateY(32px) scale(1.22) !important;
+	transform-origin: center center !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
+	transform: translateY(-46px) scale(1.14) !important;
+}

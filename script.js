@@ -17,6 +17,8 @@ const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 const MSK_PROJECTS_LANDSCAPE_FIT = 0.66;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
 const MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX = 28;
+/** iPad landskab: træk hele mindmap lidt mod venstre (mellem notesbog-marginerne) */
+const MSK_PROJECTS_IPAD_LS_LAYOUT_LEFT_PX = 24;
 
 /**
  * Ét stabilt mål for layout (afrundet heltal) — documentElement.client*, ikke visualViewport.
@@ -194,6 +196,33 @@ function mskIsProjectsTabletPortraitViewport() {
 	} catch (_) {
 		return false;
 	}
+}
+
+/** Låst iPad portræt mindmap — værdier i projects-ipad-portrait-lock.js */
+function mskGetProjectsIpadPortraitLock() {
+	try {
+		return window.MSK_PROJECTS_IPAD_PORTRAIT_LOCK || null;
+	} catch (_) {
+		return null;
+	}
+}
+
+function mskUseProjectsIpadPortraitLock() {
+	try {
+		if (!mskGetProjectsIpadPortraitLock()) return false;
+		return !!(
+			mskIsProjectsTabletPortraitViewport() ||
+			document.documentElement.classList.contains('msk-projects-ipad-portrait')
+		);
+	} catch (_) {
+		return false;
+	}
+}
+
+function mskIpadPortraitLineLock(section) {
+	if (!mskUseProjectsIpadPortraitLock()) return null;
+	const L = mskGetProjectsIpadPortraitLock();
+	return L && L.lines && L.lines[section] ? L.lines[section] : null;
 }
 
 /** Projekter: telefon portræt (≤640px) — samme 2+2 / hjernen / 2+2 grid som tablet portræt. */
@@ -4786,10 +4815,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (!href) continue;
 				const frame = svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`);
 				if (!frame) return true;
+				const portraitGridActive =
+					!!(
+						container &&
+						(container.classList.contains('projects-mindmap--portrait') ||
+							mskIsProjectsPortraitGridDocumentMode())
+					);
+				const ipadLandscapeActive =
+					!!(mskIsProjectsTabletLandscapeViewport() && container && !portraitGridActive);
 				if (
-					container &&
-					(container.classList.contains('projects-mindmap--portrait') ||
-						mskIsProjectsPortraitGridDocumentMode()) &&
+					(portraitGridActive || ipadLandscapeActive) &&
 					!mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container)
 				) {
 					return true;
@@ -4912,8 +4947,19 @@ document.addEventListener('DOMContentLoaded', function() {
 					return mskSvgPointFromClientPx(svg, cr.left + gx, cr.top + gy);
 				}
 			}
+			const ipadLs =
+				!!(
+					mskIsProjectsTabletLandscapeViewport() &&
+					container &&
+					!container.classList.contains('projects-mindmap--portrait')
+				);
+			const titleImg = ipadLs ? node.querySelector('.project-node__title-img') : null;
 			const titleEl = node.querySelector('.project-node__title');
-			const anchorRect = titleEl ? titleEl.getBoundingClientRect() : node.getBoundingClientRect();
+			const anchorRect = titleImg
+				? titleImg.getBoundingClientRect()
+				: titleEl
+					? titleEl.getBoundingClientRect()
+					: node.getBoundingClientRect();
 			return mskSvgCenterFromRect(svg, anchorRect, containerRect);
 		} catch (_) {
 			return { x: 0, y: 0 };
@@ -4930,15 +4976,35 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!(fw > 0 && fh > 0)) return false;
 			const fcx = fx + fw / 2;
 			const fcy = fy + fh / 2;
-			const nodeRect = node.getBoundingClientRect();
-			if (!(nodeRect.width > 2 && nodeRect.height > 2)) return false;
-			const nc = mskSvgCenterFromRect(svg, nodeRect, container.getBoundingClientRect());
+			const nc = mskProjectsMindmapNodeCenterSvg(node, svg, container, container.getBoundingClientRect());
 			const dx = fcx - nc.x;
 			const dy = fcy - nc.y;
 			const maxDist = Math.max(96, Math.min(fw, fh) * 0.52);
 			return Math.sqrt(dx * dx + dy * dy) <= maxDist;
 		} catch (_) {
 			return true;
+		}
+	}
+
+	function mskProjectsMindmapIpadLandscapeFramesReady() {
+		try {
+			if (!mskIsProjectsTabletLandscapeViewport()) return true;
+			const container = document.querySelector('.brainstorm-container');
+			if (!container || container.classList.contains('projects-mindmap--portrait')) return true;
+			const svg = document.querySelector('.connecting-lines');
+			if (!svg || !container) return false;
+			const nodes = document.querySelectorAll('.project-node');
+			if (!nodes.length) return false;
+			for (const node of nodes) {
+				const href = (node.dataset.nodeHref || node.getAttribute('href') || '').toLowerCase();
+				if (!href) continue;
+				const frame = svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`);
+				if (!frame) return false;
+				if (!mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container)) return false;
+			}
+			return true;
+		} catch (_) {
+			return false;
 		}
 	}
 
@@ -4980,6 +5046,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch (_) {}
 	}
 
+	function mskPortraitRingNavigate(e, href, targetHref) {
+		if (
+			e.type === 'click' &&
+			(e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+		) {
+			return;
+		}
+		try {
+			e.preventDefault();
+		} catch (_) {}
+		try {
+			e.stopPropagation();
+		} catch (_) {}
+		if (href.includes('brainfarts')) return;
+		if (targetHref) window.location.href = targetHref;
+	}
+
 	function mskAppendPortraitHtmlRing(container, node, spec) {
 		const href = (node.getAttribute('href') || '').toLowerCase();
 		const targetHref = (node.getAttribute('href') || '').trim();
@@ -5012,7 +5095,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			'transform-origin:center center',
 			'pointer-events:auto',
 			href.includes('brainfarts') ? 'cursor:not-allowed' : 'cursor:pointer',
-			'z-index:2',
+			'z-index:24',
 			'opacity:0.88',
 			'display:block',
 			'visibility:visible',
@@ -5023,21 +5106,57 @@ document.addEventListener('DOMContentLoaded', function() {
 		img.addEventListener(
 			'click',
 			(e) => {
-				if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-				try {
-					e.preventDefault();
-				} catch (_) {}
-				try {
-					e.stopPropagation();
-				} catch (_) {}
-				if (href.includes('brainfarts')) return;
-				if (targetHref) window.location.href = targetHref;
+				mskPortraitRingNavigate(e, href, targetHref);
 			},
 			true
 		);
 
 		container.appendChild(img);
 		return img;
+	}
+
+	function mskTryAppendIpadLockedPortraitRing(container, node, href, shrink, prs) {
+		if (!mskUseProjectsIpadPortraitLock()) return false;
+		const lock = mskGetProjectsIpadPortraitLock();
+		if (!lock || !lock.rings) return false;
+		let key = null;
+		if (href.includes('repop')) key = 'repop';
+		else if (href.includes('naturli')) key = 'naturli';
+		else if (href.includes('durex')) key = 'durex';
+		else if (href.includes('unge-mod-uv')) key = 'ungeModUv';
+		else if (href.includes('twister')) key = 'twister';
+		else if (href.includes('kobajer')) key = 'kobajer';
+		else if (href.includes('brainfarts')) key = 'brainfarts';
+		else if (href.includes('byens-landhandel')) key = 'byens';
+		const spec = key && lock.rings[key];
+		if (!spec) return false;
+		let w;
+		let h;
+		let dx = spec.dx || 0;
+		let dy = spec.dy || 0;
+		if (key === 'kobajer') {
+			w = spec.wBase;
+			h = spec.hBase;
+			[w, h] = shrink(w * prs(1), h * prs(1));
+			const wExtra = w * (spec.rightWMul - 1);
+			w *= spec.rightWMul;
+			dx = spec.dxBase - wExtra * 0.5 + spec.dxNudge;
+			dy = spec.dy;
+		} else {
+			w = spec.w;
+			h = spec.h;
+			[w, h] = shrink(w * prs(1), h * prs(1));
+		}
+		mskAppendPortraitHtmlRing(container, node, {
+			src: spec.src,
+			w,
+			h,
+			dx,
+			dy,
+			rotate: spec.rotate,
+			cls: spec.cls,
+		});
+		return true;
 	}
 
 	function mskCreatePortraitGridRingOverlays() {
@@ -5068,6 +5187,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			node.dataset.nodeIndex = String(index);
 			const href = (node.getAttribute('href') || '').toLowerCase();
 			node.dataset.nodeHref = href;
+
+			if (ipadP && mskTryAppendIpadLockedPortraitRing(container, node, href, shrink, prs)) {
+				return;
+			}
 
 			if (href.includes('repop')) {
 				let w = ipadP ? 380 * 0.96 * 1.92 : 380 * 0.8 * 1.04;
@@ -5202,6 +5325,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const svg = document.querySelector('.connecting-lines');
 			if (!svg) return;
 			if (!mskProjectsMindmapPortraitFramesReady()) return;
+			if (!mskProjectsMindmapIpadLandscapeFramesReady()) return;
 			svg.dataset.mskDynamicGraphicsBuilt = '1';
 		} catch (_) {}
 	}
@@ -5209,10 +5333,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	function mskProjectsMindmapReveal() {
 		try {
 			const container = document.querySelector('.brainstorm-container');
-			if (!container || container.dataset.mskRevealed === '1') return;
-			container.dataset.mskRevealed = '1';
+			if (!container) return;
 			document.documentElement.classList.remove('msk-mindmap-booting');
 			document.documentElement.classList.add('msk-projects-mindmap-painted');
+			if (container.dataset.mskRevealed === '1') return;
+			container.dataset.mskRevealed = '1';
 			try {
 				mskSyncBrainfartsIpadConstructionSignOpacity();
 			} catch (_) {}
@@ -5628,14 +5753,25 @@ document.addEventListener('DOMContentLoaded', function() {
 						return { lx, rx };
 					}
 
-					const portraitGridLiftY = Math.round((phonePortraitGrid ? 18 : 24) * scale);
+					const portraitGridLiftY = phonePortraitGrid
+						? Math.round(18 * scale)
+						: Math.round(
+								(mskUseProjectsIpadPortraitLock()
+									? (mskGetProjectsIpadPortraitLock().grid.liftY || 24)
+									: 24) * scale
+							);
 
 					function rowY(rowIndex) {
 						const pad = Math.round(4 * scale);
 						const y1 = safeTop + pad;
 						const y5 = safeBottom - pad;
 						const full = y5 - y1;
-						const span = full * (phonePortraitGrid ? 0.86 : 0.88);
+						const rowSpanMul = phonePortraitGrid
+							? 0.86
+							: mskUseProjectsIpadPortraitLock()
+								? (mskGetProjectsIpadPortraitLock().grid.rowSpanMul || 0.88)
+								: 0.88;
+						const span = full * rowSpanMul;
 						const mid = (y1 + y5) / 2;
 						const y1c = mid - span / 2;
 						const step = span / 4;
@@ -5722,8 +5858,13 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {
 							tabletPortrait = false;
 						}
-						/* iPad 641–1024 portræt: Kø-Bajer noden lidt ned */
-						if (tabletPortrait && p.key === 'kobajer') y += Math.round(16 * scale);
+						/* iPad 641–1024 portræt: Kø-Bajer noden lidt ned (låst værdi i lock-fil) */
+						if (tabletPortrait && p.key === 'kobajer') {
+							const kobExtraY = mskUseProjectsIpadPortraitLock()
+								? (mskGetProjectsIpadPortraitLock().grid.kobajerNodeExtraY || 16)
+								: 16;
+							y += Math.round(kobExtraY * scale);
+						}
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
 						node.style.setProperty('top', `${y}px`, 'important');
@@ -5809,7 +5950,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const bandTop = navH + Math.round(12 * scale);
 				const bandBottom = layoutH - Math.round(12 * scale);
 				centerY = Math.round((bandTop + bandBottom) / 2) - MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX;
-				centerX = Math.round(layoutW / 2);
+				centerX = Math.round(layoutW / 2) - MSK_PROJECTS_IPAD_LS_LAYOUT_LEFT_PX;
 				try {
 					brain.style.setProperty('position', 'absolute', 'important');
 					brain.style.setProperty('left', `${centerX}px`, 'important');
@@ -6009,9 +6150,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (href.includes('unge-mod-uv')) {
 						x += Math.round(6 * scale);
 						y -= Math.round(6 * scale);
-					}
-					if (href.includes('durex')) {
-						x -= Math.round(56 * scale);
 					}
 					const padX = Math.round(22 * scale);
 					let bandTopClamp = Math.round(44 * scale);
@@ -7517,7 +7655,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				portraitOrientationChain = false;
 			}
 			/* Når matchMedia siger landscape men layout-viewport er portræt (DevTools/Safari), ellers 8 radiale streger. */
-			if (!portraitOrientationChain && ihLv >= iwLv) portraitOrientationChain = true;
+			if (
+				!portraitOrientationChain &&
+				ihLv >= iwLv &&
+				!mskIsProjectsTabletLandscapeViewport() &&
+				!document.documentElement.classList.contains('msk-projects-ipad-landscape')
+			) {
+				portraitOrientationChain = true;
+			}
 			let phonePortraitMediaChain = false;
 			try {
 				phonePortraitMediaChain = !!(
@@ -7570,7 +7715,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					isMobileProjects = true;
 				}
 			} catch (_) {}
-			if (mskIsProjectsPortraitGridDocumentMode()) isMobileProjects = true;
+			if (mskIsProjectsPortraitGridDocumentMode() && !mskIsProjectsTabletLandscapeViewport()) {
+				isMobileProjects = true;
+			}
 			const portraitGridLines =
 				isPortraitMindmap || portraitSketchLikeGrid || mskIsProjectsPortraitSketchGridViewport();
 			let portraitLineScale = 1;
@@ -7694,9 +7841,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					let repDurexLenMul = 1.04 * portraitUpperLineMul;
 					try {
 						if (portraitGridLines) {
-							repDurexLineH = svgScale(252);
-							repDurexIpadPortraitExtraDy = svgScale(7);
-							repDurexGapA = svgScale(34);
+							const ic = mskIpadPortraitLineLock('repDurex');
+							if (ic) {
+								repDurexLineH = svgScale(ic.lineH);
+								repDurexIpadPortraitExtraDy = svgScale(ic.extraDy);
+								repDurexGapA = svgScale(ic.gapA);
+								repDurexGapB = svgScale(ic.gapB);
+								repDurexLenMul = ic.lenMul;
+							} else {
+								repDurexLineH = svgScale(252);
+								repDurexIpadPortraitExtraDy = svgScale(7);
+								repDurexGapA = svgScale(34);
+							}
 						}
 					} catch (_) {}
 					lineImg(
@@ -7725,12 +7881,22 @@ document.addEventListener('DOMContentLoaded', function() {
 					let durexLineH = svgScale(220);
 					try {
 						if (portraitGridLines) {
-							const durexBrainIpadDy = svgScale(24);
-							a.y += durexBrainIpadDy;
-							b.y += durexBrainIpadDy + svgScale(26);
-							durexGapB = -svgScale(10);
-							durexLenMul = portraitUpperLineMul * 1.16;
-							durexLineH = svgScale(318);
+							const ic = mskIpadPortraitLineLock('durexBrain');
+							if (ic) {
+								const durexBrainIpadDy = svgScale(ic.brainIpadDy);
+								a.y += durexBrainIpadDy;
+								b.y += durexBrainIpadDy + svgScale(ic.brainExtraDy);
+								durexGapB = svgScale(ic.gapB);
+								durexLenMul = ic.lenMul;
+								durexLineH = svgScale(ic.lineH);
+							} else {
+								const durexBrainIpadDy = svgScale(24);
+								a.y += durexBrainIpadDy;
+								b.y += durexBrainIpadDy + svgScale(26);
+								durexGapB = -svgScale(10);
+								durexLenMul = portraitUpperLineMul * 1.16;
+								durexLineH = svgScale(318);
+							}
 						}
 					} catch (_) {}
 					lineImg('assets/linje 6.webp', a, b, durexLineH, {
@@ -7761,18 +7927,30 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainLineH = svgScale(175);
 					try {
 						if (portraitGridLines) {
-							const twTop = pt(twiRect, 'top');
-							const twMid = pt(twiRect, 'center');
-							/* iPad portræt: rotation den *anden* vej end -46 (mindre negativ vinkel + slut lidt til højre for midt) */
-							b = {
-								x: twMid.x + svgScale(14) + shiftX,
-								y: twTop.y + svgScale(10) + svgScale(38) + twBrainLineDy - twPortraitPullUp,
-							};
-							twBrainAngleOffset = -10;
-							/* Længere nedefra mod Twister + tykkere linje-asset */
-							twBrainGapB = -svgScale(30);
-							twBrainLenMul = underBrainLineLenMul * 1.22;
-							twBrainLineH = svgScale(278);
+							const ic = mskIpadPortraitLineLock('twBrain');
+							if (ic) {
+								const twTop = pt(twiRect, 'top');
+								const twMid = pt(twiRect, 'center');
+								b = {
+									x: twMid.x + svgScale(14) + shiftX,
+									y: twTop.y + svgScale(10) + svgScale(38) + twBrainLineDy - twPortraitPullUp,
+								};
+								twBrainAngleOffset = ic.angleOffset;
+								twBrainGapB = svgScale(ic.gapB);
+								twBrainLenMul = underBrainLineLenMul * ic.lenMul;
+								twBrainLineH = svgScale(ic.lineH);
+							} else {
+								const twTop = pt(twiRect, 'top');
+								const twMid = pt(twiRect, 'center');
+								b = {
+									x: twMid.x + svgScale(14) + shiftX,
+									y: twTop.y + svgScale(10) + svgScale(38) + twBrainLineDy - twPortraitPullUp,
+								};
+								twBrainAngleOffset = -10;
+								twBrainGapB = -svgScale(30);
+								twBrainLenMul = underBrainLineLenMul * 1.22;
+								twBrainLineH = svgScale(278);
+							}
 						}
 					} catch (_) {}
 					lineImg('assets/linje 8.webp', a, b, twBrainLineH, {
@@ -7795,13 +7973,25 @@ document.addEventListener('DOMContentLoaded', function() {
 					let b = { x: bfTop.x, y: bfTop.y + twBrfDown - twBrfShiftUp };
 					try {
 						if (portraitGridLines) {
-							twBrfShiftUp = svgScale(48);
-							a.y = twBot.y + twBrfDown - twBrfShiftUp - svgScale(12);
-							b.y = bfTop.y + twBrfDown - twBrfShiftUp - svgScale(12) + svgScale(10);
-							twBrfLineH = svgScale(322);
-							twBrfGapA = svgScale(8);
-							twBrfGapB = svgScale(2);
-							twBrfLenMul = 1.34;
+							const ic = mskIpadPortraitLineLock('twBrainfarts');
+							if (ic) {
+								twBrfShiftUp = svgScale(ic.shiftUp);
+								a.y = twBot.y + twBrfDown - twBrfShiftUp - svgScale(ic.liftExtra);
+								b.y =
+									bfTop.y + twBrfDown - twBrfShiftUp - svgScale(ic.liftExtra) + svgScale(ic.bfDownExtra);
+								twBrfLineH = svgScale(ic.lineH);
+								twBrfGapA = svgScale(ic.gapA);
+								twBrfGapB = svgScale(ic.gapB);
+								twBrfLenMul = ic.lenMul;
+							} else {
+								twBrfShiftUp = svgScale(48);
+								a.y = twBot.y + twBrfDown - twBrfShiftUp - svgScale(12);
+								b.y = bfTop.y + twBrfDown - twBrfShiftUp - svgScale(12) + svgScale(10);
+								twBrfLineH = svgScale(322);
+								twBrfGapA = svgScale(8);
+								twBrfGapB = svgScale(2);
+								twBrfLenMul = 1.34;
+							}
 						}
 					} catch (_) {}
 					lineImg(
@@ -7829,22 +8019,36 @@ document.addEventListener('DOMContentLoaded', function() {
 					let natUngLineH = svgScale(158);
 					/* iPad 641–1024 portræt + lodret mindmap: længere lodret streg Nat' → UNGE */
 					try {
-						if (
-							portraitGridLines
-						) {
-							const natUngIpadLiftY = svgScale(14);
-							natUngA = {
-								x: natBottomPt.x,
-								y: natBottomPt.y - svgScale(26) - natUngIpadLiftY,
-							};
-							natUngB = {
-								x: ungTopPt.x,
-								y: ungTopPt.y + svgScale(26) - natUngIpadLiftY,
-							};
-							natUngGapA = svgScale(2);
-							natUngGapB = svgScale(4);
-							natUngLenMul = portraitUpperLineMul * 1.32;
-							natUngLineH = svgScale(198);
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('natUng');
+							if (ic) {
+								natUngA = {
+									x: natBottomPt.x,
+									y: natBottomPt.y - svgScale(ic.aLift) - svgScale(ic.liftY),
+								};
+								natUngB = {
+									x: ungTopPt.x,
+									y: ungTopPt.y + svgScale(ic.bDrop) - svgScale(ic.liftY),
+								};
+								natUngGapA = svgScale(ic.gapA);
+								natUngGapB = svgScale(ic.gapB);
+								natUngLenMul = ic.lenMul;
+								natUngLineH = svgScale(ic.lineH);
+							} else {
+								const natUngIpadLiftY = svgScale(14);
+								natUngA = {
+									x: natBottomPt.x,
+									y: natBottomPt.y - svgScale(26) - natUngIpadLiftY,
+								};
+								natUngB = {
+									x: ungTopPt.x,
+									y: ungTopPt.y + svgScale(26) - natUngIpadLiftY,
+								};
+								natUngGapA = svgScale(2);
+								natUngGapB = svgScale(4);
+								natUngLenMul = portraitUpperLineMul * 1.32;
+								natUngLineH = svgScale(198);
+							}
 						}
 					} catch (_) {}
 					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
@@ -7869,10 +8073,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					let ungeLineH = svgScale(220);
 					try {
 						if (portraitGridLines) {
-							b.y += svgScale(16);
-							ungeGapB = -svgScale(6);
-							ungeLenMul = portraitUpperLineMul * 1.12;
-							ungeLineH = svgScale(268);
+							const ic = mskIpadPortraitLineLock('ungeBrain');
+							if (ic) {
+								b.y += svgScale(ic.bExtraDy);
+								ungeGapB = svgScale(ic.gapB);
+								ungeLenMul = ic.lenMul;
+								ungeLineH = svgScale(ic.lineH);
+							} else {
+								b.y += svgScale(16);
+								ungeGapB = -svgScale(6);
+								ungeLenMul = portraitUpperLineMul * 1.12;
+								ungeLineH = svgScale(268);
+							}
 						}
 					} catch (_) {}
 					lineImg('assets/linje 5.webp', a, b, ungeLineH, {
@@ -7905,7 +8117,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (kobRect && byeRect) {
 					const kobByeDown = svgScale(22);
 					/* Samme længde/vinkel — parallelforskydning op + mod venstre; portræt: lidt mindre op-træk */
-					const kobByeShiftUp = svgScale(portraitBottomRowLineTune ? 44 : 54);
+					let kobByeShiftUpPx = portraitBottomRowLineTune ? 44 : 54;
+					try {
+						const icShift = mskIpadPortraitLineLock('kobBye');
+						if (icShift && icShift.shiftUp != null) kobByeShiftUpPx = icShift.shiftUp;
+					} catch (_) {}
+					const kobByeShiftUp = svgScale(kobByeShiftUpPx);
 					const kobByeShiftLeft = svgScale(18);
 					const a0 = pt(kobRect, 'bottom');
 					const b0 = pt(byeRect, 'top');
@@ -7914,12 +8131,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobByeLenMul = 1.88;
 					let kobByeStartNudgeX = 0;
 					try {
-						if (
-							portraitGridLines
-						) {
-							kobByeTopInsetX = svgScale(84);
-							kobByeLenMul = 2.24;
-							kobByeStartNudgeX = -svgScale(24);
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('kobBye');
+							if (ic) {
+								kobByeTopInsetX = svgScale(ic.topInsetX);
+								kobByeLenMul = ic.lenMul;
+								kobByeStartNudgeX = svgScale(ic.startNudgeX);
+							} else {
+								kobByeTopInsetX = svgScale(84);
+								kobByeLenMul = 2.24;
+								kobByeStartNudgeX = -svgScale(24);
+							}
 						}
 					} catch (_) {}
 					const a = {
@@ -7936,17 +8158,30 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobByeLineGapB = -svgScale(8);
 					try {
 						if (portraitGridLines) {
-							a.x += svgScale(52);
-							b.x = a.x;
-							const kobByeIpadLift = svgScale(10);
-							a.y -= kobByeIpadLift;
-							b.y -= kobByeIpadLift;
-							b.y -= svgScale(10);
-							const kobByePortraitDown = svgScale(14);
-							a.y += kobByePortraitDown;
-							b.y += kobByePortraitDown;
-							kobByeLineGapB = svgScale(14);
-							kobByeLineH = svgScale(268);
+							const ic = mskIpadPortraitLineLock('kobBye');
+							if (ic) {
+								a.x += svgScale(ic.alignX);
+								b.x = a.x;
+								a.y -= svgScale(ic.ipadLift);
+								b.y -= svgScale(ic.ipadLift);
+								b.y -= svgScale(ic.bfExtraUp);
+								a.y += svgScale(ic.portraitDown);
+								b.y += svgScale(ic.portraitDown);
+								kobByeLineGapB = svgScale(ic.gapB);
+								kobByeLineH = svgScale(ic.lineH);
+							} else {
+								a.x += svgScale(52);
+								b.x = a.x;
+								const kobByeIpadLift = svgScale(10);
+								a.y -= kobByeIpadLift;
+								b.y -= kobByeIpadLift;
+								b.y -= svgScale(10);
+								const kobByePortraitDown = svgScale(14);
+								a.y += kobByePortraitDown;
+								b.y += kobByePortraitDown;
+								kobByeLineGapB = svgScale(14);
+								kobByeLineH = svgScale(268);
+							}
 						}
 					} catch (_) {}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
@@ -8651,7 +8886,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			) {
 				return;
 			}
-			if (!mskShouldUsePortraitHtmlRings()) return;
+			if (!mskShouldUsePortraitHtmlRings() && !mskProjectsMindmapNeedsGraphicRebuild()) return;
 		}
 
 		if (mskShouldUsePortraitHtmlRings()) {
@@ -8856,7 +9091,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				const bw =
+				let bw =
 					240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWRing;
 				let bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
 				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
@@ -9588,7 +9823,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						byensPortraitXNarrow = 0.7;
 					}
 				} catch {}
-				const bw =
+				let bw =
 					440 *
 					byensMul *
 					byensLandhandelRingScale *
@@ -9699,7 +9934,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					durexIpadLsMulH = 1.14;
 				}
 				const durexIpadDy = ipadPortraitRings ? s(8) : 0;
-				const dw =
+				let dw =
 					440 * durexMul * projectsDesktopRingMul * durexIpadMulW * durexIpadLsMulW;
 				let dh =
 					150 * durexMul * projectsDesktopRingMul * durexIpadMulH * durexIpadLsMulH;
@@ -10189,6 +10424,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		mskEnsureProjectsPortraitSvgBox();
 
 		let mskPortraitPaintRetryCount = 0;
+		let mskLandscapePaintRetryCount = 0;
 
 		function paintProjectsMindmapGraphics(force) {
 			const redrawOpts = { force: !!force };
@@ -10218,11 +10454,32 @@ document.addEventListener('DOMContentLoaded', function() {
 							} catch (_) {}
 						});
 					});
+				} else if (
+					mskIsProjectsTabletLandscapeViewport() &&
+					!mskProjectsMindmapIpadLandscapeFramesReady() &&
+					mskLandscapePaintRetryCount < 8
+				) {
+					mskLandscapePaintRetryCount += 1;
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							try {
+								positionNodesPerfectCircle();
+								mskProjectsSyncLayoutBeforePaint();
+								paintProjectsMindmapGraphics(true);
+							} catch (_) {}
+						});
+					});
 				}
 			} catch (_) {}
 		}
 
-		paintProjectsMindmapGraphics(true);
+		try {
+			paintProjectsMindmapGraphics(true);
+		} catch (paintErr) {
+			try {
+				console.error('Projects mindmap paint failed:', paintErr);
+			} catch (_) {}
+		}
 
 		// Create hand-drawn frames around project tabs
 		try {
@@ -10262,7 +10519,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						const needsGraphics =
 							layoutChanged ||
 							mskProjectsMindmapNeedsGraphicRebuild() ||
-							(force && mskIsProjectsPortraitTouchGridMode());
+							(force &&
+								(mskIsProjectsPortraitTouchGridMode() ||
+									mskIsProjectsTabletLandscapeViewport()));
 						const alreadyPainted = document.documentElement.classList.contains(
 							'msk-projects-mindmap-painted'
 						);
