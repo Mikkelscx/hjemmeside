@@ -10,13 +10,39 @@
       try {
         var iw = window.innerWidth || 1;
         var ih = window.innerHeight || 1;
+        var max = Math.max(iw, ih);
+        var min = Math.min(iw, ih);
+        var inTabletBand = max >= 1024 && max <= 1366 && min >= 600;
+        var inPhoneBand = max <= 1024 && min <= 640;
         var landscape =
           window.matchMedia &&
           (window.matchMedia('(orientation: landscape)').matches ||
             window.matchMedia('(min-aspect-ratio: 1/1)').matches);
-        var max = Math.max(iw, ih);
-        var min = Math.min(iw, ih);
-        if (landscape && max >= 1024 && max <= 1366 && min >= 600) {
+        var portrait =
+          window.matchMedia &&
+          (window.matchMedia('(orientation: portrait)').matches ||
+            window.matchMedia('(max-aspect-ratio: 1/1)').matches);
+        document.documentElement.classList.remove(
+          'msk-projects-ipad-landscape',
+          'msk-projects-ipad-landscape-no-scroll',
+          'msk-projects-ipad-portrait',
+          'msk-projects-phone-portrait',
+          'msk-projects-phone-landscape'
+        );
+        if (inPhoneBand && (portrait || ih > iw + 16)) {
+          document.documentElement.classList.add(
+            'msk-projects-phone-portrait',
+            'msk-projects-phone-portrait-no-scroll'
+          );
+        } else if (
+          inPhoneBand &&
+          min <= 520 &&
+          (landscape || iw > ih + 16)
+        ) {
+          document.documentElement.classList.add('msk-projects-phone-landscape');
+        } else if (inTabletBand && (portrait || ih > iw + 16)) {
+          document.documentElement.classList.add('msk-projects-ipad-portrait');
+        } else if (landscape && inTabletBand) {
           document.documentElement.classList.add(
             'msk-projects-ipad-landscape',
             'msk-projects-ipad-landscape-no-scroll',
@@ -26,12 +52,16 @@
       } catch (e) {}
     })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260522j">
+    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260522n">
     <style id="msk-mindmap-gate">
-    html.msk-mindmap-booting body.projects-page.sketchbook-theme .brainstorm-container {
-      opacity: 0 !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
+    /* Skjul kun under boot på tablet landskab — mobil portræt skal vise mindmap med det samme */
+    @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
+           (min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
+      html.msk-mindmap-booting body.projects-page.sketchbook-theme .brainstorm-container {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
     }
     </style>
     <link rel="preload" as="image" href="assets/brain-cartoon.png">
@@ -124,6 +154,51 @@
       html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines g.brainfarts-ipad-construction-wrap {
         visibility: visible !important;
         opacity: 0.74 !important;
+      }
+    }
+    </style>
+    <style id="msk-projects-phone-portrait-guaranteed-css">
+    /* Telefon + tablet portræt: mindmap synligt med det samme (uafhængigt af JS-cache) */
+    @media (max-width: 640px) and (orientation: portrait),
+           (max-width: 640px) and (max-aspect-ratio: 1/1),
+           (min-width: 641px) and (max-width: 1024px) and (orientation: portrait),
+           (min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1) {
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        z-index: 3 !important;
+        pointer-events: none;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto;
+      }
+      html.msk-projects-phone-portrait-no-scroll,
+      html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme {
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        height: 100%;
+        max-height: 100dvh;
+      }
+      html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme {
+        position: fixed !important;
+        width: 100%;
+        inset: 0;
       }
     }
     </style>
@@ -312,6 +387,65 @@
         </a>
     </div>
 
-    <script src="script.js?v=projects-mindmap-guaranteed-20260522j"></script>
+    <script src="script.js?v=projects-mindmap-guaranteed-20260522n"></script>
+    <script>
+    (function mskProjectsPhonePortraitMindmapFailsafe() {
+      function isPortraitTouchProjects() {
+        try {
+          var html = document.documentElement;
+          if (
+            html.classList.contains('msk-projects-phone-portrait') ||
+            html.classList.contains('msk-projects-ipad-portrait')
+          ) {
+            return true;
+          }
+          var iw = window.innerWidth || 1;
+          var ih = window.innerHeight || 1;
+          return iw <= 1024 && ih > iw + 8;
+        } catch (e) {
+          return false;
+        }
+      }
+      function revealAndRelayout() {
+        try {
+          if (!document.body || !document.body.classList.contains('projects-page')) return;
+          if (!isPortraitTouchProjects()) return;
+          document.documentElement.classList.remove('msk-mindmap-booting');
+          document.documentElement.classList.add('msk-projects-mindmap-painted');
+          document.documentElement.classList.add('msk-projects-phone-portrait-no-scroll');
+          var c = document.querySelector('.brainstorm-container');
+          if (c) {
+            c.classList.add('projects-mindmap--portrait');
+            c.dataset.mskRevealed = '1';
+          }
+          if (typeof window.__mskProjectsMindmapInitFn === 'function') {
+            window.__mskProjectsMindmapInitFn();
+          } else if (typeof window.__mskProjectsRelayout === 'function') {
+            window.__mskProjectsRelayout(true);
+          }
+          try {
+            window.scrollTo(0, 0);
+          } catch (e) {}
+        } catch (e) {}
+      }
+      function schedule() {
+        revealAndRelayout();
+        window.setTimeout(revealAndRelayout, 120);
+        window.setTimeout(revealAndRelayout, 480);
+        window.setTimeout(revealAndRelayout, 1200);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', schedule);
+      } else {
+        schedule();
+      }
+      window.addEventListener('load', function () {
+        window.setTimeout(revealAndRelayout, 80);
+      });
+      window.addEventListener('orientationchange', function () {
+        window.setTimeout(revealAndRelayout, 160);
+      });
+    })();
+    </script>
 </body>
 </html> 

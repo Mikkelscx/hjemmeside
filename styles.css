@@ -8191,6 +8191,52 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     body.projects-page.sketchbook-theme .projects-mobile {
         display: none !important;
     }
+    html.msk-projects-phone-portrait-no-scroll {
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        height: 100%;
+        max-height: 100dvh;
+    }
+    html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme {
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        position: fixed;
+        width: 100%;
+        inset: 0;
+        min-height: 100dvh;
+        height: 100dvh;
+        max-height: 100dvh;
+    }
+    html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme::before {
+        height: 100% !important;
+        max-height: 100dvh !important;
+        min-height: 100dvh !important;
+    }
+    html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        z-index: 3 !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+    html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+    html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
     body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;
         min-height: var(--vh);

@@ -130,6 +130,8 @@ function mskIsProjectsShortLandscapeViewport() {
 		const longSide = Math.max(iw, ih);
 		const shortSide = Math.min(iw, ih);
 		if (shortSide >= longSide) return false;
+		/* Kun landskab — 375×667 portræt må ikke matche “kort landscape” */
+		if (iw <= ih + 16) return false;
 		if (longSide > MSK_PROJECTS_LANDSCAPE_MAX_W || shortSide > MSK_PROJECTS_LANDSCAPE_MAX_H) return false;
 		return true;
 	} catch (_) {
@@ -143,8 +145,24 @@ function mskIsProjectsShortLandscapeViewport() {
  */
 function mskIsProjectsTabletPortraitViewport() {
 	try {
-		if (!window.matchMedia) return false;
 		if (mskIsProjectsTabletLandscapeViewport()) return false;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		const longSide = Math.max(iw, ih);
+		const shortSide = Math.min(iw, ih);
+		const inTabletBand = longSide >= 1024 && longSide <= 1366 && shortSide >= 600;
+		let portraitMq = ih > iw + 16;
+		try {
+			if (window.matchMedia) {
+				portraitMq =
+					!!(
+						window.matchMedia('(orientation: portrait)').matches ||
+						window.matchMedia('(max-aspect-ratio: 1/1)').matches
+					) || (ih > iw + 16 && !window.matchMedia('(orientation: landscape)').matches);
+			}
+		} catch (_) {}
+		if (inTabletBand && portraitMq) return true;
+		if (!window.matchMedia) return false;
 		const mqLegacyA = window.matchMedia(
 			'(min-width: 641px) and (max-width: 1024px) and (orientation: portrait)'
 		);
@@ -165,6 +183,65 @@ function mskIsProjectsTabletPortraitViewport() {
 		);
 	} catch (_) {
 		return false;
+	}
+}
+
+/** Projekter: telefon portræt (≤640px) — samme 2+2 / hjernen / 2+2 grid som tablet portræt. */
+function mskIsProjectsPhonePortraitViewport() {
+	try {
+		if (mskIsProjectsTabletLandscapeViewport()) return false;
+		if (mskIsProjectsTabletPortraitViewport()) return false;
+		if (mskIsProjectsShortLandscapeViewport()) return false;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (iw > 640) return false;
+		try {
+			if (
+				window.matchMedia &&
+				(window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches ||
+					window.matchMedia('(max-width: 640px) and (max-aspect-ratio: 1/1)').matches)
+			) {
+				return true;
+			}
+		} catch (_) {}
+		return ih > iw + 8;
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Projekter: telefon landskab (kort viewport) — ellipse om hjernen, ikke portræt-grid. */
+function mskIsProjectsPhoneLandscapeViewport() {
+	try {
+		if (mskIsProjectsTabletLandscapeViewport()) return false;
+		return !!mskIsProjectsShortLandscapeViewport();
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Portræt-skitse-grid (telefon + tablet portræt). */
+function mskIsProjectsPortraitSketchGridViewport() {
+	try {
+		return !!(mskIsProjectsTabletPortraitViewport() || mskIsProjectsPhonePortraitViewport());
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Stabilt layout-mål til portræt-grid — aldrig oppustet container/clientHeight. */
+function mskProjectsPortraitLayoutViewportPx() {
+	try {
+		const vis = mskProjectsVisibleViewportPx();
+		const lv = mskProjectsLayoutViewportBox();
+		const iw = Math.round(Math.max(1, window.innerWidth || vis.w || lv.w || 1));
+		const ih = Math.round(Math.max(1, window.innerHeight || vis.h || lv.h || 1));
+		return {
+			w: Math.round(Math.max(1, Math.min(lv.w || iw, vis.w || iw, iw))),
+			h: Math.round(Math.max(1, Math.min(lv.h || ih, vis.h || ih, ih))),
+		};
+	} catch (_) {
+		return mskProjectsLayoutViewportBox();
 	}
 }
 
@@ -191,13 +268,7 @@ function mskProjectsTabletLandscapeLayoutPx() {
 			Math.max(iw, ih) >= 1024 &&
 			Math.max(iw, ih) <= 1366 &&
 			Math.min(iw, ih) >= 600;
-		if (
-			(document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-				document.documentElement.classList.contains('msk-projects-ipad-landscape-no-scroll')) &&
-			ih > iw
-		) {
-			return { w: ih, h: iw, swapped: true };
-		}
+		/* Kun byt mål når orientation faktisk er landscape — ikke pga. hængende html-klasse i portræt */
 		if (landscapeMq && inTabletBand && ih > iw) {
 			return { w: ih, h: iw, swapped: true };
 		}
@@ -218,6 +289,22 @@ function mskProjectsTabletLandscapeLayoutPx() {
  */
 function mskIsProjectsTabletLandscapeViewport() {
 	try {
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		const longSide = Math.max(iw, ih);
+		const shortSide = Math.min(iw, ih);
+		const inTabletBand = longSide >= 1024 && longSide <= 1366 && shortSide >= 600;
+		if (inTabletBand && ih > iw + 16) {
+			let portraitMq = false;
+			try {
+				portraitMq = !!(
+					window.matchMedia &&
+					(window.matchMedia('(orientation: portrait)').matches ||
+						window.matchMedia('(max-aspect-ratio: 1/1)').matches)
+				);
+			} catch (_) {}
+			if (portraitMq) return false;
+		}
 		const dim = mskProjectsTabletLandscapeLayoutPx();
 		if (dim.w >= 1024 && dim.w <= 1366 && dim.h >= 600 && dim.w > dim.h + 16) return true;
 		if (!window.matchMedia) return false;
@@ -233,22 +320,41 @@ function mskIsProjectsTabletLandscapeViewport() {
 	}
 }
 
-/** iPad landskab: ellipse-mindmap (hjernen i midten, 8 projekter i ring) — aldrig portræt-grid. */
+/** Projekter touch: tablet landskab = ellipse; tablet/telefon portræt = 2+2-grid; telefon landskab = ellipse. */
 function mskApplyProjectsIpadLandscapeDocumentMode() {
 	try {
 		if (!document.body || !document.body.classList.contains('projects-page')) return false;
-		let on = mskIsProjectsTabletLandscapeViewport();
-		/* DevTools: html-klasser kan sættes mens inner* stadig er byttet — tjek begge */
-		try {
-			const dim = mskProjectsTabletLandscapeLayoutPx();
-			if (dim.w >= 1024 && dim.w <= 1366 && dim.h >= 600 && dim.w > dim.h + 16) on = true;
-		} catch (_) {}
-		document.documentElement.classList.toggle('msk-projects-ipad-landscape', on);
-		document.documentElement.classList.toggle('msk-projects-ipad-landscape-no-scroll', on);
+		const tabletPortrait = mskIsProjectsTabletPortraitViewport();
+		const phonePortrait = mskIsProjectsPhonePortraitViewport();
+		const phoneLandscape = mskIsProjectsPhoneLandscapeViewport();
+		let tabletLandscape = !tabletPortrait && !phonePortrait && mskIsProjectsTabletLandscapeViewport();
+		/* DevTools: orientation landscape men inner* byttet — kun når vi ikke er i portræt-grid */
+		if (!tabletLandscape && !tabletPortrait && !phonePortrait && !phoneLandscape) {
+			try {
+				const dim = mskProjectsTabletLandscapeLayoutPx();
+				if (dim.w >= 1024 && dim.w <= 1366 && dim.h >= 600 && dim.w > dim.h + 16) tabletLandscape = true;
+			} catch (_) {}
+		}
+		const portraitGrid = tabletPortrait || phonePortrait;
+		const on = tabletLandscape;
+
+		document.documentElement.classList.toggle('msk-projects-ipad-landscape', tabletLandscape);
+		document.documentElement.classList.toggle('msk-projects-ipad-landscape-no-scroll', tabletLandscape);
+		document.documentElement.classList.toggle('msk-projects-ipad-portrait', tabletPortrait);
+		document.documentElement.classList.toggle('msk-projects-phone-portrait', phonePortrait);
+		document.documentElement.classList.toggle('msk-projects-phone-landscape', phoneLandscape);
+		document.documentElement.classList.toggle(
+			'msk-projects-phone-portrait-no-scroll',
+			phonePortrait
+		);
 		const container = document.querySelector('.brainstorm-container');
 		if (container) {
-			if (on) container.classList.remove('projects-mindmap--portrait');
-			container.classList.toggle('projects-mindmap--ipad-landscape', on);
+			if (tabletLandscape || phoneLandscape) {
+				container.classList.remove('projects-mindmap--portrait');
+			} else if (portraitGrid) {
+				container.classList.add('projects-mindmap--portrait');
+			}
+			container.classList.toggle('projects-mindmap--ipad-landscape', tabletLandscape);
 		}
 		if (on) {
 			mskApplyUngeModUvIpadLandscapeTitleNudge();
@@ -4606,7 +4712,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		try {
 			if (
 				!isPreview &&
-				!document.documentElement.classList.contains('msk-projects-mindmap-painted')
+				!document.documentElement.classList.contains('msk-projects-mindmap-painted') &&
+				mskIsProjectsTabletLandscapeViewport()
 			) {
 				document.documentElement.classList.add('msk-mindmap-booting');
 			}
@@ -4783,10 +4890,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!container) return;
 
 			const forceIpadLandscapeEllipse = mskApplyProjectsIpadLandscapeDocumentMode();
-			const ipadDocEllipse =
-				forceIpadLandscapeEllipse ||
-				document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-				document.documentElement.classList.contains('msk-projects-ipad-landscape-no-scroll');
+			const ipadDocEllipse = !!forceIpadLandscapeEllipse;
 			if (ipadDocEllipse) {
 				try {
 					container.classList.remove('projects-mindmap--portrait');
@@ -4804,12 +4908,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch (_) {
 				tabletLandscapeLayout = false;
 			}
-			if (!tabletLandscapeLayout && iw > ih + 16 && iw >= 1024 && iw <= 1366) {
-				tabletLandscapeLayout = true;
-			}
-			const scrollLockLandscape = document.documentElement.classList.contains(
-				'msk-projects-ipad-landscape-no-scroll'
-			);
+			const scrollLockLandscape =
+				document.documentElement.classList.contains('msk-projects-ipad-landscape-no-scroll') &&
+				tabletLandscapeLayout;
 			/*
 			 * Fixed fullscreen-container: clientHeight kan følge oppustet dokument (papir min-height)
 			 * eller kollapse til 0 når html/body er position:fixed → tom/scrollable side.
@@ -4817,23 +4918,33 @@ document.addEventListener('DOMContentLoaded', function() {
 			 */
 			let layoutW;
 			let layoutH;
+			let portraitSketchGridLayout = false;
+			try {
+				portraitSketchGridLayout = !!mskIsProjectsPortraitSketchGridViewport();
+			} catch (_) {
+				portraitSketchGridLayout = false;
+			}
+			const phonePortraitScrollLock = document.documentElement.classList.contains(
+				'msk-projects-phone-portrait-no-scroll'
+			);
 			if (tabletLandscapeLayout || scrollLockLandscape || ipadDocEllipse) {
 				const dim = mskProjectsTabletLandscapeLayoutPx();
 				layoutW = dim.w;
 				layoutH = dim.h;
+			} else if (portraitSketchGridLayout || phonePortraitScrollLock) {
+				/*
+				 * Telefon/tablet portræt: position:fixed på html/body kan give clientHeight 0 på container,
+				 * og papir min-height kan oppuste rect — brug kun synlig viewport til grid-Y.
+				 */
+				const pv = mskProjectsPortraitLayoutViewportPx();
+				layoutW = pv.w;
+				layoutH = pv.h;
 			} else {
-				layoutW = Math.round(
-					Math.max(
-						1,
-						Math.min(lv.w, iw, container.clientWidth || containerRectForLayout.width)
-					)
-				);
-				layoutH = Math.round(
-					Math.max(
-						1,
-						Math.min(lv.h, ih, container.clientHeight || containerRectForLayout.height)
-					)
-				);
+				const rawCW = container.clientWidth || containerRectForLayout.width || lv.w;
+				let rawCH = container.clientHeight || containerRectForLayout.height || lv.h;
+				if (rawCH > ih * 1.35) rawCH = ih;
+				layoutW = Math.round(Math.max(1, Math.min(lv.w, iw, rawCW)));
+				layoutH = Math.round(Math.max(1, Math.min(lv.h, ih, rawCH)));
 			}
 			const w = layoutW;
 			const h = layoutH;
@@ -4891,9 +5002,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				!forceIpadLandscapeEllipse &&
 				document.body &&
 				document.body.classList.contains('projects-page') &&
-				portraitOrientation &&
 				!mskIsProjectsTabletLandscapeViewport() &&
-				(phonePortraitMedia || cw <= 640 || mskIsProjectsTabletPortraitViewport());
+				!mskIsProjectsShortLandscapeViewport() &&
+				mskIsProjectsPortraitSketchGridViewport();
 
 			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) like the live site; ellipse for landscape / wide.
 			try {
@@ -4904,10 +5015,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						const nb = document.querySelector('.navbar');
 						if (nb && nb.getBoundingClientRect) NAV_H = Math.round(nb.getBoundingClientRect().bottom);
 					} catch {}
-					const ihPortrait = lv.h || 0;
-					const capH = ihPortrait;
-					const portraitBandH =
-						capH > 0 ? Math.min(container.clientHeight || layoutH, capH) : container.clientHeight || layoutH;
+					const pvBand = mskProjectsPortraitLayoutViewportPx();
+					const capH = pvBand.h || layoutH || 0;
+					const portraitBandH = capH > 0 ? capH : layoutH;
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const safeTop = NAV_H + Math.round(36 * scale);
 					let safeBottom = portraitBandH - Math.round(40 * scale) - mskSafeAreaInsetBottomPx();
@@ -5059,10 +5169,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 
 					try {
-						/* Lidt mod højre + ned fra center (mobil portrait) */
+						let portraitGridBrain = false;
+						try {
+							portraitGridBrain = mskIsProjectsPortraitSketchGridViewport();
+						} catch (_) {}
 						brain.style.setProperty('position', 'absolute', 'important');
-						brain.style.setProperty('left', 'calc(50% + 30px)', 'important');
-						brain.style.setProperty('top', 'calc(50% + 42px)', 'important');
+						if (portraitGridBrain) {
+							brain.style.setProperty('left', `${Math.round(layoutW / 2)}px`, 'important');
+							brain.style.setProperty('top', `${Math.round(rowY(3))}px`, 'important');
+						} else {
+							brain.style.setProperty('left', 'calc(50% + 30px)', 'important');
+							brain.style.setProperty('top', 'calc(50% + 42px)', 'important');
+						}
 						brain.style.setProperty('right', 'auto', 'important');
 						brain.style.setProperty('bottom', 'auto', 'important');
 						brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
@@ -6837,11 +6955,24 @@ document.addEventListener('DOMContentLoaded', function() {
 					document.body.classList.contains('projects-page') &&
 					mskIsProjectsTabletPortraitViewport()
 				);
+			const phonePortraitProjectsChain =
+				!!(
+					document.body &&
+					document.body.classList.contains('projects-page') &&
+					mskIsProjectsPhonePortraitViewport()
+				);
 			const portraitSketchLikeGrid =
 				document.body &&
 				document.body.classList.contains('projects-page') &&
-				portraitOrientationChain &&
-				(phonePortraitMediaChain || cwLine <= 640 || tabletPortraitProjectsChain);
+				!mskIsProjectsTabletLandscapeViewport() &&
+				!mskIsProjectsShortLandscapeViewport() &&
+				(isPortraitMindmap ||
+					mskIsProjectsPortraitSketchGridViewport() ||
+					(portraitOrientationChain &&
+						(phonePortraitMediaChain ||
+							cwLine <= 640 ||
+							tabletPortraitProjectsChain ||
+							phonePortraitProjectsChain)));
 			let isMobileProjects =
 				isPortraitMindmap ||
 				portraitSketchLikeGrid ||
@@ -9362,14 +9493,22 @@ document.addEventListener('DOMContentLoaded', function() {
 		createConnectingLines(firstPaintOpts);
 		
 		// Create hand-drawn frames around project tabs
-		createHandDrawnFrames(firstPaintOpts);
-		mskProjectsMindmapMarkGraphicsBuilt();
-		positionBrainfartsBuildNote();
 		try {
-			mskApplyBrainfartsIpadLandscapeConstructionSign();
-			mskSyncBrainfartsIpadConstructionSignOpacity();
-		} catch (_) {}
-		mskProjectsMindmapReveal();
+			createHandDrawnFrames(firstPaintOpts);
+			mskProjectsMindmapMarkGraphicsBuilt();
+			positionBrainfartsBuildNote();
+			try {
+				mskApplyBrainfartsIpadLandscapeConstructionSign();
+				mskSyncBrainfartsIpadConstructionSignOpacity();
+			} catch (_) {}
+		} finally {
+			mskProjectsMindmapReveal();
+			try {
+				if (mskIsProjectsPhonePortraitViewport() || mskIsProjectsTabletPortraitViewport()) {
+					window.scrollTo(0, 0);
+				}
+			} catch (_) {}
+		}
 
 		document.addEventListener('mousemove', updatePupilPosition);
 
@@ -10192,8 +10331,15 @@ window.addEventListener('load', function () {
 		}
 	}
 	function blockScroll(e) {
-		if (!isProjectsPage() || !isLandscapeLock()) return;
-		e.preventDefault();
+		if (!isProjectsPage()) return;
+		try {
+			if (
+				mskIsProjectsTabletLandscapeViewport() ||
+				mskIsProjectsPhonePortraitViewport()
+			) {
+				e.preventDefault();
+			}
+		} catch (_) {}
 	}
 	function applyLockAfterReady() {
 		applyLock();
