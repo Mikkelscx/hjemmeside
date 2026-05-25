@@ -1,13 +1,13 @@
 /**
- * LÅST: iPad/tablet portræt mindmap på projects.html (godkendt 20260525).
- * Ændr KUN denne fil når brugeren eksplicit beder om tablet-portræt justeringer.
- * Mobil-portræt, landscape og desktop må tunes i script.js/styles.css uden at røre her.
+ * LÂST: iPad/tablet portrÂt mindmap pÂ projects.html (godkendt 20260525).
+ * Ândr KUN denne fil nÂr brugeren eksplicit beder om tablet-portrÂt justeringer.
+ * Mobil-portrÂt, landscape og desktop mÂ tunes i script.js/styles.css uden at rÂre her.
  */
 (function (global) {
 	'use strict';
 
 	global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK = {
-		version: '20260525-lock4-approved',
+		version: '20260525-lock3-approved',
 		frozen: true,
 
 		grid: {
@@ -56,7 +56,7 @@
 				dy: 12,
 			},
 			kobajer: {
-				src: 'assets/cirkel købajer.webp',
+				src: 'assets/cirkel k\u00f8bajer.webp',
 				cls: 'kobajer-image',
 				wBase: 232 * 0.78 * 2.02,
 				hBase: 232 * 0.78 * 0.74 * 1.48 * 1.76,

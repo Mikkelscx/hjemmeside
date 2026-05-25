@@ -72,8 +72,9 @@
       } catch (e) {}
     })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260525g">
+    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260525i">
     <link rel="stylesheet" href="projects-ipad-portrait-lock.css?v=20260525-lock3">
+    <link rel="stylesheet" href="projects-phone-portrait-lock.css?v=20260525-phone-p61">
     <style id="msk-mindmap-gate">
     /* Skjul kun under boot på tablet landskab — mobil portræt skal vise mindmap med det samme */
     @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
@@ -201,7 +202,7 @@
         transform: none !important;
       }
       html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
-        --projectsBrainSize: min(96px, calc(168 * 100vw / 768));
+        --projectsBrainSize: min(158px, calc(318 * 100vw / 1024));
       }
       html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
       html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
@@ -261,6 +262,19 @@
       html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
         display: none !important;
         visibility: hidden !important;
+      }
+      /* NATURLI': samme tekststørrelse som Durex på telefon portræt */
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"],
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"] {
+        width: min(calc(300 * 100vw / 1024), 42vw) !important;
+        min-width: min(calc(300 * 100vw / 1024), 42vw) !important;
+        max-width: min(calc(300 * 100vw / 1024), 42vw) !important;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"] .project-node__title-img--naturli {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
       }
     }
     </style>
@@ -481,11 +495,23 @@
     </div>
 
     <script src="projects-ipad-portrait-lock.js?v=20260525-lock3"></script>
-    <script src="script.js?v=projects-mindmap-guaranteed-20260525-ipad-ls5"></script>
+    <script src="script.js?v=projects-mindmap-guaranteed-20260525-phone-p30"></script>
     <script>
     (function mskProjectsPhonePortraitMindmapFailsafe() {
+      function isTabletLandscapeViewportLive() {
+        try {
+          var iw = window.innerWidth || 1;
+          var ih = window.innerHeight || 1;
+          var max = Math.max(iw, ih);
+          var min = Math.min(iw, ih);
+          return max >= 1024 && max <= 1366 && min >= 600 && iw > ih + 16;
+        } catch (e) {
+          return false;
+        }
+      }
       function isPortraitTouchProjects() {
         try {
+          if (isTabletLandscapeViewportLive()) return false;
           var html = document.documentElement;
           if (
             html.classList.contains('msk-projects-phone-portrait') ||
@@ -502,6 +528,7 @@
       }
       function isIpadLandscapeProjects() {
         try {
+          if (isTabletLandscapeViewportLive()) return true;
           var html = document.documentElement;
           return (
             html.classList.contains('msk-projects-ipad-landscape') ||
@@ -522,10 +549,18 @@
           if (portrait && document.documentElement.classList.contains('msk-projects-phone-portrait')) {
             document.documentElement.classList.add('msk-projects-phone-portrait-no-scroll');
           }
+          if (ipadLs) {
+            document.documentElement.classList.remove('msk-projects-ipad-portrait');
+          }
           var c = document.querySelector('.brainstorm-container');
           if (c) {
-            if (portrait) c.classList.add('projects-mindmap--portrait');
+            if (portrait && !ipadLs) c.classList.add('projects-mindmap--portrait');
+            else if (ipadLs) c.classList.remove('projects-mindmap--portrait');
             c.dataset.mskRevealed = '1';
+          }
+          if (typeof window.mskProjectsMindmapRelayoutAfterTabletOrientation === 'function') {
+            window.mskProjectsMindmapRelayoutAfterTabletOrientation(true);
+            return;
           }
           if (typeof window.__mskProjectsMindmapInitFn === 'function') {
             window.__mskProjectsMindmapInitFn();

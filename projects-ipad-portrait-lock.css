@@ -1,10 +1,10 @@
 /**
- * LÅST: iPad/tablet portræt — projects.html mindmap (godkendt 20260525-lock2).
- * Ændr KUN denne fil for tablet-portræt visuelle overrides og klik-lag.
- * Loades EFTER styles.css så html.msk-projects-ipad-portrait vinder.
+ * Lï¿½ST: iPad/tablet portrï¿½t ï¿½ projects.html mindmap (godkendt 20260525-lock2).
+ * ï¿½ndr KUN denne fil for tablet-portrï¿½t visuelle overrides og klik-lag.
+ * Loades EFTER styles.css sï¿½ html.msk-projects-ipad-portrait vinder.
  */
 
-/* Streger må ikke fange tap (fuldskærms-SVG lå  over noderne) */
+/* Streger mï¿½ ikke fange tap (fuldskï¿½rms-SVG lï¿½  over noderne) */
 html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
 html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image,
 html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path {
