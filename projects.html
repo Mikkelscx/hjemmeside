@@ -72,9 +72,9 @@
       } catch (e) {}
     })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260525i">
+    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260525l">
     <link rel="stylesheet" href="projects-ipad-portrait-lock.css?v=20260525-lock3">
-    <link rel="stylesheet" href="projects-phone-portrait-lock.css?v=20260525-phone-p61">
+    <link rel="stylesheet" href="projects-phone-portrait-lock.css?v=20260525-phone-p91">
     <style id="msk-mindmap-gate">
     /* Skjul kun under boot på tablet landskab — mobil portræt skal vise mindmap med det samme */
     @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
@@ -241,6 +241,7 @@
       html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme {
         overflow: hidden !important;
         overscroll-behavior: none !important;
+        touch-action: pan-x pan-y pinch-zoom;
         height: 100%;
         max-height: 100dvh;
       }
@@ -249,13 +250,36 @@
         width: 100%;
         inset: 0;
       }
+      html.msk-browser-zoom-active.msk-projects-phone-portrait-no-scroll,
+      html.msk-browser-zoom-active.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme {
+        overflow: auto !important;
+        overscroll-behavior: auto !important;
+        position: relative !important;
+        width: auto !important;
+        min-width: 100% !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        inset: auto !important;
+      }
+      html.msk-browser-zoom-active.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+      html.msk-browser-zoom-active.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+        position: absolute !important;
+        inset: auto !important;
+        left: 0 !important;
+        top: 0 !important;
+        min-height: 100dvh !important;
+        height: auto !important;
+        max-height: none !important;
+      }
       html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::before {
         width: 100% !important;
         left: 0 !important;
         right: 0 !important;
       }
       html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::after,
-      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .right-margin {
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .right-margin,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .left-margin {
         display: none !important;
       }
       html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
@@ -495,7 +519,7 @@
     </div>
 
     <script src="projects-ipad-portrait-lock.js?v=20260525-lock3"></script>
-    <script src="script.js?v=projects-mindmap-guaranteed-20260525-phone-p30"></script>
+    <script src="script.js?v=projects-mindmap-guaranteed-20260525-zoom-p83"></script>
     <script>
     (function mskProjectsPhonePortraitMindmapFailsafe() {
       function isTabletLandscapeViewportLive() {

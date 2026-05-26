@@ -38,6 +38,38 @@ function mskProjectsLayoutViewportBox() {
 	}
 }
 
+/** Tillad browser-zoom (pinch / ctrl+scroll) — bruges hvor vi ellers blokerer touchmove/wheel mod scroll. */
+function mskAllowBrowserZoomGesture(e) {
+	try {
+		if (!e) return false;
+		if (e.type === 'touchstart' || e.type === 'touchmove') {
+			if (e.touches && e.touches.length > 1) return true;
+		}
+		if (e.type === 'wheel' && (e.ctrlKey || e.metaKey)) return true;
+	} catch (_) {}
+	return false;
+}
+
+/** Side er zoomet ind — tillad pan/scroll i alle retninger. */
+function mskIsBrowserPageZoomed() {
+	try {
+		const vv = window.visualViewport;
+		if (vv) {
+			if (typeof vv.scale === 'number' && vv.scale > 1.015) return true;
+			const lw = document.documentElement.clientWidth || window.innerWidth || 0;
+			const lh = document.documentElement.clientHeight || window.innerHeight || 0;
+			if (vv.width > 0 && vv.height > 0 && (vv.width < lw - 2 || vv.height < lh - 2)) return true;
+		}
+	} catch (_) {}
+	return false;
+}
+
+function mskSyncBrowserZoomPanMode() {
+	try {
+		document.documentElement.classList.toggle('msk-browser-zoom-active', mskIsBrowserPageZoomed());
+	} catch (_) {}
+}
+
 /** Synlig viewport til mindmap (inner* + visualViewport) — vigtig i iPad DevTools landskab. */
 function mskProjectsVisibleViewportPx() {
 	try {
@@ -5338,6 +5370,20 @@ document.addEventListener('DOMContentLoaded', function() {
 			h = Math.round(h * 0.92);
 			dy += Math.round(prs(18));
 		}
+		if (phonePortraitRing && key === 'naturli') {
+			w = Math.round(w * 1.14);
+			h = Math.round(h * 0.90);
+		}
+		if (phonePortraitRing && key === 'twister') {
+			w = Math.round(w * 1.16);
+			h = Math.round(h * 1.68);
+			dy += Math.round(prs(14));
+		}
+		if (phonePortraitRing && key === 'kobajer') {
+			w = Math.round(w * 1.12);
+			h = Math.round(h * 1.06);
+			dy += Math.round(prs(22));
+		}
 		mskAppendPortraitHtmlRing(container, node, {
 			src: spec.src,
 			w,
@@ -6118,6 +6164,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						if ((tabletPortrait || phonePortraitGrid) && p.key === 'kobajer') {
 							const kobExtraY = mskGetProjectsIpadPortraitLock()?.grid?.kobajerNodeExtraY || 16;
 							y += Math.round(kobExtraY * scale);
+						}
+						/* Telefon portræt: Kø-Bajer cirkel + tekst lidt mod højre */
+						if (phonePortraitGrid && p.key === 'kobajer') {
+							x += Math.round(28 * scale);
 						}
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
@@ -11622,6 +11672,8 @@ window.addEventListener('load', function () {
 	}
 	function blockScroll(e) {
 		if (!isContactPage() || !isLockViewport()) return;
+		if (mskAllowBrowserZoomGesture(e)) return;
+		if (mskIsBrowserPageZoomed()) return;
 		e.preventDefault();
 	}
 	applyLock();
@@ -11685,6 +11737,8 @@ window.addEventListener('load', function () {
 				mskIsProjectsTabletLandscapeViewport() ||
 				mskIsProjectsPhonePortraitViewport()
 			) {
+				if (mskAllowBrowserZoomGesture(e)) return;
+				if (mskIsBrowserPageZoomed()) return;
 				e.preventDefault();
 			}
 		} catch (_) {}
@@ -11719,6 +11773,21 @@ window.addEventListener('load', function () {
 		{ passive: false, capture: true }
 	);
 	window.addEventListener('wheel', blockScroll, { passive: false, capture: true });
+})();
+
+/** Når siden er zoomet: tillad pan/scroll (html-klasse til CSS). */
+(function mskBrowserZoomPanMode() {
+	function sync() {
+		mskSyncBrowserZoomPanMode();
+	}
+	sync();
+	if (window.visualViewport) {
+		window.visualViewport.addEventListener('resize', sync, { passive: true });
+		window.visualViewport.addEventListener('scroll', sync, { passive: true });
+	}
+	window.addEventListener('resize', sync, { passive: true });
+	window.addEventListener('orientationchange', () => window.setTimeout(sync, 50), { passive: true });
+	document.addEventListener('DOMContentLoaded', sync);
 })();
 
 /* Fjernet mskProjectsIpadLandscapeMindmapBoot + mskProjectsMindmapGuaranteedRunner — gav blink ved refresh. */
