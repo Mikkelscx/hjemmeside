@@ -6785,13 +6785,17 @@ body.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts
 /* Projekter, iPad + telefon portræt: samme visuelle label-størrelse (én fælles scale + node-bredde) */
 html.msk-projects-ipad-portrait { --pLabelMul: 1; }
 html.msk-projects-phone-portrait {
-    --pLabelMul: clamp(0.36, calc(100vw / 1024 * 0.98), 0.42);
-    /* Ringe/noder: fuld viewport-scale på telefon (+ 1.16 boost i JS) */
-    --pRingMul: 1;
+    --phone-ref-w: 390;
+    --phone-ref-h: 844;
+    --phone-w-ratio: calc(100vw / var(--phone-ref-w));
+    --phone-h-ratio: calc(100dvh / var(--phone-ref-h));
+    --phone-fit-ratio: calc(var(--phone-w-ratio) * 0.52 + var(--phone-h-ratio) * 0.48);
+    --pLabelMul: clamp(0.16, calc(100vw / var(--phone-ref-w) * 0.373), 0.58);
+    --pRingMul: clamp(0.68, calc(0.68 + 0.5 * (var(--phone-w-ratio) - 0.615)), 1.18);
     --pNodeMul: var(--pLabelMul);
-    /* Tekst fylder ring — matcher iPad scale × viewport */
     --pTitleInRing: calc(var(--pLabelMul) * 1.58);
     --pRepopFill: calc(var(--pTitleInRing) * 1.32);
+    --projectsBrainSize: clamp(68px, calc(121px * var(--phone-fit-ratio)), 178px);
 }
 
 @media (max-width: 640px) and (orientation: portrait),
@@ -6828,7 +6832,7 @@ html.msk-projects-phone-portrait {
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
         --projectsSx: 1 !important;
         --projectsSy: 1 !important;
-        --projectsBrainSize: min(158px, calc(318 * 100vw / 1024)) !important;
+        --projectsBrainSize: clamp(68px, calc(121px * (100vw / 390 * 0.52 + 100dvh / 844 * 0.48)), 178px) !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;

@@ -659,3 +659,20 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	transform: translate(-50%, -50%) rotate(-1deg) !important;
 	transform-origin: center center !important;
 }
+
+/* Kontinuerlig skalering (reference iPhone 12 Pro 390x844) — JS saetter praecise vars ved resize */
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain {
+	width: var(--projectsBrainSize, clamp(68px, calc(121px * var(--phone-fit-ratio, var(--phone-w-ratio, 1))), 178px)) !important;
+	height: var(--projectsBrainSize, clamp(68px, calc(121px * var(--phone-fit-ratio, var(--phone-w-ratio, 1))), 178px)) !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+	max-width: min(calc(300px * var(--phone-w-ratio, 1)), calc(var(--phone-node-max-vw, 42) * 1vw)) !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
+	margin-top: calc(-8px * var(--phone-row-vert-mul, 1)) !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline {
+	margin-top: calc(-12px * var(--phone-row-vert-mul, 1)) !important;
+}

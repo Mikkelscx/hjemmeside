@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="theme-color" content="#ffffff">
     <title>Projects - Mikkel's Portfolio</title>
+    <script src="projects-phone-portrait-profiles.js?v=20260525-phone-prof4"></script>
     <script>
     (function () {
       try {
@@ -36,6 +37,11 @@
             'msk-projects-mindmap-painted',
             'phone-portrait-zoom-stable'
           );
+          try {
+            if (typeof mskBootPhonePortraitProfileVars === 'function') {
+              mskBootPhonePortraitProfileVars(iw, ih);
+            }
+          } catch (e2) {}
           document.addEventListener('DOMContentLoaded', function () {
             try {
               var c = document.querySelector('.brainstorm-container');
@@ -73,9 +79,9 @@
       } catch (e) {}
     })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260525l">
+    <link rel="stylesheet" href="styles.css?v=projects-mindmap-guaranteed-20260525n">
     <link rel="stylesheet" href="projects-ipad-portrait-lock.css?v=20260525-lock3">
-    <link rel="stylesheet" href="projects-phone-portrait-lock.css?v=20260525-phone-p92">
+    <link rel="stylesheet" href="projects-phone-portrait-lock.css?v=20260525-phone-p95">
     <style id="msk-mindmap-gate">
     /* Skjul kun under boot på tablet landskab — mobil portræt skal vise mindmap med det samme */
     @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
@@ -520,7 +526,7 @@
     </div>
 
     <script src="projects-ipad-portrait-lock.js?v=20260525-lock3"></script>
-    <script src="script.js?v=projects-mindmap-guaranteed-20260525-zoom-p83"></script>
+    <script src="script.js?v=projects-mindmap-guaranteed-20260525-zoom-p90"></script>
     <script>
     (function mskProjectsPhonePortraitMindmapFailsafe() {
       function isTabletLandscapeViewportLive() {

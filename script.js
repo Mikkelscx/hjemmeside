@@ -343,13 +343,28 @@ function mskProjectsPortraitLayoutViewportPx() {
 	}
 }
 
-/** iPad portræt = 1; telefon portræt = layoutW/1024 (samme proportioner som iPad, mindre canvas). */
+/** iPad portraet = 1; telefon portraet = kontinuerlig skala fra iPhone 12 Pro (390px). */
 function mskProjectsPortraitReferenceScale() {
 	try {
 		if (mskIsProjectsTabletPortraitViewport()) return 1;
 		if (!mskIsProjectsPhonePortraitViewport()) return 1;
 		const w = mskProjectsPortraitLayoutViewportPx().w || window.innerWidth || 375;
-		return Math.max(0.34, Math.min(0.42, (w / 1024) * 0.98));
+		try {
+			if (typeof mskGetPhonePortraitProfileFactors === 'function') {
+				return mskGetPhonePortraitProfileFactors(w).portraitScale;
+			}
+		} catch (_) {}
+		const refW = 390;
+		const refH = 844;
+		const refBase = (refW / 1024) * 0.98;
+		const layoutPx =
+			typeof mskPhonePortraitLayoutPx === 'function'
+				? mskPhonePortraitLayoutPx(w)
+				: { w: w, h: window.innerHeight || refH };
+		const wRatio = (layoutPx.w || w) / refW;
+		const hRatio = (layoutPx.h || refH) / refH;
+		const fitRatio = Math.max(0.48, Math.min(1.62, wRatio * 0.52 + hRatio * 0.48));
+		return refBase * fitRatio;
 	} catch (_) {
 		return 0.38;
 	}
@@ -519,6 +534,13 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 			'msk-projects-phone-portrait-no-scroll',
 			phonePortrait
 		);
+		if (phonePortrait) {
+			try {
+				if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
+					mskApplyPhonePortraitProfileDocument();
+				}
+			} catch (_) {}
+		}
 		const container = document.querySelector('.brainstorm-container');
 		if (container) {
 			if (tabletLandscape || phoneLandscape) {
@@ -5415,7 +5437,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		/* Telefon: større ringe så titel/badges kan sidde inde i cirklen */
 		const repopRingBoost = href.includes('repop') ? 1.12 : 1;
-		return mskAppendPortraitRingFromIpadLockSpec(container, node, href, shrink, prs, 1.16 * repopRingBoost);
+		let ringBoost = 1.16 * repopRingBoost;
+		try {
+			const pf = typeof mskGetPhonePortraitProfileFactors === 'function'
+				? mskGetPhonePortraitProfileFactors()
+				: null;
+			if (pf && pf.ringAdj) ringBoost *= pf.ringAdj;
+		} catch (_) {}
+		return mskAppendPortraitRingFromIpadLockSpec(container, node, href, shrink, prs, ringBoost);
 	}
 
 	function mskCreatePortraitGridRingOverlays() {
@@ -5962,6 +5991,25 @@ document.addEventListener('DOMContentLoaded', function() {
 				(mskIsProjectsPhonePortraitViewport() ||
 					document.documentElement.classList.contains('msk-projects-phone-portrait'));
 
+			let phoneProfile = null;
+			if (phonePortraitGrid) {
+				try {
+					if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
+						phoneProfile = mskApplyPhonePortraitProfileDocument(layoutW, layoutH);
+					} else if (typeof mskGetPhonePortraitProfileFactors === 'function') {
+						phoneProfile = mskGetPhonePortraitProfileFactors(layoutW, layoutH);
+					}
+				} catch (_) {
+					phoneProfile = null;
+				}
+			}
+			const phoneRowSpanAdj = phoneProfile?.rowSpanAdj ?? 1;
+			const phoneRowVertMul = phoneProfile?.rowVertMul ?? 1;
+			const phoneSafeMarginAdj = phoneProfile?.safeMarginAdj ?? 1;
+			const phoneColInsetAdj = phoneProfile?.colInsetAdj ?? 1;
+			const phoneNudgeMul = phoneProfile?.nudgeMul ?? 1;
+			const phoneNodeMaxVw = phoneProfile?.nodeMaxVw ?? 42;
+
 			/* Telefon: samme grid-tal som iPad portræt-lock, skaleret til smal viewport */
 			const scale = portraitGridMode
 				? phonePortraitGrid
@@ -5985,34 +6033,42 @@ document.addEventListener('DOMContentLoaded', function() {
 					const portraitBandH = capH > 0 ? capH : Math.min(layoutH, ih);
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const phoneGridLock = phonePortraitGrid ? mskGetProjectsIpadPortraitLock()?.grid : null;
-					const safeTop = NAV_H + Math.round((phonePortraitGrid ? 28 : 36) * scale);
-					let safeBottom = portraitBandH - Math.round((phonePortraitGrid ? 28 : 40) * scale) - mskSafeAreaInsetBottomPx();
+					const safeTop = NAV_H + Math.round((phonePortraitGrid ? 28 : 36) * scale * phoneSafeMarginAdj);
+					let safeBottom =
+						portraitBandH -
+						Math.round((phonePortraitGrid ? 28 : 40) * scale * phoneSafeMarginAdj) -
+						mskSafeAreaInsetBottomPx();
 					if (safeBottom < safeTop + 120) {
-						safeBottom = portraitBandH - Math.round((phonePortraitGrid ? 28 : 40) * scale);
+						safeBottom = portraitBandH - Math.round((phonePortraitGrid ? 28 : 40) * scale * phoneSafeMarginAdj);
 					}
 					const edgePad = Math.max(
 						18,
-						Math.round((phonePortraitGrid ? 40 : 52) * scale)
+						Math.round((phonePortraitGrid ? 40 : 52) * scale * phoneSafeMarginAdj)
 					);
 					const minX = edgePad;
 					const maxX = layoutW - edgePad;
+					const colLeftMul = phonePortraitGrid ? 0.22 + (1 - phoneColInsetAdj) * 0.04 : 0.22;
+					const colRightMul = phonePortraitGrid ? 0.78 - (1 - phoneColInsetAdj) * 0.04 : 0.78;
 					const baseLeft = Math.max(
 						minX,
-						Math.min(maxX, layoutW * (phonePortraitGrid ? 0.22 : 0.22))
+						Math.min(maxX, layoutW * colLeftMul)
 					);
 					const baseRight = Math.max(
 						minX,
-						Math.min(maxX, layoutW * (phonePortraitGrid ? 0.78 : 0.78))
+						Math.min(maxX, layoutW * colRightMul)
 					);
 					const phoneRingMul = phonePortraitGrid ? 1 : 0.72;
 					let maxW = Math.min(
 						Math.floor((phonePortraitGrid ? 300 * phoneRingMul : 300) * scale),
 						Math.max(
 							72,
-							Math.floor(layoutW * (phonePortraitGrid ? 0.42 * phoneRingMul : 0.42))
+							Math.floor(
+								layoutW *
+									(phonePortraitGrid ? (phoneNodeMaxVw / 100) * phoneRingMul : 0.42)
+							)
 						)
 					);
-					const nudgeMul = phonePortraitGrid ? 1 : 1;
+					const nudgeMul = phonePortraitGrid ? phoneNudgeMul : 1;
 					const tilts = [-1, 1, -2, 0.5, -1.5, 2, -0.5, 1.5];
 
 					const rowOffsets = [
@@ -6051,7 +6107,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						const y5 = safeBottom - pad;
 						const full = y5 - y1;
 						const rowSpanMul = phonePortraitGrid
-							? phoneGridLock?.rowSpanMul ?? 0.88
+							? (phoneGridLock?.rowSpanMul ?? 0.88) * phoneRowSpanAdj
 							: mskUseProjectsIpadPortraitLock()
 								? (mskGetProjectsIpadPortraitLock().grid.rowSpanMul || 0.88)
 								: 0.88;
@@ -6150,10 +6206,22 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						/* Telefon portræt: øverste række (Repop + Naturli) + streger ned */
 						if (phonePortraitGrid && p.row === 1) {
-							y += Math.round(52 * scale);
+							y += Math.round(52 * scale * phoneRowVertMul);
+						}
+						/* Telefon portræt: øverste cirkler tættere mod midten vandret */
+						if (phonePortraitGrid && p.row === 1) {
+							if (p.key === 'repop') x += Math.round(20 * scale);
+							if (p.key === 'naturli') x -= Math.round(20 * scale);
+						}
+						/* Telefon portræt: nederste cirkler tættere mod midten vandret */
+						if (phonePortraitGrid && p.row === 5) {
+							if (p.key === 'brainfarts') x += Math.round(20 * scale);
+							if (p.key === 'byens') x -= Math.round(20 * scale);
 						}
 						/* Nederste række (Brainfarts, Byens): lidt ned — cirkler + indhold; streger følger i createConnectingLines */
-						if (p.key === 'brainfarts' || p.key === 'byens') y += Math.round(50 * scale * nudgeMul);
+						if (p.key === 'brainfarts' || p.key === 'byens') {
+							y += Math.round(50 * scale * nudgeMul * phoneRowVertMul);
+						}
 						let tabletPortrait = false;
 						try {
 							tabletPortrait = !!mskIsProjectsTabletPortraitViewport();
@@ -6186,7 +6254,13 @@ document.addEventListener('DOMContentLoaded', function() {
 							if (portraitGridBrain) {
 								brainEl.style.setProperty('left', `${Math.round(layoutW / 2)}px`, 'important');
 								let brainY = Math.round(rowY(3));
-								if (phonePortraitGrid) brainY += Math.round(34 * scale);
+								if (phonePortraitGrid) {
+									const brainVertMul =
+										phoneProfile && phoneProfile.hRatio < 1
+											? 0.82 + 0.18 * phoneProfile.hRatio
+											: 1;
+									brainY += Math.round(34 * scale * brainVertMul);
+								}
 								brainEl.style.setProperty('top', `${brainY}px`, 'important');
 							} else {
 								brainEl.style.setProperty('left', 'calc(50% + 30px)', 'important');
@@ -8035,9 +8109,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				if (portraitGridLines) portraitLineScale = mskProjectsPortraitReferenceScale();
 			} catch (_) {}
+			let phoneLineAdj = 1;
+			try {
+				if (
+					phonePortraitProjectsChain &&
+					!tabletPortraitProjectsChain &&
+					typeof mskGetPhonePortraitProfileFactors === 'function'
+				) {
+					phoneLineAdj = mskGetPhonePortraitProfileFactors().lineAdj || 1;
+				}
+			} catch (_) {}
 			if (isMobileProjects) {
 				const scale = 1;
-				const svgScale = (n) => n * scale * (portraitGridLines ? portraitLineScale : 1);
+				const phonePortraitLineMul =
+					phonePortraitProjectsChain && !tabletPortraitProjectsChain ? phoneLineAdj : 1;
+				const svgScale = (n) =>
+					n * scale * (portraitGridLines ? portraitLineScale : 1) * phonePortraitLineMul;
 				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
 				const portraitUnderBrainStrokePullUp =
 					portraitGridLines ? svgScale(16) : 0;
@@ -8045,7 +8132,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				const portraitUnderBrainLeftStrokeExtraPullUp =
 					portraitGridLines ? svgScale(12) : 0;
 				/* Øvre kæde (Rep↔Dur, Dur↔hjerne, Nat↔Ung, Ung↔hjerne): ekstra forkortelse */
-				const portraitUpperLineMul = 0.88;
+				const portraitUpperLineMul =
+					phonePortraitProjectsChain && !tabletPortraitProjectsChain
+						? 0.88 * phoneLineAdj
+						: 0.88;
 				const phoneBrainStrokeMul =
 					phonePortraitProjectsChain &&
 					!tabletPortraitProjectsChain &&
@@ -8188,11 +8278,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					) {
 						repDurexLenMul *= 1.82;
 						repDurexLineH *= 1.42;
-						repDurexGapA = -svgScale(2);
+						repDurexGapA = -svgScale(8);
 						repDurexGapB = -svgScale(16);
 						const phoneRepDurLen = svgScale(34);
 						repDurexA.y += phoneRepDurLen;
 						repDurexB.y -= phoneRepDurLen * 0.95;
+						repDurexA.y -= svgScale(6);
 					}
 					lineImg(
 						'assets/Linje 2.webp',
@@ -8405,6 +8496,17 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
+					/* Telefon portræt: Naturli'→Unge Mod UV (linje 7) længere ned mod Unge */
+					if (
+						phonePortraitProjectsChain &&
+						!tabletPortraitProjectsChain &&
+						portraitGridLines
+					) {
+						natUngLenMul *= 1.22;
+						const phoneNatUngExtend = svgScale(18);
+						natUngB.y += phoneNatUngExtend;
+						natUngGapB = -svgScale(8);
+					}
 					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
 						gapA: natUngGapA,
 						gapB: natUngGapB,
