@@ -2,11 +2,354 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="theme-color" content="#ffffff">
     <title>Projects - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="projects-phone-portrait-profiles.js?v=20260525-phone-prof4"></script>
+    <script>
+    (function () {
+      try {
+        var iw = window.innerWidth || 1;
+        var ih = window.innerHeight || 1;
+        var max = Math.max(iw, ih);
+        var min = Math.min(iw, ih);
+        var inTabletBand = max >= 1024 && max <= 1366 && min >= 600;
+        var inPhoneBand = max <= 1024 && min <= 640;
+        var isDesktopPointer = false;
+        try {
+          isDesktopPointer = !!(
+            window.matchMedia &&
+            window.matchMedia('(hover: hover)').matches &&
+            window.matchMedia('(pointer: fine)').matches
+          );
+        } catch (ePtr) {}
+        var landscape =
+          window.matchMedia &&
+          (window.matchMedia('(orientation: landscape)').matches ||
+            window.matchMedia('(min-aspect-ratio: 1/1)').matches);
+        var portrait =
+          window.matchMedia &&
+          (window.matchMedia('(orientation: portrait)').matches ||
+            window.matchMedia('(max-aspect-ratio: 1/1)').matches);
+        document.documentElement.classList.remove(
+          'msk-projects-ipad-landscape',
+          'msk-projects-ipad-landscape-no-scroll',
+          'msk-projects-ipad-portrait',
+          'msk-projects-phone-portrait',
+          'msk-projects-phone-landscape'
+        );
+        if (inPhoneBand && (portrait || ih > iw + 16)) {
+          document.documentElement.classList.add(
+            'msk-projects-phone-portrait',
+            'msk-projects-phone-portrait-no-scroll',
+            'msk-projects-mindmap-painted',
+            'phone-portrait-zoom-stable'
+          );
+          try {
+            if (typeof mskBootPhonePortraitProfileVars === 'function') {
+              mskBootPhonePortraitProfileVars(iw, ih);
+            }
+          } catch (e2) {}
+          document.addEventListener('DOMContentLoaded', function () {
+            try {
+              var c = document.querySelector('.brainstorm-container');
+              if (c) {
+                c.classList.add('projects-mindmap--portrait');
+              }
+            } catch (e) {}
+          });
+        } else if (
+          inPhoneBand &&
+          min <= 520 &&
+          (landscape || iw > ih + 16)
+        ) {
+          document.documentElement.classList.add('msk-projects-phone-landscape');
+        } else if (inTabletBand && (portrait || ih > iw + 16)) {
+          document.documentElement.classList.add(
+            'msk-projects-ipad-portrait',
+            'msk-projects-mindmap-painted'
+          );
+          document.addEventListener('DOMContentLoaded', function () {
+            try {
+              var c = document.querySelector('.brainstorm-container');
+              if (c) {
+                c.classList.add('projects-mindmap--portrait');
+              }
+            } catch (e) {}
+          });
+        } else if (landscape && inTabletBand) {
+          document.documentElement.classList.add(
+            'msk-projects-ipad-landscape',
+            'msk-projects-ipad-landscape-no-scroll'
+          );
+          if (!isDesktopPointer) {
+            document.documentElement.classList.add('msk-mindmap-booting');
+          }
+        }
+        if (isDesktopPointer) {
+          var fromHomeOpen = false;
+          try { fromHomeOpen = sessionStorage.getItem('mskHomeOpenToProjects') === '1'; } catch (eHome) {}
+          if (fromHomeOpen) {
+            try { sessionStorage.removeItem('mskHomeOpenToProjects'); } catch (eClr) {}
+            document.documentElement.dataset.mskFromHomeOpen = '1';
+            document.documentElement.classList.add('msk-projects-mindmap-painted');
+          } else {
+            document.documentElement.classList.add('msk-mindmap-booting');
+            document.documentElement.classList.remove('msk-projects-mindmap-painted');
+          }
+        }
+      } catch (e) {}
+    })();
+    </script>
+    <link rel="preload" as="image" href="assets/repop-by-depop-text.png">
+    <link rel="preload" as="image" href="assets/Naturlig%20tekst.webp">
+    <link rel="preload" as="image" href="assets/Durex%20X%20Guess%20who%20tekst.webp">
+    <link rel="preload" as="image" href="assets/Unge%20mod%20UV%20tekst.webp">
+    <link rel="preload" as="image" href="assets/twister%20tekst.webp">
+    <link rel="preload" as="image" href="assets/K%C3%98-Bajer%20tekst.webp">
+    <link rel="preload" as="image" href="assets/brainfarts%20tekst.webp">
+    <link rel="preload" as="image" href="assets/Byens%20landhandel%20teks.webp">
+    <link rel="preload" as="image" href="assets/D&amp;AD%20LOGO.webp">
+    <link rel="preload" as="image" href="assets/D&amp;AD%20VINDER.webp">
+    <link rel="stylesheet" href="styles.css?v=safari-home-book-2230-20260923">
+    <link rel="stylesheet" href="projects-ipad-portrait-lock.css?v=20260525-lock3">
+    <link rel="stylesheet" href="projects-phone-portrait-lock.css?v=20260525-phone-p107">
+    <style id="msk-mindmap-gate">
+    /* Skjul mindmap indtil JS har malet — undgå hop på computer og tablet landskab */
+    @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+      html.msk-mindmap-booting body.projects-page.sketchbook-theme .brainstorm-container {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+    }
+    @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) and (hover: none) and (pointer: coarse),
+           (min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) and (hover: none) and (pointer: coarse) {
+      html.msk-mindmap-booting body.projects-page.sketchbook-theme .brainstorm-container {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+    }
+    </style>
+    <link rel="preload" as="image" href="assets/brain-cartoon.png">
+    <link rel="preload" as="image" href="assets/circle%20around%20repop%20by%20depop.webp">
+    <link rel="preload" as="image" href="assets/cirkel%20om%20brainfarts.webp">
+    <link rel="preload" as="image" href="assets/cirkel%20k%C3%B8bajer.webp">
+    <link rel="preload" as="image" href="assets/cirkel%20omkring%20naturli'.webp">
+    <link rel="preload" as="image" href="assets/cirkel%20omkring%20twister.webp">
+    <link rel="preload" as="image" href="assets/circle%20omkring%20durex%20x%20guess%20who.webp">
+    <link rel="preload" as="image" href="assets/unge%20mod%20uv%20cirkel.webp">
+    <link rel="preload" as="image" href="assets/circle%20omkring%20byens%20landhandel.webp">
+    <style id="msk-projects-mindmap-guaranteed-css">
+    /* Projekter iPad landskab: layout — synlighed først når .msk-projects-mindmap-painted */
+    @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
+           (min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
+      body.projects-page.sketchbook-theme .projects-mobile { display: none !important; }
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 3 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: visible !important;
+        background: transparent !important;
+        background-image: none !important;
+        pointer-events: none;
+      }
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .brain,
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node {
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto;
+      }
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image:not(.brainfarts-ipad-construction-sign),
+      html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      body.projects-page.sketchbook-theme::before,
+      body.projects-page.sketchbook-theme::after { display: block !important; }
+      body.projects-page.sketchbook-theme::before { width: 50% !important; left: 0 !important; }
+      body.projects-page.sketchbook-theme::after { width: 50% !important; right: 0 !important; left: auto !important; }
+      body.projects-page.sketchbook-theme .right-margin { display: block !important; }
+      body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
+      body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
+        width: 168px !important;
+        height: 168px !important;
+      }
+      body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
+        max-width: min(240px, 17vw) !important;
+      }
+      html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
+      html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
+        max-width: min(164px, 12.2vw) !important;
+        width: 100% !important;
+        transform: translate(10px, 12px) scale(1.44) !important;
+        transform-origin: center center !important;
+      }
+      html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] .project-node__title-img--durex,
+      html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] .project-node__title-img--durex {
+        max-width: min(172px, 12.8vw) !important;
+        width: 100% !important;
+        transform: translate(0px, 2px) scale(1.56) !important;
+        transform-origin: center center !important;
+      }
+      html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline,
+      html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines image.brainfarts-ipad-construction-sign,
+      html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines image.brainfarts-ipad-construction-sign,
+      html.msk-projects-ipad-landscape.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines g.brainfarts-ipad-construction-wrap,
+      html.msk-projects-ipad-landscape-no-scroll.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container svg.connecting-lines g.brainfarts-ipad-construction-wrap {
+        visibility: visible !important;
+        opacity: 0.74 !important;
+      }
+    }
+    </style>
+    <style id="msk-projects-phone-portrait-guaranteed-css">
+    /* Telefon + iPad portræt: fuld viewport, synlig mindmap — telefon skalerer elementer ned. */
+    @media (max-width: 640px) and (orientation: portrait),
+           (max-width: 640px) and (max-aspect-ratio: 1/1),
+           (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
+           (min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) {
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        overflow: visible !important;
+        z-index: 3 !important;
+        pointer-events: none;
+        transform: none !important;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+        --projectsBrainSize: min(158px, calc(318 * 100vw / 1024));
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.mobile-mindmap-line,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.mobile-mindmap-line,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.hand-drawn-frame,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image.hand-drawn-frame {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.88 !important;
+        pointer-events: none !important;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.88 !important;
+        pointer-events: auto !important;
+        position: absolute !important;
+        z-index: 24 !important;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+      html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: relative !important;
+        z-index: 25 !important;
+        cursor: pointer !important;
+      }
+      html.msk-projects-phone-portrait-no-scroll,
+      html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme {
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        touch-action: pan-x pan-y pinch-zoom;
+        height: 100%;
+        max-height: 100dvh;
+      }
+      html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme {
+        position: fixed !important;
+        width: 100%;
+        inset: 0;
+      }
+      html.msk-browser-zoom-active.msk-projects-phone-portrait-no-scroll,
+      html.msk-browser-zoom-active.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme {
+        overflow: auto !important;
+        overscroll-behavior: auto !important;
+        position: relative !important;
+        width: auto !important;
+        min-width: 100% !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        inset: auto !important;
+      }
+      html.msk-browser-zoom-active.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+      html.msk-browser-zoom-active.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+        position: absolute !important;
+        inset: auto !important;
+        left: 0 !important;
+        top: 0 !important;
+        min-height: 100dvh !important;
+        height: auto !important;
+        max-height: none !important;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::before {
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::after,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .right-margin,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .left-margin {
+        display: none !important;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      /* NATURLI': samme tekststørrelse som Durex på telefon portræt */
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"],
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"] {
+        width: min(calc(300 * 100vw / 1024), 42vw) !important;
+        min-width: min(calc(300 * 100vw / 1024), 42vw) !important;
+        max-width: min(calc(300 * 100vw / 1024), 42vw) !important;
+      }
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
+      html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"] .project-node__title-img--naturli {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+      }
+    }
+    </style>
 </head>
-<body class="sketchbook-theme">
+<body class="sketchbook-theme projects-page">
     <!-- Red margin lines for both pages -->
     <div class="left-margin"></div>
     <div class="right-margin"></div>
@@ -40,8 +383,86 @@
         </div>
     </nav>
 
+    <!-- Mobile-only projects layout (desktop/tablet unchanged) -->
+    <main class="projects-mobile" role="main" aria-label="Projekter (mobil)">
+        <h1 class="projects-mobile__title">PROJEKTER</h1>
+        <div class="projects-mobile__list" role="list">
+            <a class="projects-mobile__item" role="listitem" href="repop.html" aria-label="Repop by Depop">
+                <div class="projects-mobile__name projects-mobile__name--image" aria-hidden="true">
+                    <img class="projects-mobile__name-img projects-mobile__name-img--repop" src="assets/repop-by-depop-text.png" alt="" decoding="async">
+                </div>
+            </a>
+            <a class="projects-mobile__item" role="listitem" href="Naturli'.html" aria-label="NATURLI'">
+                <div class="projects-mobile__name projects-mobile__name--image" aria-hidden="true">
+                    <img class="projects-mobile__name-img projects-mobile__name-img--naturli" src="assets/Naturlig%20tekst.webp" alt="" decoding="async">
+                </div>
+            </a>
+            <a class="projects-mobile__item" role="listitem" href="durex.html" aria-label="Durex X Guess Who">
+                <div class="projects-mobile__name projects-mobile__name--image" aria-hidden="true">
+                    <img class="projects-mobile__name-img projects-mobile__name-img--durex" src="assets/Durex%20X%20Guess%20who%20tekst.webp" alt="" decoding="async">
+                </div>
+            </a>
+            <a class="projects-mobile__item" role="listitem" href="unge-mod-uv.html" aria-label="Unge mod UV">
+                <div class="projects-mobile__name projects-mobile__name--image" aria-hidden="true">
+                    <img class="projects-mobile__name-img projects-mobile__name-img--unge-mod-uv" src="assets/Unge%20mod%20UV%20tekst.webp" alt="" decoding="async">
+                </div>
+            </a>
+            <a class="projects-mobile__item" role="listitem" href="twister.html" aria-label="Twister">
+                <div class="projects-mobile__name projects-mobile__name--image" aria-hidden="true">
+                    <img class="projects-mobile__name-img projects-mobile__name-img--twister" src="assets/twister%20tekst.webp" alt="" decoding="async">
+                </div>
+            </a>
+            <a class="projects-mobile__item" role="listitem" href="kobajer.html" aria-label="Kø-Bajer">
+                <div class="projects-mobile__name projects-mobile__name--image" aria-hidden="true">
+                    <img class="projects-mobile__name-img projects-mobile__name-img--kobajer" src="assets/K%C3%98-Bajer%20tekst.webp" alt="" decoding="async">
+                </div>
+            </a>
+            <a class="projects-mobile__item" role="listitem" href="brainfarts.html" aria-label="Brainfarts">
+                <div class="projects-mobile__name projects-mobile__name--image" aria-hidden="true">
+                    <img class="projects-mobile__name-img projects-mobile__name-img--brainfarts" src="assets/brainfarts%20tekst.webp" alt="" decoding="async">
+                </div>
+            </a>
+            <a class="projects-mobile__item" role="listitem" href="byens-landhandel.html" aria-label="Byens Landhandel">
+                <div class="projects-mobile__name projects-mobile__name--image" aria-hidden="true">
+                    <img class="projects-mobile__name-img" src="assets/Byens%20landhandel%20teks.webp" alt="" decoding="async">
+                </div>
+            </a>
+        </div>
+    </main>
+
     <!-- Brainstorm Container -->
     <div class="brainstorm-container">
+    <script>
+    (function () {
+      try {
+        var html = document.documentElement;
+        var c = document.querySelector('.brainstorm-container');
+        if (!c) return;
+        if (html.classList.contains('msk-projects-phone-portrait')) {
+          c.classList.add('projects-mindmap--portrait');
+          c.style.setProperty('position', 'fixed', 'important');
+          c.style.setProperty('inset', '0', 'important');
+          c.style.setProperty('width', '100%', 'important');
+          c.style.setProperty('height', '100dvh', 'important');
+          c.style.setProperty('transform', 'none', 'important');
+          c.style.setProperty('display', 'block', 'important');
+          c.style.setProperty('visibility', 'visible', 'important');
+          c.style.setProperty('opacity', '1', 'important');
+          c.style.setProperty('z-index', '3', 'important');
+        } else if (html.classList.contains('msk-projects-ipad-portrait')) {
+          c.classList.add('projects-mindmap--portrait');
+          c.style.setProperty('position', 'fixed', 'important');
+          c.style.setProperty('inset', '0', 'important');
+          c.style.setProperty('width', '100%', 'important');
+          c.style.setProperty('height', '100dvh', 'important');
+          c.style.setProperty('z-index', '3', 'important');
+          c.style.setProperty('display', 'block', 'important');
+          c.style.setProperty('visibility', 'visible', 'important');
+          c.style.setProperty('opacity', '1', 'important');
+        }
+      } catch (e) {}
+    })();
+    </script>
         <!-- Connecting Lines SVG -->
         <svg class="connecting-lines" width="100%" height="100%" style="position: absolute; top: 0; left: 0; z-index: 10; pointer-events: none; overflow: visible;">
             <!-- Charcoal pencil texture filter - no blur for clear lines -->
@@ -60,9 +481,6 @@
             
             <!-- BYENS LANDHANDEL line is created dynamically by JavaScript -->
             
-            
-            <!-- NATURLI' - using image asset linje 1.webp from brain (50%, 50%) to naturli' (top: 20%, right: 15%) - rotated to point toward upper right -->
-            <image href="assets/linje 1.webp" xlink:href="assets/linje 1.webp" x="50%" y="50%" width="30%" height="400" transform="translate(0, -200) rotate(-40.6)" class="mindmap-line" preserveAspectRatio="none" opacity="1" style="display: block !important; visibility: visible !important; image-rendering: crisp-edges; filter: none !important;"></image>
             
             <!-- TWISTER line is created dynamically by JavaScript -->
             
@@ -91,32 +509,46 @@
 
         <!-- Project Nodes - Perfect Mathematical Circle - Extended to fit page length -->
         <!-- 8 nodes evenly spaced at 45° intervals, larger radius to fill page -->
-        <a href="repop.html" class="project-node" data-visual-key="repop" data-hover-key="repop" style="top: 10%; left: 50%; transform: translateX(-50%);">
-            REPOP BY DEPOP
+        <a href="repop.html" class="project-node" data-visual-key="repop" data-hover-key="repop" style="top: 10%; left: 50%; transform: translateX(-50%);" aria-label="Repop by Depop">
+            <span class="project-node__title project-node__title--image" aria-hidden="true">
+                <img class="project-node__title-img project-node__title-img--repop" src="assets/repop-by-depop-text.png" alt="" decoding="sync" fetchpriority="high" loading="eager">
+            </span>
         </a>
         
-        <a href="Naturli'.html" class="project-node" style="top: 20%; right: 15%;">
-            NATURLI'
+        <a href="Naturli'.html" class="project-node" data-visual-key="naturli" data-hover-key="naturli" style="top: 20%; right: 15%;" aria-label="NATURLI'">
+            <span class="project-node__title project-node__title--image" aria-hidden="true">
+                <img class="project-node__title-img project-node__title-img--naturli" src="assets/Naturlig%20tekst.webp" alt="" decoding="sync" fetchpriority="high" loading="eager">
+            </span>
         </a>
         
-        <a href="durex.html" class="project-node" style="top: 50%; right: 10%; transform: translateY(-50%);">
-            DUREX X GUESS WHO
+        <a href="durex.html" class="project-node" style="top: 50%; right: 10%; transform: translateY(-50%);" aria-label="Durex X Guess Who">
+            <span class="project-node__title project-node__title--image" aria-hidden="true">
+                <img class="project-node__title-img project-node__title-img--durex" src="assets/Durex%20X%20Guess%20who%20tekst.webp" alt="" decoding="sync" fetchpriority="high" loading="eager">
+            </span>
         </a>
         
-        <a href="unge-mod-uv.html" class="project-node" style="bottom: 20%; right: 15%;">
-            UNGE MOD UV
+        <a href="unge-mod-uv.html" class="project-node" style="bottom: 20%; right: 15%;" aria-label="Unge mod UV">
+            <span class="project-node__title project-node__title--image" aria-hidden="true">
+                <img class="project-node__title-img project-node__title-img--unge-mod-uv" src="assets/Unge%20mod%20UV%20tekst.webp" alt="" decoding="sync" fetchpriority="high" loading="eager">
+            </span>
         </a>
         
-        <a href="twister.html" class="project-node" style="bottom: 10%; left: 50%; transform: translateX(-50%);">
-            TWISTER
+        <a href="twister.html" class="project-node" style="bottom: 4%; left: 50%; transform: translateX(-50%);" aria-label="Twister">
+            <span class="project-node__title project-node__title--image" aria-hidden="true">
+                <img class="project-node__title-img project-node__title-img--twister" src="assets/twister%20tekst.webp" alt="" decoding="sync" fetchpriority="high" loading="eager">
+            </span>
         </a>
         
-        <a href="kobajer.html" class="project-node" style="bottom: 20%; left: 15%;">
-            KØ-BAJER
+        <a href="kobajer.html" class="project-node" style="bottom: 20%; left: 15%;" aria-label="Kø-Bajer">
+            <span class="project-node__title project-node__title--image" aria-hidden="true">
+                <img class="project-node__title-img project-node__title-img--kobajer" src="assets/K%C3%98-Bajer%20tekst.webp" alt="" decoding="sync" fetchpriority="high" loading="eager">
+            </span>
         </a>
         
-        <a href="brainfarts.html" class="project-node" style="top: 50%; left: 10%; transform: translateY(-50%);">
-            BRAINFARTS
+        <a href="brainfarts.html" class="project-node" style="top: 50%; left: 10%; transform: translateY(-50%);" aria-label="Brainfarts">
+            <span class="project-node__title project-node__title--image" aria-hidden="true">
+                <img class="project-node__title-img project-node__title-img--brainfarts" src="assets/brainfarts%20tekst.webp" alt="" decoding="sync" fetchpriority="high" loading="eager">
+            </span>
         </a>
 
         <!-- Under construction note for Brainfarts -->
@@ -125,11 +557,131 @@
             <img class="brainfarts-build__sign" src="assets/Under ombygning.webp" alt="">
         </div>
         
-        <a href="byens-landhandel.html" class="project-node" data-visual-key="byens-landhandel" data-hover-key="byens-landhandel" style="top: 20%; left: 15%;">
-            Byens Landhandel
+        <a href="byens-landhandel.html" class="project-node" data-visual-key="byens-landhandel" data-hover-key="byens-landhandel" style="top: 20%; left: 15%;" aria-label="Byens Landhandel">
+            <span class="project-node__title project-node__title--image" aria-hidden="true">
+                <img class="project-node__title-img project-node__title-img--byens" src="assets/Byens%20landhandel%20teks.webp" alt="" decoding="sync" fetchpriority="high" loading="eager">
+            </span>
         </a>
-    </div>
 
-    <script src="script.js"></script>
+        <div class="dandd-badge" aria-hidden="true">
+            <img class="dandd-logo" src="assets/D&amp;AD LOGO.webp" alt="D&amp;AD" decoding="sync" fetchpriority="high" loading="eager">
+            <div class="dandd-sparks"></div>
+            <img class="dandd-winner" src="assets/D&amp;AD VINDER.webp" alt="D&amp;AD VINDER" decoding="sync" fetchpriority="high" loading="eager">
+        </div>
+    </div>
+    <script>
+    (function mskBootDesktopDandDBadge() {
+      try {
+        if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+        var c = document.querySelector('.brainstorm-container');
+        var tw = c && c.querySelector('a[href*="twister"]');
+        var badge = c && c.querySelector('.dandd-badge:not(.dandd-badge--inline)');
+        if (!c || !tw || !badge) return;
+        var cr = c.getBoundingClientRect();
+        var r = tw.getBoundingClientRect();
+        badge.style.left = (r.right - cr.left + 84) + 'px';
+        badge.style.top = (r.top - cr.top + r.height / 2 + 46) + 'px';
+        badge.style.transform = 'translateY(-50%) rotate(-2deg)';
+      } catch (e) {}
+    })();
+    </script>
+
+    <script src="projects-ipad-portrait-lock.js?v=20260525-lock3"></script>
+    <script src="script.js?v=safari-home-book-2230-20260923"></script>
+    <script>
+    (function mskProjectsPhonePortraitMindmapFailsafe() {
+      function isTabletLandscapeViewportLive() {
+        try {
+          var iw = window.innerWidth || 1;
+          var ih = window.innerHeight || 1;
+          var max = Math.max(iw, ih);
+          var min = Math.min(iw, ih);
+          return max >= 1024 && max <= 1366 && min >= 600 && iw > ih + 16;
+        } catch (e) {
+          return false;
+        }
+      }
+      function isPortraitTouchProjects() {
+        try {
+          if (isTabletLandscapeViewportLive()) return false;
+          var html = document.documentElement;
+          if (
+            html.classList.contains('msk-projects-phone-portrait') ||
+            html.classList.contains('msk-projects-ipad-portrait')
+          ) {
+            return true;
+          }
+          var iw = window.innerWidth || 1;
+          var ih = window.innerHeight || 1;
+          return iw <= 1024 && ih > iw + 8;
+        } catch (e) {
+          return false;
+        }
+      }
+      function isIpadLandscapeProjects() {
+        try {
+          if (isTabletLandscapeViewportLive()) return true;
+          var html = document.documentElement;
+          return (
+            html.classList.contains('msk-projects-ipad-landscape') ||
+            html.classList.contains('msk-projects-ipad-landscape-no-scroll')
+          );
+        } catch (e) {
+          return false;
+        }
+      }
+      function revealAndRelayout() {
+        try {
+          if (!document.body || !document.body.classList.contains('projects-page')) return;
+          var portrait = isPortraitTouchProjects();
+          var ipadLs = isIpadLandscapeProjects();
+          if (!portrait && !ipadLs) return;
+          document.documentElement.classList.remove('msk-mindmap-booting');
+          document.documentElement.classList.add('msk-projects-mindmap-painted');
+          if (portrait && document.documentElement.classList.contains('msk-projects-phone-portrait')) {
+            document.documentElement.classList.add('msk-projects-phone-portrait-no-scroll');
+          }
+          if (ipadLs) {
+            document.documentElement.classList.remove('msk-projects-ipad-portrait');
+          }
+          var c = document.querySelector('.brainstorm-container');
+          if (c) {
+            if (portrait && !ipadLs) c.classList.add('projects-mindmap--portrait');
+            else if (ipadLs) c.classList.remove('projects-mindmap--portrait');
+            c.dataset.mskRevealed = '1';
+          }
+          if (typeof window.mskProjectsMindmapRelayoutAfterTabletOrientation === 'function') {
+            window.mskProjectsMindmapRelayoutAfterTabletOrientation(true);
+            return;
+          }
+          if (typeof window.__mskProjectsMindmapInitFn === 'function') {
+            window.__mskProjectsMindmapInitFn();
+          }
+          if (typeof window.__mskProjectsRelayout === 'function') {
+            window.__mskProjectsRelayout(true);
+          }
+          try {
+            window.scrollTo(0, 0);
+          } catch (e) {}
+        } catch (e) {}
+      }
+      function schedule() {
+        revealAndRelayout();
+        window.setTimeout(revealAndRelayout, 320);
+        window.setTimeout(revealAndRelayout, 640);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', schedule);
+      } else {
+        schedule();
+      }
+      window.addEventListener('load', function () {
+        window.setTimeout(revealAndRelayout, 80);
+      });
+      window.addEventListener('orientationchange', function () {
+        window.setTimeout(revealAndRelayout, 160);
+      });
+    })();
+    </script>
 </body>
 </html> 

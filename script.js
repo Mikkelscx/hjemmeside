@@ -1,3 +1,1497 @@
+// Visual Viewport API: match JS layout to the visible area (mobile Safari toolbar, pinch-zoom, etc.).
+function mskViewportSize() {
+	try {
+		const vv = window.visualViewport;
+		const w = vv && vv.width > 0 ? vv.width : window.innerWidth;
+		const h = vv && vv.height > 0 ? vv.height : window.innerHeight;
+		return { w, h };
+	} catch {
+		return { w: window.innerWidth, h: window.innerHeight };
+	}
+}
+
+/** Projects “kort landscape” — samme logik som CSS (max-width 1024px, max-height 520px, bred>kort). Én kilde = mindre drift mellem browsere. */
+const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
+const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
+/** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
+const MSK_PROJECTS_LANDSCAPE_FIT = 0.66;
+/** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
+const MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX = 28;
+/** iPad landskab: træk hele mindmap lidt mod venstre (mellem notesbog-marginerne) */
+const MSK_PROJECTS_IPAD_LS_LAYOUT_LEFT_PX = 24;
+
+/**
+ * Ét stabilt mål for layout (afrundet heltal) — documentElement.client*, ikke visualViewport.
+ * Bruges til mindmap-ellipse, breakpoint-lignende checks og --vh på projekter så design ikke “ånder” med Safari-UI.
+ */
+function mskProjectsLayoutViewportBox() {
+	try {
+		const de = document.documentElement;
+		const w = Math.round(Math.max(1, de.clientWidth || window.innerWidth || 0));
+		const h = Math.round(Math.max(1, de.clientHeight || window.innerHeight || 0));
+		return { w, h };
+	} catch {
+		return {
+			w: Math.round(Math.max(1, window.innerWidth || 0)),
+			h: Math.round(Math.max(1, window.innerHeight || 0)),
+		};
+	}
+}
+
+/** Tillad browser-zoom (pinch / ctrl+scroll) — bruges hvor vi ellers blokerer touchmove/wheel mod scroll. */
+function mskAllowBrowserZoomGesture(e) {
+	try {
+		if (!e) return false;
+		if (e.type === 'touchstart' || e.type === 'touchmove') {
+			if (e.touches && e.touches.length > 1) return true;
+		}
+		if (e.type === 'wheel' && (e.ctrlKey || e.metaKey)) return true;
+	} catch (_) {}
+	return false;
+}
+
+/** Side er zoomet ind — tillad pan/scroll i alle retninger. */
+function mskIsBrowserPageZoomed() {
+	try {
+		const vv = window.visualViewport;
+		if (vv) {
+			if (typeof vv.scale === 'number' && vv.scale > 1.015) return true;
+			const lw = document.documentElement.clientWidth || window.innerWidth || 0;
+			const lh = document.documentElement.clientHeight || window.innerHeight || 0;
+			if (vv.width > 0 && vv.height > 0 && (vv.width < lw - 2 || vv.height < lh - 2)) return true;
+		}
+	} catch (_) {}
+	return false;
+}
+
+function mskSyncBrowserZoomPanMode() {
+	try {
+		document.documentElement.classList.toggle('msk-browser-zoom-active', mskIsBrowserPageZoomed());
+	} catch (_) {}
+}
+
+/** Synlig viewport til mindmap (inner* + visualViewport) — vigtig i iPad DevTools landskab. */
+function mskProjectsVisibleViewportPx() {
+	try {
+		if (
+			document.body &&
+			document.body.classList.contains('projects-page') &&
+			mskIsProjectsTabletLandscapeViewport()
+		) {
+			const dim = mskProjectsTabletLandscapeLayoutPx();
+			return { w: dim.w, h: dim.h };
+		}
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (
+			document.body &&
+			document.body.classList.contains('projects-page') &&
+			(mskIsProjectsPhonePortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+				mskIsProjectsTabletPortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-ipad-portrait'))
+		) {
+			return { w: iw, h: ih };
+		}
+		const vv = window.visualViewport;
+		if (vv && vv.width >= 200 && vv.height >= 200) {
+			return {
+				w: Math.round(Math.max(1, Math.min(iw, vv.width))),
+				h: Math.round(Math.max(1, Math.min(ih, vv.height))),
+			};
+		}
+		const lv = mskProjectsLayoutViewportBox();
+		return {
+			w: Math.round(Math.max(1, Math.min(iw, lv.w))),
+			h: Math.round(Math.max(1, Math.min(ih, lv.h))),
+		};
+	} catch {
+		return mskProjectsLayoutViewportBox();
+	}
+}
+
+/**
+ * Chrome DevTools (mobil-emulering): `visualViewport.height` kan fejlagtigt blive den **smalle** dimension (~414px),
+ * så `--vh` sættes til bredden i stedet for højden → sider med `min-height: var(--vh)` kollapser og spacing ser “død” ud.
+ * Falder tilbage til layout-viewport (documentElement.client*), samme stabile kilde som på projekter-siden.
+ */
+function mskSanitizedViewportSize() {
+	try {
+		const visual = mskViewportSize();
+		const layout = mskProjectsLayoutViewportBox();
+		let w = visual.w;
+		let h = visual.h;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+
+		/* Layout vs. visual: vv.height kan være den smalle kant */
+		if (
+			layout.w > 0 &&
+			layout.h > 0 &&
+			h > 0 &&
+			w > 0 &&
+			h <= layout.w + 2 &&
+			layout.h > layout.w + 8
+		) {
+			w = layout.w;
+			h = layout.h;
+		}
+
+		/*
+		 * Chrome DevTools mobil-emulering: både visualViewport.height og documentElement.clientHeight
+		 * kan være ~414 (bredden), mens window.innerHeight er korrekt (~896). Uden dette forbliver --vh = 414.
+		 */
+		if (ih > iw + 24 && h <= iw + 4 && ih > h + 32) {
+			w = iw;
+			h = ih;
+		}
+		return { w, h };
+	} catch {
+		return mskViewportSize();
+	}
+}
+
+function mskIsProjectsShortLandscapeViewport() {
+	try {
+		/* Samme breakpoint som CSS (short landscape + --projectsLandscapeFit), så JS og styles matcher altid. */
+		if (window.matchMedia) {
+			const mqA = window.matchMedia(
+				'(max-width: 1024px) and (max-height: 520px) and (orientation: landscape)'
+			);
+			const mqB = window.matchMedia(
+				'(max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1)'
+			);
+			if ((mqA && mqA.matches) || (mqB && mqB.matches)) return true;
+		}
+		/* Fallback: inner* kort/lang (fx uden matchMedia) */
+		let iw = Math.round(Math.max(1, window.innerWidth || 0));
+		let ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (iw < 2 || ih < 2) {
+			const b = mskProjectsLayoutViewportBox();
+			iw = Math.max(1, b.w);
+			ih = Math.max(1, b.h);
+		}
+		const longSide = Math.max(iw, ih);
+		const shortSide = Math.min(iw, ih);
+		if (shortSide >= longSide) return false;
+		/* Kun landskab — 375×667 portræt må ikke matche “kort landscape” */
+		if (iw <= ih + 16) return false;
+		if (longSide > MSK_PROJECTS_LANDSCAPE_MAX_W || shortSide > MSK_PROJECTS_LANDSCAPE_MAX_H) return false;
+		return true;
+	} catch (_) {
+		return false;
+	}
+}
+
+/**
+ * Projekter: iPad / tablet portræt (641–1024px) — samme lodrette skitse-grid som mobil.
+ * Skal matche CSS (burger + mindmap portrait-styling).
+ */
+function mskIsProjectsTabletPortraitViewport() {
+	try {
+		if (mskIsProjectsTabletLandscapeViewport()) return false;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		const longSide = Math.max(iw, ih);
+		const shortSide = Math.min(iw, ih);
+		const inTabletBand = longSide >= 1024 && longSide <= 1366 && shortSide >= 600;
+		let portraitMq = ih > iw + 16;
+		try {
+			if (window.matchMedia) {
+				portraitMq =
+					!!(
+						window.matchMedia('(orientation: portrait)').matches ||
+						window.matchMedia('(max-aspect-ratio: 1/1)').matches
+					) || (ih > iw + 16 && !window.matchMedia('(orientation: landscape)').matches);
+			}
+		} catch (_) {}
+		if (inTabletBand && portraitMq) return true;
+		if (!window.matchMedia) return false;
+		const mqLegacyA = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1024px) and (orientation: portrait)'
+		);
+		const mqLegacyB = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)'
+		);
+		const mqWideTouchA = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1366px) and (orientation: portrait) and ((hover: none) or (pointer: coarse))'
+		);
+		const mqWideTouchB = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) and ((hover: none) or (pointer: coarse))'
+		);
+		return !!(
+			(mqLegacyA && mqLegacyA.matches) ||
+			(mqLegacyB && mqLegacyB.matches) ||
+			(mqWideTouchA && mqWideTouchA.matches) ||
+			(mqWideTouchB && mqWideTouchB.matches)
+		);
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Låst iPad portræt mindmap — værdier i projects-ipad-portrait-lock.js */
+function mskGetProjectsIpadPortraitLock() {
+	try {
+		return window.MSK_PROJECTS_IPAD_PORTRAIT_LOCK || null;
+	} catch (_) {
+		return null;
+	}
+}
+
+function mskUseProjectsIpadPortraitLock() {
+	try {
+		if (!mskGetProjectsIpadPortraitLock()) return false;
+		return !!(
+			mskIsProjectsTabletPortraitViewport() ||
+			document.documentElement.classList.contains('msk-projects-ipad-portrait')
+		);
+	} catch (_) {
+		return false;
+	}
+}
+
+function mskIpadPortraitLineLock(section) {
+	const L = mskGetProjectsIpadPortraitLock();
+	if (!L || !L.lines || !L.lines[section]) return null;
+	if (mskUseProjectsIpadPortraitLock()) return L.lines[section];
+	const phone = !!(
+		mskIsProjectsPhonePortraitViewport() ||
+		document.documentElement.classList.contains('msk-projects-phone-portrait')
+	);
+	if (phone && !mskIsProjectsTabletPortraitViewport()) return L.lines[section];
+	return null;
+}
+
+/** Projekter: telefon portræt (≤640px) — samme 2+2 / hjernen / 2+2 grid som tablet portræt. */
+function mskIsProjectsPhonePortraitViewport() {
+	try {
+		if (mskIsProjectsTabletLandscapeViewport()) return false;
+		if (mskIsProjectsTabletPortraitViewport()) return false;
+		if (mskIsProjectsShortLandscapeViewport()) return false;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (iw > 640) return false;
+		try {
+			if (
+				window.matchMedia &&
+				(window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches ||
+					window.matchMedia('(max-width: 640px) and (max-aspect-ratio: 1/1)').matches)
+			) {
+				return true;
+			}
+		} catch (_) {}
+		return ih > iw + 8;
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Projekter: telefon landskab (kort viewport) — ellipse om hjernen, ikke portræt-grid. */
+function mskIsProjectsPhoneLandscapeViewport() {
+	try {
+		if (mskIsProjectsTabletLandscapeViewport()) return false;
+		return !!mskIsProjectsShortLandscapeViewport();
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Portræt-skitse-grid (telefon + tablet portræt). */
+function mskIsProjectsPortraitSketchGridViewport() {
+	try {
+		return !!(mskIsProjectsTabletPortraitViewport() || mskIsProjectsPhonePortraitViewport());
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Aktivt portræt-skitse-grid (telefon + tablet) — samme design, samme ringe/streger. */
+function mskIsProjectsPortraitGridRingsMode() {
+	try {
+		return !!(
+			mskIsProjectsPortraitGridDocumentMode() ||
+			(document.querySelector('.brainstorm-container') &&
+				document.querySelector('.brainstorm-container').classList.contains('projects-mindmap--portrait'))
+		);
+	} catch (_) {
+		return false;
+	}
+}
+
+/** HTML-klasse + viewport: portræt-grid aktiv uanset timing i init/resize. */
+function mskIsProjectsPortraitGridDocumentMode() {
+	try {
+		return !!(
+			document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+			document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+			mskIsProjectsPortraitSketchGridViewport()
+		);
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Stabilt layout-mål til portræt-grid — KUN synlig viewport (inner*), aldrig clientHeight/papir. */
+function mskProjectsPortraitLayoutViewportPx() {
+	try {
+		const iw = Math.round(Math.max(1, window.innerWidth || 1));
+		const ih = Math.round(Math.max(1, window.innerHeight || 1));
+		return { w: iw, h: ih };
+	} catch (_) {
+		return { w: 375, h: 667 };
+	}
+}
+
+/** iPad portraet = 1; telefon portraet = kontinuerlig skala fra iPhone 12 Pro (390px). */
+function mskProjectsPortraitReferenceScale() {
+	try {
+		if (mskIsProjectsTabletPortraitViewport()) return 1;
+		if (!mskIsProjectsPhonePortraitViewport()) return 1;
+		const w = mskProjectsPortraitLayoutViewportPx().w || window.innerWidth || 375;
+		try {
+			if (typeof mskGetPhonePortraitProfileFactors === 'function') {
+				return mskGetPhonePortraitProfileFactors(w).portraitScale;
+			}
+		} catch (_) {}
+		const refW = 390;
+		const refH = 844;
+		const refBase = (refW / 1024) * 0.98;
+		const layoutPx =
+			typeof mskPhonePortraitLayoutPx === 'function'
+				? mskPhonePortraitLayoutPx(w)
+				: { w: w, h: window.innerHeight || refH };
+		const wRatio = (layoutPx.w || w) / refW;
+		const hRatio = (layoutPx.h || refH) / refH;
+		const fitRatio = Math.max(0.48, Math.min(1.62, wRatio * 0.52 + hRatio * 0.48));
+		return refBase * fitRatio;
+	} catch (_) {
+		return 0.38;
+	}
+}
+
+/** Telefon portræt: skaler iPad-lock ringe/streger til smal viewport (læs kun lock — ændrer ikke iPad). */
+function mskProjectsPhonePortraitIpadScale() {
+	return mskProjectsPortraitReferenceScale();
+}
+
+function mskProjectsPortraitGridLayoutPx() {
+	return mskProjectsPortraitLayoutViewportPx();
+}
+
+function mskProjectsPortraitReferenceCanvasPx() {
+	return mskProjectsPortraitGridLayoutPx();
+}
+
+/** Telefon: fuld viewport, ingen canvas-transform — ryd evt. gammel inline styling. */
+function mskApplyProjectsPortraitPhoneCanvasStyles() {
+	try {
+		const container = document.querySelector('.brainstorm-container');
+		if (!container) return;
+		container.classList.remove('projects-mindmap--phone-canvas');
+		container.removeAttribute('data-msk-portrait-canvas');
+		if (!mskIsProjectsPhonePortraitViewport() && !document.documentElement.classList.contains('msk-projects-phone-portrait')) {
+			return;
+		}
+		if (!container.classList.contains('projects-mindmap--portrait')) return;
+		container.style.setProperty('position', 'fixed', 'important');
+		container.style.setProperty('inset', '0', 'important');
+		container.style.setProperty('width', '100%', 'important');
+		container.style.setProperty('height', '100dvh', 'important');
+		container.style.setProperty('display', 'block', 'important');
+		container.style.setProperty('visibility', 'visible', 'important');
+		container.style.setProperty('opacity', '1', 'important');
+		container.style.setProperty('overflow', 'visible', 'important');
+		container.style.setProperty('z-index', '3', 'important');
+		container.style.setProperty('transform', 'none', 'important');
+		container.style.removeProperty('left');
+		container.style.removeProperty('top');
+		container.style.removeProperty('max-width');
+		container.style.removeProperty('max-height');
+	} catch (_) {}
+}
+
+function mskClearProjectsPortraitPhoneCanvasStyles() {
+	mskApplyProjectsPortraitPhoneCanvasStyles();
+}
+
+/** Tving telefon-portræt-klasser (DevTools resize, file://). */
+function mskEnsureProjectsPhonePortraitCanvasMode() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return false;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (iw > 640 || ih <= iw + 8) return false;
+		if (mskIsProjectsTabletLandscapeViewport() || mskIsProjectsShortLandscapeViewport()) return false;
+		document.documentElement.classList.add('msk-projects-phone-portrait', 'msk-projects-phone-portrait-no-scroll');
+		const container = document.querySelector('.brainstorm-container');
+		if (container) container.classList.add('projects-mindmap--portrait');
+		return true;
+	} catch (_) {
+		return false;
+	}
+}
+
+/**
+ * DevTools iPad landskab: orientation: landscape matcher, men innerWidth/innerHeight kan stadig være byttet (1024×1366).
+ * Returner layout-bredde/højde med korteste kant som højde når vi er i tablet-landskab-tilstand.
+ */
+function mskProjectsTabletLandscapeLayoutPx() {
+	try {
+		let iw = Math.round(Math.max(1, window.innerWidth || 0));
+		let ih = Math.round(Math.max(1, window.innerHeight || 0));
+		const vv = window.visualViewport;
+		if (vv && vv.width >= 200 && vv.height >= 200) {
+			iw = Math.round(Math.max(1, Math.min(iw, vv.width)));
+			ih = Math.round(Math.max(1, Math.min(ih, vv.height)));
+		}
+		const landscapeMq =
+			!!(
+				window.matchMedia &&
+				(window.matchMedia('(orientation: landscape)').matches ||
+					window.matchMedia('(min-aspect-ratio: 1/1)').matches)
+			);
+		const inTabletBand =
+			Math.max(iw, ih) >= 1024 &&
+			Math.max(iw, ih) <= 1366 &&
+			Math.min(iw, ih) >= 600;
+		/* Kun byt mål når orientation faktisk er landscape — ikke pga. hængende html-klasse i portræt */
+		if (landscapeMq && inTabletBand && ih > iw) {
+			return { w: ih, h: iw, swapped: true };
+		}
+		if (iw > ih + 16 && iw >= 1024 && iw <= 1366) return { w: iw, h: ih, swapped: false };
+		if (ih > iw + 16 && ih >= 1024 && ih <= 1366) return { w: ih, h: iw, swapped: true };
+		return { w: iw, h: ih, swapped: false };
+	} catch (_) {
+		return {
+			w: Math.round(Math.max(1, window.innerWidth || 1)),
+			h: Math.round(Math.max(1, window.innerHeight || 1)),
+			swapped: false,
+		};
+	}
+}
+
+/**
+ * Projekter: iPad / tablet landskab (1024–1366 bred) — desktop-ellipse, ikke lodret portræt-grid.
+ */
+function mskIsProjectsTabletLandscapeViewport() {
+	try {
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		const longSide = Math.max(iw, ih);
+		const shortSide = Math.min(iw, ih);
+		const inTabletBand = longSide >= 1024 && longSide <= 1366 && shortSide >= 600;
+		if (inTabletBand && ih > iw + 16) {
+			let portraitMq = false;
+			try {
+				portraitMq = !!(
+					window.matchMedia &&
+					(window.matchMedia('(orientation: portrait)').matches ||
+						window.matchMedia('(max-aspect-ratio: 1/1)').matches)
+				);
+			} catch (_) {}
+			if (portraitMq) return false;
+		}
+		const dim = mskProjectsTabletLandscapeLayoutPx();
+		if (dim.w >= 1024 && dim.w <= 1366 && dim.h >= 600 && dim.w > dim.h + 16) return true;
+		if (!window.matchMedia) return false;
+		const mqA = window.matchMedia(
+			'(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape)'
+		);
+		const mqB = window.matchMedia(
+			'(min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1)'
+		);
+		return !!((mqA && mqA.matches) || (mqB && mqB.matches));
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Projekter touch: tablet landskab = ellipse; tablet/telefon portræt = 2+2-grid; telefon landskab = ellipse. */
+function mskApplyProjectsIpadLandscapeDocumentMode() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return false;
+		const tabletPortrait = mskIsProjectsTabletPortraitViewport();
+		const phonePortrait = mskIsProjectsPhonePortraitViewport();
+		const phoneLandscape = mskIsProjectsPhoneLandscapeViewport();
+		let tabletLandscape = !tabletPortrait && !phonePortrait && mskIsProjectsTabletLandscapeViewport();
+		/* DevTools: orientation landscape men inner* byttet — kun når vi ikke er i portræt-grid */
+		if (!tabletLandscape && !tabletPortrait && !phonePortrait && !phoneLandscape) {
+			try {
+				const dim = mskProjectsTabletLandscapeLayoutPx();
+				if (dim.w >= 1024 && dim.w <= 1366 && dim.h >= 600 && dim.w > dim.h + 16) tabletLandscape = true;
+			} catch (_) {}
+		}
+		const portraitGrid = tabletPortrait || phonePortrait;
+		const on = tabletLandscape;
+
+		document.documentElement.classList.toggle('msk-projects-ipad-landscape', tabletLandscape);
+		document.documentElement.classList.toggle('msk-projects-ipad-landscape-no-scroll', tabletLandscape);
+		document.documentElement.classList.toggle('msk-projects-ipad-portrait', tabletPortrait);
+		document.documentElement.classList.toggle('msk-projects-phone-portrait', phonePortrait);
+		document.documentElement.classList.toggle('msk-projects-phone-landscape', phoneLandscape);
+		document.documentElement.classList.toggle(
+			'msk-projects-phone-portrait-no-scroll',
+			phonePortrait
+		);
+		if (phonePortrait) {
+			try {
+				if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
+					mskApplyPhonePortraitProfileDocument();
+				}
+			} catch (_) {}
+		}
+		const container = document.querySelector('.brainstorm-container');
+		if (container) {
+			if (tabletLandscape || phoneLandscape) {
+				container.classList.remove('projects-mindmap--portrait', 'projects-mindmap--phone-canvas');
+			} else if (portraitGrid) {
+				container.classList.add('projects-mindmap--portrait');
+				container.classList.remove('projects-mindmap--phone-canvas');
+			}
+			container.classList.toggle('projects-mindmap--ipad-landscape', tabletLandscape);
+		}
+		if (on) {
+			mskApplyUngeModUvIpadLandscapeTitleNudge();
+			mskApplyDurexIpadLandscapeTitleNudge();
+			mskApplyBrainfartsIpadLandscapeConstructionSign();
+			mskSyncBrainfartsIpadConstructionSignOpacity();
+		} else {
+			mskClearUngeModUvIpadLandscapeTitleNudge();
+			mskClearDurexIpadLandscapeTitleNudge();
+			if (portraitGrid) mskApplyProjectsPortraitPhoneCanvasStyles();
+			else mskClearProjectsPortraitPhoneCanvasStyles();
+		}
+		return on;
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Portræt-grid efterladt DOM/inline (typisk portræt→landskab uden refresh). */
+function mskProjectsMindmapHasPortraitGridArtifacts() {
+	try {
+		const container = document.querySelector('.brainstorm-container');
+		if (!container) return false;
+		if (container.querySelector('.msk-portrait-ring-overlay')) return true;
+		if (container.classList.contains('projects-mindmap--portrait')) return true;
+		if (document.querySelector('.project-node[data-msk-grid-cx]')) return true;
+		return !!document.querySelector('.project-node[style*="left"]');
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Fjern portræt-grid så ellipse-landskab kan tegnes rent (tablet portræt→landskab). */
+function mskProjectsMindmapClearPortraitGridArtifacts() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		const container = document.querySelector('.brainstorm-container');
+		const svg = document.querySelector('.connecting-lines');
+		const brain = document.querySelector('.brain');
+		const nodes = document.querySelectorAll('.project-node');
+
+		if (container) {
+			container.querySelectorAll('.msk-portrait-ring-overlay').forEach((el) => {
+				try {
+					el.remove();
+				} catch (_) {}
+			});
+			[
+				'position',
+				'inset',
+				'width',
+				'height',
+				'display',
+				'visibility',
+				'opacity',
+				'z-index',
+				'transform',
+				'left',
+				'top',
+				'right',
+				'bottom',
+				'max-width',
+				'max-height',
+				'overflow',
+			].forEach((prop) => {
+				try {
+					container.style.removeProperty(prop);
+				} catch (_) {}
+			});
+			container.classList.remove('projects-mindmap--portrait', 'projects-mindmap--phone-canvas');
+			container.removeAttribute('data-msk-portrait-canvas');
+		}
+		if (svg) {
+			try {
+				delete svg.dataset.mskDynamicGraphicsBuilt;
+			} catch (_) {}
+			svg.querySelectorAll('.dynamic-mindmap-line, .mobile-mindmap-line').forEach((el) => {
+				try {
+					el.remove();
+				} catch (_) {}
+			});
+		}
+		if (brain) {
+			try {
+				brain.removeAttribute('style');
+			} catch (_) {}
+		}
+		nodes.forEach((node) => {
+			try {
+				node.removeAttribute('style');
+				delete node.dataset.mskGridCx;
+				delete node.dataset.mskGridCy;
+				const title = node.querySelector('.project-node__title');
+				if (title) title.removeAttribute('style');
+				node.querySelectorAll('.node-label').forEach((el) => el.removeAttribute('style'));
+				node
+					.querySelectorAll(
+						'.dandd-badge--inline, .kravling-nomineret-badge--inline, .kobajer-kravling-2024-badge--inline'
+					)
+					.forEach((el) => el.remove());
+				const bfSign = node.querySelector('.brainfarts-build__sign--inline');
+				if (bfSign) bfSign.remove();
+			} catch (_) {}
+		});
+		if (container) {
+			[
+				'.repop-kravling-line',
+				'.twister-dandd-line',
+				'.kobajer-arrow',
+				'.dandd-badge',
+				'.kravling-nomineret-badge',
+				'.kobajer-kravling-2024-badge',
+			].forEach((sel) => {
+				container.querySelectorAll(sel).forEach((el) => {
+					try {
+						el.removeAttribute('style');
+					} catch (_) {}
+				});
+			});
+		}
+	} catch (_) {}
+}
+
+/** Tablet rotation: opdatér html-klasser, ryd portræt-rester, genlayout uden refresh. */
+function mskProjectsMindmapRelayoutAfterTabletOrientation(force) {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		const enteringLandscape = !!mskIsProjectsTabletLandscapeViewport();
+		mskApplyProjectsIpadLandscapeDocumentMode();
+		if (enteringLandscape && mskProjectsMindmapHasPortraitGridArtifacts()) {
+			mskProjectsMindmapClearPortraitGridArtifacts();
+		}
+		if (enteringLandscape) {
+			document.documentElement.classList.remove('msk-mindmap-booting', 'msk-projects-ipad-portrait');
+			document.documentElement.classList.add('msk-projects-mindmap-painted');
+			const c = document.querySelector('.brainstorm-container');
+			if (c) {
+				c.classList.remove('projects-mindmap--portrait');
+				c.dataset.mskRevealed = '1';
+			}
+		}
+		try {
+			if (typeof window.__mskProjectsRelayout === 'function') {
+				window.__mskProjectsRelayout(!!force);
+			}
+		} catch (_) {}
+		try {
+			document.documentElement.dispatchEvent(new CustomEvent('msk-relayout-projects-mindmap'));
+		} catch (_) {}
+	} catch (_) {}
+}
+
+try {
+	window.mskProjectsMindmapRelayoutAfterTabletOrientation = mskProjectsMindmapRelayoutAfterTabletOrientation;
+} catch (_) {}
+
+const MSK_BRAINFARTS_IPAD_SIGN_OPACITY = 0.74;
+
+/** iPad landskab: gennemsigtighed på SVG-trekant (CSS kan ikke ramme pga. opacity:1 på alle image). */
+function mskSyncBrainfartsIpadConstructionSignOpacity() {
+	try {
+		if (!mskIsProjectsTabletLandscapeViewport()) return;
+		const svg = document.querySelector('.brainstorm-container .connecting-lines');
+		if (!svg) return;
+		const op = String(MSK_BRAINFARTS_IPAD_SIGN_OPACITY);
+		svg.querySelectorAll('.brainfarts-ipad-construction-wrap').forEach((wrap) => {
+			try {
+				wrap.setAttribute('opacity', op);
+				wrap.style.setProperty('opacity', op, 'important');
+				wrap.style.setProperty('mix-blend-mode', 'multiply', 'important');
+				wrap.style.setProperty('pointer-events', 'none', 'important');
+			} catch (_) {}
+		});
+		svg.querySelectorAll('image.brainfarts-ipad-construction-sign').forEach((img) => {
+			try {
+				img.setAttribute('opacity', op);
+				img.style.setProperty('opacity', op, 'important');
+				img.style.setProperty('mix-blend-mode', 'normal', 'important');
+				img.style.setProperty('pointer-events', 'none', 'important');
+			} catch (_) {}
+		});
+	} catch (_) {}
+}
+
+/** iPad landskab: fjern HTML-dublet — trekant tegnes kun som SVG i createHandDrawnFrames. */
+function mskApplyBrainfartsIpadLandscapeConstructionSign() {
+	try {
+		if (!mskIsProjectsTabletLandscapeViewport()) return;
+		const container = document.querySelector('.brainstorm-container');
+		if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+		const bf = container.querySelector('a[href*="brainfarts"], .project-node[href*="brainfarts"]');
+		if (!bf) return;
+		bf.querySelectorAll('.brainfarts-build__sign--inline').forEach((el) => {
+			try {
+				el.remove();
+			} catch (_) {}
+		});
+	} catch (_) {}
+}
+
+/** iPad landskab: UNGE MOD UV — kun tekst-webp ned i cirklen (SVG-ring forbliver centreret på noden). */
+function mskApplyUngeModUvIpadLandscapeTitleNudge() {
+	try {
+		if (!mskIsProjectsTabletLandscapeViewport()) return;
+		const container = document.querySelector('.brainstorm-container');
+		if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+		const img = container.querySelector(
+			'a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv'
+		);
+		if (!img) return;
+		let downPx = 12;
+		let rightPx = 10;
+		try {
+			const lv = mskProjectsLayoutViewportBox();
+			downPx = Math.round(Math.max(10, Math.min(16, (lv.w || 1366) * 0.01)));
+			rightPx = Math.round(Math.max(8, Math.min(14, (lv.w || 1366) * 0.008)));
+		} catch (_) {}
+		const scale = 1.44;
+		img.style.setProperty('max-width', 'min(164px, 12.2vw)', 'important');
+		img.style.setProperty('width', '100%', 'important');
+		img.style.setProperty(
+			'transform',
+			`translate(${rightPx}px, ${downPx}px) scale(${scale})`,
+			'important'
+		);
+		img.style.setProperty('transform-origin', 'center center', 'important');
+	} catch (_) {}
+}
+
+function mskClearUngeModUvIpadLandscapeTitleNudge() {
+	try {
+		const img = document.querySelector(
+			'.brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv'
+		);
+		if (!img) return;
+		img.style.removeProperty('transform');
+		img.style.removeProperty('transform-origin');
+		img.style.removeProperty('max-width');
+		img.style.removeProperty('width');
+	} catch (_) {}
+}
+
+/** iPad landskab: DUREX — mindre tekst + lidt mod venstre i cirklen (ring uændret). */
+function mskApplyDurexIpadLandscapeTitleNudge() {
+	try {
+		if (!mskIsProjectsTabletLandscapeViewport()) return;
+		const container = document.querySelector('.brainstorm-container');
+		if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+		const img = container.querySelector(
+			'a.project-node[href*="durex"] .project-node__title-img--durex'
+		);
+		if (!img) return;
+		let leftPx = 0;
+		let downPx = 2;
+		const scale = 1.56;
+		try {
+			const lv = mskProjectsLayoutViewportBox();
+			leftPx = Math.round(Math.max(0, Math.min(6, (lv.w || 1366) * 0.003)));
+			downPx = Math.round(Math.max(0, Math.min(4, (lv.h || 1024) * 0.003)));
+		} catch (_) {}
+		img.style.setProperty('max-width', 'min(172px, 12.8vw)', 'important');
+		img.style.setProperty('width', '100%', 'important');
+		img.style.setProperty(
+			'transform',
+			`translate(${leftPx}px, ${downPx}px) scale(${scale})`,
+			'important'
+		);
+		img.style.setProperty('transform-origin', 'center center', 'important');
+		img.style.removeProperty('margin-left');
+		img.style.removeProperty('margin-right');
+	} catch (_) {}
+}
+
+function mskClearDurexIpadLandscapeTitleNudge() {
+	try {
+		const img = document.querySelector(
+			'.brainstorm-container a.project-node[href*="durex"] .project-node__title-img--durex'
+		);
+		if (!img) return;
+		img.style.removeProperty('transform');
+		img.style.removeProperty('transform-origin');
+		img.style.removeProperty('max-width');
+		img.style.removeProperty('width');
+		img.style.removeProperty('margin-left');
+		img.style.removeProperty('margin-right');
+	} catch (_) {}
+}
+
+(function mskProjectsIpadLandscapeBootstrap() {
+	function tick() {
+		const hadPortraitArtifacts = mskProjectsMindmapHasPortraitGridArtifacts();
+		const on = mskApplyProjectsIpadLandscapeDocumentMode();
+		if (on && hadPortraitArtifacts) mskProjectsMindmapClearPortraitGridArtifacts();
+	}
+	function onOrientation() {
+		[40, 280, 520].forEach((ms) => {
+			window.setTimeout(() => mskProjectsMindmapRelayoutAfterTabletOrientation(true), ms);
+		});
+	}
+	tick();
+	window.addEventListener('resize', tick);
+	window.addEventListener('orientationchange', onOrientation);
+	document.addEventListener('DOMContentLoaded', tick);
+})();
+
+/** Projekter desktop: “Under ombygning” + pil lige under BRAINFARTS-cirklen (følger SVG-ring efter layout). */
+function positionBrainfartsBuildNote() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		const build = document.querySelector('.brainfarts-build');
+		if (!build) return;
+		const w = mskProjectsLayoutViewportBox().w || 0;
+		if (
+			w < 1025 ||
+			mskIsProjectsShortLandscapeViewport() ||
+			mskIsProjectsTabletLandscapeViewport()
+		) {
+			build.style.removeProperty('left');
+			build.style.removeProperty('top');
+			build.style.removeProperty('right');
+			build.style.removeProperty('bottom');
+			build.style.removeProperty('transform');
+			return;
+		}
+		const container = document.querySelector('.brainstorm-container');
+		if (!container) return;
+		const frameEl = document.querySelector('.connecting-lines image.brainfarts-image');
+		const bfNode = document.querySelector('a[href*="brainfarts"]');
+		const cRect = container.getBoundingClientRect();
+		let ringRect = frameEl ? frameEl.getBoundingClientRect() : null;
+		if (!ringRect || ringRect.width < 2) {
+			if (!bfNode) return;
+			ringRect = bfNode.getBoundingClientRect();
+		}
+		const cx = ringRect.left + ringRect.width / 2 - cRect.left;
+		const leftNudgePx = 48;
+		const leftPx = cx - leftNudgePx;
+		/* Højere op mod ringen (pil + skilt tættere på cirklen) */
+		const topPx = ringRect.bottom - cRect.top - 70;
+		build.style.setProperty('left', `${Math.round(leftPx)}px`, 'important');
+		build.style.setProperty('top', `${Math.round(topPx)}px`, 'important');
+		build.style.setProperty('right', 'auto', 'important');
+		build.style.setProperty('bottom', 'auto', 'important');
+		build.style.setProperty('transform', 'translateX(-50%)', 'important');
+	} catch (_) {}
+}
+
+/** iOS home indicator m.m. — portrait mindmap: trækker “bund” op så nederste knapper ikke sidder i safe area. */
+function mskSafeAreaInsetBottomPx() {
+	try {
+		const t = document.createElement('div');
+		t.style.cssText =
+			'position:fixed;visibility:hidden;left:0;bottom:0;width:0;height:0;margin:0;border:0;padding:0;padding-bottom:env(safe-area-inset-bottom,0px);';
+		document.body.appendChild(t);
+		const v = parseFloat(getComputedStyle(t).paddingBottom) || 0;
+		t.remove();
+		return Math.round(v);
+	} catch {
+		return 0;
+	}
+}
+
+/** Projekter mindmap: fjern fokus efter tap/pointerup — WebKit (Safari/iPad) viser ellers blå ramme på <a> trods CSS. */
+function mskBindProjectsMindmapLinkBlurAfterTap() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		if (document.documentElement.dataset.mskProjectsMindmapLinkBlurBound === '1') return;
+		const stage = document.querySelector('.brainstorm-container');
+		if (!stage) return;
+		document.documentElement.dataset.mskProjectsMindmapLinkBlurBound = '1';
+		const scheduleBlur = () => {
+			try {
+				window.requestAnimationFrame(() => {
+					try {
+						window.requestAnimationFrame(() => {
+							try {
+								const a = document.activeElement;
+								if (a && typeof a.matches === 'function' && a.matches('a.project-node') && stage.contains(a)) {
+									a.blur();
+								}
+							} catch (_) {}
+						});
+					} catch (_) {}
+				});
+			} catch (_) {}
+		};
+		stage.addEventListener('pointerup', scheduleBlur, { capture: true, passive: true });
+		stage.addEventListener('touchend', scheduleBlur, { capture: true, passive: true });
+	} catch (_) {}
+}
+
+/**
+ * Vandrette papirlinjer — DOM-lag med CSS repeating-linear-gradient (ikke canvas-bitmap).
+ * Skalerer med side-zoom/pinch uden at tynde streger forsvinder ved subpixel/rasterisering.
+ */
+function mskSketchbookPaperLinesDraw() {
+	try {
+		if (!document.body) return;
+		if (!document.body.classList.contains('sketchbook-theme')) {
+			const oldCanvas = document.getElementById('msk-sketch-paper-lines');
+			if (oldCanvas) oldCanvas.remove();
+			const oldLayer = document.getElementById('msk-paper-lines-layer');
+			if (oldLayer) oldLayer.remove();
+			return;
+		}
+		const oldCanvas = document.getElementById('msk-sketch-paper-lines');
+		if (oldCanvas) oldCanvas.remove();
+		let layer = document.getElementById('msk-paper-lines-layer');
+		if (!layer) {
+			layer = document.createElement('div');
+			layer.id = 'msk-paper-lines-layer';
+			layer.className = 'msk-paper-lines-layer';
+			layer.setAttribute('aria-hidden', 'true');
+			const left = document.createElement('div');
+			left.className = 'msk-paper-lines-layer__half msk-paper-lines-layer__half--left';
+			const right = document.createElement('div');
+			right.className = 'msk-paper-lines-layer__half msk-paper-lines-layer__half--right';
+			layer.appendChild(left);
+			layer.appendChild(right);
+			document.body.insertBefore(layer, document.body.firstChild);
+		}
+	} catch (_) {}
+}
+
+(function syncMobileVhFromVisualViewport() {
+	let raf = null;
+	/** Undgå at gentagne visualViewport-resize (pinch-zoom) spammer style-opdateringer — kan udløse Safari WebContent-nedbrud på sketchbook-sider. */
+	let vvResizeDebounce = null;
+	let lastVhPx = -1;
+	let lastVwPx = -1;
+	let lastSketchPaperMinHPx = -1;
+	function apply() {
+		if (raf) cancelAnimationFrame(raf);
+		raf = requestAnimationFrame(() => {
+			raf = null;
+			try {
+				/* iPad landskab er typisk >1024px bred — inkl. touch-tablet 641–1366 så --vh/--vw ikke “falder fra” ved rotation */
+				const narrowViewport =
+					window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
+				const narrowTouchTablet =
+					window.matchMedia &&
+					window.matchMedia('(min-width: 641px) and (max-width: 1366px)').matches &&
+					window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+				const narrow = !!(narrowViewport || narrowTouchTablet);
+				const sketch =
+					document.body && document.body.classList && document.body.classList.contains('sketchbook-theme');
+				const projectsPage =
+					document.body && document.body.classList && document.body.classList.contains('projects-page');
+				if (!narrow && !sketch) {
+					document.documentElement.style.removeProperty('--vh');
+					document.documentElement.style.removeProperty('--vw');
+					document.documentElement.style.removeProperty('--sketchPaperMinH');
+					lastVhPx = -1;
+					lastVwPx = -1;
+					lastSketchPaperMinHPx = -1;
+					mskSketchbookPaperLinesDraw();
+					return;
+				}
+				const repopPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('repop-page');
+				const ungeModUvPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('unge-mod-uv-page');
+				const naturligPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('naturlig-page');
+				const durexPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('durex-page');
+				const twisterPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('twister-page');
+				const kobajerPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('kobajer-page');
+				const byensLandhandelPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('byens-landhandel-page');
+				const contactSketchbookPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('contact-sketchbook-page');
+				const aboutSketchbookPage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('about-sketchbook-page');
+				const aiUniversePage =
+					document.body &&
+					document.body.classList &&
+					document.body.classList.contains('ai-universe-page');
+				/*
+				 * Repop: tidligere kun window.inner* — i mobil-landskab (og nogle WebKit/DevTools-tilstande) kan innerWidth/innerHeight give vanvittige tal (fx ~9 og ~4 px) → --vh/--vw kollapser og “hvid kasse”/overlay-følelse.
+				 * Repop + Unge mod UV + Naturli' + Durex + … + AI Universe: layout-viewport (client*) — stabil.
+				 * Projekter+sketch: layout-viewport. Øvrige: mskSanitizedViewportSize.
+				 */
+				let w;
+				let h;
+				if (repopPage || ungeModUvPage) {
+					const b = mskProjectsLayoutViewportBox();
+					w = b.w;
+					h = b.h;
+				} else if (durexPage || kobajerPage) {
+					/*
+					 * Layout-viewport (client*), ikke visualViewport: ved pinch-zoom krymper VV → --vh/--vw blev mikroskopiske
+					 * og Durex/Kø-Bajer `min-height: var(--vh)` kollapsede (format skiftede). RDM-fallbacks nedenfor bibeholdes.
+					 */
+					const b = mskProjectsLayoutViewportBox();
+					w = b.w;
+					h = b.h;
+				} else if (
+					naturligPage ||
+					twisterPage ||
+					byensLandhandelPage ||
+					contactSketchbookPage ||
+					aboutSketchbookPage ||
+					aiUniversePage
+				) {
+					const b = mskProjectsLayoutViewportBox();
+					w = b.w;
+					h = b.h;
+				} else if (projectsPage && sketch) {
+					const b = mskProjectsLayoutViewportBox();
+					w = b.w;
+					h = b.h;
+				} else {
+					const b = mskSanitizedViewportSize();
+					w = b.w;
+					h = b.h;
+				}
+				const iwClamp = Math.round(Math.max(1, window.innerWidth || 0));
+				const ihClamp = Math.round(Math.max(1, window.innerHeight || 0));
+				if (ihClamp > 200 && h < 120) h = ihClamp;
+				if (iwClamp > 200 && w < 120) w = iwClamp;
+				/* Sidste udvej hvis w/h stadig er urimelige (landskab-bugs, split-second frames) */
+				if (w < 80 || h < 80) {
+					const fb = mskProjectsLayoutViewportBox();
+					if (fb.w >= 80 && fb.h >= 80) {
+						w = fb.w;
+						h = fb.h;
+					}
+				}
+				let rh = Math.round(Math.max(0, h));
+				let rw = Math.round(Math.max(0, w));
+				const lb = mskProjectsLayoutViewportBox();
+				/*
+				 * Brug største plausible kant — RDM/DevTools kan levere ét tal forkert (fx h≈10 mens innerHeight≈1024),
+				 * hvilket gav --vh på få px og knækkede layout + lightbox.
+				 */
+				if (ihClamp >= 200) {
+					rh = Math.round(Math.max(rh, ihClamp, lb.h));
+				}
+				if (iwClamp >= 200) {
+					rw = Math.round(Math.max(rw, iwClamp, lb.w));
+				}
+				if (rh < 80 && lb.h >= 80) rh = lb.h;
+				if (rw < 80 && lb.w >= 80) rw = lb.w;
+				/*
+				 * RDM / visualViewport-flip: rh kan ende som ~1vh i px (fx 13–14 ved 1366 højde) trods ihClamp.
+				 * Uden dette sættes --vh forkert og alt der bruger var(--vh) + lysboks-fallback (vh) opfører sig inkonsistent.
+				 */
+				if (ihClamp >= 320 && rh > 0 && rh < 120) {
+					rh = Math.round(Math.max(rh, ihClamp, lb.h));
+				}
+				if (iwClamp >= 320 && rw > 0 && rw < 120) {
+					rw = Math.round(Math.max(rw, iwClamp, lb.w));
+				}
+				if (ihClamp >= 320 && rh < ihClamp * 0.22) {
+					rh = Math.round(Math.max(rh, ihClamp, lb.h));
+				}
+				if (iwClamp >= 320 && rw < iwClamp * 0.22) {
+					rw = Math.round(Math.max(rw, iwClamp, lb.w));
+				}
+				/*
+				 * Kontakt/Om mig iPad landskab (1024–1366): inner* er ofte korrekt mens client* er ~10px i DevTools.
+				 * CSS på kontakt bruger 100dvh direkte, men fjern også en ødelagt inline --vh/--vw.
+				 */
+				if (sketch && (contactSketchbookPage || aboutSketchbookPage) && ihClamp >= 320) {
+					rh = Math.round(Math.max(rh, ihClamp, lb.h));
+					rw = Math.round(Math.max(rw, iwClamp, lb.w));
+				}
+				const sketchTabletLandscape =
+					sketch &&
+					(contactSketchbookPage || aboutSketchbookPage) &&
+					window.matchMedia &&
+					window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches &&
+					((window.matchMedia('(orientation: landscape)').matches ||
+						window.matchMedia('(min-aspect-ratio: 1/1)').matches));
+				const applyVhVwPx = narrow || sketchTabletLandscape;
+				/* Aldrig skriv mikroskopisk --vh (fx 10.24px) — ødelægger var(--vh) på andre sider */
+				const vhPxOk = rh >= 200 && rw >= 200;
+				/*
+				 * Kontakt: ALDRIG inline --vh/--vw. DevTools kan sætte ~10px (viewport/100) → scroll.
+				 * Landskab låses via CSS + html.msk-contact-ipad-landscape-no-scroll.
+				 */
+				if (contactSketchbookPage) {
+					document.documentElement.style.removeProperty('--vh');
+					document.documentElement.style.removeProperty('--vw');
+					lastVhPx = -1;
+					lastVwPx = -1;
+				} else if (projectsPage && sketch && mskIsProjectsTabletLandscapeViewport()) {
+					/* Projekter iPad landskab: brug 100dvh i CSS — undgå ødelagt inline --vh ved dimension-swap */
+					document.documentElement.style.removeProperty('--vh');
+					document.documentElement.style.removeProperty('--vw');
+					lastVhPx = -1;
+					lastVwPx = -1;
+				} else if (applyVhVwPx) {
+					if (!vhPxOk) {
+						document.documentElement.style.removeProperty('--vh');
+						document.documentElement.style.removeProperty('--vw');
+						lastVhPx = -1;
+						lastVwPx = -1;
+					} else {
+						if (rh !== lastVhPx) {
+							document.documentElement.style.setProperty('--vh', rh + 'px');
+							lastVhPx = rh;
+						}
+						if (rw !== lastVwPx) {
+							document.documentElement.style.setProperty('--vw', rw + 'px');
+							lastVwPx = rw;
+						}
+					}
+				} else {
+					document.documentElement.style.removeProperty('--vh');
+					document.documentElement.style.removeProperty('--vw');
+					lastVhPx = -1;
+					lastVwPx = -1;
+				}
+				const contactIpadLandscape =
+					contactSketchbookPage &&
+					window.matchMedia &&
+					window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches &&
+					(window.matchMedia('(orientation: landscape)').matches ||
+						window.matchMedia('(min-aspect-ratio: 1/1)').matches);
+				const contactIpadPortrait =
+					contactSketchbookPage &&
+					window.matchMedia &&
+					window.matchMedia('(min-width: 641px) and (max-width: 1366px)').matches &&
+					window.matchMedia('(orientation: portrait)').matches &&
+					!contactIpadLandscape;
+				const projectsIpadLandscape =
+					projectsPage &&
+					sketch &&
+					window.matchMedia &&
+					window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches &&
+					(window.matchMedia('(orientation: landscape)').matches ||
+						window.matchMedia('(min-aspect-ratio: 1/1)').matches);
+				try {
+					document.documentElement.classList.toggle(
+						'msk-contact-ipad-landscape-no-scroll',
+						!!contactIpadLandscape
+					);
+					document.documentElement.classList.toggle(
+						'msk-contact-ipad-portrait-no-scroll',
+						!!contactIpadPortrait
+					);
+					mskApplyProjectsIpadLandscapeDocumentMode();
+				} catch (_) {}
+				/* Papir (::before) skal følge synlig højde ved pinch-zoom — ellers klippes/kollapser linjer */
+				if (sketch && contactSketchbookPage) {
+					const paperH = Math.round(
+						Math.max(
+							200,
+							window.innerHeight || 0,
+							mskProjectsLayoutViewportBox().h
+						)
+					);
+					if (paperH !== lastSketchPaperMinHPx) {
+						document.documentElement.style.setProperty('--sketchPaperMinH', paperH + 'px');
+						lastSketchPaperMinHPx = paperH;
+					}
+				} else if (sketch && projectsPage) {
+					/* Projekter: papirhøjde = synlig viewport (aldrig oppustet rh/bred kant) */
+					const paperH = Math.round(Math.max(200, window.innerHeight || 0));
+					if (paperH !== lastSketchPaperMinHPx) {
+						document.documentElement.style.setProperty('--sketchPaperMinH', paperH + 'px');
+						lastSketchPaperMinHPx = paperH;
+					}
+				} else if (sketch && rh >= 80) {
+					if (rh !== lastSketchPaperMinHPx) {
+						document.documentElement.style.setProperty('--sketchPaperMinH', rh + 'px');
+						lastSketchPaperMinHPx = rh;
+					}
+				} else {
+					document.documentElement.style.removeProperty('--sketchPaperMinH');
+					lastSketchPaperMinHPx = -1;
+				}
+				mskSketchbookPaperLinesDraw();
+			} catch {}
+		});
+	}
+	apply();
+	try {
+		document.addEventListener('DOMContentLoaded', apply);
+	} catch {}
+	window.addEventListener('resize', apply);
+	window.addEventListener('orientationchange', apply);
+	document.addEventListener('visibilitychange', () => {
+		try {
+			if (document.visibilityState === 'visible') apply();
+		} catch {}
+	});
+	window.addEventListener('pageshow', (ev) => {
+		try {
+			if (ev && ev.persisted) apply();
+		} catch {}
+	});
+	if (window.visualViewport) {
+		window.visualViewport.addEventListener('resize', () => {
+			try {
+				const b = document.body;
+				const sk = b && b.classList && b.classList.contains('sketchbook-theme');
+				const proj = b && b.classList && b.classList.contains('projects-page');
+				const repop = b && b.classList && b.classList.contains('repop-page');
+				/* Om mig / Kontakt / Repop: debounce VV så WebKit/Chrome ikke spammer layout ved pinch og DevTools-emulering */
+				if ((sk && !proj) || repop) {
+					if (vvResizeDebounce) clearTimeout(vvResizeDebounce);
+					vvResizeDebounce = setTimeout(() => {
+						vvResizeDebounce = null;
+						apply();
+					}, 160);
+					return;
+				}
+			} catch (_) {}
+			apply();
+		});
+		/* Ikke scroll: ellers redraw’es papir hver gang man pan’er ved zoom → linjer “lever” */
+	}
+	/* Virtual keyboard changes visible height (especially Android Chrome) */
+	try {
+		document.addEventListener(
+			'focusin',
+			(e) => {
+				try {
+					const t = e && e.target;
+					if (!t || !t.tagName) return;
+					const tag = String(t.tagName).toLowerCase();
+					if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') return;
+					apply();
+				} catch {}
+			},
+			true
+		);
+	} catch {}
+})();
+
+/* Kø-Bajer: WebKit kan efter rotation lade 2+1-grids “stable” visuelt oven på hinanden — nulstil kompositor-lag */
+(function mskKobajerGridRelayoutAfterRotation() {
+	function kick() {
+		try {
+			if (!document.body || !document.body.classList.contains('kobajer-page')) return;
+			document.querySelectorAll('.kobajer-info-boxes, .kobajer-steps').forEach((el) => {
+				el.style.transform = 'translateZ(0)';
+				void el.offsetHeight;
+				el.style.removeProperty('transform');
+			});
+		} catch (_) {}
+	}
+	function schedule() {
+		kick();
+		requestAnimationFrame(kick);
+		setTimeout(kick, 100);
+		setTimeout(kick, 350);
+	}
+	window.addEventListener('orientationchange', schedule);
+	let resizeT = null;
+	window.addEventListener('resize', () => {
+		try {
+			if (!document.body || !document.body.classList.contains('kobajer-page')) return;
+		} catch {
+			return;
+		}
+		if (resizeT) clearTimeout(resizeT);
+		resizeT = setTimeout(() => {
+			resizeT = null;
+			schedule();
+		}, 80);
+	});
+})();
+
+/**
+ * Site-standard play-knap på alle indlejrede <video> (halvgennemsigtig cirkel + clip-path-pil i CSS).
+ * Forælderen til <video> får .video-play-frame; undlad at lægge eget overlay i HTML.
+ *
+ * Undtagelser: sæt data-no-play-overlay på <video>, eller læg den i .durex-kampagnevideo-wrap.
+ * Kalds idempotent (spring over hvis .video-play-btn allerede findes).
+ */
+function mskInitNativeVideoPlayOverlays() {
+	try {
+		document.querySelectorAll('video').forEach((vid) => {
+			if (vid.hasAttribute('data-no-play-overlay')) return;
+			if (vid.closest('.durex-kampagnevideo-wrap')) return;
+			const frame = vid.parentElement;
+			if (!frame || frame.classList.contains('video-lazy')) return;
+			if (frame.querySelector('.video-play-btn')) return;
+
+			frame.classList.add('video-play-frame');
+			try {
+				const pos = window.getComputedStyle(frame).position;
+				if (pos === 'static') frame.style.position = 'relative';
+			} catch {}
+
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'video-play-btn';
+			btn.setAttribute('aria-label', 'Afspil video');
+			/* Pil tegnes med CSS ::after (clip-path) — SVG i knap er upålidelig i WebKit */
+			frame.appendChild(btn);
+
+			function sync() {
+				frame.classList.toggle('is-playing', !vid.paused);
+			}
+			vid.addEventListener('play', sync);
+			vid.addEventListener('pause', sync);
+			btn.addEventListener('click', function () {
+				try {
+					vid.play();
+				} catch {}
+			});
+			sync();
+		});
+	} catch {}
+}
+
+/**
+ * Transition-iframes (preview=1) og indlejret projects må ikke køre book-overlay init (rekursive iframes).
+ */
+function mskSkipNestedProjectsBookInits() {
+	try {
+		if (document.documentElement.classList.contains('transition-preview')) return true;
+		const qs = new URLSearchParams(window.location.search || '');
+		if (qs.has('preview')) return true;
+		const p = (window.location.pathname || '').toLowerCase();
+		const isProjects = p.endsWith('/projects.html') || p.endsWith('projects.html');
+		if (isProjects && window.self !== window.top) return true;
+	} catch (_) {}
+	return false;
+}
+
+/** Notesbog-animation til Projekter kun fra forsiden (`index.html` har `home-notebook-page`; case-sider har ikke). */
+function mskIsHomeIndexPage() {
+	try {
+		return !!(document.body && document.body.classList && document.body.classList.contains('home-notebook-page'));
+	} catch (_) {}
+	return false;
+}
+
+/** Undertryk gentagne programmatic navigationer fra mobil-menu (pointerup + click, el. dobbelt touch). */
+let __mskMenuNavGateMs = 0;
+
+/** Efter page-turn drag: syntetisk click kan ramme nav-links og udløse dobbelt-navigation (især Safari/Chrome på mobil). */
+let __mskPageTurnGhostClickGuardUntil = 0;
+function mskArmPageTurnGhostClickGuard(ms) {
+	try {
+		const m = Math.max(380, Math.min(1200, Number(ms) || 520));
+		__mskPageTurnGhostClickGuardUntil = Math.max(__mskPageTurnGhostClickGuardUntil, Date.now() + m);
+	} catch {}
+}
+
+/**
+ * Safari/Chrome BFCache: ved tilbage-swipe kan JS-tilstand + overlays fra page-turn efterlades —
+ * ghost-click guard blokerer alle interne links, eller body overflow/transition-DOM blokerer visning.
+ */
+function mskRecoverAfterHistoryRestore() {
+	try {
+		__mskPageTurnGhostClickGuardUntil = 0;
+		__mskMenuNavGateMs = 0;
+	} catch (_) {}
+	try {
+		const b = document.body;
+		if (b) {
+			b.style.overflow = '';
+			const transient = [
+				'projects-about-flip-active',
+				'projects-about-dragging',
+				'projects-contact-flip-active',
+				'projects-contact-flipping',
+				'projects-contact-double-active',
+				'about-projects-flip-active',
+				'about-projects-flipping',
+				'about-projects-dragging',
+				'about-contact-flip-active',
+				'about-contact-flipping',
+				'about-contact-dragging',
+				'contact-about-flip-active',
+				'contact-about-flipping',
+				'contact-about-dragging',
+				'contact-projects-flip-active',
+				'cp-flipping',
+				'home-opening-projects',
+				'home-opening-layout',
+				'home-opened-projects',
+				'home-shift-projects',
+				'home-reveal-projects',
+				'projects-transition-active',
+			];
+			transient.forEach((c) => {
+				try {
+					b.classList.remove(c);
+				} catch (_) {}
+			});
+		}
+	} catch (_) {}
+	try {
+		document
+			.querySelectorAll(
+				[
+					'.projects-about-transition',
+					'.projects-contact-transition',
+					'.projects-contact-double-transition',
+					'.about-projects-transition',
+					'.about-contact-transition',
+					'.contact-about-transition',
+					'.contact-projects-transition',
+					'.projects-transition',
+				].join(',')
+			)
+			.forEach((el) => {
+				try {
+					el.remove();
+				} catch (_) {}
+			});
+	} catch (_) {}
+}
+
+window.addEventListener(
+	'pageshow',
+	function (e) {
+		try {
+			if (e && e.persisted) mskRecoverAfterHistoryRestore();
+		} catch (_) {}
+	},
+	false
+);
+
 // Simple JavaScript for any interactive functionality
 document.addEventListener('DOMContentLoaded', function() {
 	// If a page is loaded inside a transition iframe, render "clean" (no navbar),
@@ -11,6 +1505,29 @@ document.addEventListener('DOMContentLoaded', function() {
 			// ignore
 		}
 	})();
+
+	// Første capture-handler: bloker interne link-klik mens et page-turn drag lige har committet (ghost click).
+	try {
+		document.addEventListener(
+			'click',
+			(e) => {
+				try {
+					if (typeof __mskPageTurnGhostClickGuardUntil !== 'number' || Date.now() >= __mskPageTurnGhostClickGuardUntil) return;
+					const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+					if (!a) return;
+					const hrefRaw = (a.getAttribute('href') || '').trim();
+					if (!hrefRaw || hrefRaw.startsWith('#')) return;
+					if (/^https?:\/\//i.test(hrefRaw)) return;
+					if (e.button !== 0) return;
+					e.preventDefault();
+					try {
+						e.stopImmediatePropagation();
+					} catch {}
+				} catch {}
+			},
+			true
+		);
+	} catch {}
 
 	// Add smooth scrolling for anchor links
 	document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -59,6 +1576,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	})();
 
+	mskInitNativeVideoPlayOverlays();
+
 
 
 	// Desktop-only corner fold hover hint (shows on the page corner itself).
@@ -100,6 +1619,190 @@ document.addEventListener('DOMContentLoaded', function() {
 	})();
 
 	console.log('Portfolio website loaded successfully!');
+
+	/** Telefon portræt: layout-viewport kan blive >640px ved zoom — hold mobil-layout (screen.* + orientation, som CSS max-width ikke kan). */
+	(function initPhonePortraitZoomStable() {
+		function updatePhonePortraitZoomStable() {
+			try {
+				const sw = window.screen && window.screen.width ? window.screen.width : 0;
+				const sh = window.screen && window.screen.height ? window.screen.height : 0;
+				const shortSide = Math.min(sw, sh);
+				const phoneLike = shortSide > 0 && shortSide <= 640;
+				const portrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+				document.documentElement.classList.toggle('phone-portrait-zoom-stable', phoneLike && portrait);
+			} catch (_) {}
+		}
+		updatePhonePortraitZoomStable();
+		window.addEventListener('orientationchange', function () {
+			setTimeout(updatePhonePortraitZoomStable, 100);
+		});
+		window.addEventListener('resize', function () {
+			setTimeout(updatePhonePortraitZoomStable, 100);
+		});
+	})();
+
+	function closeMobileBurgerMenu() {
+		try { document.body.classList.remove('nav-open'); } catch {}
+		try {
+			const btn = document.querySelector('.nav-toggle');
+			if (btn) {
+				btn.setAttribute('aria-expanded', 'false');
+				btn.setAttribute('aria-label', 'Åbn menu');
+			}
+		} catch {}
+	}
+
+	function isPhoneViewport() {
+		try {
+			if (!window.matchMedia) return false;
+			try {
+				if (document.documentElement.classList.contains('phone-portrait-zoom-stable')) return true;
+			} catch {}
+			if (window.matchMedia('(max-width: 640px)').matches) return true;
+			if (window.matchMedia('(min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse)').matches)
+				return true;
+			/* iPad portræt i DevTools og smalle portræt-vinduer: samme burger-layout som tablet-CSS */
+			if (window.matchMedia('(min-width: 641px) and (max-width: 1366px) and (orientation: portrait)').matches) return true;
+			if (window.matchMedia('(min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1)').matches) return true;
+			if (window.matchMedia('(max-height: 520px) and (orientation: landscape) and (hover: none) and (pointer: coarse)').matches) return true;
+			return false;
+		} catch {
+			return false;
+		}
+	}
+
+	// Mobile burger menu (phones; CSS shows .nav-toggle + dropdown only under max-width: 640px)
+	(function initMobileBurgerMenu() {
+		try {
+			if (document.documentElement && document.documentElement.classList.contains('transition-preview')) return;
+		} catch {}
+
+		const nav = document.querySelector('.navbar');
+		if (!nav) return;
+		const container = nav.querySelector('.nav-container') || nav;
+		const menu = nav.querySelector('.nav-menu');
+		if (!menu) return;
+
+		if (nav.querySelector('.nav-toggle')) return;
+
+		let scrim = document.querySelector('.nav-scrim');
+		if (!scrim) {
+			scrim = document.createElement('div');
+			scrim.className = 'nav-scrim';
+			scrim.setAttribute('aria-hidden', 'true');
+			document.body.appendChild(scrim);
+		}
+
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'nav-toggle';
+		button.setAttribute('aria-label', 'Åbn menu');
+		button.setAttribute('aria-expanded', 'false');
+
+		const menuId = (menu.getAttribute('id') || '').trim() || 'site-nav-menu';
+		menu.setAttribute('id', menuId);
+		button.setAttribute('aria-controls', menuId);
+
+		const bars = document.createElement('span');
+		bars.className = 'nav-toggle__bars';
+		const mid = document.createElement('span');
+		bars.appendChild(mid);
+
+		const label = document.createElement('span');
+		label.className = 'nav-toggle__label';
+		label.textContent = 'Menu';
+
+		button.appendChild(bars);
+		button.appendChild(label);
+
+		container.insertBefore(button, container.firstChild);
+
+		function setOpen(nextOpen) {
+			document.body.classList.toggle('nav-open', !!nextOpen);
+			button.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+			button.setAttribute('aria-label', nextOpen ? 'Luk menu' : 'Åbn menu');
+		}
+
+		function isBurgerVisible() {
+			try {
+				if (!window.getComputedStyle) return false;
+				const cs = window.getComputedStyle(button);
+				return !!(cs && cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0');
+			} catch { return false; }
+		}
+
+		function isOpen() {
+			return document.body.classList.contains('nav-open');
+		}
+
+		button.addEventListener('click', () => setOpen(!isOpen()));
+		scrim.addEventListener('click', () => setOpen(false));
+
+		/*
+		 * Én navigation pr. tryk: tidligere pointerup + touchend + click kunne udløse flere location.assign
+		 * (Safari + Chrome → netværksfejl). Book-/AI-flip kører på document capture og sætter preventDefault —
+		 * her i bubble-fasen ser vi defaultPrevented og styrer kun menu + “almindelige” links.
+		 */
+		menu.addEventListener('click', (e) => {
+			try {
+				if (!isBurgerVisible() && !isOpen()) return;
+
+				const a = e.target && e.target.closest ? e.target.closest('a') : null;
+				if (!a || !menu.contains(a)) return;
+				const hrefAttr = (a.getAttribute('href') || '').trim();
+				if (!hrefAttr || hrefAttr.startsWith('#')) return;
+				if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+				try { setOpen(false); } catch {}
+
+				if (e.defaultPrevented) {
+					return;
+				}
+
+				const now = Date.now();
+				if (now - __mskMenuNavGateMs < 650) {
+					try { e.preventDefault(); } catch {}
+					return;
+				}
+				__mskMenuNavGateMs = now;
+
+				try { e.preventDefault(); } catch {}
+				try { e.stopPropagation(); } catch {}
+				try {
+					window.location.assign(a.href);
+				} catch {
+					try {
+						window.location.href = a.href;
+					} catch {}
+				}
+			} catch (_) {}
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') setOpen(false);
+		});
+
+		window.addEventListener('resize', () => {
+			if (!isPhoneViewport()) setOpen(false);
+		});
+
+		/* iPad m.fl.: ved rotation kan layout-opdatering og burger-@media være ude af trit — luk menu og ryd overflow-lock */
+		window.addEventListener('orientationchange', () => {
+			const unlock = () => {
+				try {
+					closeMobileBurgerMenu();
+				} catch (_) {}
+				try {
+					if (!document.body.classList.contains('msk-asset-lightbox-open')) {
+						document.body.style.removeProperty('overflow');
+					}
+				} catch (_) {}
+			};
+			unlock();
+			setTimeout(unlock, 120);
+			setTimeout(unlock, 380);
+		});
+	})();
 
 	function getPageFlipMs(fallbackMs) {
 		try {
@@ -186,6 +1889,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {
 			return;
 		}
+		/* Preview-iframes / indlejret projects: ingen overlay-prewarm (rekursive iframes + dobbelt nav i menu). */
+		if (mskSkipNestedProjectsBookInits()) return;
 
 		const FLIP_MS = getPageFlipMs(5200); // matches CSS `--pageFlipMs`
 		const NAV_MS = 140;
@@ -366,7 +2071,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initProjectsToAboutDrag() {
 			const DRAG_CLASS = 'projects-about-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
-			const DRAG_PX = Math.max(260, Math.min(520, Math.round(window.innerWidth * 0.38)));
+			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
 			let dragging = false;
@@ -472,7 +2177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-					const vw = window.innerWidth || 1;
+					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
 
 					// Right page to left: startX -> seam (0..0.5), then seam -> left edge (0.5..1)
@@ -493,11 +2198,31 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				function onUp() {
+				function onUp(ev) {
+					try {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+					} catch {}
 					try { catcher.removeEventListener('pointermove', onMove, true); } catch {}
 					try { catcher.removeEventListener('pointerup', onUp, true); } catch {}
 					try { catcher.removeEventListener('pointercancel', onUp, true); } catch {}
-					try { catcher.remove(); } catch {}
+					try {
+						catcher.addEventListener(
+							'click',
+							(ce) => {
+								try {
+									ce.preventDefault();
+									ce.stopPropagation();
+								} catch {}
+							},
+							{ capture: true, once: true }
+						);
+					} catch {}
+					window.setTimeout(() => {
+						try { catcher.remove(); } catch {}
+					}, 400);
 
 					const shouldComplete = progress >= COMPLETE_THRESHOLD;
 					if (!shouldComplete) {
@@ -511,6 +2236,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						window.setTimeout(() => cleanupDragState(overlay, flipEl), 280);
 						return;
 					}
+
+					mskArmPageTurnGhostClickGuard(520);
 
 					// Complete flip to end
 					try {
@@ -554,6 +2281,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {
 			return;
 		}
+		if (mskSkipNestedProjectsBookInits()) return;
 
 		const FLIP_MS = getPageFlipMs(4200);
 		const NAV_MS = 140;
@@ -686,11 +2414,34 @@ document.addEventListener('DOMContentLoaded', function() {
 			return overlay;
 		}
 
-		function startDoubleFlipToContact(targetHref) {
+		function replaceProjectsIframesWithLiveClones(overlay) {
+			if (!overlay) return;
+			const srcContainer = document.querySelector('.brainstorm-container');
+			if (!srcContainer) return;
+			const frames = Array.from(overlay.querySelectorAll('iframe.pcd-frame')).filter((fr) => {
+				const src = String(fr.getAttribute('src') || '');
+				return src.indexOf('projects.html') !== -1;
+			});
+			frames.forEach((fr) => {
+				const sheet = document.createElement('div');
+				sheet.className = String(fr.className || '').replace(/\bpcd-frame\b/g, 'pcd-live-frame');
+				sheet.setAttribute('aria-hidden', 'true');
+				const page = document.createElement('div');
+				page.className = 'pcd-live-page';
+				page.appendChild(srcContainer.cloneNode(true));
+				document.querySelectorAll('.right-margin').forEach((el) => {
+					page.appendChild(el.cloneNode(true));
+				});
+				sheet.appendChild(page);
+				fr.replaceWith(sheet);
+			});
+		}
+
+		function startDoubleFlipToContact(targetHref, onComplete) {
 			const body = document.body;
-			if (body.classList.contains('projects-contact-flipping')) return;
+			if (body.classList.contains('projects-contact-flipping') && typeof onComplete !== 'function') return;
 			const existing = document.querySelector('.projects-contact-double-transition');
-			if (existing && !existing.classList.contains('is-preloading')) return;
+			if (existing && !existing.classList.contains('is-preloading') && typeof onComplete !== 'function') return;
 
 			try {
 				const old = document.querySelector('.projects-contact-double-transition');
@@ -701,6 +2452,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			const overlay = ensureDoubleOverlay();
 			try { overlay.classList.remove('is-ready', 'stage-1', 'stage-2', 'is-turning-1', 'is-turning-2', 'swap1-mid', 'swap2-mid'); } catch {}
 			try { overlay.classList.remove('is-preloading'); } catch {}
+			if (typeof onComplete === 'function') {
+				try { replaceProjectsIframesWithLiveClones(overlay); } catch {}
+			}
 
 			// Match JS fallback timers to this overlay's speed.
 			const DOUBLE_MS = getCssVarMsFromEl(overlay, '--pageFlipMs', FLIP_MS);
@@ -835,7 +2589,26 @@ document.addEventListener('DOMContentLoaded', function() {
 							} catch {}
 							window.setTimeout(() => { if (!scheduled) scheduleFromAnimationStart(); }, 140);
 						})();
-						navigateAfterFlip({ element: flip2, fallbackMs: FLIP_MS + NAV_MS, href: targetHref });
+						if (typeof onComplete === 'function') {
+							let finished = false;
+							const finish = () => {
+								if (finished) return;
+								finished = true;
+								try { onComplete(overlay); } catch {}
+							};
+							try {
+								if (flip2) {
+									flip2.addEventListener('animationend', (e) => {
+										if (!e || e.target !== flip2) return;
+										if (e.animationName && e.animationName !== 'pageRightToLeft') return;
+										finish();
+									});
+								}
+							} catch {}
+							window.setTimeout(finish, DOUBLE_MS + 200);
+						} else {
+							navigateAfterFlip({ element: flip2, fallbackMs: FLIP_MS + NAV_MS, href: targetHref });
+						}
 					}
 
 					try {
@@ -855,6 +2628,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				});
 			});
 		}
+
+		try {
+			window.mskPlayProjectsContactPages = function (onDone) {
+				startDoubleFlipToContact(null, onDone);
+			};
+		} catch {}
 
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
@@ -1036,20 +2815,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					body.style.overflow = 'hidden';
 
 					overlay.classList.add('is-turning');
-					window.setTimeout(() => {
-						overlay.classList.add('swap-under-left');
-					}, 60);
 					// Timing tune (menu click): swap a bit AFTER the visual seam,
 					// but once it appears it must stay on for the rest of the flip.
 					const SWAP_FRAC = 0.58;
 					const SWAP_DEG = 105; // seam=90deg, slightly after
 					// Swap the FLIPPING page design at the visual seam (middle),
 					// so the 2nd half of the turning sheet shows Projekter RIGHT.
+					// Venstre under-side (Projekter) skal først vises her — ikke ved flip-start.
 					(function scheduleMidSwap() {
 						let done = false;
+						function applySeamSwap() {
+							overlay.classList.add('swap-flip-mid', 'swap-under-left');
+						}
 						const flipEl = overlay.querySelector('.about-projects-turn__flip');
 						if (!flipEl) {
-							window.setTimeout(() => overlay.classList.add('swap-flip-mid'), Math.round(FLIP_MS * SWAP_FRAC));
+							window.setTimeout(() => applySeamSwap(), Math.round(FLIP_MS * SWAP_FRAC));
 							return;
 						}
 						const startWatcher = () => {
@@ -1063,14 +2843,14 @@ document.addEventListener('DOMContentLoaded', function() {
 									// Trigger after the seam once we reach ~105deg in either direction.
 									if (typeof ang === 'number' && Math.abs(ang) >= SWAP_DEG) {
 										done = true;
-										overlay.classList.add('swap-flip-mid');
+										applySeamSwap();
 										return;
 									}
 								} catch {}
 								const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 								if ((now - startAt) >= fallbackMs) {
 									done = true;
-									overlay.classList.add('swap-flip-mid');
+									applySeamSwap();
 									return;
 								}
 								requestAnimationFrame(tick);
@@ -1082,7 +2862,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							// If `animationstart` is missed, start shortly after.
 							window.setTimeout(() => { if (!done) startWatcher(); }, 120);
 						} catch {
-							window.setTimeout(() => overlay.classList.add('swap-flip-mid'), Math.round(FLIP_MS * SWAP_FRAC));
+							window.setTimeout(() => applySeamSwap(), Math.round(FLIP_MS * SWAP_FRAC));
 						}
 					})();
 					// Keep OM MIG visible on the RIGHT page until the turning sheet covers it.
@@ -1122,7 +2902,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initAboutToProjectsDrag() {
 			const DRAG_CLASS = 'about-projects-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
-			const DRAG_PX = Math.max(260, Math.min(520, Math.round(window.innerWidth * 0.38)));
+			// Venstre under-side: Projekter så snart træk starter. Vendende blad (swap-flip-mid): når "fold" når UDMÆRKELSER.
+			const SWAP_MIN_PROGRESS = 0.02;
+			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
 			let dragging = false;
@@ -1140,6 +2922,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				return handle;
 			}
 
+			function udmaerkelserNavDesignSwapX(fallbackVw) {
+				try {
+					const a = document.querySelector('.navbar a[href*="#udmaerkelser"]');
+					if (a) {
+						const r = a.getBoundingClientRect();
+						if (r.width > 0) {
+							return (r.left + r.right) * 0.5;
+						}
+					}
+				} catch {}
+				return (typeof fallbackVw === 'number' ? fallbackVw : (mskViewportSize().w || window.innerWidth)) * 0.5;
+			}
+
 			function setProgress(p, x, seamX, flipEl, overlay) {
 				progress = clamp01(p);
 				const angle = 180 * progress;
@@ -1153,17 +2948,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				try {
 					if (overlay) {
-						// Left under-page: show Projekter as soon as the flip begins.
-						if (progress > 0.02) overlay.classList.add('swap-under-left');
-						else overlay.classList.remove('swap-under-left');
+						const vw = mskViewportSize().w || window.innerWidth || 1;
+						const udmX = udmaerkelserNavDesignSwapX(vw);
+						const hasX = (typeof x === 'number' && isFinite(x));
+						const pastUdm = hasX && (x >= udmX) && (progress >= SWAP_MIN_PROGRESS);
+						if (pastUdm) {
+							overlay.classList.add('swap-flip-mid');
+						} else {
+							overlay.classList.remove('swap-flip-mid');
+						}
 
-						// Flipping page: switch to Projekter exactly once we cross the middle seam while dragging.
-						// This should feel like it changes right as the page passes the center.
-						const cursorPastMiddle = (typeof x !== 'number' || typeof seamX !== 'number') ? (progress >= 0.5) : (x >= seamX);
-						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
-						else overlay.classList.remove('swap-flip-mid');
-
-						// Swap the right under-page late (matches existing logic).
 						if (progress >= 0.88) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 					}
@@ -1206,7 +3000,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const overlay = ensureOverlay();
 				try { overlay.classList.remove('swap-flip-mid', 'swap-under-right'); } catch {}
-				overlay.classList.add('is-ready', 'is-turning');
+				overlay.classList.add('is-ready', 'is-turning', 'swap-under-left');
 				// Ensure we mark frames as loaded during drag too (so CSS can fade them in).
 				try {
 					const frames = Array.from(overlay.querySelectorAll('iframe'));
@@ -1220,7 +3014,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-					const vw = window.innerWidth || 1;
+					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
 
 					// Match Projects -> About drag distance:
@@ -1242,7 +3036,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				function onUp() {
+				function onUp(ev) {
+					try {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+					} catch {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -1258,6 +3058,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						window.setTimeout(() => cleanup(overlay, flipEl), 280);
 						return;
 					}
+
+					mskArmPageTurnGhostClickGuard(520);
 
 					try {
 						if (flipEl) {
@@ -1483,7 +3285,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initAboutToContactDrag() {
 			const DRAG_CLASS = 'about-contact-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
-			const DRAG_PX = Math.max(260, Math.min(520, Math.round(window.innerWidth * 0.38)));
+			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
 			let dragging = false;
@@ -1574,7 +3376,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-					const vw = window.innerWidth || 1;
+					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
 
 					// Map drag distance to seam-aware progress:
@@ -1596,7 +3398,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				function onUp() {
+				function onUp(ev) {
+					try {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+					} catch {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -1613,11 +3421,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						return;
 					}
 
+					mskArmPageTurnGhostClickGuard(520);
+
+					let finishMs = 520;
 					try {
 						if (flipEl) {
 							const ease = getPageFlipEase('cubic-bezier(.42,0,.58,1)');
 							const remaining = Math.max(0, 1 - progress);
-							const finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
+							finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
 							flipEl.style.transition = `transform ${finishMs}ms ${ease}`;
 							flipEl.style.transform = 'rotateY(-180deg)';
 						}
@@ -1805,7 +3616,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		(function initContactToAboutDrag() {
 			const DRAG_CLASS = 'contact-about-dragging';
 			const COMPLETE_THRESHOLD = 0.5; // only commit after passing the middle
-			const DRAG_PX = Math.max(260, Math.min(520, Math.round(window.innerWidth * 0.38)));
+			const DRAG_PX = Math.max(260, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.38)));
 
 			let handle = null;
 			let dragging = false;
@@ -1893,7 +3704,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-					const vw = window.innerWidth || 1;
+					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
 
 					// Map drag distance to seam-aware progress:
@@ -1915,7 +3726,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				function onUp() {
+				function onUp(ev) {
+					try {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+					} catch {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -1932,11 +3749,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						return;
 					}
 
+					mskArmPageTurnGhostClickGuard(520);
+
+					let finishMs = 520;
 					try {
 						if (flipEl) {
 							const ease = getPageFlipEase('cubic-bezier(.42,0,.58,1)');
 							const remaining = Math.max(0, 1 - progress);
-							const finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
+							finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
 							flipEl.style.transition = `transform ${finishMs}ms ${ease}`;
 							flipEl.style.transform = 'rotateY(180deg)';
 						}
@@ -2144,14 +3964,371 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// "Mit AI Univers": close the book and slide to center.
 	(function initAiUniverseCloseTransition() {
+		function isDesktopAiClose() {
+			try {
+				return !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+			} catch {
+				return false;
+			}
+		}
+
+		function getAiCloseFollowPages(source) {
+			if (!source) return [];
+			if (source.kind === 'projects') return ['about.html', 'contact.html'];
+			if (source.kind === 'about') return ['contact.html'];
+			return [];
+		}
+
+		function aiClosePreviewSrc(href) {
+			let src = String(href || '').split('#')[0];
+			if (!src) return '';
+			if (!/[?&]preview=1(?:&|$)/.test(src)) {
+				src += (src.indexOf('?') >= 0 ? '&' : '?') + 'preview=1';
+			}
+			return src;
+		}
+
+		function getAiCloseSource() {
+			const path = String((window.location.pathname || '').split('/').pop() || '').toLowerCase();
+			const hash = String(window.location.hash || '').toLowerCase();
+			const body = document.body;
+			if (
+				(body && body.classList.contains('home-notebook-page')) ||
+				path === '' ||
+				path === 'index.html'
+			) {
+				return { kind: 'home', mode: 'book', pages: 0 };
+			}
+			if (
+				(body && body.classList.contains('contact-sketchbook-page')) ||
+				path === 'contact.html'
+			) {
+				return { kind: 'contact', mode: 'pages', pages: 1 };
+			}
+			if (
+				(body && body.classList.contains('about-sketchbook-page')) ||
+				path === 'about.html' ||
+				hash === '#cv' ||
+				hash === '#udmaerkelser'
+			) {
+				return { kind: 'about', mode: 'pages', pages: 2 };
+			}
+			return { kind: 'projects', mode: 'pages', pages: 3 };
+		}
+
+		function clearAiCloseLeaves(overlay) {
+			try {
+				overlay.querySelectorAll('.ai-close-leaf').forEach((el) => el.remove());
+			} catch {}
+		}
+
+		function clearAiPcd(overlay) {
+			try {
+				overlay.querySelectorAll('.ai-pcd-turn').forEach((el) => el.remove());
+			} catch {}
+		}
+
+		function aiPcdFrame(extraClass, href, title) {
+			const isRight = /\bai-pcd-frame--right\b/.test(String(extraClass || ''));
+			const left = isRight ? '-50vw' : '0';
+			return `<iframe class="ai-pcd-frame ${extraClass}" src="${aiClosePreviewSrc(href)}" title="${title}" loading="eager" referrerpolicy="no-referrer" tabindex="-1" style="position:absolute;top:0;left:${left};width:100vw;min-width:100vw;height:100%;border:0;background:transparent;pointer-events:none;"></iframe>`;
+		}
+
+		function aiPcdLeatherFlipHtml() {
+			return `
+				<div class="ai-pcd-flip ai-pcd-flip--leather">
+					<div class="ai-pcd-face ai-pcd-face--front">
+						${aiPcdFrame('ai-pcd-frame--right', 'contact.html', 'Kontakt (right last page)')}
+					</div>
+					<div class="ai-pcd-face ai-pcd-face--back ai-pcd-face--leather">
+						<div class="ai-back-title" aria-hidden="true">MIT AI UNIVERS</div>
+					</div>
+				</div>
+			`;
+		}
+
+		function resetAiPcdLayer(layer, source) {
+			if (!layer) return;
+			layer.className = 'ai-pcd-turn';
+			layer.classList.add(
+				source && source.kind === 'about'
+					? 'ai-pcd--from-about'
+					: (source && source.kind === 'contact' ? 'ai-pcd--from-contact' : 'ai-pcd--from-projects')
+			);
+			layer.setAttribute('aria-hidden', 'true');
+		}
+
+		function ensureAiPcdLayer(overlay, source) {
+			if (!overlay || !source) return null;
+			const existing = overlay.querySelector('.ai-pcd-turn');
+			if (existing && existing.dataset.kind === source.kind && existing.dataset.v === 'first-flip-right') {
+				resetAiPcdLayer(existing, source);
+				return existing;
+			}
+			clearAiPcd(overlay);
+			const layer = document.createElement('div');
+			layer.dataset.kind = source.kind;
+			layer.dataset.v = 'first-flip-right';
+			resetAiPcdLayer(layer, source);
+			if (source.kind === 'projects') {
+				layer.innerHTML = `
+					<div class="ai-pcd-under ai-pcd-under--left">
+						${aiPcdFrame('ai-pcd-frame--left ai-pcd-under-frame ai-pcd-under-left--projects', 'projects.html', 'Projekter (left under)')}
+						${aiPcdFrame('ai-pcd-frame--left ai-pcd-under-frame ai-pcd-under-left--about', 'about.html', 'Om mig (left under)')}
+						${aiPcdFrame('ai-pcd-frame--left ai-pcd-under-frame ai-pcd-under-left--contact', 'contact.html', 'Kontakt (left under)')}
+					</div>
+					<div class="ai-pcd-under ai-pcd-under--right">
+						${aiPcdFrame('ai-pcd-frame--right ai-pcd-under-frame ai-pcd-under-right--projects', 'projects.html', 'Projekter (right under)')}
+						${aiPcdFrame('ai-pcd-frame--right ai-pcd-under-frame ai-pcd-under-right--about', 'about.html', 'Om mig (right under)')}
+						${aiPcdFrame('ai-pcd-frame--right ai-pcd-under-frame ai-pcd-under-right--contact', 'contact.html', 'Kontakt (right under)')}
+					</div>
+					<div class="ai-pcd-flip ai-pcd-flip--1">
+						<div class="ai-pcd-face ai-pcd-face--front">
+							${aiPcdFrame('ai-pcd-frame--right ai-pcd-flip1-front--projects', 'projects.html', 'Projekter (right turning page)')}
+							${aiPcdFrame('ai-pcd-frame--left ai-pcd-flip1-front--about', 'about.html', 'Om mig (left turning page after mid)')}
+						</div>
+						<div class="ai-pcd-face ai-pcd-face--back">
+							${aiPcdFrame('ai-pcd-frame--left', 'about.html', 'Om mig (left on backface)')}
+						</div>
+					</div>
+					<div class="ai-pcd-flip ai-pcd-flip--2">
+						<div class="ai-pcd-face ai-pcd-face--front">
+							${aiPcdFrame('ai-pcd-frame--right ai-pcd-flip2-front--about', 'about.html', 'Om mig (right turning page)')}
+							${aiPcdFrame('ai-pcd-frame--left ai-pcd-flip2-front--contact', 'contact.html', 'Kontakt (left turning page after mid)')}
+						</div>
+						<div class="ai-pcd-face ai-pcd-face--back">
+							${aiPcdFrame('ai-pcd-frame--left', 'contact.html', 'Kontakt (left on backface)')}
+						</div>
+					</div>
+					${aiPcdLeatherFlipHtml()}
+				`;
+			} else if (source.kind === 'about') {
+				layer.innerHTML = `
+					<div class="ai-pcd-under ai-pcd-under--left">
+						${aiPcdFrame('ai-pcd-frame--left ai-pcd-under-frame ai-pcd-under-left--about', 'about.html', 'Om mig (left under)')}
+						${aiPcdFrame('ai-pcd-frame--left ai-pcd-under-frame ai-pcd-under-left--contact', 'contact.html', 'Kontakt (left under)')}
+					</div>
+					<div class="ai-pcd-under ai-pcd-under--right">
+						${aiPcdFrame('ai-pcd-frame--right ai-pcd-under-frame ai-pcd-under-right--about', 'about.html', 'Om mig (right under)')}
+						${aiPcdFrame('ai-pcd-frame--right ai-pcd-under-frame ai-pcd-under-right--contact', 'contact.html', 'Kontakt (right under)')}
+					</div>
+					<div class="ai-pcd-flip ai-pcd-flip--1">
+						<div class="ai-pcd-face ai-pcd-face--front">
+							${aiPcdFrame('ai-pcd-frame--right ai-pcd-flip2-front--about', 'about.html', 'Om mig (right turning page)')}
+							${aiPcdFrame('ai-pcd-frame--left ai-pcd-flip2-front--contact', 'contact.html', 'Kontakt (left turning page after mid)')}
+						</div>
+						<div class="ai-pcd-face ai-pcd-face--back">
+							${aiPcdFrame('ai-pcd-frame--left', 'contact.html', 'Kontakt (left on backface)')}
+						</div>
+					</div>
+					${aiPcdLeatherFlipHtml()}
+				`;
+			} else if (source.kind === 'contact') {
+				layer.innerHTML = `
+					<div class="ai-pcd-under ai-pcd-under--left">
+						${aiPcdFrame('ai-pcd-frame--left ai-pcd-under-frame ai-pcd-under-left--contact', 'contact.html', 'Kontakt (left under)')}
+					</div>
+					<div class="ai-pcd-under ai-pcd-under--right">
+						${aiPcdFrame('ai-pcd-frame--right ai-pcd-under-frame ai-pcd-under-right--contact', 'contact.html', 'Kontakt (right under)')}
+					</div>
+					${aiPcdLeatherFlipHtml()}
+				`;
+			} else {
+				return null;
+			}
+			overlay.appendChild(layer);
+			return layer;
+		}
+
+		function watchAiPcdSeam(layer, flipEl, midClass, flipMs) {
+			if (!layer || !flipEl) return;
+			let scheduled = false;
+			function scheduleFromAnimationStart() {
+				if (scheduled) return;
+				scheduled = true;
+				let done = false;
+				const startAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+				const fallbackMs = Math.round(flipMs * 0.5) + 40;
+				function tick() {
+					if (done) return;
+					try {
+						const ang = angleDegFromMatrix3d(window.getComputedStyle(flipEl).transform);
+						if (typeof ang === 'number' && ang <= -90) {
+							layer.classList.add(midClass);
+							done = true;
+							return;
+						}
+					} catch {}
+					const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+					if ((now - startAt) >= fallbackMs) {
+						layer.classList.add(midClass);
+						done = true;
+						return;
+					}
+					requestAnimationFrame(tick);
+				}
+				requestAnimationFrame(tick);
+			}
+			try {
+				flipEl.addEventListener('animationstart', scheduleFromAnimationStart, { once: true });
+			} catch {}
+			window.setTimeout(() => { if (!scheduled) scheduleFromAnimationStart(); }, 140);
+		}
+
+		function playAiPcdThen(overlay, source, flipMs, settleMs, done) {
+			const layer = overlay && overlay.querySelector('.ai-pcd-turn');
+			if (!layer) {
+				try { done && done(); } catch {}
+				return;
+			}
+			try {
+				layer.style.setProperty('--pageFlipMs', `${flipMs}ms`);
+			} catch {}
+			let finished = false;
+			const finish = () => {
+				if (finished) return;
+				finished = true;
+				window.setTimeout(() => {
+					try { done && done(); } catch {}
+				}, settleMs);
+			};
+			const contentFlips = Array.from(layer.querySelectorAll('.ai-pcd-flip--1, .ai-pcd-flip--2'));
+			const leatherFlip = layer.querySelector('.ai-pcd-flip--leather');
+			if (!contentFlips.length && !leatherFlip) {
+				finish();
+				return;
+			}
+
+			const clearStage = () => {
+				layer.classList.remove(
+					'stage-1', 'stage-2', 'stage-leather',
+					'is-turning-1', 'is-turning-2', 'is-turning-leather',
+					'swap1-mid', 'swap2-mid', 'swap-leather-mid',
+					'swap1-under-right', 'swap2-under-right', 'swap-leather-right'
+				);
+			};
+
+			const playOne = (flipEl, stageClass, turningClass, underClass, midClass, next) => {
+				clearStage();
+				layer.classList.add(stageClass, turningClass, underClass);
+				watchAiPcdSeam(layer, flipEl, midClass, flipMs);
+				let nextDone = false;
+				const go = () => {
+					if (nextDone) return;
+					nextDone = true;
+					try { flipEl.removeEventListener('animationend', onEnd); } catch {}
+					next();
+				};
+				const onEnd = (e) => {
+					if (!e || e.target !== flipEl) return;
+					if (e.animationName && e.animationName !== 'pageRightToLeft') return;
+					go();
+				};
+				try { flipEl.addEventListener('animationend', onEnd); } catch {}
+				window.setTimeout(go, flipMs + 200);
+			};
+
+			const run = (i) => {
+				if (i < contentFlips.length) {
+					const n = i + 1;
+					playOne(
+						contentFlips[i],
+						`stage-${n}`,
+						`is-turning-${n}`,
+						`swap${n}-under-right`,
+						`swap${n}-mid`,
+						() => run(i + 1)
+					);
+					return;
+				}
+				if (leatherFlip) {
+					playOne(
+						leatherFlip,
+						'stage-leather',
+						'is-turning-leather',
+						'swap-leather-right',
+						'swap-leather-mid',
+						finish
+					);
+					return;
+				}
+				finish();
+			};
+			run(0);
+		}
+
+		function playLeatherOnPcd(pcdOverlay, flipMs, settleMs, done) {
+			if (!pcdOverlay) {
+				try { done && done(); } catch {}
+				return;
+			}
+			const host = pcdOverlay.querySelector('.pcd-turn') || pcdOverlay;
+			let leather = pcdOverlay.querySelector('.pcd-flip--leather');
+			if (!leather) {
+				leather = document.createElement('div');
+				leather.className = 'pcd-flip pcd-flip--leather';
+				leather.innerHTML = `
+					<div class="pcd-flip-face pcd-flip-face--front">
+						<iframe class="pcd-frame pcd-frame--right" src="contact.html?preview=1" title="Kontakt (right last page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+					</div>
+					<div class="pcd-flip-face pcd-flip-face--back ai-pcd-face--leather">
+						<div class="ai-back-title" aria-hidden="true">MIT AI UNIVERS</div>
+					</div>
+				`;
+				host.appendChild(leather);
+			}
+			try {
+				pcdOverlay.classList.remove(
+					'stage-1', 'stage-2', 'is-turning-1', 'is-turning-2',
+					'swap1-mid', 'swap2-mid', 'swap1-under-right', 'swap2-under-right'
+				);
+				pcdOverlay.classList.add('stage-leather', 'is-turning-leather', 'swap-leather-right');
+			} catch {}
+			watchAiPcdSeam(pcdOverlay, leather, 'swap-leather-mid', flipMs);
+			let finished = false;
+			const finish = () => {
+				if (finished) return;
+				finished = true;
+				window.setTimeout(() => {
+					try {
+						pcdOverlay.classList.remove('is-ready', 'is-turning-leather', 'stage-leather', 'swap-leather-right', 'swap-leather-mid');
+						pcdOverlay.classList.add('is-preloading');
+						pcdOverlay.style.opacity = '';
+					} catch {}
+					try {
+						document.body.classList.remove('projects-contact-double-active', 'projects-contact-flipping');
+					} catch {}
+					try { done && done(); } catch {}
+				}, settleMs);
+			};
+			try {
+				leather.addEventListener('animationend', (e) => {
+					if (!e || e.target !== leather) return;
+					if (e.animationName && e.animationName !== 'pageRightToLeft') return;
+					finish();
+				});
+			} catch {}
+			window.setTimeout(finish, flipMs + 200);
+		}
 		// Even faster close (book appears sooner)
 		const CLOSE_MS = 800;
+		const CLOSE_MS_DESKTOP = 2000;
+		const SHRINK_MS_DESKTOP = 520;
+		const HOME_TURN_MS = 2000;
+		const LEAF_MS = 1400;
+		const LEAF_SETTLE_MS = 240;
+		const LEAF_STAGGER = LEAF_MS + LEAF_SETTLE_MS;
+		const PCD_FLIP_MS = 1800;
+		const PCD_SETTLE_MS = 200;
 		const SLIDE_MS = 520;
 		const MORPH_TEXT = 'MIT AI UNIVERS';
 		// Slightly slower, still one letter at a time (non left-to-right).
 		const MORPH_OPTS = { stepMs: 55, easeInOut: true, flickerSteps: 3, flickerMs: 16, orderMode: 'random' };
+		const MORPH_OPTS_DESKTOP = { stepMs: 34, easeInOut: true, flickerSteps: 2, flickerMs: 12, orderMode: 'random' };
 		const RISE_MS = 900;
+		const RISE_MS_DESKTOP = 560;
 		const GLITCH_MS = 460;
+		const GLITCH_MS_DESKTOP = 680;
 		const NAV_MS = 140;
 		const BASE_SHIFT_Y = 0;
 		const HANDOFF_MS = 240;
@@ -2185,7 +4362,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				fr.style.position = 'fixed';
 				fr.style.inset = '0';
 				fr.style.width = '100vw';
-				fr.style.height = '100vh';
+				fr.style.height = (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('height', '100dvh')) ? '100dvh' : '100vh';
 				fr.style.border = '0';
 				fr.style.opacity = '0';
 				fr.style.pointerEvents = 'none';
@@ -2283,7 +4460,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							finish();
 						};
 						try { titleEl.addEventListener('transitionend', onEnd, { once: true }); } catch {}
-						window.setTimeout(finish, RISE_MS + 160);
+						window.setTimeout(finish, (isDesktopAiClose() ? RISE_MS_DESKTOP : RISE_MS) + 120);
 					});
 				});
 			});
@@ -2299,28 +4476,210 @@ document.addEventListener('DOMContentLoaded', function() {
 						<main class="home-notebook" role="main" aria-label="Closing book transition">
 							<div class="home-notebook__pages" aria-hidden="true"></div>
 							<div class="home-notebook__cover" aria-hidden="true">
-								<div class="home-notebook__cover-back" aria-hidden="true"></div>
+								<div class="home-notebook__cover-front" aria-hidden="true">
+									<h1 class="home-notebook__title home-notebook__title--image" data-text="Mikkels notesbog"><span class="home-notebook__title-text">Mikkels notesbog</span><img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" width="1536" height="1024" decoding="async"></h1>
+								</div>
+								<div class="home-notebook__cover-back" aria-hidden="true"><div class="ai-back-title" aria-hidden="true">MIT AI UNIVERS</div></div>
 							</div>
 							<div class="home-notebook__leaf-fan" aria-hidden="true"></div>
 							<div class="home-notebook__spread" aria-hidden="true"></div>
-							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
 						</main>
 					</div>
 					<div class="ai-close ai-close--closed" aria-hidden="true">
 						<main class="home-notebook" role="main" aria-label="Closed book transition">
 							<div class="home-notebook__pages" aria-hidden="true"></div>
 							<div class="home-notebook__cover" aria-hidden="true">
+								<div class="home-notebook__cover-front" aria-hidden="true"></div>
 								<div class="home-notebook__cover-back" aria-hidden="true"></div>
 							</div>
 							<div class="home-notebook__leaf-fan" aria-hidden="true"></div>
-							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
+							<h1 class="home-notebook__title" data-text="Mikkels notesbog"><span class="home-notebook__title-text">Mikkels notesbog</span><img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" width="1536" height="1024" decoding="async"></h1>
 						</main>
 						<div class="ai-back-title" aria-hidden="true">MIT AI UNIVERS</div>
 					</div>
 				`;
 				document.body.appendChild(overlay);
 			}
+			try {
+				const openedCover = overlay.querySelector('.ai-close--opened .home-notebook__cover');
+				if (openedCover && !openedCover.querySelector('.home-notebook__cover-front')) {
+					const front = document.createElement('div');
+					front.className = 'home-notebook__cover-front';
+					front.setAttribute('aria-hidden', 'true');
+					const existingTitle = overlay.querySelector('.ai-close--opened .home-notebook__title');
+					if (existingTitle) {
+						existingTitle.classList.add('home-notebook__title--image');
+						front.appendChild(existingTitle);
+					}
+					openedCover.insertBefore(front, openedCover.firstChild);
+				}
+			} catch {}
+			try {
+				const back = overlay.querySelector('.ai-close--opened .home-notebook__cover-back');
+				if (back && !back.querySelector('.ai-back-title')) {
+					const t = document.createElement('div');
+					t.className = 'ai-back-title';
+					t.setAttribute('aria-hidden', 'true');
+					t.textContent = 'MIT AI UNIVERS';
+					back.appendChild(t);
+				}
+			} catch {}
 			return overlay;
+		}
+
+		function ensureOpenedBackTitle(overlay) {
+			if (!overlay) return null;
+			const back = overlay.querySelector('.ai-close--opened .home-notebook__cover-back');
+			if (!back) return overlay.querySelector('.ai-close--closed .ai-back-title');
+			let title = back.querySelector('.ai-back-title');
+			if (!title) {
+				title = overlay.querySelector('.ai-close--opened .ai-back-title');
+				if (title) back.appendChild(title);
+			}
+			if (!title) {
+				title = document.createElement('div');
+				title.className = 'ai-back-title';
+				title.setAttribute('aria-hidden', 'true');
+				back.appendChild(title);
+			}
+			title.classList.remove('is-matrix', 'is-rising');
+			title.textContent = 'MIT AI UNIVERS';
+			try {
+				title.style.removeProperty('--aiTitleShiftX');
+				title.style.removeProperty('--aiTitleShiftY');
+				title.style.removeProperty('--aiTitleScale');
+				title.style.left = '';
+				title.style.top = '';
+				title.style.transform = '';
+				title.style.position = '';
+			} catch {}
+			return title;
+		}
+
+		function ensureHomeBookThickness(overlay) {
+			if (!overlay) return;
+			const book = overlay.querySelector('.ai-close--opened .home-notebook');
+			const cover = overlay.querySelector('.ai-close--opened .home-notebook__cover');
+			if (!cover) return;
+			const addPart = (parent, className, where) => {
+				if (!parent || parent.querySelector('.' + className)) return null;
+				const el = document.createElement('div');
+				el.className = className;
+				el.setAttribute('aria-hidden', 'true');
+				if (where === 'start') parent.insertBefore(el, parent.firstChild);
+				else parent.appendChild(el);
+				return el;
+			};
+			if (book) addPart(book, 'home-notebook__book-shadow', 'start');
+			addPart(cover, 'home-notebook__page-block', 'start');
+			addPart(cover, 'home-notebook__spine');
+			addPart(cover, 'home-notebook__fore-edge');
+			addPart(cover, 'home-notebook__head-edge');
+			addPart(cover, 'home-notebook__tail-edge');
+			const front = cover.querySelector('.home-notebook__cover-front');
+			if (front) addPart(front, 'home-notebook__spine-band');
+			if (!cover.querySelector('.home-notebook__page-stack')) {
+				const stack = document.createElement('div');
+				stack.className = 'home-notebook__page-stack';
+				stack.setAttribute('aria-hidden', 'true');
+				for (let i = 0; i < 10; i++) {
+					const leaf = document.createElement('div');
+					leaf.className = 'home-notebook__page-leaf';
+					leaf.setAttribute('aria-hidden', 'true');
+					leaf.style.setProperty('--i', String(i));
+					stack.appendChild(leaf);
+				}
+				cover.insertBefore(stack, cover.firstChild);
+			}
+		}
+
+		function promoteOpenedBackTitle(overlay, titleEl) {
+			const host = overlay && overlay.querySelector('.ai-close--closed');
+			if (!host || !titleEl) return titleEl;
+			const spare = host.querySelector(':scope > .ai-back-title');
+			if (spare && spare !== titleEl) spare.remove();
+			host.appendChild(titleEl);
+			return titleEl;
+		}
+
+		function stopMatrixRain(overlay) {
+			try {
+				if (overlay && overlay._mskMatrixRainStop) overlay._mskMatrixRainStop();
+			} catch {}
+		}
+
+		function spawnMatrixRain(overlay) {
+			if (!overlay) return null;
+			stopMatrixRain(overlay);
+			let canvas = overlay.querySelector('canvas.ai-matrix-rain');
+			if (!canvas) {
+				canvas = document.createElement('canvas');
+				canvas.className = 'ai-matrix-rain';
+				canvas.setAttribute('aria-hidden', 'true');
+				overlay.appendChild(canvas);
+			}
+			const ctx = canvas.getContext('2d');
+			if (!ctx) return canvas;
+			const glyphs = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789';
+			const fit = () => {
+				const dpr = Math.min(window.devicePixelRatio || 1, 2);
+				const w = Math.max(1, overlay.clientWidth || window.innerWidth);
+				const h = Math.max(1, overlay.clientHeight || window.innerHeight);
+				canvas.width = Math.round(w * dpr);
+				canvas.height = Math.round(h * dpr);
+				canvas.style.width = w + 'px';
+				canvas.style.height = h + 'px';
+				ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+				return { w, h };
+			};
+			let { w, h } = fit();
+			const fontSize = Math.max(14, Math.round(w / 72));
+			const colCount = Math.ceil(w / fontSize);
+			const drops = Array.from({ length: colCount }, () => (Math.random() * h) / fontSize);
+			const trails = Array.from({ length: colCount }, () => []);
+			let running = true;
+			const tick = () => {
+				if (!running) return;
+				if (!overlay.classList.contains('is-raining') && !overlay.classList.contains('is-glitching')) {
+					running = false;
+					return;
+				}
+				ctx.clearRect(0, 0, w, h);
+				ctx.font = `700 ${fontSize}px "Courier New", "Lucida Console", monospace`;
+				ctx.textBaseline = 'top';
+				for (let i = 0; i < colCount; i++) {
+					const ch = glyphs.charAt((Math.random() * glyphs.length) | 0);
+					const trail = trails[i];
+					trail.unshift(ch);
+					if (trail.length > 16) trail.length = 16;
+					const x = i * fontSize;
+					const headY = drops[i] * fontSize;
+					for (let t = 0; t < trail.length; t++) {
+						const y = headY - t * fontSize;
+						if (y < -fontSize || y > h) continue;
+						const a = t === 0 ? 1 : Math.max(0.08, 1 - t / 15);
+						if (t === 0) {
+							ctx.shadowColor = '#66ff99';
+							ctx.shadowBlur = 14;
+							ctx.fillStyle = '#e8ffe8';
+						} else {
+							ctx.shadowBlur = 0;
+							ctx.fillStyle = `rgba(0,255,102,${a})`;
+						}
+						ctx.fillText(trail[t], x, y);
+					}
+					drops[i] += 0.85 + (i % 5) * 0.08;
+					if (headY > h && Math.random() > 0.92) drops[i] = -Math.random() * 12;
+				}
+				overlay._mskMatrixRainRaf = window.requestAnimationFrame(tick);
+			};
+			overlay._mskMatrixRainStop = () => {
+				running = false;
+				try { window.cancelAnimationFrame(overlay._mskMatrixRainRaf); } catch {}
+				try { ctx.clearRect(0, 0, w, h); } catch {}
+			};
+			tick();
+			return canvas;
 		}
 
 		// Pre-warm the overlay so the first click is instant.
@@ -2329,9 +4688,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (didPrewarm) return;
 			didPrewarm = true;
 			try {
-				// Only create the overlay container (fast).
-				// Heavy iframes are created lazily later to keep animations smooth.
-				ensureOverlay();
+				const overlay = ensureOverlay();
+				if (isDesktopAiClose()) {
+					const source = getAiCloseSource();
+					if (source && source.mode === 'pages') {
+						ensureAiPcdLayer(overlay, source);
+					}
+				}
 			} catch {}
 		}
 
@@ -2345,6 +4708,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 
 			const overlay = ensureOverlay();
+			const desktop = isDesktopAiClose();
+			const source = getAiCloseSource();
+			const extraLeaves = desktop && source.mode === 'pages' ? Math.max(0, source.pages - 1) : 0;
+			const isHomeTurn = desktop && source.mode === 'book';
+			const useNativeProjectsPcd = desktop && source.kind === 'projects' && typeof window.mskPlayProjectsContactPages === 'function';
+			const pcdFlips = !desktop || source.mode !== 'pages' || useNativeProjectsPcd
+				? 0
+				: (source.kind === 'about' ? 2 : 1);
+			const pagesMs = pcdFlips ? (pcdFlips * PCD_FLIP_MS + PCD_SETTLE_MS) : 0;
+			const closeMs = !desktop
+				? CLOSE_MS
+				: (isHomeTurn ? HOME_TURN_MS : (pagesMs + CLOSE_MS_DESKTOP));
+			const shrinkMs = desktop && !isHomeTurn ? SHRINK_MS_DESKTOP : 0;
 			// Lazy-create these later (they're heavy).
 			let measureFrame = null;
 			let revealFrame = null;
@@ -2354,14 +4730,65 @@ document.addEventListener('DOMContentLoaded', function() {
 				overlay.classList.remove(
 					'is-ready',
 					'is-closing',
+					'ai-show-back',
+					'ai-cover-shut',
+					'is-shrinking',
 					'show-closed',
 					'is-sliding',
 					'is-glitching',
+					'is-raining',
 					'book-gone',
 					'reveal-ai',
-					'handoff'
+					'handoff',
+					'ai-close--match-home',
+					'ai-close--from-home',
+					'ai-close--from-pages',
+					'ai-pcd-active'
 				);
+				stopMatrixRain(overlay);
+				clearAiCloseLeaves(overlay);
 			} catch {}
+			if (desktop) {
+				try { overlay.classList.add('ai-close--match-home'); } catch {}
+				try { overlay.classList.add(isHomeTurn ? 'ai-close--from-home' : 'ai-close--from-pages'); } catch {}
+				try { overlay.style.setProperty('--aiExtraLeaves', String(extraLeaves)); } catch {}
+				try { overlay.style.setProperty('--aiCoverDelay', '0ms'); } catch {}
+				if (isHomeTurn) {
+					try { overlay.style.setProperty('--aiHomeTurnMs', `${HOME_TURN_MS}ms`); } catch {}
+				}
+				try { ensureOpenedBackTitle(overlay); } catch {}
+				if (isHomeTurn) {
+					try { ensureHomeBookThickness(overlay); } catch {}
+				}
+				if (!isHomeTurn) {
+					try {
+						overlay.querySelectorAll('iframe.ai-close-page-frame').forEach((el) => el.remove());
+						const currentSrc = aiClosePreviewSrc(window.location.href);
+						const putFrame = (host, href, opts) => {
+							if (!host) return null;
+							if (!(opts && opts.allowMany) && host.querySelector('iframe.ai-close-page-frame')) return null;
+							const src = aiClosePreviewSrc(href);
+							if (!src) return null;
+							const fr = document.createElement('iframe');
+							fr.className = 'ai-close-page-frame';
+							if (opts && opts.className) fr.classList.add(opts.className);
+							fr.src = src;
+							fr.title = 'Notebook page';
+							fr.tabIndex = -1;
+							fr.setAttribute('aria-hidden', 'true');
+							if (opts && opts.active) fr.classList.add('is-under-active');
+							host.appendChild(fr);
+							return fr;
+						};
+						const spread = overlay.querySelector('.ai-close--opened .home-notebook__spread');
+						const coverFront = overlay.querySelector('.ai-close--opened .home-notebook__cover-front');
+						const endSrc = pcdFlips ? 'contact.html' : currentSrc;
+						putFrame(spread, endSrc, { active: true });
+						putFrame(coverFront, endSrc);
+						if (pcdFlips) ensureAiPcdLayer(overlay, source);
+					} catch {}
+				}
+			}
 
 			body.style.overflow = 'hidden';
 
@@ -2375,155 +4802,245 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			// IMPORTANT: show the overlay first, THEN hide the page.
 			// Otherwise there's a split-second where everything is hidden and looks blank.
-			overlay.classList.add('is-ready');
-			requestAnimationFrame(() => {
-				body.classList.add('ai-close-active');
-				// Start the close immediately (keeps book motion smooth).
-				requestAnimationFrame(() => overlay.classList.add('is-closing'));
-			});
+			if (!useNativeProjectsPcd) {
+				overlay.classList.add('is-ready');
+				if (pcdFlips) overlay.classList.add('ai-pcd-active');
+				requestAnimationFrame(() => {
+					body.classList.add('ai-close-active');
+					requestAnimationFrame(() => {
+						if (!pcdFlips) overlay.classList.add('is-closing');
+					});
+				});
+			}
 
-			// Switch to closed book and slide it to center.
-			window.setTimeout(() => {
+			const beginCenteredBookSequence = () => {
+				try {
+					let titleEl = desktop
+						? (overlay.querySelector('.ai-close--opened .home-notebook__cover-back .ai-back-title')
+							|| overlay.querySelector('.ai-close--closed .ai-back-title'))
+						: overlay.querySelector('.ai-close--closed .ai-back-title');
+					if (!titleEl) return;
+					window.setTimeout(() => {
+						try {
+							// Styling hooks (do NOT change font globally; per-letter spans handle that).
+							titleEl.classList.add('is-matrix');
+							if (desktop) {
+								try {
+									overlay.classList.add('is-raining');
+									spawnMatrixRain(overlay);
+								} catch {}
+							}
+							// One letter at a time.
+							matrixMorphText(titleEl, MORPH_TEXT, {
+								...(desktop ? MORPH_OPTS_DESKTOP : MORPH_OPTS),
+								lockedClass: 'matrix-char',
+								dropClass: 'matrix-drop',
+								onComplete: () => {
+									// 1) As soon as the text is fully morphed: make the BOOK glitch away immediately.
+									try {
+										if (desktop) titleEl = promoteOpenedBackTitle(overlay, titleEl) || titleEl;
+										overlay.classList.add('is-glitching');
+									} catch {}
+
+									// 2) Only AFTER the book is gone: move the text up to the subpage headline position.
+									const afterBookGone = () => {
+										try { titleEl.classList.add('is-rising'); } catch {}
+										// Ensure starting shift is known for the delta calc.
+										try {
+											titleEl.style.setProperty('--aiTitleShiftX', `0px`);
+											titleEl.style.setProperty('--aiTitleShiftY', `${BASE_SHIFT_Y}px`);
+											titleEl.style.setProperty('--aiTitleScale', `1`);
+										} catch {}
+
+										measureFrame = measureFrame || ensureMeasureFrame(overlay);
+										riseTitleToAiHeadline(titleEl, measureFrame, () => {
+											// 3) Reveal the AI page behind, then hand off the title into the infobox headline.
+											try { overlay.classList.add('reveal-ai'); } catch {}
+											revealFrame = revealFrame || ensureRevealFrame(overlay);
+
+											// Make the infobox headline match the EXACT end position/size of the moving title.
+											try {
+											const r = getMatrixTextBounds(titleEl) || titleEl.getBoundingClientRect();
+											const snapped = {
+												x: Math.round(r.x),
+												y: Math.round(r.y),
+												w: Math.round(r.w ?? r.width),
+												h: Math.round(r.h ?? r.height)
+											};
+												const payload = {
+													__msk: 'ai_reveal_set_headline_rect',
+												rect: snapped,
+													vw: mskViewportSize().w,
+													vh: mskViewportSize().h
+												};
+											revealFrame && revealFrame.contentWindow && revealFrame.contentWindow.postMessage(payload, '*');
+											} catch {}
+
+										const waitRectAppliedThenHandoff = () => {
+											let doneOnce = false;
+											const finish = () => {
+												if (doneOnce) return;
+												doneOnce = true;
+												try { window.removeEventListener('message', onMsg); } catch {}
+												// show reveal headline, then fade out overlay title in the next frame
+												try { revealFrame && revealFrame.contentWindow && revealFrame.contentWindow.postMessage({ __msk: 'ai_reveal_show_headline' }, '*'); } catch {}
+												requestAnimationFrame(() => {
+													try { overlay.classList.add('handoff'); } catch {}
+												});
+											};
+											const onMsg = (e) => {
+												const d = e && e.data;
+												if (!d || typeof d !== 'object') return;
+												if (d.__msk !== 'ai_reveal_rect_applied') return;
+												finish();
+											};
+											window.addEventListener('message', onMsg);
+											window.setTimeout(finish, 220); // fallback if ack is missed
+										};
+
+										const trySetRect = () => {
+											try {
+												const r = getMatrixTextBounds(titleEl) || titleEl.getBoundingClientRect();
+												const payload = {
+													__msk: 'ai_reveal_set_headline_rect',
+													rect: { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.w ?? r.width), h: Math.round(r.h ?? r.height) },
+													vw: mskViewportSize().w,
+													vh: mskViewportSize().h
+												};
+												revealFrame && revealFrame.contentWindow && revealFrame.contentWindow.postMessage(payload, '*');
+											} catch {}
+										};
+
+										waitRectAppliedThenHandoff();
+										trySetRect();
+
+											try {
+												if (revealFrame) {
+												// If not loaded yet, wait once then re-send rect.
+												revealFrame.addEventListener('load', () => trySetRect(), { once: true });
+												}
+											} catch {}
+
+											// Tell destination page: headline is already aligned on-screen.
+											try { window.sessionStorage.setItem('ai_universe_aligned', '1'); } catch {}
+
+											// Navigate shortly after handoff.
+											window.setTimeout(() => {
+												window.location.href = targetHref;
+											}, HANDOFF_MS + NAV_MS);
+										});
+									};
+
+									// Prefer real animation end (no guessing). Fallback to timeout.
+									try {
+										const bookEl = overlay.querySelector(desktop
+											? '.ai-close--opened .home-notebook'
+											: '.ai-close--closed .home-notebook');
+										const glitchMs = desktop ? GLITCH_MS_DESKTOP : GLITCH_MS;
+										if (bookEl) {
+											const onEnd = (e) => {
+												if (!e || (e.animationName !== 'matrixGlitchAway' && e.animationName !== 'matrixDigitalDissolve')) return;
+												try { overlay.classList.add('book-gone'); } catch {}
+												try { bookEl.removeEventListener('animationend', onEnd); } catch {}
+												afterBookGone();
+											};
+											bookEl.addEventListener('animationend', onEnd);
+											// Hard fallback in case animationend doesn't fire.
+											window.setTimeout(() => {
+												try { overlay.classList.add('book-gone'); } catch {}
+												try { bookEl.removeEventListener('animationend', onEnd); } catch {}
+												afterBookGone();
+											}, glitchMs + 80);
+											return;
+										}
+									} catch {}
+
+									window.setTimeout(afterBookGone, (desktop ? GLITCH_MS_DESKTOP : GLITCH_MS) + 80);
+								}
+							});
+						} catch {}
+					}, desktop ? 0 : Math.max(0, SLIDE_MS));
+				} catch {}
+			};
+
+			let coverClosedDone = false;
+			const afterCoverClosed = () => {
+				if (coverClosedDone) return;
+				coverClosedDone = true;
+				if (desktop) {
+					overlay.classList.add('ai-cover-shut');
+					if (isHomeTurn) {
+						overlay.classList.add('show-closed');
+						beginCenteredBookSequence();
+						return;
+					}
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => overlay.classList.add('is-shrinking'));
+					});
+					window.setTimeout(() => {
+						overlay.classList.add('show-closed');
+						beginCenteredBookSequence();
+					}, shrinkMs);
+					return;
+				}
 				overlay.classList.add('show-closed');
 				requestAnimationFrame(() => {
 					overlay.classList.add('is-sliding');
 				});
+				beginCenteredBookSequence();
+			};
 
-				// ONLY when the book is centered: "MIT AI UNIVERS" morphs Matrix-style.
+			const armCoverCloseTimers = () => {
+				const backAt = isHomeTurn
+					? Math.round(HOME_TURN_MS * 0.36)
+					: Math.round(CLOSE_MS_DESKTOP * 0.36);
+				window.setTimeout(() => {
+					try { overlay.classList.add('ai-show-back'); } catch {}
+				}, backAt);
 				try {
-					const titleEl = overlay.querySelector('.ai-close--closed .ai-back-title');
-					if (titleEl) {
-						window.setTimeout(() => {
-							try {
-								// Styling hooks (do NOT change font globally; per-letter spans handle that).
-								titleEl.classList.add('is-matrix');
-								// One letter at a time.
-								matrixMorphText(titleEl, MORPH_TEXT, {
-									...MORPH_OPTS,
-									lockedClass: 'matrix-char',
-									dropClass: 'matrix-drop',
-									onComplete: () => {
-										// 1) As soon as the text is fully morphed: make the BOOK glitch away immediately.
-										try { overlay.classList.add('is-glitching'); } catch {}
-
-										// 2) Only AFTER the book is gone: move the text up to the subpage headline position.
-										const afterBookGone = () => {
-											try { titleEl.classList.add('is-rising'); } catch {}
-											// Ensure starting shift is known for the delta calc.
-											try {
-												titleEl.style.setProperty('--aiTitleShiftX', `0px`);
-												titleEl.style.setProperty('--aiTitleShiftY', `${BASE_SHIFT_Y}px`);
-												titleEl.style.setProperty('--aiTitleScale', `1`);
-											} catch {}
-
-											measureFrame = measureFrame || ensureMeasureFrame(overlay);
-											riseTitleToAiHeadline(titleEl, measureFrame, () => {
-												// 3) Reveal the AI page behind, then hand off the title into the infobox headline.
-												try { overlay.classList.add('reveal-ai'); } catch {}
-												revealFrame = revealFrame || ensureRevealFrame(overlay);
-
-												// Make the infobox headline match the EXACT end position/size of the moving title.
-												try {
-												const r = getMatrixTextBounds(titleEl) || titleEl.getBoundingClientRect();
-												const snapped = {
-													x: Math.round(r.x),
-													y: Math.round(r.y),
-													w: Math.round(r.w ?? r.width),
-													h: Math.round(r.h ?? r.height)
-												};
-													const payload = {
-														__msk: 'ai_reveal_set_headline_rect',
-													rect: snapped,
-														vw: window.innerWidth,
-														vh: window.innerHeight
-													};
-												revealFrame && revealFrame.contentWindow && revealFrame.contentWindow.postMessage(payload, '*');
-												} catch {}
-
-											const waitRectAppliedThenHandoff = () => {
-												let doneOnce = false;
-												const finish = () => {
-													if (doneOnce) return;
-													doneOnce = true;
-													try { window.removeEventListener('message', onMsg); } catch {}
-													// show reveal headline, then fade out overlay title in the next frame
-													try { revealFrame && revealFrame.contentWindow && revealFrame.contentWindow.postMessage({ __msk: 'ai_reveal_show_headline' }, '*'); } catch {}
-													requestAnimationFrame(() => {
-														try { overlay.classList.add('handoff'); } catch {}
-													});
-												};
-												const onMsg = (e) => {
-													const d = e && e.data;
-													if (!d || typeof d !== 'object') return;
-													if (d.__msk !== 'ai_reveal_rect_applied') return;
-													finish();
-												};
-												window.addEventListener('message', onMsg);
-												window.setTimeout(finish, 220); // fallback if ack is missed
-											};
-
-											const trySetRect = () => {
-												try {
-													const r = getMatrixTextBounds(titleEl) || titleEl.getBoundingClientRect();
-													const payload = {
-														__msk: 'ai_reveal_set_headline_rect',
-														rect: { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.w ?? r.width), h: Math.round(r.h ?? r.height) },
-														vw: window.innerWidth,
-														vh: window.innerHeight
-													};
-													revealFrame && revealFrame.contentWindow && revealFrame.contentWindow.postMessage(payload, '*');
-												} catch {}
-											};
-
-											waitRectAppliedThenHandoff();
-											trySetRect();
-
-												try {
-													if (revealFrame) {
-													// If not loaded yet, wait once then re-send rect.
-													revealFrame.addEventListener('load', () => trySetRect(), { once: true });
-													}
-												} catch {}
-
-												// Tell destination page: headline is already aligned on-screen.
-												try { window.sessionStorage.setItem('ai_universe_aligned', '1'); } catch {}
-
-												// Navigate shortly after handoff.
-												window.setTimeout(() => {
-													window.location.href = targetHref;
-												}, HANDOFF_MS + NAV_MS);
-											});
-										};
-
-										// Prefer real animation end (no guessing). Fallback to timeout.
-										try {
-											const bookEl = overlay.querySelector('.ai-close--closed .home-notebook');
-											if (bookEl) {
-												const onEnd = (e) => {
-													if (!e || e.animationName !== 'matrixGlitchAway') return;
-													try { overlay.classList.add('book-gone'); } catch {}
-													try { bookEl.removeEventListener('animationend', onEnd); } catch {}
-													afterBookGone();
-												};
-												bookEl.addEventListener('animationend', onEnd);
-												// Hard fallback in case animationend doesn't fire.
-												window.setTimeout(() => {
-													try { overlay.classList.add('book-gone'); } catch {}
-													try { bookEl.removeEventListener('animationend', onEnd); } catch {}
-													afterBookGone();
-												}, GLITCH_MS + 120);
-												return;
-											}
-										} catch {}
-
-										window.setTimeout(afterBookGone, GLITCH_MS + 120);
-									}
-								});
-							} catch {}
-						}, Math.max(0, SLIDE_MS));
+					const coverEl = overlay.querySelector('.ai-close--opened .home-notebook__cover');
+					const flipName = isHomeTurn ? 'aiBookTurnOver' : 'aiCoverCloseDesktop';
+					if (coverEl) {
+						const onFlipEnd = (e) => {
+							if (!e || e.animationName !== flipName) return;
+							try { coverEl.removeEventListener('animationend', onFlipEnd); } catch {}
+							afterCoverClosed();
+						};
+						coverEl.addEventListener('animationend', onFlipEnd);
 					}
 				} catch {}
-			}, CLOSE_MS);
+				window.setTimeout(afterCoverClosed, (isHomeTurn ? HOME_TURN_MS : CLOSE_MS_DESKTOP) + 32);
+			};
+
+			const beginCoverClose = () => {
+				try {
+					overlay.classList.add('is-closing', 'ai-show-back', 'ai-cover-shut');
+					overlay.classList.remove('ai-pcd-active');
+				} catch {}
+				afterCoverClosed();
+			};
+
+			if (desktop) {
+				if (useNativeProjectsPcd) {
+					window.mskPlayProjectsContactPages((pcdOverlay) => {
+						playLeatherOnPcd(pcdOverlay, PCD_FLIP_MS, PCD_SETTLE_MS, () => {
+							body.classList.add('ai-close-active');
+							overlay.classList.add('is-ready');
+							beginCoverClose();
+						});
+					});
+				} else if (pcdFlips) {
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							playAiPcdThen(overlay, source, PCD_FLIP_MS, PCD_SETTLE_MS, beginCoverClose);
+						});
+					});
+				} else {
+					armCoverCloseTimers();
+				}
+			} else {
+				window.setTimeout(afterCoverClosed, closeMs);
+			}
 		}
 
 		document.addEventListener('click', (e) => {
@@ -2578,8 +5095,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						window.parent && window.parent.postMessage({
 							__msk: 'ai_universe_measure',
 							rect: { x: r.x, y: r.y, w: r.w ?? r.width, h: r.h ?? r.height },
-							vw: window.innerWidth,
-							vh: window.innerHeight
+							vw: mskViewportSize().w,
+							vh: mskViewportSize().h
 						}, '*');
 					} catch {}
 				};
@@ -2597,109 +5114,31 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		} catch {}
 
-		// IMPORTANT: if this is a preview/measure iframe, do not run enter/morph logic.
-		// Previews are used inside transition overlays and should stay static.
+		// Live page: always the same finished look. Matrix morph lives in the book overlay only.
+		// Reload must not change headline color, letters, or replay scramble/enter.
 		try {
 			const qs = new URLSearchParams(window.location.search || '');
-			if (qs.get('preview') === '1') return;
-		} catch {}
-
-		let target = null;
-		try { target = window.sessionStorage.getItem('ai_universe_matrix_headline'); } catch {}
-		if (!target) return;
-
-		let alreadyAligned = false;
-		try { alreadyAligned = window.sessionStorage.getItem('ai_universe_aligned') === '1'; } catch {}
-
-		// Mark aligned state so CSS can keep content stable.
-		if (alreadyAligned) {
-			try { document.body.classList.add('ai-aligned'); } catch {}
-		}
-
-		// Smooth background enter only when coming from the book transition.
-		try {
-			// If headline is already aligned, keep the headline/content stable (no slide-in).
-			if (!alreadyAligned && window.sessionStorage.getItem('ai_universe_enter') === '1') {
-				document.body.classList.add('ai-enter');
-				requestAnimationFrame(() => document.body.classList.add('ai-enter-active'));
-				window.setTimeout(() => {
-					try { document.body.classList.remove('ai-enter', 'ai-enter-active'); } catch {}
-				}, 1400);
-			}
+			if (qs.get('preview') === '1' || qs.get('reveal') === '1') return;
 		} catch {}
 
 		const h1 = document.getElementById('ai-universe-headline') || document.querySelector('.ai-universe-page h1');
-		if (!h1) return;
-
-		// If the transition already moved the title into the correct position,
-		// keep the headline stable (no extra motion/morph).
-		if (alreadyAligned) {
-			h1.classList.add('matrix-headline');
-			renderMatrixHeadline(h1, target);
+		if (h1) {
+			try { h1.classList.add('matrix-headline'); } catch {}
 			try {
-				window.sessionStorage.removeItem('ai_universe_matrix_headline');
-				window.sessionStorage.removeItem('ai_universe_matrix_ts');
-				window.sessionStorage.removeItem('ai_universe_enter');
-				window.sessionStorage.removeItem('ai_universe_aligned');
+				h1.style.transform = '';
+				h1.style.transition = '';
+				h1.style.willChange = '';
 			} catch {}
-			return;
+			renderMatrixHeadline(h1, 'MIT AI UNIVERS');
 		}
 
-		// Animate headline from the book-title position into the box position.
-		try {
-			const raw = window.sessionStorage.getItem('ai_universe_from_rect');
-			if (raw) {
-				window.sessionStorage.removeItem('ai_universe_from_rect');
-				const from = JSON.parse(raw);
-				// Only if viewport seems unchanged.
-				if (from && Math.abs((from.vw || 0) - window.innerWidth) < 3 && Math.abs((from.vh || 0) - window.innerHeight) < 3) {
-					window.scrollTo(0, 0);
-					// Wait for layout (2 frames).
-					requestAnimationFrame(() => {
-						requestAnimationFrame(() => {
-							const end = h1.getBoundingClientRect();
-							const fromCx = (from.x + from.w / 2);
-							const fromCy = (from.y + from.h / 2);
-							const endCx = (end.x + end.width / 2);
-							const endCy = (end.y + end.height / 2);
-							const dx = fromCx - endCx;
-							const dy = fromCy - endCy;
-							const s = Math.max(0.6, Math.min(1.8, (from.w / Math.max(1, end.width))));
-							h1.style.willChange = 'transform';
-							h1.style.transformOrigin = 'center';
-							h1.style.transition = 'transform 1050ms cubic-bezier(.2,.9,.2,1)';
-							h1.style.transform = `translate(${dx}px, ${dy}px) scale(${s})`;
-							requestAnimationFrame(() => {
-								h1.style.transform = 'translate(0px, 0px) scale(1)';
-							});
-						});
-					});
-				}
-			}
-		} catch {}
-
-		// Clear flag so it only runs once.
 		try {
 			window.sessionStorage.removeItem('ai_universe_matrix_headline');
 			window.sessionStorage.removeItem('ai_universe_matrix_ts');
 			window.sessionStorage.removeItem('ai_universe_enter');
 			window.sessionStorage.removeItem('ai_universe_aligned');
+			window.sessionStorage.removeItem('ai_universe_from_rect');
 		} catch {}
-
-		h1.classList.add('matrix-headline');
-		// Start from "noise" so it feels like a continuation.
-		h1.textContent = String(target).replace(/[^\s]/g, '0');
-		// One letter at a time.
-		matrixMorphText(h1, target, {
-			stepMs: 62,
-			easeInOut: true,
-			flickerSteps: 3,
-			flickerMs: 16,
-			charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-			lockedClass: 'matrix-char',
-			orderMode: 'random',
-			dropClass: 'matrix-drop'
-		});
 	})();
 
 	// Kontakt -> Projekter: flip TWO pages fast (hint of "Om mig" in-between),
@@ -3005,7 +5444,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				setOpen(false);
 				return;
 			}
-			const dist = window.innerWidth - e.clientX;
+			const dist = (mskViewportSize().w || window.innerWidth) - e.clientX;
 			if (dist <= OPEN_PX) {
 				if (closeTimer) window.clearTimeout(closeTimer);
 				setOpen(true);
@@ -3046,6 +5485,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						<main class="home-notebook" role="main" aria-label="Projekter transition">
 							<div class="home-notebook__pages" aria-hidden="true"></div>
 							<div class="home-notebook__cover" aria-hidden="true">
+								<div class="home-notebook__cover-front" aria-hidden="true"></div>
+								<h1 class="home-notebook__title" data-text="Mikkels notesbog"><span class="home-notebook__title-text">Mikkels notesbog</span><img class="home-notebook__title-img" src="assets/Mikkels%20notesbog%20.webp" alt="" width="1536" height="1024" decoding="async"></h1>
 								<div class="home-notebook__cover-back" aria-hidden="true"></div>
 							</div>
 							<div class="home-notebook__leaf-fan" aria-hidden="true"></div>
@@ -3059,7 +5500,6 @@ document.addEventListener('DOMContentLoaded', function() {
 									tabindex="-1"
 								></iframe>
 							</div>
-							<h1 class="home-notebook__title" data-text="Mikkels notesbog">Mikkels notesbog</h1>
 						</main>
 					`;
 					document.body.appendChild(overlay);
@@ -3073,8 +5513,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const rightFrame = notebook.querySelector('.home-notebook__projekter-full');
 			const cover = notebook.querySelector('.home-notebook__cover');
+			let coverFront = cover ? cover.querySelector('.home-notebook__cover-front') : null;
+			if (cover && !coverFront) {
+				coverFront = document.createElement('div');
+				coverFront.className = 'home-notebook__cover-front';
+				coverFront.setAttribute('aria-hidden', 'true');
+				cover.insertBefore(coverFront, cover.firstChild);
+			}
+			let coverBack = cover ? cover.querySelector('.home-notebook__cover-back') : null;
+			if (cover && !coverBack) {
+				coverBack = document.createElement('div');
+				coverBack.className = 'home-notebook__cover-back';
+				coverBack.setAttribute('aria-hidden', 'true');
+				cover.appendChild(coverBack);
+			}
+			let clip = coverBack ? coverBack.querySelector('.home-notebook__cover-back-clip') : null;
+			if (coverBack && !clip) {
+				clip = document.createElement('div');
+				clip.className = 'home-notebook__cover-back-clip';
+				coverBack.appendChild(clip);
+			}
+			const title = notebook.querySelector('.home-notebook__title');
+			if (coverFront && title && title.parentElement !== coverFront) {
+				coverFront.appendChild(title);
+			}
+			if (title) title.classList.add('home-notebook__title--image');
 			let leftFrame = notebook.querySelector('.home-notebook__projekter-left');
-			if (cover && !leftFrame) {
+			if (clip && !leftFrame) {
 				leftFrame = document.createElement('iframe');
 				leftFrame.className = 'home-notebook__projekter-left';
 				leftFrame.src = 'projects.html';
@@ -3082,7 +5547,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				leftFrame.loading = 'eager';
 				leftFrame.referrerPolicy = 'no-referrer';
 				leftFrame.tabIndex = -1;
-				cover.appendChild(leftFrame);
+				clip.appendChild(leftFrame);
+			} else if (leftFrame && clip && leftFrame.parentElement !== clip) {
+				clip.appendChild(leftFrame);
 			}
 
 			return { notebook, overlay, rightFrame, leftFrame };
@@ -3101,6 +5568,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				html.home-preview body {
 					margin: 0 !important;
 					overflow: hidden !important;
+					width: 100vw !important;
+					min-width: 100vw !important;
+					height: 100vh !important;
 				}
 			`;
 		}
@@ -3138,10 +5608,78 @@ document.addEventListener('DOMContentLoaded', function() {
 			body.classList.remove('home-opening-layout');
 			body.classList.remove('home-opening-center');
 			body.classList.remove('home-reveal-projects');
+			body.classList.remove('home-cover-open-half');
 
 			// Phase 0: shift the closed book right so the spine sits at screen middle.
 			body.classList.add('home-shift-projects');
 			body.classList.add('home-reveal-projects');
+
+			const SHIFT_MS = 900;
+			let flipMs = 5200;
+			let openMs = 3200;
+			let settleMs = 140;
+			let desktopFine = false;
+			try {
+				desktopFine = !!(
+					window.matchMedia &&
+					window.matchMedia('(hover: hover)').matches &&
+					window.matchMedia('(pointer: fine)').matches &&
+					(mskViewportSize().w || 0) >= 1025
+				);
+				flipMs = getPageFlipMs(5200);
+				if (desktopFine) {
+					const rawHome = (getComputedStyle(body).getPropertyValue('--homeCoverFlipMs') || '').trim();
+					const nHome = parseFloat(rawHome);
+					if (Number.isFinite(nHome) && nHome > 0) {
+						flipMs = /ms$/i.test(rawHome) ? nHome : nHome * 1000;
+					} else {
+						flipMs = 3400;
+					}
+					openMs = flipMs;
+					settleMs = 0;
+				}
+			} catch (_) {}
+
+			const goToProjects = () => {
+				if (desktopFine) {
+					try {
+						history.pushState({ mskHomeOpen: 1 }, '', targetHref);
+						document.title = 'Projects - Mikkel\'s Portfolio';
+					} catch (_) {}
+					body.classList.add('home-opened-projects');
+					body.classList.add('home-projects-live');
+					body.classList.remove('home-opening-center');
+					body.classList.remove('home-shift-projects');
+					body.style.removeProperty('--precenterShiftX');
+					[rightFrame, leftFrame].filter(Boolean).forEach((fr) => {
+						try {
+							fr.removeAttribute('tabindex');
+							const doc = fr.contentDocument;
+							if (!doc) return;
+							doc.querySelectorAll('a[href]').forEach((a) => {
+								a.setAttribute('target', '_top');
+							});
+						} catch (_) {}
+					});
+					return;
+				}
+				try {
+					sessionStorage.setItem('mskHomeOpenToProjects', '1');
+				} catch (_) {}
+				window.location.href = targetHref;
+			};
+
+			if (desktopFine) {
+				try {
+					['projects.html', 'styles.css?v=home-open-title-visible-20260922', 'script.js?v=home-open-title-visible-20260922'].forEach((href) => {
+						if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
+						const link = document.createElement('link');
+						link.rel = 'prefetch';
+						link.href = href;
+						document.head.appendChild(link);
+					});
+				} catch (_) {}
+			}
 
 			// Phase 1: open from the center seam.
 			window.setTimeout(() => {
@@ -3150,21 +5688,39 @@ document.addEventListener('DOMContentLoaded', function() {
 				requestAnimationFrame(() => {
 					body.classList.add('home-opening-projects');
 					body.classList.remove('home-opening-layout');
+					if (desktopFine) {
+						const cover = document.querySelector('.home-notebook__cover');
+						let gone = false;
+						const nav = () => {
+							if (gone) return;
+							gone = true;
+							goToProjects();
+						};
+						if (cover) {
+							cover.addEventListener('animationend', (ev) => {
+								if (!ev || ev.animationName === 'homeCoverOpen') nav();
+							}, { once: true });
+						}
+						window.setTimeout(nav, flipMs + 32);
+						return;
+					}
 				});
-			}, 900);
+			}, SHIFT_MS);
 
-			// Phase 2: once opened, show the full connected spread (two pages).
+			if (desktopFine) return;
+
+			// Phase 2: once the flip is finished, settle the open spread.
 			window.setTimeout(() => {
 				body.classList.add('home-opened-projects');
 				body.classList.remove('home-opening-center');
 				body.classList.remove('home-shift-projects');
 				body.style.removeProperty('--precenterShiftX');
-			}, 900 + 3200);
+			}, SHIFT_MS + openMs);
 
-			// Navigate right after the open settles.
+			// Navigate only after the open animation has completed.
 			window.setTimeout(() => {
-				window.location.href = targetHref;
-			}, 900 + 3200 + 140);
+				goToProjects();
+			}, SHIFT_MS + openMs + settleMs);
 		}
 
 		// Delegate clicks so dynamically created edge-nav links also work.
@@ -3180,8 +5736,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (path.endsWith('/about.html') || path.endsWith('about.html')) return;
 			} catch {}
 
+			// Notebook transition only from home; project/case pages use normal navigation.
+			try {
+				if (!mskIsHomeIndexPage()) return;
+			} catch {}
+
 			// If already on projects, allow default.
-			if ((window.location.pathname || '').toLowerCase().endsWith('/projects.html')) return;
+			if (
+				(window.location.pathname || '').toLowerCase().endsWith('/projects.html') ||
+				document.body.classList.contains('home-projects-live')
+			) return;
 
 			// Allow normal browser behaviors (new tab, etc.)
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -3197,11 +5761,720 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (!prepOneFrame(fr)) fr.addEventListener('load', () => prepOneFrame(fr), { once: true });
 			});
 		}
+
+		window.addEventListener('popstate', () => {
+			if (!document.body.classList.contains('home-projects-live')) return;
+			window.location.reload();
+		});
 	})();
+
+	/**
+	 * Projekter mindmap: fuld genoptegning (ringe, linjer) kun når layout-viewport ændrer sig (innerWidth/innerHeight).
+	 * Ren browser-/DevTools-zoom uden layout-ændring udløser ofte visualViewport.resize med nye getBoundingClientRect()-værdier → ovale/cirkler “hopper” i form (preserveAspectRatio none).
+	 */
+	let mskProjectsMindmapLastLayoutIw = -1;
+	let mskProjectsMindmapLastLayoutIh = -1;
+	/** Pixel-drift der ignoreres (Safari kan flappe 1–2px i innerHeight når UI vises/skjules). */
+	const MSK_PROJECTS_MINDMAP_LAYOUT_EPS_PX = 4;
+	let mskProjectsMindmapRefreshDebounce = null;
+	function mskProjectsMindmapLayoutResizeMeaningful() {
+		try {
+			const { w: iw, h: ih } = mskProjectsLayoutViewportBox();
+			if (mskProjectsMindmapLastLayoutIw < 0) {
+				mskProjectsMindmapLastLayoutIw = iw;
+				mskProjectsMindmapLastLayoutIh = ih;
+				return true;
+			}
+			if (
+				Math.abs(iw - mskProjectsMindmapLastLayoutIw) >= MSK_PROJECTS_MINDMAP_LAYOUT_EPS_PX ||
+				Math.abs(ih - mskProjectsMindmapLastLayoutIh) >= MSK_PROJECTS_MINDMAP_LAYOUT_EPS_PX
+			) {
+				mskProjectsMindmapLastLayoutIw = iw;
+				mskProjectsMindmapLastLayoutIh = ih;
+				return true;
+			}
+			return false;
+		} catch (_) {
+			return true;
+		}
+	}
+
+	function mskProjectsMindmapNeedsGraphicRebuild() {
+		try {
+			const svg = document.querySelector('.connecting-lines');
+			const container = document.querySelector('.brainstorm-container');
+			if (!svg || svg.dataset.mskDynamicGraphicsBuilt !== '1') return true;
+			if (
+				mskIsProjectsTabletLandscapeViewport() &&
+				container &&
+				container.querySelector('.msk-portrait-ring-overlay')
+			) {
+				return true;
+			}
+			const nodes = document.querySelectorAll('.project-node');
+			if (!nodes.length) return false;
+			if (mskShouldUsePortraitHtmlRings() && container) {
+				const rings = container.querySelectorAll(
+					'.msk-portrait-ring-overlay.hand-drawn-frame'
+				);
+				if (rings.length < nodes.length) return true;
+				return false;
+			}
+			const sw = parseFloat(svg.getAttribute('width') || '0') || svg.clientWidth || 0;
+			const sh = parseFloat(svg.getAttribute('height') || '0') || svg.clientHeight || 0;
+			for (const node of nodes) {
+				const href = (node.dataset.nodeHref || node.getAttribute('href') || '').toLowerCase();
+				if (!href) continue;
+				const frame = svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`);
+				if (!frame) return true;
+				const portraitGridActive =
+					!!(
+						container &&
+						(container.classList.contains('projects-mindmap--portrait') ||
+							mskIsProjectsPortraitGridDocumentMode())
+					);
+				const ipadLandscapeActive =
+					!!(mskIsProjectsTabletLandscapeViewport() && container && !portraitGridActive);
+				if (
+					(portraitGridActive || ipadLandscapeActive) &&
+					!mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container)
+				) {
+					return true;
+				}
+				const fw = parseFloat(frame.getAttribute('width') || '0');
+				const fh = parseFloat(frame.getAttribute('height') || '0');
+				const fx = parseFloat(frame.getAttribute('x') || '0');
+				const fy = parseFloat(frame.getAttribute('y') || '0');
+				if (fw > 0 && fh > 0 && (fw < 12 || fh < 12)) return true;
+				if (fw > 0 && fh > 0 && fx + fw < 6 && fy + fh < 6) return true;
+				if (sw > 0 && sh > 0 && fw > 0 && fh > 0) {
+					if (fx > sw + 40 || fy > sh + 40 || fx + fw < -40 || fy + fh < -40) return true;
+				}
+			}
+			return false;
+		} catch (_) {
+			return true;
+		}
+	}
+
+	function mskIsProjectsPortraitTouchGridMode() {
+		try {
+			return !!(
+				mskIsProjectsPhonePortraitViewport() ||
+				mskIsProjectsTabletPortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+				document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+				mskIsProjectsPortraitGridDocumentMode()
+			);
+		} catch (_) {
+			return false;
+		}
+	}
+
+	function mskEnsureProjectsPortraitSvgBox() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			const svg = document.querySelector('.connecting-lines');
+			if (!container || !svg) return;
+			const cr = container.getBoundingClientRect();
+			const w = Math.round(Math.max(1, container.clientWidth || cr.width || window.innerWidth || 375));
+			const h = Math.round(Math.max(1, container.clientHeight || cr.height || window.innerHeight || 667));
+			svg.setAttribute('width', String(w));
+			svg.setAttribute('height', String(h));
+			svg.style.setProperty('width', '100%', 'important');
+			svg.style.setProperty('height', '100%', 'important');
+			svg.style.setProperty('overflow', 'visible', 'important');
+			svg.style.setProperty('visibility', 'visible', 'important');
+			svg.style.setProperty('opacity', '1', 'important');
+		} catch (_) {}
+	}
+
+	function mskProjectsSyncLayoutBeforePaint() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			const svg = document.querySelector('.connecting-lines');
+			if (container) {
+				void container.offsetHeight;
+				void container.getBoundingClientRect();
+			}
+			mskEnsureProjectsPortraitSvgBox();
+			if (svg) void svg.getBoundingClientRect();
+		} catch (_) {}
+	}
+
+	function mskSvgPointFromClientPx(svgEl, clientX, clientY) {
+		try {
+			if (!svgEl || !svgEl.getBoundingClientRect) {
+				return { x: clientX, y: clientY };
+			}
+			const svgRect = svgEl.getBoundingClientRect();
+			const sw = Math.max(svgRect.width, 1e-6);
+			const sh = Math.max(svgRect.height, 1e-6);
+			const cw = Math.max(svgEl.clientWidth || svgRect.width || 1, 1);
+			const ch = Math.max(svgEl.clientHeight || svgRect.height || 1, 1);
+			return {
+				x: (clientX - svgRect.left) * (cw / sw),
+				y: (clientY - svgRect.top) * (ch / sh),
+			};
+		} catch (_) {
+			return { x: clientX, y: clientY };
+		}
+	}
+
+	function mskSvgCenterFromRect(svgEl, domRect, containerRect) {
+		try {
+			if (!domRect) return { x: 0, y: 0 };
+			if (!svgEl || !svgEl.getBoundingClientRect) {
+				return {
+					x: domRect.left - containerRect.left + domRect.width / 2,
+					y: domRect.top - containerRect.top + domRect.height / 2,
+				};
+			}
+			const cx = domRect.left + domRect.width / 2;
+			const cy = domRect.top + domRect.height / 2;
+			return mskSvgPointFromClientPx(svgEl, cx, cy);
+		} catch (_) {
+			return {
+				x: domRect.left - containerRect.left + domRect.width / 2,
+				y: domRect.top - containerRect.top + domRect.height / 2,
+			};
+		}
+	}
+
+	function mskProjectsMindmapNodeCenterSvg(node, svg, container, containerRect) {
+		try {
+			const portraitGrid =
+				!!(
+					container &&
+					(container.classList.contains('projects-mindmap--portrait') ||
+						mskIsProjectsPortraitGridDocumentMode())
+				);
+			if (portraitGrid) {
+				let gx = parseFloat(node.dataset.mskGridCx || '');
+				let gy = parseFloat(node.dataset.mskGridCy || '');
+				if (!Number.isFinite(gx)) gx = parseFloat(node.style.left);
+				if (!Number.isFinite(gy)) gy = parseFloat(node.style.top);
+				if (Number.isFinite(gx) && Number.isFinite(gy)) {
+					const cr = container.getBoundingClientRect();
+					return mskSvgPointFromClientPx(svg, cr.left + gx, cr.top + gy);
+				}
+			}
+			const ipadLs =
+				!!(
+					mskIsProjectsTabletLandscapeViewport() &&
+					container &&
+					!container.classList.contains('projects-mindmap--portrait')
+				);
+			const titleImg = ipadLs ? node.querySelector('.project-node__title-img') : null;
+			const titleEl = node.querySelector('.project-node__title');
+			const anchorRect = titleImg
+				? titleImg.getBoundingClientRect()
+				: titleEl
+					? titleEl.getBoundingClientRect()
+					: node.getBoundingClientRect();
+			return mskSvgCenterFromRect(svg, anchorRect, containerRect);
+		} catch (_) {
+			return { x: 0, y: 0 };
+		}
+	}
+
+	function mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container) {
+		try {
+			if (!frame || !node || !svg || !container) return true;
+			const fx = parseFloat(frame.getAttribute('x') || '0');
+			const fy = parseFloat(frame.getAttribute('y') || '0');
+			const fw = parseFloat(frame.getAttribute('width') || '0');
+			const fh = parseFloat(frame.getAttribute('height') || '0');
+			if (!(fw > 0 && fh > 0)) return false;
+			const fcx = fx + fw / 2;
+			const fcy = fy + fh / 2;
+			const nc = mskProjectsMindmapNodeCenterSvg(node, svg, container, container.getBoundingClientRect());
+			const dx = fcx - nc.x;
+			const dy = fcy - nc.y;
+			const maxDist = Math.max(96, Math.min(fw, fh) * 0.52);
+			return Math.sqrt(dx * dx + dy * dy) <= maxDist;
+		} catch (_) {
+			return true;
+		}
+	}
+
+	function mskProjectsMindmapIpadLandscapeFramesReady() {
+		try {
+			if (!mskIsProjectsTabletLandscapeViewport()) return true;
+			const container = document.querySelector('.brainstorm-container');
+			if (!container || container.classList.contains('projects-mindmap--portrait')) return true;
+			const svg = document.querySelector('.connecting-lines');
+			if (!svg || !container) return false;
+			const nodes = document.querySelectorAll('.project-node');
+			if (!nodes.length) return false;
+			for (const node of nodes) {
+				const href = (node.dataset.nodeHref || node.getAttribute('href') || '').toLowerCase();
+				if (!href) continue;
+				const frame = svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`);
+				if (!frame) return false;
+				if (!mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container)) return false;
+			}
+			return true;
+		} catch (_) {
+			return false;
+		}
+	}
+
+	function mskProjectsMindmapShouldRedrawGraphics(force) {
+		if (force) return true;
+		if (mskProjectsMindmapLayoutResizeMeaningful()) return true;
+		return mskProjectsMindmapNeedsGraphicRebuild();
+	}
+
+	function mskShouldUsePortraitHtmlRings() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			return !!(
+				mskIsProjectsPortraitGridDocumentMode() ||
+				(container && container.classList.contains('projects-mindmap--portrait'))
+			);
+		} catch (_) {
+			return false;
+		}
+	}
+
+	function mskClearPortraitHtmlRings(container, svg) {
+		try {
+			if (container) {
+				container
+					.querySelectorAll('.msk-portrait-ring-overlay')
+					.forEach((el) => el.remove());
+			}
+			if (svg) {
+				svg
+					.querySelectorAll(
+						'.hand-drawn-frame, .frame-fill, .brainfarts-overlay, .brainfarts-construction-line, .brainfarts-ipad-construction-wrap, .brainfarts-ipad-construction-sign'
+					)
+					.forEach((el) => {
+						if (el.classList.contains('mobile-mindmap-line')) return;
+						el.remove();
+					});
+			}
+		} catch (_) {}
+	}
+
+	function mskPortraitRingNavigate(e, href, targetHref) {
+		if (
+			e.type === 'click' &&
+			(e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+		) {
+			return;
+		}
+		try {
+			e.preventDefault();
+		} catch (_) {}
+		try {
+			e.stopPropagation();
+		} catch (_) {}
+		if (href.includes('brainfarts')) return;
+		if (targetHref) window.location.href = targetHref;
+	}
+
+	function mskAppendPortraitHtmlRing(container, node, spec) {
+		const href = (node.getAttribute('href') || '').toLowerCase();
+		const targetHref = (node.getAttribute('href') || '').trim();
+		let cx = parseFloat(node.dataset.mskGridCx || '');
+		let cy = parseFloat(node.dataset.mskGridCy || '');
+		if (!Number.isFinite(cx)) cx = parseFloat(node.style.left);
+		if (!Number.isFinite(cy)) cy = parseFloat(node.style.top);
+		if (!Number.isFinite(cx) || !Number.isFinite(cy)) return null;
+
+		const dx = spec.dx || 0;
+		const dy = spec.dy || 0;
+		const img = document.createElement('img');
+		img.className =
+			'msk-portrait-ring-overlay hand-drawn-frame ' + (spec.cls || '').trim();
+		img.src = spec.src;
+		img.alt = '';
+		img.decoding = 'async';
+		img.draggable = false;
+		img.dataset.nodeHref = href;
+		img.dataset.nodeIndex = node.dataset.nodeIndex || '';
+
+		const rot = spec.rotate ? ` rotate(${spec.rotate}deg)` : '';
+		img.style.cssText = [
+			'position:absolute',
+			`left:${cx + dx}px`,
+			`top:${cy + dy}px`,
+			`width:${spec.w}px`,
+			`height:${spec.h}px`,
+			`transform:translate(-50%,-50%)${rot}`,
+			'transform-origin:center center',
+			'pointer-events:auto',
+			href.includes('brainfarts') ? 'cursor:not-allowed' : 'cursor:pointer',
+			'z-index:24',
+			'opacity:0.88',
+			'display:block',
+			'visibility:visible',
+			'object-fit:fill',
+			'image-rendering:crisp-edges',
+		].join(';');
+
+		img.addEventListener(
+			'click',
+			(e) => {
+				mskPortraitRingNavigate(e, href, targetHref);
+			},
+			true
+		);
+
+		container.appendChild(img);
+		return img;
+	}
+
+	function mskAppendPortraitRingFromIpadLockSpec(container, node, href, shrink, prs, ringBoost) {
+		const lock = mskGetProjectsIpadPortraitLock();
+		if (!lock || !lock.rings) return false;
+		let key = null;
+		if (href.includes('repop')) key = 'repop';
+		else if (href.includes('naturli')) key = 'naturli';
+		else if (href.includes('durex')) key = 'durex';
+		else if (href.includes('unge-mod-uv')) key = 'ungeModUv';
+		else if (href.includes('twister')) key = 'twister';
+		else if (href.includes('kobajer')) key = 'kobajer';
+		else if (href.includes('brainfarts')) key = 'brainfarts';
+		else if (href.includes('byens-landhandel')) key = 'byens';
+		const spec = key && lock.rings[key];
+		if (!spec) return false;
+		const boost = ringBoost && ringBoost > 0 ? ringBoost : 1;
+		let w;
+		let h;
+		let dx;
+		let dy;
+		if (key === 'kobajer') {
+			w = spec.wBase;
+			h = spec.hBase;
+			[w, h] = shrink(w * prs(1), h * prs(1));
+			const wExtra = w * (spec.rightWMul - 1);
+			w *= spec.rightWMul;
+			dx = prs(spec.dxBase) - wExtra * 0.5 + prs(spec.dxNudge);
+			dy = prs(spec.dy);
+		} else {
+			w = spec.w;
+			h = spec.h;
+			[w, h] = shrink(w * prs(1), h * prs(1));
+			dx = prs(spec.dx || 0);
+			dy = prs(spec.dy || 0);
+		}
+		w = Math.round(w * boost);
+		h = Math.round(h * boost);
+		dx = Math.round(dx * boost);
+		dy = Math.round(dy * boost);
+		const phonePortraitRing =
+			!!(
+				mskIsProjectsPhonePortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-phone-portrait')
+			) &&
+			!mskIsProjectsTabletPortraitViewport() &&
+			!document.documentElement.classList.contains('msk-projects-ipad-portrait');
+		if (phonePortraitRing && key === 'byens') {
+			w = Math.round(w * 0.91);
+		}
+		let rotate = spec.rotate;
+		if (phonePortraitRing && key === 'durex') {
+			w = Math.round(w * 1.36);
+			h = Math.round(h * 1.4);
+			rotate = (rotate || 0) - 8;
+			dy += Math.round(prs(34));
+		}
+		if (phonePortraitRing && key === 'ungeModUv') {
+			w = Math.round(w * 1.16);
+			h = Math.round(h * 0.92);
+			dy += Math.round(prs(18));
+		}
+		if (phonePortraitRing && key === 'naturli') {
+			w = Math.round(w * 1.14);
+			h = Math.round(h * 0.90);
+		}
+		if (phonePortraitRing && key === 'twister') {
+			w = Math.round(w * 1.16);
+			h = Math.round(h * 1.68);
+			dy += Math.round(prs(14));
+		}
+		if (phonePortraitRing && key === 'kobajer') {
+			w = Math.round(w * 1.12);
+			h = Math.round(h * 1.06);
+			dy += Math.round(prs(22));
+		}
+		if (phonePortraitRing && key === 'repop') {
+			w = Math.round(w * 0.90);
+			h = Math.round(h * 0.90);
+		}
+		/* Række under Repop/Naturli: Durex + Unge Mod UV lidt mindre */
+		if (phonePortraitRing && key === 'ungeModUv') {
+			w = Math.round(w * 0.92);
+			h = Math.round(h * 0.92);
+		}
+		if (phonePortraitRing && key === 'durex') {
+			w = Math.round(w * 0.84);
+			h = Math.round(h * 0.84);
+		}
+		mskAppendPortraitHtmlRing(container, node, {
+			src: spec.src,
+			w,
+			h,
+			dx,
+			dy,
+			rotate,
+			cls: spec.cls,
+		});
+		return true;
+	}
+
+	function mskTryAppendIpadLockedPortraitRing(container, node, href, shrink, prs) {
+		if (!mskUseProjectsIpadPortraitLock()) return false;
+		return mskAppendPortraitRingFromIpadLockSpec(container, node, href, shrink, prs, 1);
+	}
+
+	function mskTryAppendPhonePortraitRingFromIpadLock(container, node, href, shrink, prs) {
+		const phone = !!(
+			mskIsProjectsPhonePortraitViewport() ||
+			document.documentElement.classList.contains('msk-projects-phone-portrait')
+		);
+		if (
+			!phone ||
+			mskIsProjectsTabletPortraitViewport() ||
+			document.documentElement.classList.contains('msk-projects-ipad-portrait')
+		) {
+			return false;
+		}
+		/* Telefon: større ringe så titel/badges kan sidde inde i cirklen */
+		const repopRingBoost = href.includes('repop') ? 1.12 : 1;
+		let ringBoost = 1.16 * repopRingBoost;
+		try {
+			const pf = typeof mskGetPhonePortraitProfileFactors === 'function'
+				? mskGetPhonePortraitProfileFactors()
+				: null;
+			if (pf && pf.ringAdj) ringBoost *= pf.ringAdj;
+		} catch (_) {}
+		return mskAppendPortraitRingFromIpadLockSpec(container, node, href, shrink, prs, ringBoost);
+	}
+
+	function mskCreatePortraitGridRingOverlays() {
+		const container = document.querySelector('.brainstorm-container');
+		const svg = document.querySelector('.connecting-lines');
+		const nodes = document.querySelectorAll('.project-node');
+		if (!container || !nodes.length) return;
+
+		mskClearPortraitHtmlRings(container, svg);
+
+		const phone = !!(
+			mskIsProjectsPhonePortraitViewport() ||
+			document.documentElement.classList.contains('msk-projects-phone-portrait')
+		);
+		const ipadP = !!(
+			mskIsProjectsTabletPortraitViewport() ||
+			document.documentElement.classList.contains('msk-projects-ipad-portrait')
+		);
+		const scale = phone ? mskProjectsPortraitReferenceScale() : 1;
+		const prs = (n) => n * scale;
+		const phoneLockRings = phone && !ipadP;
+		const shrink = (w, h) => {
+			if (!phone) return [w, h];
+			/* iPad-lock ringe på telefon: kun viewport-scale — ikke ekstra 0.72 shrink */
+			if (phoneLockRings) return [w, h];
+			const m = Math.max(0.72, scale);
+			return [w * m, h * m];
+		};
+
+		nodes.forEach((node, index) => {
+			node.dataset.nodeIndex = String(index);
+			const href = (node.getAttribute('href') || '').toLowerCase();
+			node.dataset.nodeHref = href;
+
+			if (ipadP && mskTryAppendIpadLockedPortraitRing(container, node, href, shrink, prs)) {
+				return;
+			}
+			if (phone && mskTryAppendPhonePortraitRingFromIpadLock(container, node, href, shrink, prs)) {
+				return;
+			}
+
+			if (href.includes('repop')) {
+				let w = ipadP ? 380 * 0.96 * 1.92 : 380 * 0.8 * 1.04;
+				let h = ipadP ? 165 * 0.96 * 1.8 : 165 * 0.8;
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/circle around repop by depop.webp',
+					w,
+					h,
+					rotate: 180,
+					cls: 'repop-image',
+				});
+			} else if (href.includes('naturli')) {
+				let w = ipadP ? 240 * 1.82 : 240 * 0.9;
+				let h = ipadP ? 140 * 1.52 : 140 * 0.9;
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				const natHWMul = ipadP ? 1.14 : 1.1;
+				w *= natHWMul;
+				mskAppendPortraitHtmlRing(container, node, {
+					src: "assets/cirkel omkring naturli'.webp",
+					w,
+					h,
+					rotate: 180,
+					dx: ipadP ? 10 : 6,
+					dy: ipadP ? -12 : -8,
+					cls: 'naturli-image',
+				});
+			} else if (href.includes('durex')) {
+				let w = 440 * 0.98 * 0.805 * (ipadP ? 1.66 : 1);
+				let h = 150 * 0.98 * 0.805 * (ipadP ? 1.84 : 1);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/circle omkring durex x guess who.webp',
+					w,
+					h,
+					dy: ipadP ? 8 : 0,
+					cls: 'durex-image',
+				});
+			} else if (href.includes('unge-mod-uv')) {
+				let w = 320 * (ipadP ? 0.94 : 0.84) * (ipadP ? 1.82 : 1);
+				let h = 150 * (ipadP ? 0.94 : 0.84) * (ipadP ? 1.52 : 1);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/unge mod uv cirkel.webp',
+					w,
+					h,
+					cls: 'unge-mod-uv-image',
+				});
+			} else if (href.includes('twister')) {
+				let w = 280 * 0.88 * (ipadP ? 2.24 : 1.24);
+				let h = 170 * 0.88 * 0.74 * (ipadP ? 1.84 : 1.24);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/cirkel omkring twister.webp',
+					w,
+					h,
+					dy: phone ? 20 : 12,
+					cls: 'twister-image',
+				});
+			} else if (href.includes('kobajer')) {
+				let w = 232 * 0.78 * (ipadP ? 2.02 : 1.22);
+				let h =
+					232 * 0.78 * 0.74 * (ipadP ? 1.48 : 1.16) * (ipadP ? 1.76 : 1.52);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				const kobRightWMul = ipadP ? 1.1 : 1.08;
+				const wExtra = w * (kobRightWMul - 1);
+				w *= kobRightWMul;
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/cirkel købajer.webp',
+					w,
+					h,
+					rotate: 180,
+					dx: (ipadP ? -18 : -10) - wExtra * 0.5 + (ipadP ? 14 : 10),
+					dy: ipadP ? -64 : -30,
+					cls: 'kobajer-image',
+				});
+			} else if (href.includes('brainfarts')) {
+				let w = 240 * 0.78 * (ipadP ? 3.02 : 1);
+				let h = 200 * 0.78 * (ipadP ? 1.8 : 1);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/cirkel om brainfarts.webp',
+					w,
+					h,
+					cls: 'brainfarts-image',
+				});
+			} else if (href.includes('byens-landhandel')) {
+				let w = 440 * 0.78 * (ipadP ? 2.55 : 1.22);
+				let h = 170 * 0.78 * 0.94 * (ipadP ? 1.5 : 1);
+				[w, h] = shrink(w * prs(1), h * prs(1));
+				mskAppendPortraitHtmlRing(container, node, {
+					src: 'assets/circle omkring byens landhandel.webp',
+					w,
+					h,
+					dy: ipadP ? -14 : 0,
+					cls: 'byens-landhandel-image',
+				});
+			}
+		});
+	}
+
+	function mskProjectsMindmapPortraitFramesReady() {
+		try {
+			if (!mskIsProjectsPortraitTouchGridMode()) return true;
+			const container = document.querySelector('.brainstorm-container');
+			if (!container) return false;
+			const nodes = document.querySelectorAll('.project-node');
+			if (!nodes.length) return false;
+			if (mskShouldUsePortraitHtmlRings()) {
+				const rings = container.querySelectorAll(
+					'.msk-portrait-ring-overlay.hand-drawn-frame'
+				);
+				return rings.length >= nodes.length;
+			}
+			const svg = document.querySelector('.connecting-lines');
+			if (!svg || !container) return false;
+			for (const node of nodes) {
+				const href = (node.dataset.nodeHref || node.getAttribute('href') || '').toLowerCase();
+				if (!href) continue;
+				const frame = svg.querySelector(`.hand-drawn-frame[data-node-href="${href}"]`);
+				if (!frame) return false;
+				if (!mskProjectsMindmapFrameAlignedWithNode(frame, node, svg, container)) return false;
+			}
+			return true;
+		} catch (_) {
+			return false;
+		}
+	}
+
+	function mskProjectsMindmapMarkGraphicsBuilt() {
+		try {
+			const svg = document.querySelector('.connecting-lines');
+			if (!svg) return;
+			if (!mskProjectsMindmapPortraitFramesReady()) return;
+			if (!mskProjectsMindmapIpadLandscapeFramesReady()) return;
+			svg.dataset.mskDynamicGraphicsBuilt = '1';
+		} catch (_) {}
+	}
+
+	function mskProjectsMindmapReveal() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container) return;
+			document.documentElement.classList.remove('msk-mindmap-booting');
+			document.documentElement.classList.add('msk-projects-mindmap-painted');
+			document.documentElement.dataset.mskMindmapRevealed = '1';
+			if (container.dataset.mskRevealed === '1') return;
+			container.dataset.mskRevealed = '1';
+			try {
+				mskSyncBrainfartsIpadConstructionSignOpacity();
+			} catch (_) {}
+		} catch (_) {}
+	}
 
 	// Brain animations and connecting lines
 	function initBrainAnimations() {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		mskEnsureProjectsPhonePortraitCanvasMode();
 		const isPreview = document.documentElement.classList.contains('transition-preview');
+		try {
+			const desktopFine =
+				!!(
+					window.matchMedia &&
+					window.matchMedia('(hover: hover)').matches &&
+					window.matchMedia('(pointer: fine)').matches
+				);
+			if (
+				desktopFine &&
+				!isPreview &&
+				document.documentElement.dataset.mskMindmapRevealed !== '1' &&
+				document.documentElement.dataset.mskFromHomeOpen !== '1'
+			) {
+				document.documentElement.classList.add('msk-mindmap-booting');
+				document.documentElement.classList.remove('msk-projects-mindmap-painted');
+			} else if (
+				!isPreview &&
+				!document.documentElement.classList.contains('msk-projects-mindmap-painted') &&
+				mskIsProjectsTabletLandscapeViewport()
+			) {
+				document.documentElement.classList.add('msk-mindmap-booting');
+			}
+		} catch (_) {}
 		const brain = document.querySelector('.brain');
 		const nodes = document.querySelectorAll('.project-node');
 		const pupils = document.querySelectorAll('.pupil');
@@ -3225,18 +6498,34 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
+		function svgCenterFromRect(svgEl, domRect, containerRect) {
+			return mskSvgCenterFromRect(svgEl, domRect, containerRect);
+		}
+
 		// If we've already bound listeners once, just re-position/redraw.
 		if (brain.dataset.animInit === '1') {
 			try {
 				// Refresh pass to ensure custom assets are present after navigation.
 				positionNodesPerfectCircle();
-				createAndPositionDandDLogo();
-				createAndPositionTwisterDandDLine();
-				createAndPositionRepopKravlingLine();
-				createAndPositionKravlingNomineretBadge();
-				createAndPositionKobajerArrow();
-				createConnectingLines();
-				createHandDrawnFrames();
+				refreshProjectsMindmapStandaloneExtras();
+				mskProjectsSyncLayoutBeforePaint();
+				const portraitTouch = mskIsProjectsPortraitTouchGridMode();
+				if (portraitTouch || mskProjectsMindmapShouldRedrawGraphics(false)) {
+					const redrawOpts = { force: true };
+					try {
+						const svg = document.querySelector('.connecting-lines');
+						if (svg) delete svg.dataset.mskDynamicGraphicsBuilt;
+					} catch (_) {}
+					createConnectingLines(redrawOpts);
+					createHandDrawnFrames(redrawOpts);
+					mskProjectsMindmapMarkGraphicsBuilt();
+				}
+				positionBrainfartsBuildNote();
+				try {
+					mskApplyBrainfartsIpadLandscapeConstructionSign();
+					mskSyncBrainfartsIpadConstructionSignOpacity();
+				} catch (_) {}
+				mskProjectsMindmapReveal();
 			} catch {}
 			if (isPreview) {
 				try {
@@ -3247,26 +6536,719 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
+		// After portrait → landscape/wide: fuld reset af alt JS/HTML har sat inline,
+		// så ellipse + badges + linjer matcher cold load (ikke kun hjernen).
+		function clearProjectsMindmapPortraitInlineStylesForEllipseLayout() {
+			const container = document.querySelector('.brainstorm-container');
+			try {
+				brain.removeAttribute('style');
+			} catch {}
+			try {
+				Array.from(nodes).forEach((node) => {
+					try {
+						node.removeAttribute('style');
+						const title = node.querySelector('.project-node__title');
+						if (title) title.removeAttribute('style');
+						node.querySelectorAll('.node-label').forEach((el) => el.removeAttribute('style'));
+						node
+							.querySelectorAll(
+								'.dandd-badge--inline, .kravling-nomineret-badge--inline, .kobajer-kravling-2024-badge--inline'
+							)
+							.forEach((el) => el.remove());
+						const bfSign = node.querySelector('.brainfarts-build__sign--inline');
+						if (bfSign) bfSign.remove();
+					} catch {}
+				});
+			} catch {}
+			if (!container) return;
+			try {
+				[
+					'.repop-kravling-line',
+					'.twister-dandd-line',
+					'.kobajer-arrow',
+					'.dandd-badge',
+					'.kravling-nomineret-badge',
+					'.kobajer-kravling-2024-badge',
+				].forEach((sel) => {
+					container.querySelectorAll(sel).forEach((el) => {
+						try {
+							el.removeAttribute('style');
+						} catch {}
+					});
+				});
+			} catch {}
+		}
+
+		/** Kun inline D&AD i TWISTER: skjul fritliggende badge + connector (kalde EFTER ensureProjectsMobileInlineBadges). */
+		function hideStandaloneDandDForProjectsMindmapPortrait(container) {
+			try {
+				if (!container || !document.body.classList.contains('projects-page')) return;
+				const tw = container.querySelector('a[href*="twister"], .project-node[href*="twister"]');
+				const hasTwisterInline = !!(tw && tw.querySelector('.dandd-badge--inline'));
+				const portraitGrid = container.classList.contains('projects-mindmap--portrait');
+				if (!hasTwisterInline && !portraitGrid) return;
+				const badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
+				if (badge) badge.style.setProperty('display', 'none', 'important');
+				const line = container.querySelector('.twister-dandd-line');
+				if (line) line.style.setProperty('display', 'none', 'important');
+			} catch (_) {}
+		}
+
+		/** Portræt-grid: skjul ellipse-only DOM (pil, D&AD-badge, radiale streger) der skaber overlap på mobil. */
+		function mskHideProjectsPortraitEllipseExtras(container) {
+			try {
+				if (!container) return;
+				if (
+					!container.classList.contains('projects-mindmap--portrait') &&
+					!mskIsProjectsPortraitGridDocumentMode()
+				) {
+					return;
+				}
+				try {
+					container.classList.add('projects-mindmap--portrait');
+				} catch (_) {}
+				const hide = (sel) => {
+					container.querySelectorAll(sel).forEach((el) => {
+						try {
+							el.style.setProperty('display', 'none', 'important');
+							el.style.setProperty('visibility', 'hidden', 'important');
+							el.style.setProperty('opacity', '0', 'important');
+						} catch (_) {}
+					});
+				};
+				hide('.twister-dandd-line');
+				hide('.repop-kravling-line');
+				hide('.kobajer-arrow');
+				hide('.dandd-badge:not(.dandd-badge--inline)');
+				hide('.brainfarts-build');
+				hide('.brainfarts-build__arrow');
+				const svg = container.querySelector('.connecting-lines');
+				if (svg) {
+					svg.querySelectorAll('.brainfarts-brain-line').forEach((el) => {
+						try {
+							el.remove();
+						} catch (_) {}
+					});
+				}
+			} catch (_) {}
+		}
+
+		function refreshProjectsMindmapStandaloneExtras() {
+			const bc = document.querySelector('.brainstorm-container');
+			ensureProjectsMobileInlineBadges();
+			if (bc && (bc.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode())) {
+				try {
+					bc.classList.add('projects-mindmap--portrait');
+				} catch (_) {}
+				hideStandaloneDandDForProjectsMindmapPortrait(bc);
+				mskHideProjectsPortraitEllipseExtras(bc);
+				return;
+			}
+			createAndPositionDandDLogo();
+			createAndPositionTwisterDandDLine();
+			createAndPositionRepopKravlingLine();
+			createAndPositionKravlingNomineretBadge();
+			createAndPositionKobajerArrow();
+			hideStandaloneDandDForProjectsMindmapPortrait(bc);
+		}
+
+		function applyMindmapLineImgBaseStyles(img) {
+			if (!img) return;
+			img.style.position = 'absolute';
+			img.style.pointerEvents = 'none';
+			img.style.zIndex = '12';
+			img.style.display = 'block';
+			img.style.imageRendering = 'crisp-edges';
+			img.style.filter = 'none';
+		}
+
+		function applyKobajerArrowBaseStyles(arrow) {
+			if (!arrow) return;
+			arrow.style.position = 'absolute';
+			arrow.style.pointerEvents = 'none';
+			arrow.style.zIndex = '20';
+			arrow.style.display = 'block';
+			arrow.style.imageRendering = 'crisp-edges';
+			arrow.style.filter = 'none';
+		}
+
 		// Position all project nodes in a perfect circle around the brain.
 		// This overrides the hand-tuned % positions in the HTML so everything is evenly spaced.
 		function positionNodesPerfectCircle() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 
-			const containerRect = container.getBoundingClientRect();
-			const brainRect = brain.getBoundingClientRect();
-			const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
-			const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
+			const hadPortraitArtifactsBeforeMode = mskProjectsMindmapHasPortraitGridArtifacts();
 
-			// Use an ellipse ring (rx > ry) to fill more horizontal space without pushing tabs off-screen vertically.
-			const paddingX = 210; // keep horizontal size
-			const paddingY = 215; // base vertical padding
-			const rx = Math.max(200, (containerRect.width / 2) - paddingX);
-			let ry = Math.max(170, (containerRect.height / 2) - paddingY);
-			// Make it bigger VERTICALLY only (do not change rx)
-			ry = ry + 120;
+			mskEnsureProjectsPhonePortraitCanvasMode();
+
+			const forceIpadLandscapeEllipse = mskApplyProjectsIpadLandscapeDocumentMode();
+			const ipadDocEllipse = !!forceIpadLandscapeEllipse;
+			if (ipadDocEllipse && hadPortraitArtifactsBeforeMode) {
+				mskProjectsMindmapClearPortraitGridArtifacts();
+			}
+			if (ipadDocEllipse) {
+				try {
+					container.classList.remove('projects-mindmap--portrait');
+				} catch (_) {}
+			}
+
+			const containerRectForLayout = container.getBoundingClientRect();
+			const lv = mskProjectsLayoutViewportBox();
+			const vis = mskProjectsVisibleViewportPx();
+			const iw = vis.w;
+			const ih = vis.h;
+			let tabletLandscapeLayout = false;
+			try {
+				tabletLandscapeLayout = !!mskIsProjectsTabletLandscapeViewport();
+			} catch (_) {
+				tabletLandscapeLayout = false;
+			}
+			const scrollLockLandscape =
+				document.documentElement.classList.contains('msk-projects-ipad-landscape-no-scroll') &&
+				tabletLandscapeLayout;
+			/*
+			 * Fixed fullscreen-container: clientHeight kan følge oppustet dokument (papir min-height)
+			 * eller kollapse til 0 når html/body er position:fixed → tom/scrollable side.
+			 * iPad landskab: brug altid synlig viewport (inner*), ikke container.clientHeight.
+			 */
+			let layoutW;
+			let layoutH;
+			let portraitSketchGridLayout = false;
+			try {
+				portraitSketchGridLayout = mskIsProjectsPortraitGridDocumentMode();
+			} catch (_) {
+				portraitSketchGridLayout = false;
+			}
+			const phonePortraitScrollLock = document.documentElement.classList.contains(
+				'msk-projects-phone-portrait-no-scroll'
+			);
+			if (tabletLandscapeLayout || scrollLockLandscape || ipadDocEllipse) {
+				const dim = mskProjectsTabletLandscapeLayoutPx();
+				layoutW = dim.w;
+				layoutH = dim.h;
+			} else if (
+				portraitSketchGridLayout ||
+				phonePortraitScrollLock ||
+				mskIsProjectsPortraitGridDocumentMode()
+			) {
+				const pv = mskProjectsPortraitGridLayoutPx();
+				layoutW = pv.w;
+				layoutH = pv.h;
+			} else {
+				const rawCW = container.clientWidth || containerRectForLayout.width || lv.w;
+				let rawCH = container.clientHeight || containerRectForLayout.height || lv.h;
+				if (rawCH > ih * 1.35) rawCH = ih;
+				layoutW = Math.round(Math.max(1, Math.min(iw, rawCW)));
+				layoutH = Math.round(Math.max(1, Math.min(ih, rawCH)));
+			}
+			/* Aldrig layout højere end viewport — undtagen telefon-canvas (768×1024 reference) */
+			if (document.body && document.body.classList.contains('projects-page')) {
+				layoutW = Math.round(Math.max(1, Math.min(layoutW, iw)));
+				layoutH = Math.round(Math.max(1, Math.min(layoutH, ih)));
+			}
+			const w = layoutW;
+			const h = layoutH;
+			let narrow = false;
+			try {
+				narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches) || (w > 0 && w <= 640);
+			} catch {}
+			/* Kort phone landscape: brug samme ellipse som desktop (padding/minRx/extraRy), ikke "narrow phone"-ring */
+			let isShortLandscape = false;
+			try {
+				isShortLandscape = mskIsProjectsShortLandscapeViewport();
+			} catch {}
+			try {
+				if (isShortLandscape) narrow = false;
+			} catch {}
+
+			let touchLandscape = false;
+			try {
+				if (window.matchMedia) {
+					touchLandscape = !!window.matchMedia('(max-width: 1024px) and (orientation: landscape) and (hover: none) and (pointer: coarse)').matches;
+				}
+			} catch {}
+			try {
+				if (!touchLandscape && mskIsProjectsShortLandscapeViewport()) touchLandscape = true;
+			} catch {}
+			/* Touch-landscape layout-tweaks (flad ry, mindre padding) — ikke i kort landscape; dér følger vi desktop */
+			let touchLayout = touchLandscape && !isShortLandscape;
 
 			const nodeArray = Array.from(nodes);
+
+			const cw = layoutW;
+			/* Under rotation kan clientWidth/Height kort give ih<iw selv i portræt — orientation media matcher CSS */
+			let portraitOrientation = false;
+			let landscapeOrientation = false;
+			try {
+				portraitOrientation = !!(window.matchMedia && window.matchMedia('(orientation: portrait)').matches);
+				landscapeOrientation = !!(window.matchMedia && window.matchMedia('(orientation: landscape)').matches);
+			} catch (_) {
+				portraitOrientation = false;
+				landscapeOrientation = false;
+			}
+			/* Kun smal telefon: aspect-fallback — ikke tablet (fx byttede mål 1024×1366 i landskab gav portræt-grid) */
+			if (!portraitOrientation && ih >= iw && cw <= 640) portraitOrientation = true;
+			if (landscapeOrientation || mskIsProjectsTabletLandscapeViewport()) portraitOrientation = false;
+			let phonePortraitMedia = false;
+			try {
+				phonePortraitMedia = !!(
+					window.matchMedia &&
+					window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches
+				);
+			} catch (_) {}
+			const portraitGridMode =
+				!ipadDocEllipse &&
+				!forceIpadLandscapeEllipse &&
+				document.body &&
+				document.body.classList.contains('projects-page') &&
+				!mskIsProjectsTabletLandscapeViewport() &&
+				!mskIsProjectsShortLandscapeViewport() &&
+				(mskIsProjectsPortraitSketchGridViewport() ||
+					document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+					document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+					(iw <= 640 && ih > iw + 8));
+
+			const phonePortraitGrid =
+				portraitGridMode &&
+				(mskIsProjectsPhonePortraitViewport() ||
+					document.documentElement.classList.contains('msk-projects-phone-portrait'));
+
+			let phoneProfile = null;
+			if (phonePortraitGrid) {
+				try {
+					if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
+						phoneProfile = mskApplyPhonePortraitProfileDocument(layoutW, layoutH);
+					} else if (typeof mskGetPhonePortraitProfileFactors === 'function') {
+						phoneProfile = mskGetPhonePortraitProfileFactors(layoutW, layoutH);
+					}
+				} catch (_) {
+					phoneProfile = null;
+				}
+			}
+			const phoneRowSpanAdj = phoneProfile?.rowSpanAdj ?? 1;
+			const phoneRowVertMul = phoneProfile?.rowVertMul ?? 1;
+			const phoneSafeMarginAdj = phoneProfile?.safeMarginAdj ?? 1;
+			const phoneColInsetAdj = phoneProfile?.colInsetAdj ?? 1;
+			const phoneNudgeMul = phoneProfile?.nudgeMul ?? 1;
+			const phoneNodeMaxVw = phoneProfile?.nodeMaxVw ?? 42;
+
+			/* Telefon: samme grid-tal som iPad portræt-lock, skaleret til smal viewport */
+			const scale = portraitGridMode
+				? phonePortraitGrid
+					? mskProjectsPortraitReferenceScale()
+					: Math.max(0.46, Math.min(1, (layoutW || cw || 375) / 768))
+				: 1;
+
+			// Portrait mobile: 5-row sketch layout (2+2+brain+2+2) — identisk telefon + iPad portræt.
+			if (portraitGridMode) {
+				try { container.classList.add('projects-mindmap--portrait'); } catch {}
+					layoutW = Math.round(Math.max(1, window.innerWidth || layoutW || 375));
+					layoutH = Math.round(Math.max(1, window.innerHeight || layoutH || 667));
+					const brainEl = brain || container.querySelector('.brain');
+					let NAV_H = 52;
+					try {
+						const nb = document.querySelector('.navbar');
+						if (nb && nb.getBoundingClientRect) NAV_H = Math.round(nb.getBoundingClientRect().bottom);
+					} catch {}
+					const pvBand = mskProjectsPortraitGridLayoutPx();
+					const capH = Math.min(pvBand.h || layoutH || ih, ih, layoutH || ih);
+					const portraitBandH = capH > 0 ? capH : Math.min(layoutH, ih);
+					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
+					const phoneGridLock = phonePortraitGrid ? mskGetProjectsIpadPortraitLock()?.grid : null;
+					const safeTop = NAV_H + Math.round((phonePortraitGrid ? 28 : 36) * scale * phoneSafeMarginAdj);
+					let safeBottom =
+						portraitBandH -
+						Math.round((phonePortraitGrid ? 28 : 40) * scale * phoneSafeMarginAdj) -
+						mskSafeAreaInsetBottomPx();
+					if (safeBottom < safeTop + 120) {
+						safeBottom = portraitBandH - Math.round((phonePortraitGrid ? 28 : 40) * scale * phoneSafeMarginAdj);
+					}
+					const edgePad = Math.max(
+						18,
+						Math.round((phonePortraitGrid ? 40 : 52) * scale * phoneSafeMarginAdj)
+					);
+					const minX = edgePad;
+					const maxX = layoutW - edgePad;
+					const colLeftMul = phonePortraitGrid ? 0.22 + (1 - phoneColInsetAdj) * 0.04 : 0.22;
+					const colRightMul = phonePortraitGrid ? 0.78 - (1 - phoneColInsetAdj) * 0.04 : 0.78;
+					const baseLeft = Math.max(
+						minX,
+						Math.min(maxX, layoutW * colLeftMul)
+					);
+					const baseRight = Math.max(
+						minX,
+						Math.min(maxX, layoutW * colRightMul)
+					);
+					const phoneRingMul = phonePortraitGrid ? 1 : 0.72;
+					let maxW = Math.min(
+						Math.floor((phonePortraitGrid ? 300 * phoneRingMul : 300) * scale),
+						Math.max(
+							72,
+							Math.floor(
+								layoutW *
+									(phonePortraitGrid ? (phoneNodeMaxVw / 100) * phoneRingMul : 0.42)
+							)
+						)
+					);
+					const nudgeMul = phonePortraitGrid ? phoneNudgeMul : 1;
+					const tilts = [-1, 1, -2, 0.5, -1.5, 2, -0.5, 1.5];
+
+					const rowOffsets = [
+						Math.round(-14 * scale),
+						Math.round(-14 * scale),
+						0,
+						Math.round(-10 * scale),
+						Math.round(-14 * scale),
+					];
+
+					function rowXs(rowIndex) {
+						const off = rowOffsets[rowIndex - 1] ?? 0;
+						let lx = baseLeft + off;
+						let rx = baseRight - off;
+						lx = Math.max(minX, Math.min(maxX, lx));
+						rx = Math.max(minX, Math.min(maxX, rx));
+						if (rx - lx < 150) {
+							const mid = (lx + rx) / 2;
+							lx = Math.max(minX, mid - 75);
+							rx = Math.min(maxX, mid + 75);
+						}
+						return { lx, rx };
+					}
+
+					const portraitGridLiftY = phonePortraitGrid
+						? Math.round((phoneGridLock?.liftY ?? 24) * scale)
+						: Math.round(
+								(mskUseProjectsIpadPortraitLock()
+									? (mskGetProjectsIpadPortraitLock().grid.liftY || 24)
+									: 24) * scale
+							);
+
+					function rowY(rowIndex) {
+						const pad = Math.round(4 * scale);
+						const y1 = safeTop + pad;
+						const y5 = safeBottom - pad;
+						const full = y5 - y1;
+						const rowSpanMul = phonePortraitGrid
+							? (phoneGridLock?.rowSpanMul ?? 0.88) * phoneRowSpanAdj
+							: mskUseProjectsIpadPortraitLock()
+								? (mskGetProjectsIpadPortraitLock().grid.rowSpanMul || 0.88)
+								: 0.88;
+						const span = full * rowSpanMul;
+						const mid = (y1 + y5) / 2;
+						const y1c = mid - span / 2;
+						const step = span / 4;
+						return y1c + (rowIndex - 1) * step - portraitGridLiftY;
+					}
+
+					function styleNode(node, tiltIndex) {
+						node.style.setProperty('position', 'absolute', 'important');
+						node.style.setProperty('right', 'auto', 'important');
+						node.style.setProperty('bottom', 'auto', 'important');
+						node.style.setProperty('margin-left', '0', 'important');
+						node.style.setProperty('margin-top', '0', 'important');
+						node.style.setProperty('max-width', `${maxW}px`, 'important');
+						node.style.setProperty('text-align', 'center', 'important');
+						node.style.setProperty('white-space', 'normal', 'important');
+						node.style.setProperty('line-height', '1.05', 'important');
+						node.style.setProperty(
+							'transform',
+							`translate(-50%, -50%) rotate(${tilts[tiltIndex % tilts.length] ?? 0}deg)`,
+							'important'
+						);
+					}
+
+					const plan = [
+						{ key: 'repop', row: 1, side: 'left', match: (h) => h.includes('repop') },
+						{ key: 'naturli', row: 1, side: 'right', match: (h) => h.includes('naturli') },
+						{ key: 'durex', row: 2, side: 'left', match: (h) => h.includes('durex') },
+						{ key: 'unge', row: 2, side: 'right', match: (h) => h.includes('unge-mod-uv') },
+						{ key: 'twister', row: 4, side: 'left', match: (h) => h.includes('twister') },
+						{ key: 'kobajer', row: 4, side: 'right', match: (h) => h.includes('kobajer') },
+						{ key: 'brainfarts', row: 5, side: 'left', match: (h) => h.includes('brainfarts') },
+						{ key: 'byens', row: 5, side: 'right', match: (h) => h.includes('byens-landhandel') },
+					];
+
+					const placed = [];
+					for (let i = 0; i < plan.length; i++) {
+						const p = plan[i];
+						const node = nodeArray.find((n) => p.match((n.getAttribute('href') || '').toLowerCase()));
+						if (!node) continue;
+						styleNode(node, i);
+						if (phonePortraitGrid && p.key === 'repop') {
+							const repopMaxW = Math.min(
+								Math.floor(maxW * 1.16),
+								Math.max(72, Math.floor(layoutW * 0.46))
+							);
+							node.style.setProperty('max-width', `${repopMaxW}px`, 'important');
+						}
+						if (p.key === 'durex' || p.key === 'unge') {
+							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
+							node.style.setProperty('font-size', `${Math.max(10, fs * 0.86)}px`, 'important');
+						}
+						if (p.key === 'brainfarts' || p.key === 'byens') {
+							node.style.setProperty('width', 'auto', 'important');
+							node.style.setProperty('min-width', '0', 'important');
+						}
+						let y = rowY(p.row);
+						if (p.key === 'repop') y -= Math.round(8 * scale);
+						if (p.key === 'kobajer') y -= Math.round(6 * scale);
+						const { lx, rx } = rowXs(p.row);
+						let x = (p.side === 'left') ? lx : rx;
+						if (p.key === 'kobajer') y += Math.round(40 * scale * nudgeMul);
+						/* Brainfarts: lidt mod højre så boblen ikke klipper i venstre kant */
+						if (p.key === 'brainfarts') x += Math.round(32 * scale * nudgeMul);
+						/* Twister: mod højre + lidt højere (cirkel + indhold, kun portræt-grid) */
+						if (p.key === 'twister') {
+							x += Math.round(28 * scale * nudgeMul);
+							y -= Math.round(12 * scale);
+						}
+						/* Repop: mod højre så boblen + Kravling ikke klipper i venstre kant */
+						if (p.key === 'repop') x += Math.round(28 * scale * nudgeMul);
+						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
+						if (p.key === 'byens') x -= Math.round(38 * scale * nudgeMul);
+						/* Alt under hjernen (række 4–5): endnu tættere på hjernen (kun portræt-grid) */
+						if (p.row >= 4) y -= Math.round(22 * scale);
+						if (p.row === 5) y -= Math.round(18 * scale);
+						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
+						if (p.key === 'durex') x += Math.round(38 * scale * nudgeMul);
+						if (phonePortraitGrid && p.key === 'durex') {
+							x += Math.round(20 * scale);
+						}
+						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
+						if (p.key === 'unge') x -= Math.round(28 * scale * nudgeMul);
+						/* Øverste rækker (over hjernen): finjuster mod hjernen (mindre ned = højere op på skærmen) */
+						if (p.row <= 2) y += Math.round(12 * scale);
+						/* Række 1 (Repop + Naturlig) */
+						if (p.row === 1) y += Math.round(4 * scale);
+						/* Repop: ekstra i portrait-grid (kun denne node, ikke Naturlig) */
+						if (p.key === 'repop' && !phonePortraitGrid) y += Math.round(10 * scale);
+						/* Telefon portræt: Repop/Kravling op i række-1-cirklen (tekst sad under ringen) */
+						if (phonePortraitGrid && p.key === 'repop') {
+							y -= Math.round(10 * scale);
+						}
+						/* Telefon portræt: øverste række (Repop + Naturli) + streger ned */
+						if (phonePortraitGrid && p.row === 1) {
+							y += Math.round(52 * scale * phoneRowVertMul);
+						}
+						/* Telefon portræt: øverste cirkler tættere mod midten vandret */
+						if (phonePortraitGrid && p.row === 1) {
+							if (p.key === 'repop') x += Math.round(20 * scale);
+							if (p.key === 'naturli') x -= Math.round(20 * scale);
+						}
+						/* Telefon portræt: nederste cirkler tættere mod midten vandret */
+						if (phonePortraitGrid && p.row === 5) {
+							if (p.key === 'brainfarts') x += Math.round(20 * scale);
+							if (p.key === 'byens') x -= Math.round(20 * scale);
+						}
+						/* Nederste række (Brainfarts, Byens): lidt ned — cirkler + indhold; streger følger i createConnectingLines */
+						if (p.key === 'brainfarts' || p.key === 'byens') {
+							y += Math.round(50 * scale * nudgeMul * phoneRowVertMul);
+						}
+						let tabletPortrait = false;
+						try {
+							tabletPortrait = !!mskIsProjectsTabletPortraitViewport();
+						} catch (_) {
+							tabletPortrait = false;
+						}
+						/* iPad + telefon portræt: Kø-Bajer noden lidt ned (låst værdi i lock-fil) */
+						if ((tabletPortrait || phonePortraitGrid) && p.key === 'kobajer') {
+							const kobExtraY = mskGetProjectsIpadPortraitLock()?.grid?.kobajerNodeExtraY || 16;
+							y += Math.round(kobExtraY * scale);
+						}
+						/* Telefon portræt: Kø-Bajer cirkel + tekst lidt mod højre */
+						if (phonePortraitGrid && p.key === 'kobajer') {
+							x += Math.round(28 * scale);
+						}
+						x = Math.max(minX, Math.min(maxX, x));
+						node.style.setProperty('left', `${x}px`, 'important');
+						node.style.setProperty('top', `${y}px`, 'important');
+						try {
+							node.dataset.mskGridCx = String(Math.round(x));
+							node.dataset.mskGridCy = String(Math.round(y));
+						} catch (_) {}
+						placed.push(node);
+					}
+
+					try {
+						let portraitGridBrain = portraitGridMode || mskIsProjectsPortraitGridDocumentMode();
+						if (brainEl) {
+							brainEl.style.setProperty('position', 'absolute', 'important');
+							if (portraitGridBrain) {
+								brainEl.style.setProperty('left', `${Math.round(layoutW / 2)}px`, 'important');
+								let brainY = Math.round(rowY(3));
+								if (phonePortraitGrid) {
+									const brainVertMul =
+										phoneProfile && phoneProfile.hRatio < 1
+											? 0.82 + 0.18 * phoneProfile.hRatio
+											: 1;
+									brainY += Math.round(34 * scale * brainVertMul);
+								}
+								brainEl.style.setProperty('top', `${brainY}px`, 'important');
+							} else {
+								brainEl.style.setProperty('left', 'calc(50% + 30px)', 'important');
+								brainEl.style.setProperty('top', 'calc(50% + 42px)', 'important');
+							}
+							brainEl.style.setProperty('right', 'auto', 'important');
+							brainEl.style.setProperty('bottom', 'auto', 'important');
+							brainEl.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+						}
+					} catch {}
+
+					try {
+						const y1 = rowY(1);
+						const y2 = rowY(2);
+						const step = Math.max(40, y2 - y1);
+						let maxH = 0;
+						placed.forEach((n) => {
+							const r = n.getBoundingClientRect();
+							if (r && r.height) maxH = Math.max(maxH, r.height);
+						});
+						if (maxH > step * 0.92) {
+							const k = Math.max(0.82, Math.min(1, (step * 0.92) / maxH));
+							placed.forEach((n) => {
+								const fs = parseFloat(window.getComputedStyle(n).fontSize) || 16;
+								n.style.setProperty('font-size', `${Math.max(10, fs * k)}px`, 'important');
+							});
+						}
+					} catch {}
+
+					ensureProjectsMobileInlineBadges();
+					hideStandaloneDandDForProjectsMindmapPortrait(container);
+					mskHideProjectsPortraitEllipseExtras(container);
+					mskApplyProjectsPortraitPhoneCanvasStyles();
+					return;
+				}
+
+			const enteringTabletEllipse =
+				hadPortraitArtifactsBeforeMode ||
+				container.classList.contains('projects-mindmap--portrait');
+			try {
+				container.classList.remove('projects-mindmap--portrait');
+			} catch {}
+			if (enteringTabletEllipse && (tabletLandscapeLayout || scrollLockLandscape || ipadDocEllipse)) {
+				mskProjectsMindmapClearPortraitGridArtifacts();
+				clearProjectsMindmapPortraitInlineStylesForEllipseLayout();
+				try {
+					void brain.offsetHeight;
+				} catch {}
+			}
+
+			/* Ellipse: mål hjernens centrum EFTER portrait-inline er væk — ellers matcher rotation ikke cold load i landscape. */
+			const containerRect = container.getBoundingClientRect();
+			const brainRect = brain.getBoundingClientRect();
+			const svgForLayout = document.querySelector('.connecting-lines');
+			const brainCenter = svgCenterFromRect(svgForLayout, brainRect, containerRect);
+			let centerX = Math.round(brainCenter.x);
+			let centerY = Math.round(brainCenter.y);
+
+			let tabletLandscape = !!ipadDocEllipse || !!forceIpadLandscapeEllipse;
+			try {
+				if (!tabletLandscape) tabletLandscape = !!mskIsProjectsTabletLandscapeViewport();
+			} catch (_) {
+				tabletLandscape = !!ipadDocEllipse;
+			}
+			if (tabletLandscape) touchLayout = false;
+			if (tabletLandscape) {
+				let navH = 52;
+				try {
+					const nb = document.querySelector('.navbar');
+					if (nb && nb.getBoundingClientRect) navH = Math.round(nb.getBoundingClientRect().bottom);
+				} catch (_) {}
+				const bandTop = navH + Math.round(12 * scale);
+				const bandBottom = layoutH - Math.round(12 * scale);
+				centerY = Math.round((bandTop + bandBottom) / 2) - MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX;
+				centerX = Math.round(layoutW / 2) - MSK_PROJECTS_IPAD_LS_LAYOUT_LEFT_PX;
+				try {
+					brain.style.setProperty('position', 'absolute', 'important');
+					brain.style.setProperty('left', `${centerX}px`, 'important');
+					brain.style.setProperty('top', `${centerY}px`, 'important');
+					brain.style.setProperty('right', 'auto', 'important');
+					brain.style.setProperty('bottom', 'auto', 'important');
+					brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+				} catch (_) {}
+			}
+
+			// Use an ellipse ring (rx > ry). On phones, drop the desktop min radius (200px) or left/right nodes clip off-screen.
+			/* Mindre side-padding → større rx → ringen bredere mod venstre/højre */
+			let paddingX = 165;
+			let paddingY = 215;
+			let extraRy = 120;
+			let minRx = 200;
+			let minRy = 170;
+			if (tabletLandscape) {
+				/* iPad landskab: stor ellipse — bruger både bredde og højde på åben notesbog */
+				paddingX = 172;
+				paddingY = 152;
+				extraRy = 0;
+				minRx = 128;
+				minRy = 118;
+			}
+			if (narrow) {
+				paddingX = Math.max(36, w * 0.10);
+				paddingY = Math.max(42, h * 0.09);
+				extraRy = 0;
+				minRx = 48;
+				minRy = 48;
+			}
+			/* Bred landscape (fx tablet), ikke kort phone landscape: mindre side-padding → større rx */
+			if (touchLayout && w > h && !narrow) {
+				paddingX = Math.min(paddingX, 64);
+			}
+			let rx = Math.max(minRx, (w / 2) - paddingX);
+			let ry = Math.max(minRy, (h / 2) - paddingY) + extraRy;
+			if (tabletLandscape) {
+				ry = Math.min(ry, Math.max(minRy, layoutH * 0.39));
+				rx = Math.min(rx, layoutW * 0.41);
+				/* Bred notesbog: lidt bredere end høj (typisk rx/ry ≈ 1.18 på 1366×1024) */
+				rx = Math.max(rx, Math.round(ry * 1.18));
+				rx = Math.min(rx, layoutW * 0.41);
+			}
+			if (narrow) {
+				const capX = Math.max(64, w * 0.36);
+				const capY = Math.max(72, h * 0.36);
+				rx = Math.min(rx, capX);
+				ry = Math.min(ry, capY);
+			}
+			/* Lav landscape (tablet m.m.): flad ry — spring over i kort landscape (desktop ellipse) */
+			try {
+				if (touchLayout && w > h) {
+					const flatRy =
+						!narrow && mskIsProjectsShortLandscapeViewport()
+							? Math.max(195, h * 0.64)
+							: Math.max(152, h * 0.44);
+					ry = Math.min(ry, flatRy);
+				}
+			} catch {}
+			/* Kort landscape: begræns kun lodret radius (top/bund). Horisontalt: udvid ringen så den bruger bredden
+			   (tidligere min(rx, rxTight) trykkede rx ned til ~158px og stablede knapper i midten). */
+			try {
+				if (isShortLandscape && !narrow) {
+					/* Lodret: lidt højere bue så top/bund bruger mere af højden — samme node-/ring-størrelse (kun placering) */
+					ry = Math.min(ry, Math.max(138, h * 0.54));
+					/* Vandret: scale(MSK_PROJECTS_LANDSCAPE_FIT) — layout-rx skal være højere end w/2 for synlig bredde, men fuld
+					   (vw/2)/fit klippede sidebobler (titler rækker ud). Bland mod rx fra padding ovenfor. */
+					try {
+						const innerMax = Math.max(window.innerWidth || 0, window.innerHeight || 0);
+						const vw = Math.max(1, w, innerMax, lv.w, lv.h);
+						let fit = MSK_PROJECTS_LANDSCAPE_FIT;
+						try {
+							const cs = window.getComputedStyle(container);
+							const v = parseFloat(cs.getPropertyValue('--projectsLandscapeFit') || '');
+							if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
+						} catch (_) {}
+						const edgePad = 18;
+						const rxLo = rx;
+						const rxFull = Math.max(40, (vw / 2 - edgePad) / fit);
+						const rxBlend = 0.56;
+						rx = Math.max(rxLo, rxLo + (rxFull - rxLo) * rxBlend);
+					} catch (_) {
+						/* Undlad fallback der capper rx til ~w/2 — det fjerner hele scale-kompensationen. */
+					}
+				}
+			} catch {}
+			/* Kort phone landscape = samme bue som desktop (ingen 1.09-ring) */
+			const shortLsRing = false;
 			const n = nodeArray.length || 1;
 			// Start at top (-90deg) and go clockwise.
 			const startAngle = -Math.PI / 2;
@@ -3278,13 +7260,122 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Anchor each tab by its CENTER so varying text widths/heights don't break the circle.
 			nodeArray.forEach((node, i) => {
 				const angle = startAngle + i * step;
-				const x = centerX + rx * Math.cos(angle);
-				let y = centerY + ry * Math.sin(angle);
+				/* Kort landscape: skub hele ringen ~8% ud fra centrum — mindre overlap end per-node-fidus */
+				const rxEff = shortLsRing ? rx * 1.09 : rx;
+				const ryEff = shortLsRing ? ry * 1.09 : ry;
+				let x = centerX + rxEff * Math.cos(angle);
+				let y = centerY + ryEff * Math.sin(angle);
 				const href = (node.getAttribute('href') || '').toLowerCase();
+				const shortLs = shortLsRing;
+
+				/* Øvre bue: mindre træk mod midten i kort landscape → mere plads til top/bund */
+				if (Math.sin(angle) < -0.12) {
+					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 12 : 26;
+					y += Math.round(topPull * scale);
+				}
+
+				if (Math.sin(angle) > 0.38) {
+					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 22 : 38;
+					y -= botPull;
+				}
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
-				if (href.includes('repop')) y += 35;
+				if (href.includes('repop')) y += touchLayout ? 14 : tabletLandscape ? 12 : 35;
+				/* Kort mobil-landscape: cirkel + indhold lidt op */
+				if (href.includes('repop') && isShortLandscape) y -= 20;
+				/* Kort landscape: skub højre-side (Naturli / Durex / Unge) fra hinanden — mindre overlap på tværs af enheder */
+				if (isShortLandscape) {
+					if (href.includes('naturli')) {
+						y -= 10;
+						x += 6;
+					}
+					if (href.includes('durex')) {
+						x += 8;
+					}
+					if (href.includes('unge-mod-uv')) {
+						y += 12;
+						x += 6;
+					}
+				}
+				/* Desktop (≥1025): venstresidens bobler længere ud — ikke iPad landskab (hold ring cirkulær) */
+				try {
+					if (!tabletLandscape && !narrow && !isShortLandscape && w >= 1025) {
+						const leftPush = Math.round(56 * scale);
+						if (
+							href.includes('byens-landhandel') ||
+							href.includes('brainfarts') ||
+							href.includes('kobajer')
+						) {
+							x -= leftPush;
+						}
+					}
+				} catch {}
+				/* Desktop: UNGE MOD UV — ned + mod højre — ikke iPad landskab */
+				try {
+					if (
+						!tabletLandscape &&
+						!narrow &&
+						!isShortLandscape &&
+						w >= 1025 &&
+						href.includes('unge-mod-uv')
+					) {
+						y += Math.round(46 * scale);
+						x += Math.round(56 * scale);
+					}
+				} catch {}
+				/* Desktop: TWISTER — lidt ned — ikke iPad landskab */
+				try {
+					if (!tabletLandscape && !narrow && !isShortLandscape && w >= 1025 && href.includes('twister')) {
+						y += Math.round(14 * scale);
+					}
+				} catch {}
+
+				x = Math.round(x);
+				y = Math.round(y);
+
+				if (tabletLandscape) {
+					if (href.includes('repop')) {
+						x += Math.round(4 * scale);
+						y += Math.round(2 * scale);
+					}
+					if (href.includes('naturli')) {
+						x += Math.round(10 * scale);
+						y -= Math.round(6 * scale);
+					}
+					if (href.includes('byens-landhandel') || href.includes('byens')) {
+						x -= Math.round(4 * scale);
+						y -= Math.round(4 * scale);
+					}
+					if (href.includes('brainfarts')) {
+						x += Math.round(4 * scale);
+						y -= Math.round(6 * scale);
+					}
+					if (href.includes('kobajer')) {
+						x -= Math.round(2 * scale);
+						y += Math.round(6 * scale);
+					}
+					if (href.includes('unge-mod-uv')) {
+						x += Math.round(6 * scale);
+						y -= Math.round(6 * scale);
+					}
+					const padX = Math.round(22 * scale);
+					let bandTopClamp = Math.round(44 * scale);
+					try {
+						const nb = document.querySelector('.navbar');
+						if (nb && nb.getBoundingClientRect) {
+							bandTopClamp = Math.max(bandTopClamp, Math.round(nb.getBoundingClientRect().bottom + 14));
+						}
+					} catch (_) {}
+					const bandBottomClamp = layoutH - Math.round(18 * scale);
+					if (href.includes('durex')) {
+						const durexMaxX = layoutW - Math.round(72 * scale);
+						x = Math.max(padX, Math.min(durexMaxX, x));
+					} else {
+						x = Math.max(padX, Math.min(layoutW - padX, x));
+					}
+					y = Math.max(bandTopClamp, Math.min(bandBottomClamp, y));
+				}
 
 				node.style.setProperty('position', 'absolute', 'important');
 				node.style.setProperty('left', `${x}px`, 'important');
@@ -3301,18 +7392,24 @@ document.addEventListener('DOMContentLoaded', function() {
 					'important'
 				);
 
-				// Move ONLY the word (label) for BRAINFARTS a bit to the right.
+				// Move ONLY the label for BRAINFARTS a bit to the right (do not wipe image titles).
 				if (href.includes('brainfarts')) {
-					let label = node.querySelector('.node-label');
-					if (!label) {
-						label = document.createElement('span');
-						label.className = 'node-label';
-						label.textContent = node.textContent;
-						node.textContent = '';
-						node.appendChild(label);
+					const title = node.querySelector('.project-node__title');
+					if (title) {
+						title.style.display = 'inline-block';
+						title.style.transform = 'translateX(3px)';
+					} else {
+						let label = node.querySelector('.node-label');
+						if (!label) {
+							label = document.createElement('span');
+							label.className = 'node-label';
+							label.textContent = node.textContent;
+							node.textContent = '';
+							node.appendChild(label);
+						}
+						label.style.display = 'inline-block';
+						label.style.transform = 'translateX(3px)';
 					}
-					label.style.display = 'inline-block';
-					label.style.transform = 'translateX(3px)';
 				}
 			});
 
@@ -3322,6 +7419,130 @@ document.addEventListener('DOMContentLoaded', function() {
 			createAndPositionRepopKravlingLine();
 			createAndPositionKravlingNomineretBadge();
 			createAndPositionKobajerArrow();
+			ensureProjectsMobileInlineBadges();
+			hideStandaloneDandDForProjectsMindmapPortrait(container);
+			try {
+				if (ipadDocEllipse || tabletLandscape) {
+					container.classList.add('projects-mindmap--ready');
+					container.dataset.mskMindmapLayout = `${layoutW}x${layoutH}`;
+				}
+			} catch (_) {}
+			try {
+				ensureBrainfartsInlineSignForTabletLandscape();
+			} catch (_) {}
+			try {
+				mskApplyUngeModUvIpadLandscapeTitleNudge();
+			} catch (_) {}
+			try {
+				mskApplyDurexIpadLandscapeTitleNudge();
+			} catch (_) {}
+		}
+
+		/** iPad landskab: “Under ombygning” inde i BRAINFARTS-cirklen — ikke den store desktop-pil. */
+		function ensureBrainfartsInlineSignForTabletLandscape() {
+			try {
+				mskApplyBrainfartsIpadLandscapeConstructionSign();
+			} catch (_) {}
+		}
+
+		/** Mobile CSS hides standalone Kravling/D&AD badges; show copies inside REPOP / KØ-BAJER / TWISTER / BRAINFARTS nodes. */
+		function ensureProjectsMobileInlineBadges() {
+			try {
+				if (!document.body || !document.body.classList.contains('projects-page')) return;
+				const container = document.querySelector('.brainstorm-container');
+				if (!container) return;
+				let narrow = false;
+				try {
+					narrow = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
+				} catch {}
+				const cw = container.getBoundingClientRect().width;
+				if (
+					!(
+						narrow ||
+						cw <= 640 ||
+						mskIsProjectsShortLandscapeViewport() ||
+						mskIsProjectsTabletPortraitViewport() ||
+						mskIsProjectsPhonePortraitViewport()
+					)
+				)
+					return;
+
+				function stackNode(el) {
+					if (!el) return;
+					el.style.setProperty('display', 'flex', 'important');
+					el.style.setProperty('flex-direction', 'column', 'important');
+					el.style.setProperty('align-items', 'center', 'important');
+					el.style.setProperty('justify-content', 'center', 'important');
+				}
+
+				const repop = container.querySelector('a[href*="repop"]');
+				stackNode(repop);
+				if (repop && !repop.querySelector('.kravling-nomineret-badge--inline')) {
+					const el = document.createElement('div');
+					el.className = 'kravling-nomineret-badge kravling-nomineret-badge--inline';
+					el.setAttribute('aria-hidden', 'true');
+					el.innerHTML = `
+						<div class="kravling-line1">KRAVLINGPRISEN</div>
+						<div class="kravling-line2">NOMINERET</div>
+						<div class="kravling-line3">2025</div>
+					`;
+					repop.appendChild(el);
+				}
+
+				const kob = container.querySelector('a[href*="kobajer"]');
+				stackNode(kob);
+				if (kob && !kob.querySelector('.kobajer-kravling-2024-badge--inline')) {
+					const el = document.createElement('div');
+					el.className = 'kobajer-kravling-2024-badge kobajer-kravling-2024-badge--inline';
+					el.setAttribute('aria-hidden', 'true');
+					el.innerHTML = `
+						<div class="kobajer-kravling-2024-text">
+							<div class="kravling-line1">KRAVLINGPRISEN</div>
+							<div class="kravling-line2">NOMINERET</div>
+							<div class="kravling-line3">2024</div>
+						</div>
+					`;
+					kob.appendChild(el);
+				}
+
+				const tw = container.querySelector('a[href*="twister"]');
+				stackNode(tw);
+				if (tw && !tw.querySelector('.dandd-badge--inline')) {
+					const el = document.createElement('div');
+					el.className = 'dandd-badge dandd-badge--inline';
+					el.setAttribute('aria-hidden', 'true');
+					const logo = document.createElement('img');
+					logo.className = 'dandd-logo';
+					logo.alt = 'D&AD';
+					logo.src = 'assets/D&AD LOGO.webp';
+					logo.onerror = () => {
+						logo.onerror = null;
+						logo.src = 'assets/D&AD logo.webp';
+					};
+					const winner = document.createElement('img');
+					winner.className = 'dandd-winner';
+					winner.alt = 'D&AD VINDER';
+					winner.src = 'assets/D&AD VINDER.webp';
+					el.appendChild(logo);
+					el.appendChild(winner);
+					tw.appendChild(el);
+				}
+
+				const bf = container.querySelector('a[href*="brainfarts"]');
+				stackNode(bf);
+				if (bf && !bf.querySelector('.brainfarts-build__sign--inline')) {
+					const img = document.createElement('img');
+					img.className = 'brainfarts-build__sign--inline';
+					img.alt = '';
+					img.draggable = false;
+					img.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
+					img.setAttribute('aria-hidden', 'true');
+					bf.appendChild(img);
+				}
+				try {
+					mskApplyBrainfartsIpadLandscapeConstructionSign();
+				} catch (_) {}
+			} catch {}
 		}
 
 		// Create fart clouds
@@ -3376,6 +7597,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionDandDLogo() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			if (!twisterNode) return;
 
@@ -3385,6 +7607,20 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Full 360° ring of rays around the set
 				const start = -180;
 				const step = 360 / Math.max(1, count); // avoid duplicating -180/180
+				let topBoost = false;
+				try {
+					const iwDesk = mskViewportSize().w || 0;
+					const desktopFine = !!(
+						window.matchMedia &&
+						window.matchMedia('(hover: hover)').matches &&
+						window.matchMedia('(pointer: fine)').matches
+					);
+					topBoost =
+						desktopFine &&
+						iwDesk >= 1025 &&
+						!mskIsProjectsTabletLandscapeViewport() &&
+						!mskIsProjectsShortLandscapeViewport();
+				} catch (_) {}
 				for (let i = 0; i < count; i++) {
 					const s = document.createElement('span');
 					s.className = 'spark';
@@ -3392,20 +7628,37 @@ document.addEventListener('DOMContentLoaded', function() {
 					const delay = (i % 10) * 0.06;
 					const w = (i % 3 === 0) ? 4 : 3;
 					// Perfect round ring: ALL rays start from the same radius.
-					const r = 56;
-					let h = 78;
+					let r = 40;
+					let h = 54;
+					let oy = 0;
 					// Every second ray is half as long (but starts at the same ring)
 					if (i % 2 === 1) h = Math.round(h * 0.5);
+					if (topBoost) {
+						// 0deg = up, ±180 = down. Sides stay as-is.
+						let a = ((rot % 360) + 360) % 360;
+						if (a > 180) a -= 360;
+						const fromUp = Math.abs(a);
+						if (fromUp <= 55) h = Math.round(54 * 1.62);
+						else if (fromUp <= 95) h = Math.round(Math.max(h, 40) * 1.28);
+						else if (fromUp >= 100) {
+							const t = Math.min(1, (fromUp - 100) / 80);
+							r = Math.round(44 + t * 12);
+							oy = Math.round(3 + t * 5);
+							if (fromUp >= 145) h = Math.round(54 * 1.32);
+							else h = Math.round(Math.max(h, 36) * 1.16);
+						}
+					}
 					s.style.setProperty('--rot', `${rot}deg`);
 					s.style.setProperty('--d', `${delay}s`);
 					s.style.setProperty('--w', `${w}px`);
 					s.style.setProperty('--r', `${r}px`);
 					s.style.setProperty('--h', `${h}px`);
+					if (oy) s.style.setProperty('--oy', `${oy}px`);
 					sparksEl.appendChild(s);
 				}
 			}
 
-			let badge = container.querySelector('.dandd-badge');
+			let badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 			if (!badge) {
 				badge = document.createElement('div');
 				badge.className = 'dandd-badge';
@@ -3468,7 +7721,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const containerRect = container.getBoundingClientRect();
 			const r = twisterNode.getBoundingClientRect();
-			const top = (r.top - containerRect.top) + (r.height / 2) + 28; // move more down
+			const top = (r.top - containerRect.top) + (r.height / 2) + 46; // D&AD badge: lidt længere ned under TWISTER
 			const left = (r.right - containerRect.left) + 14 + 70; // move a lot more right
 
 			badge.style.left = `${left}px`;
@@ -3506,8 +7759,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionTwisterDandDLine() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
-			const badge = container.querySelector('.dandd-badge');
+			const badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 			if (!twisterNode || !badge) return;
 
 			let line = container.querySelector('.twister-dandd-line');
@@ -3516,14 +7770,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				line.className = 'twister-dandd-line';
 				line.alt = '';
 				line.src = encodeURI("assets/linje mellem  twister og  D&AD.webp");
-				line.style.position = 'absolute';
-				line.style.pointerEvents = 'none';
-				line.style.zIndex = '12';
-				line.style.display = 'block';
-				line.style.imageRendering = 'crisp-edges';
-				line.style.filter = 'none';
 				container.appendChild(line);
 			}
+			applyMindmapLineImgBaseStyles(line);
 
 			const containerRect = container.getBoundingClientRect();
 			const twRect = twisterNode.getBoundingClientRect();
@@ -3550,10 +7799,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			const angle = (Math.atan2(eY - sY, eX - sX) * 180 / Math.PI) + 6; // rotate a bit more down
 			const lineLength = Math.sqrt((eX - sX) ** 2 + (eY - sY) ** 2);
 
+			let lineHeightPx = 115;
+			if (mskIsProjectsTabletLandscapeViewport()) {
+				lineHeightPx = 172;
+			}
+
 			line.style.left = `${sX}px`;
 			line.style.top = `${sY}px`;
 			line.style.width = `${lineLength}px`;
-			line.style.height = '190px'; // thicker
+			line.style.height = `${lineHeightPx}px`;
 			line.style.transformOrigin = '0 50%';
 			line.style.transform = `translateY(-50%) rotate(${angle}deg)`;
 		}
@@ -3562,6 +7816,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionRepopKravlingLine() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 			const repopNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('repop'));
 			if (!repopNode) return;
 
@@ -3571,25 +7826,36 @@ document.addEventListener('DOMContentLoaded', function() {
 				line.className = 'repop-kravling-line';
 				line.alt = '';
 				line.src = `assets/${encodeURIComponent("linje fra repop til kravling.webp")}`;
-				line.style.position = 'absolute';
-				line.style.pointerEvents = 'none';
-				line.style.zIndex = '12';
-				line.style.display = 'block';
-				line.style.imageRendering = 'crisp-edges';
-				line.style.filter = 'none';
 				container.appendChild(line);
 			}
+			applyMindmapLineImgBaseStyles(line);
 
 			const containerRect = container.getBoundingClientRect();
 			const r = repopNode.getBoundingClientRect();
+			const titleImg = repopNode.querySelector('.project-node__title-img--repop');
+			const titleRect = titleImg ? titleImg.getBoundingClientRect() : r;
+			/* Pilens højre kant skal møde venstre kant af REPOP-teksten (ikke hele fanen) */
+			let anchorLeft = titleRect.left - containerRect.left;
 
-			// Size (can be tuned) — keep the right edge anchored to the tab
-			const width = 170; // shorter
+			// Size (can be tuned) — kortere pil så Kravling + pil ikke sidder “udenfor” cirklen
+			const width = 138;
 			const height = 80; // slimmer
-			const gap = 10;
+			const tipOverlapPx = 4;
+			/* Skub pil + Kravling-badge mod højre (badge følger via pilens rect) */
+			let shiftRightPx = 76;
+			try {
+				if (mskIsProjectsTabletLandscapeViewport()) {
+					anchorLeft += Math.round(titleRect.width * 0.06);
+					shiftRightPx = 10;
+				}
+			} catch (_) {}
+			const left = anchorLeft - width + tipOverlapPx + shiftRightPx;
 
-			const top = (r.top - containerRect.top) + (r.height / 2) + 12; // a bit more down
-			const left = (r.left - containerRect.left) - width + gap + 8; // a bit to the right
+			let arrowTopOffset = 12;
+			try {
+				if (mskIsProjectsTabletLandscapeViewport()) arrowTopOffset = -4;
+			} catch (_) {}
+			const top = (r.top - containerRect.top) + (r.height / 2) + arrowTopOffset;
 
 			line.style.width = `${width}px`;
 			line.style.height = `${height}px`;
@@ -3649,6 +7915,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionKravlingNomineretBadge() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 			const arrow = container.querySelector('.repop-kravling-line');
 			if (!arrow) return;
 
@@ -3682,7 +7949,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const a = arrow.getBoundingClientRect();
 
 			const width = 160;
-			const gap = 12;
+			const gap = 4;
 			const left = (a.left - containerRect.left) - width - gap;
 			const top = (a.top - containerRect.top) + (a.height / 2);
 
@@ -3690,13 +7957,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			badge.style.height = 'auto';
 			badge.style.left = `${left}px`;
 			badge.style.top = `${top}px`;
-			badge.style.transform = 'translateY(-50%) translateX(62px) translateY(-12px) rotate(-2deg)'; // 2025 badge slightly left
+			badge.style.transform = 'translateY(-50%) translateX(22px) translateY(-12px) rotate(-2deg)'; /* tættere på pil + tekst */
 		}
 
 		// Place arrow asset just under KØ-BAJER
 		function createAndPositionKobajerArrow() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
 
 			const kobajerNode = Array.from(nodes).find(n => {
 				const href = (n.getAttribute('href') || '').toLowerCase();
@@ -3711,14 +7979,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				arrow.className = 'kobajer-arrow';
 				arrow.alt = '';
 				arrow.draggable = false;
-				arrow.style.position = 'absolute';
-				arrow.style.pointerEvents = 'none';
-				arrow.style.zIndex = '20';
-				arrow.style.display = 'block';
-				arrow.style.imageRendering = 'crisp-edges';
-				arrow.style.filter = 'none';
 				container.appendChild(arrow);
 			}
+			applyKobajerArrowBaseStyles(arrow);
 			// Always use the latest arrow asset file
 			arrow.src = `assets/${encodeURIComponent('pil til kø bajer.webp')}`;
 			// When navigating/re-initializing, the arrow image may not have dimensions yet.
@@ -3735,7 +7998,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			const containerRect = container.getBoundingClientRect();
 			const r = kobajerNode.getBoundingClientRect();
 
-			const width = 85; // shorter
+			let width = 66;
+			let arrowScaleY = 1.4;
+			let arrowScaleX = 1;
+			try {
+				if (mskIsProjectsTabletLandscapeViewport()) {
+					width = 72;
+					arrowScaleY = 1.48;
+					arrowScaleX = 1.06;
+				}
+			} catch (_) {}
 			const gap = -35; // move slightly down
 			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - 42; // more to the right
 			const top = (r.bottom - containerRect.top) + gap;
@@ -3749,7 +8021,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			arrow.style.top = `${top}px`;
 			// Point down, and make it thicker without making it longer
 			arrow.style.transformOrigin = '50% 50%';
-			arrow.style.transform = 'rotate(115deg) scaleY(1.4)'; // rotate more to the right
+			arrow.style.transform = `rotate(115deg) scale(${arrowScaleX}, ${arrowScaleY})`;
 
 			// Position the "Kravlingprisen nomineret 2024" label under the arrow tip
 			createAndPositionKobajerKravling2024Label();
@@ -3859,7 +8131,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const tipY = (r.bottom - containerRect.top);
 
 			badge.style.left = `${tipX - 28}px`; // a bit more to the left
-			badge.style.top = `${tipY - 36}px`;  // slightly more up
+			badge.style.top = `${tipY - 22}px`; // lidt ned ift. pilspids
 			badge.style.transform = 'translateX(-50%) rotate(-2deg)';
 			badge.dataset.lastLeft = badge.style.left;
 			badge.dataset.lastTop = badge.style.top;
@@ -3952,18 +8224,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			const kornAsset = document.createElement('img');
 			kornAsset.src = 'assets/korn asset.webp';
 			kornAsset.className = 'korn-asset';
+			/* Placering + centrum: styles.css (.brain .korn-asset) — translate(-50%,-50%) + nudge så korn roterer om hjernen */
 			kornAsset.style.cssText = `
 				position: absolute;
-				width: 440px;
-				height: 380px;
-				top: 50%;
-				left: 50%;
-				margin-top: -190px;
-				margin-left: -220px;
 				opacity: 0;
 				display: none;
-				z-index: 25;
-				object-fit: fill;
+				z-index: 11;
 			`;
 			brain.appendChild(kornAsset);
 
@@ -4039,7 +8305,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			twisterAsset.className = 'twister-asset';
 			twisterAsset.style.cssText = `
 				position: absolute;
-				width: 85px;
+				width: 51px;
 				height: auto;
 				top: 62%;
 				right: 27%;
@@ -4296,8 +8562,249 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (under) { under.classList.remove('is-visible'); under.style.opacity = ''; under.style.transform = ''; under.style.filter = ''; }
 		}
 
+	/** iPad landskab: lodret Repop-streg — længere op i ring + længere ned mod hjernen. */
+	function mskRepopIpadLandscapeLinePoints(containerRect, brainRect, ring, node, nodeRect) {
+		const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
+		const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
+		const brainTop = brainRect.top - containerRect.top;
+		const lineDownPx = Math.round(brainRadiusLine * 0.11);
+		const brainStartY = brainTop + Math.round(brainRadiusLine * 0.44) + lineDownPx;
+		let lineEndY = brainTop - Math.round(brainRadiusLine * 0.2) + lineDownPx;
+		if (ring) {
+			const ry = parseFloat(ring.getAttribute('y') || '0');
+			const rh = parseFloat(ring.getAttribute('height') || '0');
+			lineEndY = ry + rh * 0.22 + lineDownPx;
+		} else if (node) {
+			const repTitle = node.querySelector('.project-node__title-img--repop');
+			const tr = repTitle ? repTitle.getBoundingClientRect() : nodeRect;
+			lineEndY =
+				tr.bottom - containerRect.top + Math.round(tr.height * 0.12) + lineDownPx;
+		}
+		return {
+			brainStartX: centerX,
+			brainStartY,
+			lineEndX: centerX,
+			lineEndY,
+		};
+	}
+
+	/** iPad landskab: streg hjernen → Byens — centreret mod hjernen + ring (små gaps). */
+	function mskByensIpadLandscapeLinePoints(containerRect, brainRect, ring, node, nodeRect) {
+		const brainCx = brainRect.left - containerRect.left + brainRect.width / 2;
+		const brainCy = brainRect.top - containerRect.top + brainRect.height / 2;
+		const brainR = Math.min(brainRect.width, brainRect.height) / 2;
+
+		let ringCx = brainCx - 120;
+		let ringCy = brainCy - 140;
+		let ringRx = 80;
+		let ringRy = 50;
+		if (ring) {
+			const rx = parseFloat(ring.getAttribute('x') || '0');
+			const ry = parseFloat(ring.getAttribute('y') || '0');
+			const rw = parseFloat(ring.getAttribute('width') || '0');
+			const rh = parseFloat(ring.getAttribute('height') || '0');
+			ringCx = rx + rw / 2;
+			ringCy = ry + rh / 2;
+			ringRx = rw / 2;
+			ringRy = rh / 2;
+		} else if (node && nodeRect) {
+			ringCx = nodeRect.left - containerRect.left + nodeRect.width / 2;
+			ringCy = nodeRect.top - containerRect.top + nodeRect.height / 2;
+			ringRx = nodeRect.width / 2;
+			ringRy = nodeRect.height / 2;
+		}
+
+		const dx = ringCx - brainCx;
+		const dy = ringCy - brainCy;
+		const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+		const ux = dx / dist;
+		const uy = dy / dist;
+
+		const brainStartX = brainCx + ux * (brainR * 0.5);
+		const brainStartY = brainCy + uy * (brainR * 0.5);
+		const ringGap = Math.max(ringRx, ringRy) * 0.06;
+		const lineEndX = ringCx - ux * ringGap;
+		const lineEndY = ringCy - uy * ringGap;
+
+		return { brainStartX, brainStartY, lineEndX, lineEndY };
+	}
+
+	/** iPad landskab: streg hjernen → BRAINFARTS (efter ring findes). */
+	function mskBrainfartsIpadLandscapeLinePoints(containerRect, brainRect, ring, node, nodeRect) {
+		const brainCx = brainRect.left - containerRect.left + brainRect.width / 2;
+		const brainCy = brainRect.top - containerRect.top + brainRect.height / 2;
+		const brainR = Math.min(brainRect.width, brainRect.height) / 2;
+		/* + = højre / ned (kun iPad landskab) */
+		const lineNudgeX = 14;
+		const lineNudgeY = 6;
+
+		let ringCx = brainCx - 140;
+		let ringCy = brainCy + 20;
+		let ringRx = 90;
+		let ringRy = 70;
+		if (ring) {
+			const rx = parseFloat(ring.getAttribute('x') || '0');
+			const ry = parseFloat(ring.getAttribute('y') || '0');
+			const rw = parseFloat(ring.getAttribute('width') || '0');
+			const rh = parseFloat(ring.getAttribute('height') || '0');
+			ringCx = rx + rw / 2;
+			ringCy = ry + rh / 2;
+			ringRx = rw / 2;
+			ringRy = rh / 2;
+		} else if (node && nodeRect) {
+			ringCx = nodeRect.left - containerRect.left + nodeRect.width / 2;
+			ringCy = nodeRect.top - containerRect.top + nodeRect.height / 2;
+			ringRx = nodeRect.width / 2;
+			ringRy = nodeRect.height / 2;
+		}
+
+		const dx = ringCx - brainCx;
+		const dy = ringCy - brainCy;
+		const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+		const ux = dx / dist;
+		const uy = dy / dist;
+
+		const brainStartX = brainCx + ux * (brainR * 0.48) + lineNudgeX;
+		const brainStartY = brainCy + uy * (brainR * 0.48);
+		const ringGap = Math.max(ringRx, ringRy) * 0.14;
+		const lineEndX = ringCx - ux * ringGap + lineNudgeX;
+		const lineEndY = ringCy - uy * ringGap;
+
+		return { brainStartX, brainStartY, lineEndX, lineEndY };
+	}
+
+	function mskSyncBrainfartsBrainLineIpadLandscape() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+			if (!mskIsProjectsTabletLandscapeViewport()) return;
+			const currentSvg = document.querySelector('.connecting-lines');
+			if (!currentSvg) return;
+			const line = currentSvg.querySelector('image.brainfarts-brain-line');
+			const ring = currentSvg.querySelector('image.brainfarts-image');
+			if (!line) return;
+
+			const containerRect = container.getBoundingClientRect();
+			const brain = container.querySelector('.brain');
+			if (!brain) return;
+			const brainRect = brain.getBoundingClientRect();
+			const node = container.querySelector('a[href*="brainfarts"], .project-node[href*="brainfarts"]');
+			const nodeRect = node ? node.getBoundingClientRect() : null;
+			const pts = mskBrainfartsIpadLandscapeLinePoints(
+				containerRect,
+				brainRect,
+				ring,
+				node,
+				nodeRect
+			);
+
+			const angle =
+				(Math.atan2(pts.lineEndY - pts.brainStartY, pts.lineEndX - pts.brainStartX) * 180) /
+				Math.PI;
+			const lineLength = Math.sqrt(
+				(pts.lineEndX - pts.brainStartX) ** 2 + (pts.lineEndY - pts.brainStartY) ** 2
+			);
+			const bfLineHpx = parseFloat(line.getAttribute('height') || '390');
+
+			line.setAttribute('x', String(pts.brainStartX));
+			line.setAttribute('y', String(pts.brainStartY - bfLineHpx / 2));
+			line.setAttribute('width', String(Math.max(12, lineLength)));
+			line.setAttribute(
+				'transform',
+				`rotate(${angle} ${pts.brainStartX} ${pts.brainStartY})`
+			);
+		} catch (_) {}
+	}
+
+	function mskSyncByensBrainLineIpadLandscape() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+			if (!mskIsProjectsTabletLandscapeViewport()) return;
+			const currentSvg = document.querySelector('.connecting-lines');
+			if (!currentSvg) return;
+			const line = currentSvg.querySelector('image.byens-brain-line');
+			const ring = currentSvg.querySelector('image.byens-landhandel-image');
+			if (!line) return;
+
+			const containerRect = container.getBoundingClientRect();
+			const brain = container.querySelector('.brain');
+			if (!brain) return;
+			const brainRect = brain.getBoundingClientRect();
+			const node = container.querySelector('a[href*="byens-landhandel"], .project-node[href*="byens-landhandel"]');
+			const nodeRect = node ? node.getBoundingClientRect() : null;
+			const pts = mskByensIpadLandscapeLinePoints(
+				containerRect,
+				brainRect,
+				ring,
+				node,
+				nodeRect
+			);
+
+			const angle =
+				(Math.atan2(pts.lineEndY - pts.brainStartY, pts.lineEndX - pts.brainStartX) * 180) /
+				Math.PI;
+			const lineLength = Math.sqrt(
+				(pts.lineEndX - pts.brainStartX) ** 2 + (pts.lineEndY - pts.brainStartY) ** 2
+			);
+			const byensLineHpx = parseFloat(line.getAttribute('height') || '400');
+
+			line.setAttribute('x', String(pts.brainStartX));
+			line.setAttribute('y', String(pts.brainStartY - byensLineHpx / 2));
+			line.setAttribute('width', String(Math.max(12, lineLength)));
+			line.setAttribute(
+				'transform',
+				`rotate(${angle} ${pts.brainStartX} ${pts.brainStartY})`
+			);
+		} catch (_) {}
+	}
+
+	/** iPad landskab: Repop-streg tegnes før ring — forlæng efter createHandDrawnFrames. */
+	function mskSyncRepopBrainLineIpadLandscape() {
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			if (!container || container.classList.contains('projects-mindmap--portrait')) return;
+			if (!mskIsProjectsTabletLandscapeViewport()) return;
+			const currentSvg = document.querySelector('.connecting-lines');
+			if (!currentSvg) return;
+			const line = currentSvg.querySelector('image.repop-brain-line');
+			const ring = currentSvg.querySelector('image.repop-image');
+			if (!line || !ring) return;
+
+			const containerRect = container.getBoundingClientRect();
+			const brain = container.querySelector('.brain');
+			if (!brain) return;
+			const brainRect = brain.getBoundingClientRect();
+			const pts = mskRepopIpadLandscapeLinePoints(
+				containerRect,
+				brainRect,
+				ring,
+				null,
+				null
+			);
+
+			const angle =
+				(Math.atan2(pts.lineEndY - pts.brainStartY, pts.lineEndX - pts.brainStartX) *
+					180) /
+				Math.PI;
+			const lineLength = Math.sqrt(
+				(pts.lineEndX - pts.brainStartX) ** 2 + (pts.lineEndY - pts.brainStartY) ** 2
+			);
+			const repopLineHpx = parseFloat(line.getAttribute('height') || '332');
+
+			line.setAttribute('x', String(pts.brainStartX));
+			line.setAttribute('y', String(pts.brainStartY - repopLineHpx / 2));
+			line.setAttribute('width', String(Math.max(12, lineLength)));
+			line.setAttribute(
+				'transform',
+				`rotate(${angle} ${pts.brainStartX} ${pts.brainStartY})`
+			);
+		} catch (_) {}
+	}
+
 	// Create connecting lines from brain to nodes
-	function createConnectingLines() {
+	function createConnectingLines(options) {
+		const forceRedraw = !!(options && options.force);
 		console.log('Creating connecting lines...');
 		
 		// Get fresh references to elements
@@ -4313,7 +8820,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.log('Missing elements for line creation');
 			return;
 		}
-		
+
+		if (!forceRedraw && currentSvg.dataset.mskDynamicGraphicsBuilt === '1') return;
+
+		const container = document.querySelector('.brainstorm-container');
+		mskEnsureProjectsPortraitSvgBox();
+		mskProjectsSyncLayoutBeforePaint();
+		if (container && mskIsProjectsPortraitGridDocumentMode()) {
+			try {
+				container.classList.add('projects-mindmap--portrait');
+			} catch (_) {}
+		}
+
 		// Remove ONLY dynamic lines/paths we previously created and redraw them.
 		// This preserves any static SVG lines in `projects.html` (e.g. NATURLI) and avoids double-stacking.
 		currentSvg.querySelectorAll('.dynamic-mindmap-line').forEach(el => el.remove());
@@ -4321,28 +8839,731 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Note: All existing lines are cleared above, so we start with a clean slate
 		
-		const container = document.querySelector('.brainstorm-container');
 		const brainRect = currentBrain.getBoundingClientRect();
 		const containerRect = container.getBoundingClientRect();
 
 		// Note: The TWISTER↔D&AD line is handled as a normal positioned <img> for reliability.
 		
-		// Calculate center of brain relative to container
-		const centerX = brainRect.left - containerRect.left + brainRect.width / 2;
-		const centerY = brainRect.top - containerRect.top + brainRect.height / 2;
+		// Brain center in SVG user space (container may use CSS transform in phone landscape)
+		const brainCenterSvg = svgCenterFromRect(currentSvg, brainRect, containerRect);
+		const centerX = brainCenterSvg.x;
+		const centerY = brainCenterSvg.y;
 		
 		// Calculate brain radius to create gap
 		const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
 		const gapDistance = brainRadius * 1.0; // 100% of brain radius as gap - balanced gap
+		/* Linjer under hjernen (TWISTER, KØ-BAJER, BRAINFARTS, KØ→Byens): lidt kortere */
+		const underBrainLineLenMul = 0.77;
+		/* Hjernen ↔ cirkler: alle segmenter lidt kortere (tykkelse uændret) */
+		const mindmapLineLenMul = 0.92;
+
+		let desktopProjectsWide = false;
+		let ipadLandscapeLines = false;
+		try {
+			const iw = mskProjectsLayoutViewportBox().w || 0;
+			desktopProjectsWide = iw >= 1025 && !mskIsProjectsShortLandscapeViewport();
+			ipadLandscapeLines =
+				!!mskIsProjectsTabletLandscapeViewport() &&
+				!container.classList.contains('projects-mindmap--portrait');
+			if (ipadLandscapeLines) desktopProjectsWide = false;
+		} catch (_) {}
+		/* Desktop: 0.77 efterlader synligt hul til venstre — næsten fuld længde ud til cirkler */
+		const spokeLenMul = desktopProjectsWide ? 0.99 : underBrainLineLenMul;
+
+		/* Kort landscape: tykkelse < 1 — stadig tydelig ift. bobler */
+		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.55 : 1;
+		const lineH = (base) => Math.max(12, Math.round(Number(base) * lineThicknessMul));
+
+		// Portrait mobile: 4 streger hjerte→Durex/Unge/Twister/Kø + 4 cirkel→cirkel (Rep↔Dur …); ikke 8 radiale fra desktop-gren.
+		try {
+			const iwVp = mskViewportSize().w || 0;
+			const ihVp = mskViewportSize().h || 0;
+			const lvLine = mskProjectsLayoutViewportBox();
+			const iwLv = lvLine.w;
+			const ihLv = lvLine.h;
+			const cwLine = container
+				? Math.round(Math.max(1, container.clientWidth || container.getBoundingClientRect().width))
+				: 0;
+			/* Samme logik som positionNodesPerfectCircle / usePortraitSketchGrid — ellers ellipse-noder + radiale streger */
+			const isPortraitMindmap =
+				!!(container && container.classList && container.classList.contains('projects-mindmap--portrait'));
+			let portraitOrientationChain = false;
+			try {
+				portraitOrientationChain = !!(window.matchMedia && window.matchMedia('(orientation: portrait)').matches);
+			} catch (_) {
+				portraitOrientationChain = false;
+			}
+			/* Når matchMedia siger landscape men layout-viewport er portræt (DevTools/Safari), ellers 8 radiale streger. */
+			if (
+				!portraitOrientationChain &&
+				ihLv >= iwLv &&
+				!mskIsProjectsTabletLandscapeViewport() &&
+				!document.documentElement.classList.contains('msk-projects-ipad-landscape')
+			) {
+				portraitOrientationChain = true;
+			}
+			let phonePortraitMediaChain = false;
+			try {
+				phonePortraitMediaChain = !!(
+					window.matchMedia &&
+					window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches
+				);
+			} catch (_) {}
+			const tabletPortraitProjectsChain =
+				!!(
+					document.body &&
+					document.body.classList.contains('projects-page') &&
+					mskIsProjectsTabletPortraitViewport()
+				);
+			const phonePortraitProjectsChain =
+				!!(
+					document.body &&
+					document.body.classList.contains('projects-page') &&
+					mskIsProjectsPhonePortraitViewport()
+				);
+			const portraitSketchLikeGrid =
+				document.body &&
+				document.body.classList.contains('projects-page') &&
+				!mskIsProjectsTabletLandscapeViewport() &&
+				!mskIsProjectsShortLandscapeViewport() &&
+				(isPortraitMindmap ||
+					mskIsProjectsPortraitGridDocumentMode() ||
+					mskIsProjectsPortraitSketchGridViewport() ||
+					(portraitOrientationChain &&
+						(phonePortraitMediaChain ||
+							cwLine <= 640 ||
+							tabletPortraitProjectsChain ||
+							phonePortraitProjectsChain)));
+			let isMobileProjects =
+				isPortraitMindmap ||
+				portraitSketchLikeGrid ||
+				(iwVp > 0 && ihVp > 0 && iwVp <= 640 && ihVp >= iwVp);
+			/* Kort landscape: slå portrait-kæde fra — ikke når vi allerede er i portræt-skitse (klasse eller samme MQ som grid). */
+			try {
+				if (
+					mskIsProjectsShortLandscapeViewport() &&
+					ihLv < iwLv &&
+					!isPortraitMindmap &&
+					!portraitSketchLikeGrid
+				) {
+					isMobileProjects = false;
+				}
+			} catch (_) {}
+			try {
+				if (mskIsProjectsPhonePortraitViewport() || mskIsProjectsTabletPortraitViewport()) {
+					isMobileProjects = true;
+				}
+			} catch (_) {}
+			if (mskIsProjectsPortraitGridDocumentMode() && !mskIsProjectsTabletLandscapeViewport()) {
+				isMobileProjects = true;
+			}
+			const portraitGridLines =
+				isPortraitMindmap || portraitSketchLikeGrid || mskIsProjectsPortraitSketchGridViewport();
+			let portraitLineScale = 1;
+			try {
+				if (portraitGridLines) portraitLineScale = mskProjectsPortraitReferenceScale();
+			} catch (_) {}
+			let phoneLineAdj = 1;
+			try {
+				if (
+					phonePortraitProjectsChain &&
+					!tabletPortraitProjectsChain &&
+					typeof mskGetPhonePortraitProfileFactors === 'function'
+				) {
+					phoneLineAdj = mskGetPhonePortraitProfileFactors().lineAdj || 1;
+				}
+			} catch (_) {}
+			if (isMobileProjects) {
+				const scale = 1;
+				const phonePortraitLineMul =
+					phonePortraitProjectsChain && !tabletPortraitProjectsChain ? phoneLineAdj : 1;
+				const svgScale = (n) =>
+					n * scale * (portraitGridLines ? portraitLineScale : 1) * phonePortraitLineMul;
+				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
+				const portraitUnderBrainStrokePullUp =
+					portraitGridLines ? svgScale(16) : 0;
+				/* Kun portræt: venstre streg (Twister) lidt højere end højre (Kø-Bajer) */
+				const portraitUnderBrainLeftStrokeExtraPullUp =
+					portraitGridLines ? svgScale(12) : 0;
+				/* Øvre kæde (Rep↔Dur, Dur↔hjerne, Nat↔Ung, Ung↔hjerne): ekstra forkortelse */
+				const portraitUpperLineMul =
+					phonePortraitProjectsChain && !tabletPortraitProjectsChain
+						? 0.88 * phoneLineAdj
+						: 0.88;
+				const phoneBrainStrokeMul =
+					phonePortraitProjectsChain &&
+					!tabletPortraitProjectsChain &&
+					portraitGridLines
+						? 1.78
+						: 1;
+				try {
+					currentSvg.querySelectorAll('.mindmap-line:not(.dynamic-mindmap-line)').forEach((el) => {
+						el.dataset.mobileHidden = '1';
+						el.style.setProperty('display', 'none', 'important');
+						el.style.setProperty('opacity', '0', 'important');
+						el.style.setProperty('visibility', 'hidden', 'important');
+					});
+				} catch {}
+
+				const findNode = (hrefPart) =>
+					Array.from(currentNodes).find((n) =>
+						((n.getAttribute('href') || '').toLowerCase()).includes(hrefPart)
+					);
+
+				const repop = findNode('repop');
+				const naturli = findNode('naturli');
+				const durex = findNode('durex');
+				const unge = findNode('unge-mod-uv');
+				const twister = findNode('twister');
+				const kobajer = findNode('kobajer');
+				const brainfarts = findNode('brainfarts');
+				const byens = findNode('byens-landhandel');
+
+				const pt = (rect, kind) => {
+					if (!rect || rect.width <= 0 || rect.height <= 0) return { x: 0, y: 0 };
+					const cx = rect.left + rect.width / 2;
+					const cy = rect.top + rect.height / 2;
+					let px = cx;
+					let py = cy;
+					if (kind === 'top') py = rect.top;
+					else if (kind === 'bottom') py = rect.top + rect.height;
+					else if (kind === 'left') px = rect.left;
+					else if (kind === 'right') px = rect.left + rect.width;
+					return mskSvgPointFromClientPx(currentSvg, px, py);
+				};
+
+				const lineImg = (assetPath, a, b, heightPx, opts) => {
+					if (!a || !b) return;
+					opts = opts || {};
+					const gapA = opts.gapA !== undefined ? opts.gapA : svgScale(8);
+					const gapB = opts.gapB !== undefined ? opts.gapB : svgScale(8);
+					const lenMul = opts.lenMul != null ? opts.lenMul : 1;
+					const angleOffsetDeg = opts.angleOffsetDeg != null ? opts.angleOffsetDeg : 0;
+					const ax = a.x, ay = a.y;
+					const bx = b.x, by = b.y;
+					const dx = bx - ax;
+					const dy = by - ay;
+					const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+					const ux = dx / dist;
+					const uy = dy / dist;
+					const sx = ax + ux * gapA;
+					const sy = ay + uy * gapA;
+					const ex = bx - ux * gapB;
+					const ey = by - uy * gapB;
+					let len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2)) * lenMul * mindmapLineLenMul;
+					if (len < 6) return;
+					let angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI + angleOffsetDeg;
+					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+					img.setAttribute('href', assetPath);
+					img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', assetPath);
+					img.setAttribute('x', String(sx));
+					img.setAttribute('y', String(sy - (heightPx / 2)));
+					img.setAttribute('width', String(len));
+					img.setAttribute('height', String(heightPx));
+					img.setAttribute('opacity', '1');
+					img.setAttribute('preserveAspectRatio', 'none');
+					img.setAttribute('transform', `rotate(${angle} ${sx} ${sy})`);
+					img.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
+					img.style.pointerEvents = 'none';
+					img.style.display = 'block';
+					img.style.visibility = 'visible';
+					img.style.imageRendering = 'crisp-edges';
+					img.style.filter = 'none';
+					currentSvg.appendChild(img);
+				};
+
+				const bRect = currentBrain.getBoundingClientRect();
+				const brainTop = pt(bRect, 'top');
+				const brainBottom = pt(bRect, 'bottom');
+				const brainLeft = pt(bRect, 'left');
+				const brainRight = pt(bRect, 'right');
+
+				const repRect = repop && repop.getBoundingClientRect();
+				const natRect = naturli && naturli.getBoundingClientRect();
+				const durRect = durex && durex.getBoundingClientRect();
+				const ungRect = unge && unge.getBoundingClientRect();
+				const twiRect = twister && twister.getBoundingClientRect();
+				const kobRect = kobajer && kobajer.getBoundingClientRect();
+				const brfRect = brainfarts && brainfarts.getBoundingClientRect();
+				const byeRect = byens && byens.getBoundingClientRect();
+
+				/* Kun portræt: Repop↔Durex-stregen lidt ned */
+				const repDurexPortraitLineDy = portraitGridLines ? svgScale(10) : 0;
+				/* Kun portræt: Tw↔Brainfarts og Kø↔Byens — mindre “shift up” så stregen sætter lidt lavere */
+				const portraitBottomRowLineTune = portraitGridLines;
+
+				if (repRect && durRect) {
+					const repBot = pt(repRect, 'bottom');
+					const durTop = pt(durRect, 'top');
+					let repDurexLineH = svgScale(210);
+					let repDurexIpadPortraitExtraDy = 0;
+					let repDurexGapA = svgScale(2);
+					let repDurexGapB = svgScale(2);
+					let repDurexLenMul = 1.04 * portraitUpperLineMul;
+					try {
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('repDurex');
+							if (ic) {
+								repDurexLineH = svgScale(ic.lineH);
+								repDurexIpadPortraitExtraDy = svgScale(ic.extraDy);
+								repDurexGapA = svgScale(ic.gapA);
+								repDurexGapB = svgScale(ic.gapB);
+								repDurexLenMul = ic.lenMul;
+							} else {
+								repDurexLineH = svgScale(252);
+								repDurexIpadPortraitExtraDy = svgScale(7);
+								repDurexGapA = svgScale(34);
+							}
+						}
+					} catch (_) {}
+					let repDurexA = {
+						x: repBot.x,
+						y: repBot.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy,
+					};
+					let repDurexB = {
+						x: durTop.x,
+						y: durTop.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy,
+					};
+					/* Telefon portræt: Repop→Durex (Linje 2) længere + tykkere */
+					if (
+						phonePortraitProjectsChain &&
+						!tabletPortraitProjectsChain &&
+						portraitGridLines
+					) {
+						repDurexLenMul *= 1.82;
+						repDurexLineH *= 1.42;
+						repDurexGapA = -svgScale(8);
+						repDurexGapB = -svgScale(16);
+						const phoneRepDurLen = svgScale(34);
+						repDurexA.y += phoneRepDurLen;
+						repDurexB.y -= phoneRepDurLen * 0.95;
+						repDurexA.y -= svgScale(6);
+					}
+					lineImg(
+						'assets/Linje 2.webp',
+						repDurexA,
+						repDurexB,
+						repDurexLineH,
+						{
+							gapA: repDurexGapA,
+							gapB: repDurexGapB,
+							lenMul: repDurexLenMul,
+						}
+					);
+				}
+				if (durRect) {
+					const bh = (brainBottom.y - brainTop.y) || 1;
+					let a = mskSvgPointFromClientPx(
+						currentSvg,
+						durRect.right - durRect.width * 0.30,
+						durRect.top + durRect.height * 0.72
+					);
+					let b = { x: brainLeft.x + svgScale(52), y: brainTop.y + bh * 0.30 };
+					let durexGapA = svgScale(8);
+					let durexGapB = svgScale(13);
+					let durexLenMul = portraitUpperLineMul;
+					let durexLineH = svgScale(220);
+					try {
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('durexBrain');
+							if (ic) {
+								const durexBrainIpadDy = svgScale(ic.brainIpadDy);
+								a.y += durexBrainIpadDy;
+								b.y += durexBrainIpadDy + svgScale(ic.brainExtraDy);
+								durexGapB = svgScale(ic.gapB);
+								durexLenMul = ic.lenMul;
+								durexLineH = svgScale(ic.lineH);
+							} else {
+								const durexBrainIpadDy = svgScale(24);
+								a.y += durexBrainIpadDy;
+								b.y += durexBrainIpadDy + svgScale(26);
+								durexGapB = -svgScale(10);
+								durexLenMul = portraitUpperLineMul * 1.16;
+								durexLineH = svgScale(318);
+							}
+						}
+					} catch (_) {}
+					durexLineH *= phoneBrainStrokeMul;
+					lineImg('assets/linje 6.webp', a, b, durexLineH, {
+						gapA: durexGapA,
+						gapB: durexGapB,
+						lenMul: durexLenMul,
+					});
+				}
+				if (twiRect) {
+					const shiftX = svgScale(36);
+					const twBrainLineDy = svgScale(18);
+					const twPortraitPullUp =
+						portraitUnderBrainStrokePullUp + portraitUnderBrainLeftStrokeExtraPullUp;
+					const a = {
+						x: brainLeft.x - svgScale(6) + shiftX,
+						y: brainBottom.y - svgScale(58) + twBrainLineDy - twPortraitPullUp,
+					};
+					/* Slut tættere på TWISTER-boblen (længere ud mod twister) */
+					let b = {
+						x: pt(twiRect, 'left').x - svgScale(28) + shiftX,
+						y: pt(twiRect, 'top').y - svgScale(14) + twBrainLineDy - twPortraitPullUp,
+					};
+					/* Ren rotation set ovenfra (ikke flytte ankre); negativ grader = mod venstre i SVG */
+					let twBrainAngleOffset = -34;
+					let twBrainGapA = -svgScale(14);
+					let twBrainGapB = -svgScale(10);
+					let twBrainLenMul = underBrainLineLenMul * 0.98;
+					let twBrainLineH = svgScale(175);
+					try {
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('twBrain');
+							if (ic) {
+								const twTop = pt(twiRect, 'top');
+								const twMid = pt(twiRect, 'center');
+								b = {
+									x: twMid.x + svgScale(14) + shiftX,
+									y: twTop.y + svgScale(10) + svgScale(38) + twBrainLineDy - twPortraitPullUp,
+								};
+								twBrainAngleOffset = ic.angleOffset;
+								twBrainGapB = svgScale(ic.gapB);
+								twBrainLenMul = underBrainLineLenMul * ic.lenMul;
+								twBrainLineH = svgScale(ic.lineH);
+							} else {
+								const twTop = pt(twiRect, 'top');
+								const twMid = pt(twiRect, 'center');
+								b = {
+									x: twMid.x + svgScale(14) + shiftX,
+									y: twTop.y + svgScale(10) + svgScale(38) + twBrainLineDy - twPortraitPullUp,
+								};
+								twBrainAngleOffset = -10;
+								twBrainGapB = -svgScale(30);
+								twBrainLenMul = underBrainLineLenMul * 1.22;
+								twBrainLineH = svgScale(278);
+							}
+						}
+					} catch (_) {}
+					twBrainLineH *= phoneBrainStrokeMul;
+					lineImg('assets/linje 8.webp', a, b, twBrainLineH, {
+						gapA: twBrainGapA,
+						gapB: twBrainGapB,
+						lenMul: twBrainLenMul,
+						angleOffsetDeg: twBrainAngleOffset,
+					});
+				}
+				if (twiRect && brfRect) {
+					const twBrfDown = svgScale(8);
+					let twBrfShiftUp = svgScale(portraitBottomRowLineTune ? 28 : 22);
+					let twBrfGapA = -svgScale(16);
+					let twBrfGapB = svgScale(0);
+					let twBrfLenMul = 1.58;
+					const twBot = pt(twiRect, 'bottom');
+					const bfTop = pt(brfRect, 'top');
+					let twBrfLineH = svgScale(232);
+					let a = { x: twBot.x, y: twBot.y + twBrfDown - twBrfShiftUp };
+					let b = { x: bfTop.x, y: bfTop.y + twBrfDown - twBrfShiftUp };
+					try {
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('twBrainfarts');
+							if (ic) {
+								twBrfShiftUp = svgScale(ic.shiftUp);
+								a.y = twBot.y + twBrfDown - twBrfShiftUp - svgScale(ic.liftExtra);
+								b.y =
+									bfTop.y + twBrfDown - twBrfShiftUp - svgScale(ic.liftExtra) + svgScale(ic.bfDownExtra);
+								twBrfLineH = svgScale(ic.lineH);
+								twBrfGapA = svgScale(ic.gapA);
+								twBrfGapB = svgScale(ic.gapB);
+								twBrfLenMul = ic.lenMul;
+							} else {
+								twBrfShiftUp = svgScale(48);
+								a.y = twBot.y + twBrfDown - twBrfShiftUp - svgScale(12);
+								b.y = bfTop.y + twBrfDown - twBrfShiftUp - svgScale(12) + svgScale(10);
+								twBrfLineH = svgScale(322);
+								twBrfGapA = svgScale(8);
+								twBrfGapB = svgScale(2);
+								twBrfLenMul = 1.34;
+							}
+						}
+					} catch (_) {}
+					/* Telefon portræt: Twister→Brainfarts (linje 3) længere */
+					if (
+						phonePortraitProjectsChain &&
+						!tabletPortraitProjectsChain &&
+						portraitGridLines
+					) {
+						twBrfLenMul *= 1.28;
+						const phoneTwBrfLen = svgScale(16);
+						a.y += phoneTwBrfLen;
+						b.y -= phoneTwBrfLen * 0.9;
+						twBrfGapA = -svgScale(8);
+						twBrfGapB = -svgScale(6);
+					}
+					lineImg(
+						'assets/linje 3.webp',
+						a,
+						b,
+						twBrfLineH,
+						{
+							gapA: twBrfGapA,
+							gapB: twBrfGapB,
+							lenMul: twBrfLenMul,
+						}
+					);
+				}
+
+				if (natRect && ungRect) {
+					/* Smallere (lavere height) men lidt længere (højere lenMul + lidt mindre gap) */
+					const natBottomPt = pt(natRect, 'bottom');
+					const ungTopPt = pt(ungRect, 'top');
+					let natUngA = natBottomPt;
+					let natUngB = ungTopPt;
+					let natUngGapA = svgScale(6);
+					let natUngGapB = svgScale(10);
+					let natUngLenMul = portraitUpperLineMul * 1.1;
+					let natUngLineH = svgScale(158);
+					/* iPad 641–1024 portræt + lodret mindmap: længere lodret streg Nat' → UNGE */
+					try {
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('natUng');
+							if (ic) {
+								natUngA = {
+									x: natBottomPt.x,
+									y: natBottomPt.y - svgScale(ic.aLift) - svgScale(ic.liftY),
+								};
+								natUngB = {
+									x: ungTopPt.x,
+									y: ungTopPt.y + svgScale(ic.bDrop) - svgScale(ic.liftY),
+								};
+								natUngGapA = svgScale(ic.gapA);
+								natUngGapB = svgScale(ic.gapB);
+								natUngLenMul = ic.lenMul;
+								natUngLineH = svgScale(ic.lineH);
+							} else {
+								const natUngIpadLiftY = svgScale(14);
+								natUngA = {
+									x: natBottomPt.x,
+									y: natBottomPt.y - svgScale(26) - natUngIpadLiftY,
+								};
+								natUngB = {
+									x: ungTopPt.x,
+									y: ungTopPt.y + svgScale(26) - natUngIpadLiftY,
+								};
+								natUngGapA = svgScale(2);
+								natUngGapB = svgScale(4);
+								natUngLenMul = portraitUpperLineMul * 1.32;
+								natUngLineH = svgScale(198);
+							}
+						}
+					} catch (_) {}
+					/* Telefon portræt: Naturli'→Unge Mod UV (linje 7) længere ned mod Unge */
+					if (
+						phonePortraitProjectsChain &&
+						!tabletPortraitProjectsChain &&
+						portraitGridLines
+					) {
+						natUngLenMul *= 1.22;
+						const phoneNatUngExtend = svgScale(18);
+						natUngB.y += phoneNatUngExtend;
+						natUngGapB = -svgScale(8);
+					}
+					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
+						gapA: natUngGapA,
+						gapB: natUngGapB,
+						lenMul: natUngLenMul,
+					});
+				}
+				if (ungRect) {
+					const ungeLineDy = svgScale(16);
+					const bh = (brainBottom.y - brainTop.y) || 1;
+					let a = mskSvgPointFromClientPx(
+						currentSvg,
+						ungRect.left + ungRect.width * 0.34,
+						ungRect.top + ungRect.height * 0.62
+					);
+					a.y += ungeLineDy;
+					let b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 + ungeLineDy };
+					let ungeGapA = svgScale(4);
+					let ungeGapB = svgScale(5);
+					let ungeLenMul = portraitUpperLineMul * 1.08;
+					let ungeLineH = svgScale(220);
+					try {
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('ungeBrain');
+							if (ic) {
+								b.y += svgScale(ic.bExtraDy);
+								ungeGapB = svgScale(ic.gapB);
+								ungeLenMul = ic.lenMul;
+								ungeLineH = svgScale(ic.lineH);
+							} else {
+								b.y += svgScale(16);
+								ungeGapB = -svgScale(6);
+								ungeLenMul = portraitUpperLineMul * 1.12;
+								ungeLineH = svgScale(268);
+							}
+						}
+					} catch (_) {}
+					ungeLineH *= phoneBrainStrokeMul;
+					lineImg('assets/linje 5.webp', a, b, ungeLineH, {
+						gapA: ungeGapA,
+						gapB: ungeGapB,
+						lenMul: ungeLenMul,
+					});
+				}
+				if (kobRect) {
+					const a = {
+						x: brainRight.x - svgScale(52),
+						y: brainBottom.y - svgScale(58) - portraitUnderBrainStrokePullUp,
+					};
+					const kobTop = pt(kobRect, 'top');
+					const b = {
+						x:
+							mskSvgPointFromClientPx(
+								currentSvg,
+								kobRect.left + kobRect.width * 0.32,
+								kobRect.top
+							).x - svgScale(4),
+						y: kobTop.y - svgScale(14) - portraitUnderBrainStrokePullUp,
+					};
+					let kobBrainLineH = svgScale(235) * phoneBrainStrokeMul;
+					let kobBrainGapA = -svgScale(14);
+					let kobBrainGapB = svgScale(2);
+					let kobBrainLenMul = underBrainLineLenMul * 1.38;
+					if (
+						phonePortraitProjectsChain &&
+						!tabletPortraitProjectsChain &&
+						portraitGridLines
+					) {
+						/* Forkort kun nedefra (Kø-Bajer-cirkel) — ikke fra hjernen */
+						kobBrainGapB = svgScale(62);
+					}
+					lineImg('assets/Linje 4.webp', a, b, kobBrainLineH, {
+						gapA: kobBrainGapA,
+						gapB: kobBrainGapB,
+						lenMul: kobBrainLenMul,
+					});
+				}
+				if (kobRect && byeRect) {
+					const kobByeDown = svgScale(22);
+					/* Samme længde/vinkel — parallelforskydning op + mod venstre; portræt: lidt mindre op-træk */
+					let kobByeShiftUpPx = portraitBottomRowLineTune ? 44 : 54;
+					try {
+						const icShift = mskIpadPortraitLineLock('kobBye');
+						if (icShift && icShift.shiftUp != null) kobByeShiftUpPx = icShift.shiftUp;
+					} catch (_) {}
+					const kobByeShiftUp = svgScale(kobByeShiftUpPx);
+					const kobByeShiftLeft = svgScale(18);
+					const a0 = pt(kobRect, 'bottom');
+					const b0 = pt(byeRect, 'top');
+					/* iPad 641–1024 portræt + lodret mindmap: længere streg Kø → Byens (kun her) */
+					let kobByeTopInsetX = svgScale(34);
+					let kobByeLenMul = 1.88;
+					let kobByeStartNudgeX = 0;
+					try {
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('kobBye');
+							if (ic) {
+								kobByeTopInsetX = svgScale(ic.topInsetX);
+								kobByeLenMul = ic.lenMul;
+								kobByeStartNudgeX = svgScale(ic.startNudgeX);
+							} else {
+								kobByeTopInsetX = svgScale(84);
+								kobByeLenMul = 2.24;
+								kobByeStartNudgeX = -svgScale(24);
+							}
+						}
+					} catch (_) {}
+					const a = {
+						x: a0.x - kobByeShiftLeft + kobByeStartNudgeX,
+						y: a0.y + kobByeDown - kobByeShiftUp,
+					};
+					const b = {
+						x: b0.x + kobByeTopInsetX - kobByeShiftLeft,
+						y: b0.y + kobByeDown - kobByeShiftUp,
+					};
+					/* iPad portræt mindmap: loddret; forkort mest fra nedefra (Byens-ende) */
+					let kobByeLineH = svgScale(220);
+					let kobByeLineGapA = -svgScale(8);
+					let kobByeLineGapB = -svgScale(8);
+					try {
+						if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('kobBye');
+							if (ic) {
+								a.x += svgScale(ic.alignX);
+								b.x = a.x;
+								a.y -= svgScale(ic.ipadLift);
+								b.y -= svgScale(ic.ipadLift);
+								b.y -= svgScale(ic.bfExtraUp);
+								a.y += svgScale(ic.portraitDown);
+								b.y += svgScale(ic.portraitDown);
+								kobByeLineGapB = svgScale(ic.gapB);
+								kobByeLineH = svgScale(ic.lineH);
+							} else {
+								a.x += svgScale(52);
+								b.x = a.x;
+								const kobByeIpadLift = svgScale(10);
+								a.y -= kobByeIpadLift;
+								b.y -= kobByeIpadLift;
+								b.y -= svgScale(10);
+								const kobByePortraitDown = svgScale(14);
+								a.y += kobByePortraitDown;
+								b.y += kobByePortraitDown;
+								kobByeLineGapB = svgScale(14);
+								kobByeLineH = svgScale(268);
+							}
+						}
+					} catch (_) {}
+					if (
+						phonePortraitProjectsChain &&
+						!tabletPortraitProjectsChain &&
+						portraitGridLines
+					) {
+						/* Kø-Bajer → Byens: forkort nedefra (Byens-cirkel) */
+						kobByeLenMul *= 0.84;
+						kobByeLineGapB = svgScale(36);
+						b.y -= svgScale(22);
+						const phoneKobByeLift = svgScale(14);
+						a.y -= phoneKobByeLift;
+						b.y -= phoneKobByeLift;
+					}
+					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
+					lineImg('assets/linje 1.webp', a, b, kobByeLineH, {
+						gapA: kobByeLineGapA,
+						gapB: kobByeLineGapB,
+						lenMul: kobByeLenMul,
+					});
+				}
+
+				return;
+			}
+		} catch {}
+
+		/* Portræt-grid (telefon + tablet): aldrig 8 radiale desktop-streger ovenpå kæde-layoutet */
+		try {
+			if (
+				container &&
+				(container.classList.contains('projects-mindmap--portrait') ||
+					mskIsProjectsPortraitGridDocumentMode() ||
+					mskIsProjectsPortraitSketchGridViewport())
+			) {
+				return;
+			}
+		} catch (_) {}
+
+		// If we previously hid static lines for mobile, restore them for desktop/tablet.
+		try {
+			currentSvg.querySelectorAll('.mindmap-line[data-mobile-hidden="1"]').forEach((el) => {
+				el.removeAttribute('data-mobile-hidden');
+				el.style.removeProperty('display');
+				el.style.removeProperty('opacity');
+				el.style.removeProperty('visibility');
+			});
+		} catch {}
 		
 		console.log('Brain center:', centerX, centerY);
 		console.log('Container dimensions:', containerRect.width, containerRect.height);
 		
 		// Create hand-drawn lines to each project node
 		currentNodes.forEach((node, index) => {
+			if (container && container.classList.contains('projects-mindmap--portrait')) return;
 			const nodeRect = node.getBoundingClientRect();
-			const nodeX = nodeRect.left - containerRect.left + nodeRect.width / 2;
-			const nodeY = nodeRect.top - containerRect.top + nodeRect.height / 2;
+			const nodeCenterSvg = svgCenterFromRect(currentSvg, nodeRect, containerRect);
+			const nodeX = nodeCenterSvg.x;
+			const nodeY = nodeCenterSvg.y;
 			
 			console.log(`Node ${index} (${node.textContent.trim()}):`, nodeX, nodeY);
 			
@@ -4358,26 +9579,46 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (nodeTextBrainfarts === 'BRAINFARTS' || nodeHrefBrainfarts.includes('brainfarts') || nodeHrefBrainfarts.includes('project1')) {
 				console.log(`✓ BRAINFARTS detected at index ${index} - creating Linje 8.webp asset line`);
 				
-				// Start from slightly backward of the brain center (extending toward brain)
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-				const deltaX = nodeX - centerX;
-				const deltaY = nodeY - centerY;
-				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				// Extend backward from brain center to make line longer toward brain
-				const brainExtension = brainRadius * 0.38; // Extend further toward brain
-				const brainStartX = centerX - (deltaX / distance) * brainExtension;
-				const brainStartY = centerY - (deltaY / distance) * brainExtension;
-				
-				// Calculate end point - extend closer to/past the BRAINFARTS node
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				// Extend past the node center for a longer line
-				const extensionAmount = nodeRadius * 1.05; // Extend further toward BRAINFARTS
-				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
-				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
+				const bfShortLs = mskIsProjectsShortLandscapeViewport();
+				let brainStartX;
+				let brainStartY;
+				let lineEndX;
+				let lineEndY;
+				if (ipadLandscapeLines) {
+					const pts = mskBrainfartsIpadLandscapeLinePoints(
+						containerRect,
+						brainRect,
+						null,
+						node,
+						nodeRect
+					);
+					brainStartX = pts.brainStartX;
+					brainStartY = pts.brainStartY;
+					lineEndX = pts.lineEndX;
+					lineEndY = pts.lineEndY;
+				} else {
+					// Start from slightly backward of the brain center (extending toward brain)
+					const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+					const deltaX = nodeX - centerX;
+					const deltaY = nodeY - centerY;
+					const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+					// Extend backward from brain center to make line longer toward brain (desktop: længere i begge ender)
+					const brainExtension = brainRadius * (desktopProjectsWide ? 0.52 : 0.38);
+					brainStartX = centerX - (deltaX / distance) * brainExtension;
+					brainStartY = centerY - (deltaY / distance) * brainExtension;
+					
+					// Calculate end point - extend closer to/past the BRAINFARTS node
+					const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+					const bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 2.82 : 1.28;
+					const extensionAmount = nodeRadius * bfExtensionMul;
+					lineEndX = nodeX + (deltaX / distance) * extensionAmount;
+					lineEndY = nodeY + (deltaY / distance) * extensionAmount;
+				}
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
+				const bfWidthMul = ipadLandscapeLines ? 1 : bfShortLs ? 1.14 : 1;
 				
 				console.log('BRAINFARTS Linje 8 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -4386,13 +9627,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 8.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 195); // Offset by half height (390/2 = 195) to center on rotation point
-				lineImage.setAttribute('width', lineLength); // Longer
-				lineImage.setAttribute('height', '390'); // Slightly bigger/thicker line asset
+				lineImage.setAttribute('y', String(brainStartY - lineH(390) / 2)); // half of scaled line height
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * bfWidthMul);
+				lineImage.setAttribute('height', String(lineH(390)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add(
+					'mindmap-line',
+					'dynamic-mindmap-line',
+					'mobile-mindmap-line',
+					'brainfarts-brain-line'
+				);
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -4424,14 +9670,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate end point - extend to/past the KØ-BAJER node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				// Extend past the node center for a longer line
-				const extensionAmount = nodeRadius * 1.10; // Extend further toward KØ-BAJER
+				// Kort mobil-landscape: længere ud mod Kø-Bajer-boblen
+				const kobShortLs = mskIsProjectsShortLandscapeViewport();
+				const extensionMul = kobShortLs ? 2.02 : desktopProjectsWide ? 1.92 : 1.36;
+				const extensionAmount = nodeRadius * extensionMul;
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
+				const kobWidthMul = kobShortLs ? 1.12 : 1;
 				
 				console.log('KØ-BAJER Linje 4 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -4440,13 +9689,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/Linje 4.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/Linje 4.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 200); // Offset by half height (400/2 = 200) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '400');
+				lineImage.setAttribute('y', String(brainStartY - lineH(400) / 2));
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * kobWidthMul);
+				lineImage.setAttribute('height', String(lineH(400)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -4476,8 +9725,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				const deltaX = nodeX - brainCenterX;
 				const deltaY = nodeY - brainCenterY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				// Stop before the node center (bigger gap => shorter toward DUREX)
-				const gapDistance = nodeRadius * 0.32; // Slightly shorter toward DUREX
+				// Stop før/ved node-cirklen. Desktop: tæt på centrum; ellers ældre større hul.
+				let durexGapMul = desktopProjectsWide ? 0.02 : 0.32;
+				if (ipadLandscapeLines) durexGapMul = 0.64;
+				const gapDistance = nodeRadius * durexGapMul;
 				const lineEndX = nodeX - (deltaX / distance) * gapDistance;
 				const lineEndY = nodeY - (deltaY / distance) * gapDistance;
 				
@@ -4490,6 +9741,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const calculatedLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
 				const lineLength = calculatedLength; // Use full length
+				/* Uden denne: mindmapLineLenMul (0.92) forkorter <image width> så streget stopper synligt før lineEnd — hul mod Durex-cirklen */
+				let durexLineWidthMul = desktopProjectsWide ? 1 : mindmapLineLenMul;
+				if (ipadLandscapeLines) durexLineWidthMul = 1;
 				
 				console.log('DUREX linje 6 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -4498,13 +9752,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 6.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 6.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
+				lineImage.setAttribute('y', String(brainStartY - lineH(300) / 2));
+				lineImage.setAttribute('width', lineLength * durexLineWidthMul);
+				lineImage.setAttribute('height', String(lineH(300)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -4528,16 +9782,31 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Start from the center of the brain, extended backward toward brain
 				const brainCenterX = centerX;
 				const brainCenterY = centerY;
+
+				/* Telefon landscape (lav/bred): linje lidt op + mod venstre — mskIsProjectsShortLandscapeViewport */
+				let ungeLinePressDown = 16;
+				let ungeLineShiftLeft = 0;
+				let ungeShortenFromNodeEndPx = 0;
+				if (mskIsProjectsShortLandscapeViewport()) {
+					ungeLinePressDown = -8;
+					ungeLineShiftLeft = -42;
+					ungeShortenFromNodeEndPx = 22;
+				} else {
+					/* Desktop m.m.: forkort mod UNGE-boblen — slutpunkt trækkes mod hjernen langs stregen */
+					ungeShortenFromNodeEndPx = 34;
+				}
 				
 				// Calculate end point - extend closer to/past the UNGE MOD UV node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				const deltaX = nodeX - brainCenterX;
 				const deltaY = nodeY - brainCenterY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				// Extend past the node center (slightly shorter than before)
-				const extensionAmount = nodeRadius * 0.5; // Extend 50% of node radius past the center
-				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
-				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
+				// Slut tættere på cirklen i landscape (mindre “stik ind i teksten”) — lidt længere ud mod boblen
+				const extensionAmount =
+					mskIsProjectsShortLandscapeViewport() ? nodeRadius * 0.4 : nodeRadius * 0.55;
+				let lineEndX = nodeX + (deltaX / distance) * extensionAmount;
+				let lineEndY = nodeY + (deltaY / distance) * extensionAmount;
+				lineEndX += ungeLineShiftLeft;
 				
 				// Add gap from brain center, then extend backward toward brain
 				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
@@ -4547,27 +9816,40 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Extend backward from initial start point to make line longer toward brain
 				const brainExtension = brainRadius * 0.1; // Extend 10% of brain radius backward (slightly longer)
-				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
+				let brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
 				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				brainStartX += ungeLineShiftLeft;
+				/* Forkort mod UNGE-enden: træk slutpunkt mod hjernen langs segmentet (ikke fra hjernen) */
+				if (ungeShortenFromNodeEndPx > 0) {
+					const ux = lineEndX - brainStartX;
+					const uy = lineEndY - brainStartY;
+					const segLen = Math.sqrt(ux * ux + uy * uy) || 1;
+					const pull = Math.min(ungeShortenFromNodeEndPx, segLen * 0.42);
+					lineEndX -= (ux / segLen) * pull;
+					lineEndY -= (uy / segLen) * pull;
+				}
+				/* Hele segmentet lidt ned (samme offset i begge ender → samme vinkel) */
+				const lineEndYAdj = lineEndY + ungeLinePressDown;
+				const brainStartYAdj = brainStartY + ungeLinePressDown;
 				
 				// Calculate rotation and length for the image asset
-				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const angle = Math.atan2(lineEndYAdj - brainStartYAdj, lineEndX - brainStartX) * 180 / Math.PI;
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndYAdj - brainStartYAdj) ** 2);
 				
-				console.log('UNGE MOD UV linje 5 details (from center, down to the right):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
+				console.log('UNGE MOD UV linje 5 details (from center, down to the right):', { brainStartX, brainStartY: brainStartYAdj, lineEndX, lineEndY: lineEndYAdj, angle, lineLength });
 				
 				// Create image element for the line - use same pattern as KØ-BAJER
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/linje 5.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 5.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 150); // Offset by half height (300/2 = 150) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '300'); // Reduced height to make line thinner
+				lineImage.setAttribute('y', String(brainStartYAdj - lineH(300) / 2));
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * 1.04);
+				lineImage.setAttribute('height', String(lineH(300)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
-				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartYAdj})`);
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -4601,22 +9883,31 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// End further toward the tab (extend a bit past the tab center)
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				const nodeExtension = nodeRadius * 0.25;
+				let nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
 				const deltaX = byensAnchorX - initialBrainStartX;
 				const deltaY = byensAnchorY - initialBrainStartY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				const lineEndX = byensAnchorX + (deltaX / distance) * nodeExtension;
-				const lineEndY = byensAnchorY + (deltaY / distance) * nodeExtension;
+				let lineEndX = byensAnchorX + (deltaX / distance) * nodeExtension;
+				let lineEndY = byensAnchorY + (deltaY / distance) * nodeExtension;
 				
 				// Extend backward from the initial start point to make the line longer toward the brain
 				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-				const brainExtension = brainRadius * 0.28;
-				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
-				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				let brainExtension = brainRadius * 0.28;
+				let brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
+				let brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				if (ipadLandscapeLines) {
+					nodeExtension = nodeRadius * 0.72;
+					brainExtension = brainRadius * 0.05;
+				}
+				/* Kort mobil-landscape: hjernens ende (peger mod hjernen) lidt ned + til venstre */
+				if (mskIsProjectsShortLandscapeViewport()) {
+					brainStartX -= 22;
+					brainStartY += 24;
+				}
 				
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
 				
 				console.log('Line details:', {brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength});
 				
@@ -4624,13 +9915,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/linje 1.webp');
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 200); // Center vertically
-				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '400');
+				lineImage.setAttribute('y', String(brainStartY - lineH(400) / 2));
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
+				lineImage.setAttribute('height', String(lineH(400)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add(
+					'mindmap-line',
+					'dynamic-mindmap-line',
+					'mobile-mindmap-line',
+					'byens-brain-line'
+				);
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -4644,25 +9940,55 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeHrefRepop = (node.getAttribute('href') || '').toLowerCase();
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
-				// Start from below the top of the brain, extended backward toward brain
-				const initialBrainStartX = centerX;
-				const initialBrainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
-				
-				// End closer to the tab (smaller gap)
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				const tabGapDistance = nodeRadius * 0.1;
+				const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
+
+				// Start from below the top of the brain, extended backward toward brain
+				const initialBrainStartX = centerX;
+				let initialBrainStartY = brainRect.top - containerRect.top + 50;
+				let brainExtension = brainRadiusLine * 0.32;
+				let repopLineHpx;
+				let repopLineLenMul = desktopProjectsWide ? 0.99 : 0.92;
+
+				if (ipadLandscapeLines) {
+					repopLineHpx = lineH(332);
+					repopLineLenMul = 1;
+				} else if (mskIsProjectsShortLandscapeViewport()) {
+					repopLineHpx = 200;
+				} else if (desktopProjectsWide) {
+					repopLineHpx = lineH(400);
+				} else {
+					repopLineHpx = lineH(52);
+				}
+
 				const deltaX = nodeX - initialBrainStartX;
 				const deltaY = nodeY - initialBrainStartY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				const lineEndX = nodeX - (deltaX / distance) * tabGapDistance;
-				const lineEndY = nodeY - (deltaY / distance) * tabGapDistance;
-				
-				// Extend backward from brain start point to make line longer toward brain
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-				const brainExtension = brainRadius * 0.32; // Extend further toward brain (longer line)
-				const brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
-				const brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
-				
+				let lineEndX = nodeX - (deltaX / distance) * tabGapDistance;
+				let lineEndY = nodeY - (deltaY / distance) * tabGapDistance;
+
+				let brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
+				let brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+				let repopLineLenScale = repopLineLenMul * mindmapLineLenMul;
+				if (ipadLandscapeLines) {
+					repopLineLenScale = 1;
+					try {
+						const ring = currentSvg.querySelector('image.repop-image');
+						const pts = mskRepopIpadLandscapeLinePoints(
+							containerRect,
+							brainRect,
+							ring,
+							node,
+							nodeRect
+						);
+						lineEndX = pts.lineEndX;
+						lineEndY = pts.lineEndY;
+						brainStartX = pts.brainStartX;
+						brainStartY = pts.brainStartY;
+					} catch (_) {}
+				}
+
 				// Calculate angle for rotation
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
@@ -4671,13 +9997,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				lineImage.setAttribute('href', 'assets/Linje 2.webp');
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 22); // Center vertically (even thinner)
-				lineImage.setAttribute('width', lineLength * 0.92); // Slightly shorter
-				lineImage.setAttribute('height', '45'); // Even thinner line
+				lineImage.setAttribute('y', String(brainStartY - repopLineHpx / 2));
+				lineImage.setAttribute(
+					'width',
+					String(lineLength * repopLineLenScale)
+				);
+				lineImage.setAttribute('height', String(repopLineHpx));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line', 'repop-brain-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -4689,8 +10018,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Special case: NATURLI' - render linje 7.webp asset line from brain center to node
 			const nodeTextNaturli = node.textContent.trim();
 			const nodeHrefNaturli = node.getAttribute('href') || '';
-			if (nodeTextNaturli === 'NATURLI\'' || nodeHrefNaturli.includes('Naturli') || index === 2) {
-				console.log(`✓ NATURLI' detected at index ${index} - creating linje 7.webp asset line`);
+			if ((nodeHrefNaturli || '').toLowerCase().includes('naturli') || index === 2) {
+				console.log(`✓ NATURLI (naturli*) detected at index ${index} - creating linje 7.webp asset line`);
 				
 				// Start from the center of the brain
 				const brainCenterX = centerX;
@@ -4722,13 +10051,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 7.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 7.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 100); // Offset by half height (200/2 = 100) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '200'); // Further reduced height to make line thinner
+				lineImage.setAttribute('y', String(brainStartY - lineH(200) / 2));
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
+				lineImage.setAttribute('height', String(lineH(200)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.dataset.nodeIndex = String(index);
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				lineImage.style.pointerEvents = 'auto';
@@ -4759,14 +10088,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate end point - extend to/past the TWISTER node
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				// Extend past the node center for a longer line
-				const extensionAmount = nodeRadius * 1.3; // Extend further toward TWISTER
+				// Extend past the node center for a longer line (længere ud mod TWISTER-boblen)
+				let extensionAmount = nodeRadius * 1.82;
+				/* Kort mobil-landscape: hjernen → TWISTER — lidt længere end default (afstemt — ikke for lang) */
+				if (mskIsProjectsShortLandscapeViewport()) {
+					extensionAmount = nodeRadius * 2.04 + 14;
+				}
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount - 30; // Move line up by 30px
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				const twShortLsSpokeBoost = mskIsProjectsShortLandscapeViewport() ? 1.1 : 1;
+				const lineLength =
+					Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) *
+					spokeLenMul *
+					twShortLsSpokeBoost;
 				
 				console.log('TWISTER Linje 3 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -4775,13 +10112,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 3.webp');
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 3.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
-				lineImage.setAttribute('y', brainStartY - 300); // Offset by half height (600/2 = 300) to center on rotation point
-				lineImage.setAttribute('width', lineLength);
-				lineImage.setAttribute('height', '600');
+				lineImage.setAttribute('y', String(brainStartY - lineH(600) / 2));
+				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * 1.06);
+				lineImage.setAttribute('height', String(lineH(600)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
 				lineImage.setAttribute('transform', `rotate(${angle} ${brainStartX} ${brainStartY})`);
-				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				lineImage.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 				lineImage.style.pointerEvents = 'auto';
 				lineImage.style.display = 'block';
 				lineImage.style.visibility = 'visible';
@@ -4824,7 +10161,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				path.setAttribute('fill', 'none');
 				path.setAttribute('stroke-linecap', 'round');
 				path.setAttribute('stroke-linejoin', 'round');
-				path.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				path.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 			path.dataset.nodeIndex = String(index);
 			path.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -4850,7 +10187,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				roughPath.setAttribute('stroke-linecap', 'round');
 				roughPath.setAttribute('stroke-linejoin', 'round');
 				roughPath.setAttribute('filter', 'url(#roughEdges)');
-				roughPath.classList.add('mindmap-line', 'dynamic-mindmap-line');
+				roughPath.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 			roughPath.dataset.nodeIndex = String(index);
 			roughPath.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
@@ -4864,7 +10201,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	// Create hand-drawn circles around project tabs
-	function createHandDrawnFrames() {
+	function createHandDrawnFrames(options) {
+		const forceRedraw = !!(options && options.force);
 		console.log('Creating hand-drawn circles...');
 		
 		const currentSvg = document.querySelector('.connecting-lines');
@@ -4876,50 +10214,238 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
+		if (!forceRedraw && currentSvg.dataset.mskDynamicGraphicsBuilt === '1') {
+			if (
+				mskShouldUsePortraitHtmlRings() &&
+				container.querySelectorAll('.msk-portrait-ring-overlay.hand-drawn-frame').length >=
+					currentNodes.length
+			) {
+				return;
+			}
+			if (!mskShouldUsePortraitHtmlRings() && !mskProjectsMindmapNeedsGraphicRebuild()) return;
+		}
+
+		if (mskShouldUsePortraitHtmlRings()) {
+			mskProjectsSyncLayoutBeforePaint();
+			mskCreatePortraitGridRingOverlays();
+			return;
+		}
+
+		try {
+			container.querySelectorAll('.msk-portrait-ring-overlay').forEach((el) => {
+				try {
+					el.remove();
+				} catch (_) {}
+			});
+		} catch (_) {}
+
 		// Remove existing circles to avoid duplicates when this function runs again (e.g., on resize)
-		const existingCircles = currentSvg.querySelectorAll('.hand-drawn-frame, [class*="hand-drawn"], .brainfarts-overlay, image[href*="cirkel"], image[href*="circle"], image[xlink\\:href*="cirkel"], image[xlink\\:href*="circle"], image[href*="brainfarts"], image[href*="repop"], image[href*="kobajer"], image[href*="naturli"], image[href*="twister"], image[href*="durex"], image[href*="unge"]');
+		const existingCircles = currentSvg.querySelectorAll('.hand-drawn-frame, [class*="hand-drawn"], .brainfarts-overlay, .brainfarts-ipad-construction-sign, image[href*="cirkel"], image[href*="circle"], image[xlink\\:href*="cirkel"], image[xlink\\:href*="circle"], image[href*="brainfarts"], image[href*="repop"], image[href*="kobajer"], image[href*="naturli"], image[href*="twister"], image[href*="durex"], image[href*="unge"], image[href*="ombygning"]');
 		existingCircles.forEach(el => {
 			// Only remove if it's a circle/frame element, not a line
 			const href = el.getAttribute('href') || el.getAttributeNS('http://www.w3.org/1999/xlink', 'href') || '';
-			if (el.classList.contains('hand-drawn-frame') || el.classList.contains('brainfarts-overlay') || 
-			    href.includes('cirkel') || href.includes('circle') || href.includes('brainfarts') || 
-			    href.includes('repop') || href.includes('kobajer') || href.includes('naturli') || 
-			    href.includes('twister') || href.includes('durex') || href.includes('unge')) {
+			if (
+				el.classList.contains('hand-drawn-frame') ||
+				el.classList.contains('brainfarts-overlay') ||
+				el.classList.contains('brainfarts-ipad-construction-sign') ||
+				el.classList.contains('brainfarts-ipad-construction-wrap') ||
+				href.includes('cirkel') ||
+				href.includes('circle') ||
+				href.includes('brainfarts') ||
+				href.includes('ombygning') ||
+				href.includes('repop') ||
+				href.includes('kobajer') ||
+				href.includes('naturli') ||
+				href.includes('twister') ||
+				href.includes('durex') ||
+				href.includes('unge')
+			) {
 				el.remove();
 			}
 		});
 		
 		const containerRect = container.getBoundingClientRect();
 		console.log('Container rect:', containerRect);
-		
+		mskProjectsSyncLayoutBeforePaint();
+		const scale = 1;
+		const s = (n) => n * scale;
+		/* Kort landscape: mindre håndtegnede cirkler (SVG) så de matcher mindre titelbilleder */
+		let assetS = 1;
+		try {
+			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.76;
+		} catch (_) {
+			assetS = 1;
+		}
+		let portraitGridRingsEarly = false;
+		try {
+			portraitGridRingsEarly = mskIsProjectsPortraitGridRingsMode();
+		} catch (_) {}
+		function isProjectsPhoneLandscape() {
+			try {
+				const { w, h } = mskViewportSize();
+				return w <= 640 && h < w;
+			} catch (_) {
+				return false;
+			}
+		}
+		const landscapeMindmap =
+			isProjectsPhoneLandscape() || mskIsProjectsShortLandscapeViewport();
+		/** Projects på smal skærm (≤640px): Twister/Kø-Bajer lodrette ring-juster — portrait og phone landscape */
+		function isProjectsPhoneWidth() {
+			try {
+				const iw = mskViewportSize().w || 0;
+				if (!document.body || !document.body.classList.contains('projects-page')) return false;
+				return iw <= 640;
+			} catch (_) {
+				return false;
+			}
+		}
+
+		/** Desktop mindmap (matcher CSS min-width: 1025px): lidt større håndtegnede ringe — mobil uændret */
+		function getProjectsDesktopRingMul() {
+			try {
+				const w = mskViewportSize().w || mskProjectsLayoutViewportBox().w || 0;
+				if (w < 1025) return 1;
+				if (mskIsProjectsShortLandscapeViewport()) return 1;
+				if (mskIsProjectsTabletLandscapeViewport()) return 1.16;
+				return 1.14;
+			} catch (_) {
+				return 1;
+			}
+		}
+		const projectsDesktopRingMul = getProjectsDesktopRingMul();
+
+		/** Portræt-grid (telefon + iPad): samme håndtegnede ringe — telefon skaleres med layoutW/768 */
+		let portraitGridRings = false;
+		let portraitRingScale = 1;
+		try {
+			portraitGridRings = mskIsProjectsPortraitGridRingsMode();
+			if (portraitGridRings) portraitRingScale = mskProjectsPortraitReferenceScale();
+		} catch (_) {}
+		const ipadPortraitRings =
+			portraitGridRings &&
+			!mskIsProjectsPhonePortraitViewport() &&
+			!document.documentElement.classList.contains('msk-projects-phone-portrait') &&
+			(mskIsProjectsTabletPortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-ipad-portrait'));
+		const phonePortraitRings =
+			portraitGridRings &&
+			(mskIsProjectsPhonePortraitViewport() ||
+				document.documentElement.classList.contains('msk-projects-phone-portrait'));
+		const phoneRingMul = phonePortraitRings ? Math.max(0.72, portraitRingScale) : 1;
+		function shrinkPhoneRing(w, h) {
+			if (!phonePortraitRings || phoneRingMul >= 0.999) return [w, h];
+			return [w * phoneRingMul, h * phoneRingMul];
+		}
+
+		/** iPad 1024–1366 landskab + ellipse-mindmap: større håndtegnede ringe om titlerne — kun her */
+		let ipadLandscapeRings = false;
+		try {
+			ipadLandscapeRings =
+				!!mskIsProjectsTabletLandscapeViewport() &&
+				!container.classList.contains('projects-mindmap--portrait');
+		} catch (_) {}
+
+		/** iPad landskab: fladere ovaler (mindre højde, samme bredde ca.) */
+		const ipadLsRingVertMul = ipadLandscapeRings ? 0.78 : 1;
+		const pRing = portraitGridRings ? portraitRingScale : 1;
+		const prs = (n) => n * pRing;
+
 		currentNodes.forEach((node, index) => {
 			// Used to map hover -> matching frame element
 			node.dataset.nodeIndex = String(index);
 			const nodeHref = (node.getAttribute('href') || '').toLowerCase();
 			node.dataset.nodeHref = nodeHref;
+			const targetHref = (node.getAttribute('href') || '').trim();
+
+			function wireFrameNavigation(el) {
+				try {
+					if (!el || !targetHref) return;
+					/* Brainfarts: samme som <a> — visuelt klikbar ring, men ingen navigation (under ombygning) */
+					if (nodeHref.includes('brainfarts')) {
+						el.style.pointerEvents = 'auto';
+						el.style.cursor = 'not-allowed';
+						el.addEventListener(
+							'click',
+							(e) => {
+								if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+								try {
+									e.preventDefault();
+								} catch {}
+								try {
+									e.stopPropagation();
+								} catch {}
+							},
+							true
+						);
+						return;
+					}
+					el.style.pointerEvents = 'auto';
+					el.style.cursor = 'pointer';
+					el.addEventListener(
+						'click',
+						(e) => {
+							try {
+								e.preventDefault();
+							} catch {}
+							try {
+								e.stopPropagation();
+							} catch {}
+							try {
+								e.stopImmediatePropagation();
+							} catch {}
+							window.location.href = targetHref;
+						},
+						true
+					);
+				} catch {}
+			}
 
 			const nodeRect = node.getBoundingClientRect();
 			const nodeText = node.textContent.trim();
-			
-			// Get the center of the text node
-			const centerX = nodeRect.left - containerRect.left + (nodeRect.width / 2);
-			const centerY = nodeRect.top - containerRect.top + (nodeRect.height / 2);
-			
+
+			const titleEl = node.querySelector('.project-node__title');
+			const anchorCenterSvg = mskProjectsMindmapNodeCenterSvg(
+				node,
+				currentSvg,
+				container,
+				containerRect
+			);
+			const centerX = anchorCenterSvg.x;
+			const centerY = anchorCenterSvg.y;
+
 			console.log(`Processing node ${index}: "${nodeText}" at (${centerX}, ${centerY})`);
 			
 			// Special case: BRAINFARTS uses the image instead of hand-drawn circle
-			if (nodeText === 'BRAINFARTS') {
+			// (Titles are often image-only; match href so we always use your asset.)
+			if (nodeText === 'BRAINFARTS' || nodeHref.includes('brainfarts')) {
 				console.log('Creating BRAINFARTS circle image...');
+				const bfShortLs = mskIsProjectsShortLandscapeViewport();
+				const brainfartsRingScale = 0.78 * (bfShortLs ? 1.09 : 1);
+				/* Kort mobil-landscape: bredere oval (kun vandret — bh / ry uændret) */
+				const bfShortLsStretchX = bfShortLs ? 1.24 : 1;
+				/* iPad portræt mindmap: ekstra vandret på ring + fill; rød linje sit eget step så den ikke vokser med.
+				 * preserveAspectRatio none på <image> — ellers default "meet" bevarer billedformat og æter ikke bw/bh uafhængigt. */
+				const bfIpadMulWRing = ipadPortraitRings ? 3.02 * pRing : ipadLandscapeRings ? 1.92 : 1;
+				const bfIpadMulWLine = ipadPortraitRings ? 1.9 * pRing : ipadLandscapeRings ? 1.38 : 1;
+				const bfIpadMulH = ipadPortraitRings ? 1.8 * pRing : ipadLandscapeRings ? 0.9 : 1;
 				// Create an image element for BRAINFARTS
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel om brainfarts.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 120); // Center the image (assuming 240px width)
-				image.setAttribute('y', centerY - 100); // Center the image (assuming 200px height)
-				image.setAttribute('width', '240');
-				image.setAttribute('height', '200');
+				let bw =
+					240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWRing;
+				let bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
+				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
+				[bw, bh] = shrinkPhoneRing(bw, bh);
+				const bfDrawCy = centerY + (ipadLandscapeRings ? -s(2) : 0);
+				image.setAttribute('x', String(centerX - bw / 2));
+				image.setAttribute('y', String(bfDrawCy - bh / 2));
+				image.setAttribute('width', String(bw));
+				image.setAttribute('height', String(bh));
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.style.pointerEvents = 'auto'; // Make image visible
@@ -4938,10 +10464,35 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Make it shorter on the RIGHT side only (keep left side roughly the same)
 				// Achieved by shifting left and reducing rx by the same amount.
 				fill.setAttribute('cx', String(centerX - 1)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
-				// Slightly smaller at the bottom: shift up a bit
-				fill.setAttribute('cy', String(centerY - 3)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
-				fill.setAttribute('rx', String(120 * 0.56 + 2)); // BRAINFARTS: slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('ry', String(100 * 0.56 - 1)); // BRAINFARTS: slightly smaller at the top (bottom unchanged)
+				let bfFillCy = bfDrawCy - 3;
+				let bfFillRyMul = 1;
+				try {
+					const iwDesk = mskViewportSize().w || 0;
+					if (
+						iwDesk >= 1025 &&
+						!mskIsProjectsShortLandscapeViewport() &&
+						!ipadLandscapeRings &&
+						!ipadPortraitRings
+					) {
+						bfFillCy = bfDrawCy;
+						bfFillRyMul = 1.32;
+					}
+				} catch (_) {}
+				fill.setAttribute('cy', String(bfFillCy));
+				fill.setAttribute(
+					'rx',
+					String(
+						(120 * 0.56 + 2) *
+							brainfartsRingScale *
+							projectsDesktopRingMul *
+							bfShortLsStretchX *
+							bfIpadMulWRing
+					)
+				);
+				fill.setAttribute(
+					'ry',
+					String((100 * 0.56 - 1) * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH * bfFillRyMul)
+				);
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -4960,19 +10511,20 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineImg.setAttribute('href', linePath);
 					lineImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', linePath);
 
-					// Keep it smaller and within the circle-ish area (circle image is 240x200)
-					const w = 205; // longer (not too big)
-					const h = 160; // extremely thick
+					// Keep it smaller and within the circle-ish area (circle image is 240x200, scaled by brainfartsRingScale)
+					const w =
+						205 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWLine;
+					const h = 160 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH;
 					lineImg.setAttribute('width', String(w));
 					lineImg.setAttribute('height', String(h));
 					// Place it so it goes from RIGHT side -> down to BOTTOM-LEFT
-					lineImg.setAttribute('x', String(centerX - (w / 2) - 5)); // more to the left
-					lineImg.setAttribute('y', String(centerY - (h / 2) + 4));
+					lineImg.setAttribute('x', String(centerX - (w / 2) - 5 * brainfartsRingScale));
+					lineImg.setAttribute('y', String(bfDrawCy - (h / 2) + 4 * brainfartsRingScale));
 					lineImg.setAttribute('preserveAspectRatio', 'none');
 					// Slightly see-through so it reads like drawn on paper
-					lineImg.setAttribute('opacity', '0.78');
+					lineImg.setAttribute('opacity', ipadLandscapeRings ? '0.9' : '0.78');
 					// Diagonal "/" feel (top-right -> bottom-left)
-					lineImg.setAttribute('transform', `rotate(-36 ${centerX} ${centerY})`);
+					lineImg.setAttribute('transform', `rotate(-36 ${centerX} ${bfDrawCy})`);
 
 					lineImg.style.pointerEvents = 'none';
 					lineImg.style.display = 'block';
@@ -4983,27 +10535,161 @@ document.addEventListener('DOMContentLoaded', function() {
 					currentSvg.appendChild(lineImg);
 				} catch {}
 
+				/* iPad landskab: én “Under ombygning” i SVG — smal (meet), ca. cirkelhøjde, gennemsigtig */
+				if (ipadLandscapeRings) {
+					try {
+						const signPath = `assets/${encodeURIComponent('Under ombygning.webp')}`;
+						const signWrap = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+						signWrap.setAttribute('class', 'brainfarts-ipad-construction-wrap');
+						signWrap.setAttribute('opacity', String(MSK_BRAINFARTS_IPAD_SIGN_OPACITY));
+						const signImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+						signImg.setAttributeNS('http://www.w3.org/1999/xlink', 'href', signPath);
+						signImg.setAttribute('href', signPath);
+						signImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', signPath);
+						const signBoxH = bh * 0.86;
+						const signBoxW = bw * 0.56;
+						signImg.setAttribute('width', String(signBoxW));
+						signImg.setAttribute('height', String(signBoxH));
+						signImg.setAttribute('x', String(centerX - signBoxW / 2));
+						signImg.setAttribute('y', String(bfDrawCy - signBoxH / 2 + s(4)));
+						signImg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+						signImg.setAttribute('opacity', String(MSK_BRAINFARTS_IPAD_SIGN_OPACITY));
+						signImg.style.pointerEvents = 'none';
+						signImg.style.display = 'block';
+						signImg.style.visibility = 'visible';
+						signImg.classList.add('brainfarts-ipad-construction-sign', 'brainfarts-overlay');
+						signImg.dataset.nodeIndex = String(index);
+						signImg.dataset.nodeHref = nodeHref;
+						signWrap.appendChild(signImg);
+						currentSvg.appendChild(signWrap);
+					} catch (_) {}
+				}
+
 				console.log(`✓ BRAINFARTS circle image appended to SVG. SVG children count:`, currentSvg.children.length);
+				wireFrameNavigation(image);
 				return; // Skip the hand-drawn circle creation for BRAINFARTS
 			}
 			
 			// Special case: REPOP BY DEPOP uses the image instead of hand-drawn circle
 			if (nodeText === 'REPOP BY DEPOP' || nodeHref.includes('repop')) {
 				console.log('Creating REPOP BY DEPOP circle image...');
-				// Create an image element for REPOP BY DEPOP
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle around repop by depop.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 187); // Slightly slightly move (assuming 380px width)
-				image.setAttribute('y', centerY - 68); // Center the image (assuming 150px height)
-				image.setAttribute('width', '380');
-				image.setAttribute('height', '150');
-				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
+				const repTitleEl = node.querySelector('.project-node__title');
+				const repBadgeEl = node.querySelector('.kravling-nomineret-badge--inline');
+				const repTitleRect = repTitleEl ? repTitleEl.getBoundingClientRect() : nodeRect;
+				const repBadgeRect = repBadgeEl ? repBadgeEl.getBoundingClientRect() : null;
+				let unionW = nodeRect.width;
+				let unionH = nodeRect.height;
+				let repCenterX = centerX;
+				let repCenterY = centerY;
+				try {
+					if (repBadgeRect) {
+						const left = Math.min(repTitleRect.left, repBadgeRect.left);
+						const right = Math.max(repTitleRect.right, repBadgeRect.right);
+						const top = Math.min(repTitleRect.top, repBadgeRect.top);
+						const bottom = Math.max(repTitleRect.bottom, repBadgeRect.bottom);
+						unionW = Math.max(1, right - left);
+						unionH = Math.max(1, bottom - top);
+						const unionCenter = svgCenterFromRect(
+							currentSvg,
+							{ left, top, width: unionW, height: unionH },
+							containerRect
+						);
+						repCenterX = unionCenter.x;
+						repCenterY = unionCenter.y;
+					}
+				} catch {}
+				if (ipadLandscapeRings) {
+					repCenterY -= s(4);
+				}
+
+				let repopMul = 0.88;
+				try {
+					if (phonePortraitRings) repopMul = 0.8;
+					else if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) {
+						repopMul = 0.82;
+						if (window.matchMedia('(max-width: 640px)').matches) repopMul = 0.93;
+					}
+					if (ipadPortraitRings) repopMul = Math.max(repopMul, 0.96);
+					if (ipadLandscapeRings) repopMul = 0.96;
+				} catch {}
+
+				const baseW = s(380) * assetS;
+				const baseH = s(landscapeMindmap ? 218 : 165) * assetS;
+				let padXPx = landscapeMindmap ? 48 : 40;
+				let padYPortrait = repBadgeRect ? 58 : 46;
+				try {
+					if (phonePortraitRings) {
+						padXPx = 28;
+						padYPortrait = repBadgeRect ? 36 : 28;
+					} else if (window.matchMedia && window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
+						padXPx = Math.max(padXPx, 64);
+						padYPortrait = repBadgeRect ? 92 : 72;
+					}
+					if (ipadPortraitRings) {
+						padXPx = Math.max(padXPx, 80);
+						padYPortrait = repBadgeRect ? Math.max(padYPortrait, 100) : Math.max(padYPortrait, 82);
+					}
+					if (ipadLandscapeRings) {
+						padXPx = Math.max(padXPx, 72);
+						padYPortrait = repBadgeRect ? 42 : 34;
+					}
+				} catch {}
+				const padX = s(padXPx) * assetS;
+				const padY =
+					s(
+						ipadLandscapeRings
+							? padYPortrait
+							: landscapeMindmap
+								? 96
+								: padYPortrait
+					) * assetS;
+				let w = Math.max(baseW, unionW + padX);
+				let h = Math.max(baseH, unionH + padY);
+				/* Kort mobil-landskab (fx iPhone XR 896×414): landscapeMindmap er true selv om w>640 — isProjectsPhoneLandscape() var false → ingen skalering */
+				let repopLsMulW = 1;
+				let repopLsMulH = 1;
+				try {
+					if (ipadLandscapeRings) {
+						repopLsMulW = 1.1;
+						repopLsMulH = 0.76;
+					} else if (
+						landscapeMindmap &&
+						window.matchMedia &&
+						window.matchMedia('(orientation: landscape)').matches
+					) {
+						/* Kun bredere (ovalere) i kort mobil-landskab — ikke højere */
+						repopLsMulW = 1.22;
+						repopLsMulH = 1.14;
+					}
+				} catch {}
+				w *= repopMul * repopLsMulW;
+				h *= repopMul * repopLsMulH;
+				w *= projectsDesktopRingMul;
+				h *= projectsDesktopRingMul;
+				/* Lidt bredere horizontalt (oval) — kun stretch på X, som NATURLI */
+				let repopStretchX = phonePortraitRings ? 1.04 : 1.12;
+				if (ipadPortraitRings) repopStretchX = 1.92 * pRing;
+				else if (ipadLandscapeRings) repopStretchX = 1.28;
+				w *= repopStretchX;
+				if (ipadLandscapeRings) {
+					w *= 1.04;
+					h *= ipadLsRingVertMul * 0.74;
+				}
+				[w, h] = shrinkPhoneRing(w, h);
+
+				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
+				image.setAttribute('y', String(repCenterY - (h / 2)));
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.setAttribute('transform', `rotate(180 ${centerX} ${centerY})`);
+				image.setAttribute('transform', `rotate(180 ${repCenterX} ${repCenterY})`);
 				image.style.pointerEvents = 'auto';
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
@@ -5011,12 +10697,34 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'repop-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				
+				wireFrameNavigation(image);
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(centerX - 1)); // slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('cy', String(centerY - 2)); // REPOP: slightly bigger at the top
-				fill.setAttribute('rx', String(190 * 0.55 - 7)); // slightly bigger on the left (right edge unchanged)
-				fill.setAttribute('ry', String(75 * 0.68 - 2)); // REPOP: slightly bigger at the top
+				fill.setAttribute('cx', String(repCenterX - s(1)));
+				let repFillCy = repCenterY - s(2);
+				try {
+					const iwDesk = mskViewportSize().w || 0;
+					if (
+						iwDesk >= 1025 &&
+						!mskIsProjectsShortLandscapeViewport() &&
+						!ipadLandscapeRings &&
+						!ipadPortraitRings
+					) {
+						repFillCy = repCenterY + s(8);
+					}
+				} catch (_) {}
+				fill.setAttribute('cy', String(repFillCy));
+				fill.setAttribute(
+					'rx',
+					String(
+						((s(190) * 0.55 - s(7)) * assetS) *
+							repopMul *
+							repopLsMulW *
+							projectsDesktopRingMul *
+							repopStretchX
+					)
+				);
+				fill.setAttribute('ry', String(((h / 2) * 0.68 - s(2)) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5027,25 +10735,106 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				currentSvg.appendChild(image);
 				console.log(`✓ REPOP BY DEPOP circle image appended to SVG`);
-				return; // Skip the hand-drawn circle creation for REPOP BY DEPOP
+				return;
 			}
 			
 			// Special case: KØ-BAJER uses the image instead of hand-drawn circle
-			if (nodeText === 'KØ-BAJER') {
+			if (nodeText === 'KØ-BAJER' || nodeHref.includes('kobajer')) {
 				console.log('Creating KØ-BAJER circle image...');
-				// Create an image element for KØ-BAJER
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel købajer.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 100); // Move slightly to the left (assuming 200px width)
-				image.setAttribute('y', centerY - 90); // Move down (assuming 200px height)
-				image.setAttribute('width', '200');
-				image.setAttribute('height', '200');
+				const kTitleEl = node.querySelector('.project-node__title');
+				const kBadgeEl = node.querySelector('.kobajer-kravling-2024-badge--inline');
+				const kTitleRect = kTitleEl ? kTitleEl.getBoundingClientRect() : nodeRect;
+				const kBadgeRect = kBadgeEl ? kBadgeEl.getBoundingClientRect() : null;
+				let unionW = nodeRect.width;
+				let unionH = nodeRect.height;
+				let kCenterX = centerX;
+				let kCenterY = centerY;
+				try {
+					if (kBadgeRect) {
+						const left = Math.min(kTitleRect.left, kBadgeRect.left);
+						const right = Math.max(kTitleRect.right, kBadgeRect.right);
+						const top = Math.min(kTitleRect.top, kBadgeRect.top);
+						const bottom = Math.max(kTitleRect.bottom, kBadgeRect.bottom);
+						unionW = Math.max(1, right - left);
+						unionH = Math.max(1, bottom - top);
+						const unionCenter = svgCenterFromRect(
+							currentSvg,
+							{ left, top, width: unionW, height: unionH },
+							containerRect
+						);
+						kCenterX = unionCenter.x;
+						kCenterY = unionCenter.y;
+					}
+				} catch {}
+
+				const baseW = s(232) * assetS;
+				const baseH = s(landscapeMindmap ? 292 : 232) * assetS;
+				const padX = s(landscapeMindmap ? 92 : 80) * assetS;
+				const padYPortrait = kBadgeRect ? 58 : 44;
+				const padY = s(landscapeMindmap ? 124 : padYPortrait) * assetS;
+				let w = Math.max(baseW, unionW + padX);
+				let h = Math.max(baseH, unionH + padY);
+				const kobajerRingScale = 0.78;
+				const kobajerRingVertMul = isProjectsPhoneWidth()
+					? (landscapeMindmap ? 0.84 : 0.74)
+					: (landscapeMindmap ? 0.94 : 1);
+				w *= kobajerRingScale;
+				h *= kobajerRingScale * kobajerRingVertMul;
+				/*
+				 * Større ring i mobil/tablet landscape. Kun mskIsProjectsShortLandscapeViewport() rammer
+				 * ikke hvis clientHeight > 520 (DevTools, Safari-chrome) — så brug layout-boks: bred > høj, w≤1024.
+				 */
+				let kobajerLandscapeBump = false;
+				let kobajerPortraitPhoneBump = false;
+				try {
+					const { w: lw, h: lh } = mskProjectsLayoutViewportBox();
+					kobajerLandscapeBump = lh < lw && lw <= MSK_PROJECTS_LANDSCAPE_MAX_W && lw >= 280;
+					kobajerPortraitPhoneBump = lh >= lw && lw <= 640 && lw >= 280;
+				} catch (_) {}
+				if (kobajerLandscapeBump) {
+					if (mskIsProjectsShortLandscapeViewport()) {
+						w *= 1.44;
+						h *= 1.14;
+					} else {
+						w *= 1.34;
+						h *= 1.1;
+					}
+				} else if (kobajerPortraitPhoneBump && isProjectsPhoneWidth()) {
+					w *= 1.22;
+					h *= 1.16;
+				}
+				/* Portræt mindmap: bredere ring vandret (højde uændret) */
+				try {
+					if (ipadPortraitRings) {
+						w *= 1 + (2.02 - 1) * pRing;
+						h *= 1 + (1.48 - 1) * pRing;
+					}
+					if (ipadLandscapeRings) {
+						w *= 1.58;
+						h *= 0.92;
+					}
+				} catch (_) {}
+				w *= projectsDesktopRingMul;
+				h *= projectsDesktopRingMul;
+				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
+				[w, h] = shrinkPhoneRing(w, h);
+				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
+				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
+				let drawCx = kCenterX;
+				if (ipadLandscapeRings) drawCx -= s(14);
+				image.setAttribute('x', String(drawCx - (w / 2)));
+				image.setAttribute('y', String(drawCy - (h / 2) + s(10)));
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.setAttribute('transform', `rotate(180 ${centerX} ${centerY})`);
+				image.setAttribute('transform', `rotate(180 ${drawCx} ${drawCy})`);
 				image.style.pointerEvents = 'auto';
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
@@ -5053,13 +10842,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'kobajer-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				
-				// KØ-BAJER: use an ellipse so we can make it smaller at the top/bottom without shrinking the sides too much
+				wireFrameNavigation(image);
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - 5)); // KØ-BAJER: trim bottom (keep top roughly the same)
-				fill.setAttribute('rx', String(100 * 0.56));
-				fill.setAttribute('ry', String(100 * 0.46 - 5)); // KØ-BAJER: less bottom
+				fill.setAttribute('cx', String(drawCx));
+				fill.setAttribute('cy', String(drawCy - s(1)));
+				{
+					const shortLs = mskIsProjectsShortLandscapeViewport();
+					const rxMul = shortLs ? 0.59 : 0.56;
+					/* Kort LS: højere cirkel → lidt større lodret fyld */
+					const ryMul = shortLs ? 0.58 : 0.6;
+					fill.setAttribute('rx', String(((w / 2) * rxMul) * assetS));
+					fill.setAttribute('ry', String(((h / 2) * ryMul) * assetS));
+				}
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5070,22 +10865,78 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				currentSvg.appendChild(image);
 				console.log(`✓ KØ-BAJER circle image appended to SVG`);
-				return; // Skip the hand-drawn circle creation for KØ-BAJER
+				return;
 			}
 			
 			// Special case: NATURLI' uses the image instead of hand-drawn circle
-			if (nodeText === 'NATURLI\'') {
-				console.log('Creating NATURLI\' circle image...');
+			if (nodeHref.includes('naturli')) {
+				console.log('Creating NATURLI (naturli*) circle image...');
+				let naturliMul = 0.93;
+				let portraitNaturli = false;
+				try {
+					const ih = mskViewportSize().h || 0;
+					const iw = mskViewportSize().w || 1;
+					const ctr = container && container.classList ? container : null;
+					portraitNaturli =
+						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
+						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
+					/* Lille tekst-webp i CSS — ring større så der er luft omkring label */
+					if (portraitNaturli) naturliMul = 0.88;
+					if (ipadPortraitRings) naturliMul = Math.max(naturliMul, 0.98);
+				} catch {}
+				try {
+					if (mskIsProjectsShortLandscapeViewport()) naturliMul *= 1.09;
+				} catch {}
+				/* Kun desktop (min-width 1025): lidt mindre ring så den matcher mindre tekst-webp i CSS — ikke tablet/mobil */
+				try {
+					const iwDesk = mskViewportSize().w || 0;
+					if (
+						iwDesk >= 1025 &&
+						!portraitNaturli &&
+						!mskIsProjectsShortLandscapeViewport() &&
+						!ipadLandscapeRings
+					) {
+						naturliMul *= 0.85;
+					}
+					if (ipadLandscapeRings) naturliMul = Math.max(naturliMul, 1.04);
+				} catch {}
+				/* Bredere horizontalt (apostrof + tekst inde i ringen) — kun stretch på X (nH uden stretch) */
+				let naturliStretchX = 1.22;
+				try {
+					if (mskIsProjectsShortLandscapeViewport()) naturliStretchX = 1.34;
+					else if (portraitNaturli) naturliStretchX = 1.48;
+					if (ipadPortraitRings) naturliStretchX = Math.max(naturliStretchX, 3.5 * pRing);
+					else if (ipadLandscapeRings) naturliStretchX = Math.max(naturliStretchX, 1.74);
+				} catch {}
+				/* Desktop: bredere oval (kun X) — ikke tablet/mobil */
+				try {
+					const iwWide = mskViewportSize().w || 0;
+					if (
+						iwWide >= 1025 &&
+						!portraitNaturli &&
+						!mskIsProjectsShortLandscapeViewport() &&
+						!ipadLandscapeRings
+					) {
+						naturliStretchX *= 1.28;
+					}
+				} catch {}
+				const naturliLsMulH = ipadLandscapeRings ? 0.86 : 1;
+				const naturliLsMulW = ipadLandscapeRings ? 1.16 : 1;
+				const nW =
+					240 * naturliMul * projectsDesktopRingMul * naturliStretchX * naturliLsMulW;
+				let nH = 140 * naturliMul * projectsDesktopRingMul * naturliLsMulH;
+				if (ipadLandscapeRings) nH *= ipadLsRingVertMul;
+				let [nWf, nHf] = shrinkPhoneRing(nW, nH);
 				// Create an image element for NATURLI'
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring naturli'.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 120); // Center the image (assuming 240px width)
-				image.setAttribute('y', centerY - 65); // Move down slightly (assuming 140px height)
-				image.setAttribute('width', '240');
-				image.setAttribute('height', '140');
+				image.setAttribute('x', centerX - nWf / 2);
+				image.setAttribute('y', centerY - nHf * (65 / 140));
+				image.setAttribute('width', String(nWf));
+				image.setAttribute('height', String(nHf));
 				image.setAttribute('preserveAspectRatio', 'none'); // Prevent aspect ratio from scaling width
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -5102,8 +10953,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				// NATURLI': make the RIGHT side slightly smaller (keep left edge the same)
 				fill.setAttribute('cx', String(centerX + 1));
 				fill.setAttribute('cy', String(centerY - 1));
-				fill.setAttribute('rx', String(120 * 0.50 - 2));
-				fill.setAttribute('ry', String(70 * 0.66));
+				fill.setAttribute(
+					'rx',
+					String(
+						(120 * 0.5 - 2) *
+							naturliMul *
+							projectsDesktopRingMul *
+							naturliStretchX *
+							naturliLsMulW
+					)
+				);
+				fill.setAttribute('ry', String(70 * 0.66 * naturliMul * projectsDesktopRingMul));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5113,12 +10973,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				else currentSvg.appendChild(fill);
 
 				currentSvg.appendChild(image);
+				wireFrameNavigation(image);
 				console.log(`✓ NATURLI' circle image appended to SVG`);
 				return; // Skip the hand-drawn circle creation for NATURLI'
 			}
 			
 			// Special case: UNGE MOD UV uses the image instead of hand-drawn circle
-			if (nodeText === 'UNGE MOD UV') {
+			if (nodeText === 'UNGE MOD UV' || nodeHref.includes('unge-mod-uv')) {
 				console.log('Creating UNGE MOD UV circle image...');
 				// Create an image element for UNGE MOD UV
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -5126,10 +10987,31 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 160); // Center the image (assuming 320px width)
-				image.setAttribute('y', centerY - 75); // Center the image (assuming 150px height)
-				image.setAttribute('width', '320');
-				image.setAttribute('height', '150');
+				let ungeMul = 1;
+				try {
+					const ih = mskViewportSize().h || 0;
+					const iw = mskViewportSize().w || 1;
+					const ctr = container && container.classList ? container : null;
+					const portrait =
+						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
+						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
+					if (phonePortraitRings) ungeMul = 0.82;
+					else if (portrait) ungeMul = 0.84;
+					if (ipadPortraitRings) ungeMul = Math.max(ungeMul, 0.94);
+					if (ipadLandscapeRings) ungeMul = Math.max(ungeMul, 1.06);
+				} catch {}
+				let ungeStretchX = 1;
+				if (ipadPortraitRings) ungeStretchX = 1.82 * pRing;
+				else if (ipadLandscapeRings) ungeStretchX = 1.38;
+				const ungeLsMulH = ipadLandscapeRings ? 0.86 : 1;
+				let uw = 320 * ungeMul * projectsDesktopRingMul * ungeStretchX;
+				let uh = 150 * ungeMul * projectsDesktopRingMul * ungeLsMulH;
+				if (ipadLandscapeRings) uh *= ipadLsRingVertMul;
+				[uw, uh] = shrinkPhoneRing(uw, uh);
+				image.setAttribute('x', centerX - uw / 2);
+				image.setAttribute('y', centerY - uh / 2);
+				image.setAttribute('width', String(uw));
+				image.setAttribute('height', String(uh));
 				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
@@ -5144,8 +11026,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY)); // UNGE MOD UV: keep centered
-				fill.setAttribute('rx', String(160 * 0.54)); // UNGE MOD UV: wider left+right
-				fill.setAttribute('ry', String(75 * 0.51));  // UNGE MOD UV: slightly more top+bottom
+				fill.setAttribute('rx', String(160 * ungeMul * 0.54 * projectsDesktopRingMul * ungeStretchX)); // UNGE MOD UV: wider left+right
+				fill.setAttribute('ry', String(75 * ungeMul * 0.51 * projectsDesktopRingMul));  // UNGE MOD UV: slightly more top+bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5155,24 +11037,98 @@ document.addEventListener('DOMContentLoaded', function() {
 				else currentSvg.appendChild(fill);
 
 				currentSvg.appendChild(image);
+				wireFrameNavigation(image);
 				console.log(`✓ UNGE MOD UV circle image appended to SVG`);
 				return; // Skip the hand-drawn circle creation for UNGE MOD UV
 			}
 			
 			// Special case: TWISTER uses the image instead of hand-drawn circle
-			if (nodeText === 'TWISTER') {
+			if (nodeText === 'TWISTER' || nodeHref.includes('twister')) {
 				console.log('Creating TWISTER circle image...');
-				// Create an image element for TWISTER
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/cirkel omkring twister.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 140); // Center the image (assuming 280px width)
-				image.setAttribute('y', centerY - 60); // Center the image (assuming 120px height)
-				image.setAttribute('width', '280');
-				image.setAttribute('height', '120');
-				image.setAttribute('preserveAspectRatio', 'none'); // Allow independent width/height scaling
+				const isMobile = window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+				const twTitleEl = node.querySelector('.project-node__title');
+				const twBadgeEl = node.querySelector('.dandd-badge--inline');
+				const twTitleRect = twTitleEl ? twTitleEl.getBoundingClientRect() : nodeRect;
+				const twBadgeRect = twBadgeEl ? twBadgeEl.getBoundingClientRect() : null;
+				let unionW = nodeRect.width;
+				let unionH = nodeRect.height;
+				let twCenterX = centerX;
+				let twCenterY = centerY;
+				try {
+					if (twBadgeRect) {
+						const left = Math.min(twTitleRect.left, twBadgeRect.left);
+						const right = Math.max(twTitleRect.right, twBadgeRect.right);
+						const top = Math.min(twTitleRect.top, twBadgeRect.top);
+						const bottom = Math.max(twTitleRect.bottom, twBadgeRect.bottom);
+						unionW = Math.max(1, right - left);
+						unionH = Math.max(1, bottom - top);
+						const unionCenter = svgCenterFromRect(
+							currentSvg,
+							{ left, top, width: unionW, height: unionH },
+							containerRect
+						);
+						twCenterX = unionCenter.x;
+						twCenterY = unionCenter.y;
+					}
+				} catch {}
+				const baseW = s(isMobile ? 380 : landscapeMindmap ? 360 : 280) * assetS;
+				const baseH = s(
+					isMobile ? (landscapeMindmap ? 192 : 170) : landscapeMindmap ? 188 : 120
+				) * assetS;
+				const padX = s(isMobile ? (landscapeMindmap ? 188 : 170) : landscapeMindmap ? 132 : 90) * assetS;
+				const padY = s(isMobile ? (landscapeMindmap ? 108 : 90) : landscapeMindmap ? 108 : 44) * assetS;
+				let w = Math.max(baseW, unionW + padX);
+				let h = Math.max(baseH, unionH + padY);
+				const twisterRingScale = 0.88;
+				/* Portræt mobil: lidt højere oval (0.66 → 0.74); landscape uændret */
+				const twisterRingVertMul = isProjectsPhoneWidth()
+					? (landscapeMindmap ? 0.76 : 0.74)
+					: (landscapeMindmap ? 0.92 : 1);
+				w *= twisterRingScale;
+				h *= twisterRingScale * twisterRingVertMul;
+				/* Kort mobil landscape: større Twister-ring (tidligere 0.86 skalerede ned) */
+				if (mskIsProjectsShortLandscapeViewport()) {
+					w *= 1.12;
+					h *= 1.1;
+				}
+				w *= projectsDesktopRingMul;
+				h *= projectsDesktopRingMul;
+				if (ipadPortraitRings) {
+					w *= 1 + (1.84 - 1) * pRing;
+					h *= 1 + (1.52 - 1) * pRing;
+				}
+				let twisterLsMulW = 1;
+				if (ipadLandscapeRings) {
+					twisterLsMulW = 1.12;
+					w *= 1.34 * twisterLsMulW;
+					h *= 0.9;
+				}
+				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
+				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
+				let circleDy = landscapeMindmap ? s(48) : s(20);
+				/* iPad landskab: ring lidt op + bredere (X); TWISTER-tekst styres i CSS */
+				if (ipadLandscapeRings) {
+					circleDy = s(2);
+				}
+				/* Kort mobil-landscape: kun ringen op (noden uændret) — mindre circleDy */
+				if (mskIsProjectsShortLandscapeViewport()) {
+					circleDy -= s(34);
+				}
+				/* iPad portræt mindmap: ring + fill lidt op */
+				if (ipadPortraitRings) {
+					circleDy -= s(12);
+				}
+				[w, h] = shrinkPhoneRing(w, h);
+				image.setAttribute('x', String(twCenterX - (w / 2)));
+				image.setAttribute('y', String(twCenterY - (h / 2) + circleDy));
+				image.setAttribute('width', String(w));
+				image.setAttribute('height', String(h));
+				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.style.pointerEvents = 'auto';
@@ -5182,12 +11138,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'twister-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				
+				wireFrameNavigation(image);
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-				fill.setAttribute('cx', String(centerX + 4)); // TWISTER: less on the left (right edge unchanged)
-				fill.setAttribute('cy', String(centerY - 2)); // TWISTER: slightly less bottom
-				fill.setAttribute('rx', String(140 * 0.56 - 4)); // TWISTER: less on the left (right edge unchanged)
-				fill.setAttribute('ry', String(60 * 0.68 - 4)); // TWISTER: slightly less bottom
+				fill.setAttribute('cx', String(twCenterX + s(4)));
+				fill.setAttribute('cy', String(twCenterY - s(2) + circleDy));
+				fill.setAttribute('rx', String((((w / 2) * 0.56 - s(4))) * assetS));
+				fill.setAttribute('ry', String((((h / 2) * 0.68 - s(4))) * assetS));
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5198,23 +11155,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				currentSvg.appendChild(image);
 				console.log(`✓ TWISTER circle image appended to SVG`);
-				return; // Skip the hand-drawn circle creation for TWISTER
+				return;
 			}
 			
 			// Special case: BYENS LANDHANDEL uses the image instead of hand-drawn circle
 			if (nodeText === 'Byens Landhandel' || nodeHref.includes('byens-landhandel')) {
 				console.log('Creating Byens Landhandel circle image...');
+				const byensLandhandelRingScale = 0.78;
+				/* Bredere oval vandret (og lidt lavere lodret) end basis 440×170 */
+				let byensStretchX = 1.22;
+				let byensStretchY = 0.94;
+				if (ipadPortraitRings) {
+					byensStretchX = 1 + (2.55 - 1) * pRing;
+					byensStretchY = 1 + (1.5 - 1) * pRing;
+				} else if (ipadLandscapeRings) {
+					byensStretchX = 1.38;
+					byensStretchY = 0.82;
+				}
+				let byensMul = 1;
+				/* Mobil portræt: gør ovalen smallere vandret (1.22+mul ellers for bred ift. skærm) — landscape/desktop uændret */
+				let byensPortraitXNarrow = 1;
+				try {
+					const ih = mskViewportSize().h || 0;
+					const iw = mskViewportSize().w || 1;
+					const portrait =
+						(container && container.classList && container.classList.contains('projects-mindmap--portrait')) ||
+						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
+					if (ipadPortraitRings) {
+						byensMul = 1.06;
+						byensPortraitXNarrow = 1;
+					} else if (ipadLandscapeRings) {
+						byensMul = 1.08;
+						byensPortraitXNarrow = 1;
+					} else if (portrait) {
+						byensMul = 0.98;
+						byensPortraitXNarrow = 0.7;
+					}
+				} catch {}
+				let bw =
+					440 *
+					byensMul *
+					byensLandhandelRingScale *
+					projectsDesktopRingMul *
+					byensStretchX *
+					byensPortraitXNarrow;
+				let bh =
+					170 *
+					byensMul *
+					byensLandhandelRingScale *
+					projectsDesktopRingMul *
+					byensStretchY;
+				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
+				[bw, bh] = shrinkPhoneRing(bw, bh);
+				/* Kun ring/fill — ikke noden (tekst forbliver) */
+				const byensIpadDy = ipadPortraitRings ? -s(14) : ipadLandscapeRings ? -s(12) : 0;
 				// Create an image element for BYENS LANDHANDEL
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 				const imagePath = "assets/circle omkring byens landhandel.webp";
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				// Slightly larger + adjusted so the tab text fits better inside the circle
-				image.setAttribute('x', centerX - 220); // Center the image (440px width)
-				image.setAttribute('y', centerY - 85); // Center the image (170px height)
-				image.setAttribute('width', '440');
-				image.setAttribute('height', '170');
+				image.setAttribute('x', String(centerX - bw / 2));
+				image.setAttribute('y', String(centerY - bh / 2 + byensIpadDy));
+				image.setAttribute('width', String(bw));
+				image.setAttribute('height', String(bh));
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -5225,12 +11229,32 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'byens-landhandel-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				
+				wireFrameNavigation(image);
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - 2)); // DUREX: bigger at the top (bottom unchanged)
-				fill.setAttribute('rx', String(220 * 0.50 + 3)); // BYENS: slightly bigger on the right (left edge unchanged)
-				fill.setAttribute('ry', String(85 * 0.58 - 2));  // slightly smaller at the bottom
+				fill.setAttribute('cy', String(centerY - 2 + byensIpadDy));
+				fill.setAttribute(
+					'rx',
+					String(
+						(220 * 0.5 + 3) *
+							byensMul *
+							byensLandhandelRingScale *
+							projectsDesktopRingMul *
+							byensStretchX *
+							byensPortraitXNarrow
+					)
+				);
+				fill.setAttribute(
+					'ry',
+					String(
+						(85 * 0.58 - 2) *
+							byensMul *
+							byensLandhandelRingScale *
+							projectsDesktopRingMul *
+							byensStretchY
+					)
+				);
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5245,7 +11269,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Special case: DUREX X GUESS WHO uses the image instead of hand-drawn circle
-			if (nodeText === 'DUREX X GUESS WHO') {
+			if (nodeText === 'DUREX X GUESS WHO' || nodeHref.includes('durex')) {
 				console.log('Creating DUREX X GUESS WHO circle image...');
 				// Create an image element for DUREX X GUESS WHO
 				const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -5253,10 +11277,42 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
-				image.setAttribute('x', centerX - 220); // Center the image (assuming 440px width)
-				image.setAttribute('y', centerY - 75); // Center the image (assuming 150px height)
-				image.setAttribute('width', '440');
-				image.setAttribute('height', '150');
+				let durexMul = 1;
+				try {
+					const ih = mskViewportSize().h || 0;
+					const iw = mskViewportSize().w || 1;
+					const ctr = container && container.classList ? container : null;
+					const portrait =
+						(ctr && ctr.classList.contains('projects-mindmap--portrait')) ||
+						(window.matchMedia && window.matchMedia('(max-width: 640px)').matches && ih >= iw);
+					/* Portræt: større ring vs. tekst så “GUESS WHO” m.m. sidder mere inde i cirklen */
+					if (phonePortraitRings) durexMul = 0.82;
+					else if (portrait) durexMul = 0.98;
+				} catch {}
+				durexMul *= phonePortraitRings ? 0.96 : 0.805; /* cirkel + fill matcher Durex tekst-asset + tab */
+				let durexIpadMulW = 1;
+				let durexIpadMulH = 1;
+				if (ipadPortraitRings) {
+					durexIpadMulW = 1 + (1.66 - 1) * pRing;
+					durexIpadMulH = 1 + (1.84 - 1) * pRing;
+				}
+				let durexIpadLsMulW = 1;
+				let durexIpadLsMulH = 1;
+				if (ipadLandscapeRings) {
+					durexIpadLsMulW = 1.44;
+					durexIpadLsMulH = 1.14;
+				}
+				const durexIpadDy = ipadPortraitRings ? s(8) : 0;
+				let dw =
+					440 * durexMul * projectsDesktopRingMul * durexIpadMulW * durexIpadLsMulW;
+				let dh =
+					150 * durexMul * projectsDesktopRingMul * durexIpadMulH * durexIpadLsMulH;
+				if (ipadLandscapeRings) dh *= 1.1;
+				[dw, dh] = shrinkPhoneRing(dw, dh);
+				image.setAttribute('x', centerX - dw / 2);
+				image.setAttribute('y', centerY + durexIpadDy - dh / 2);
+				image.setAttribute('width', String(dw));
+				image.setAttribute('height', String(dh));
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
 				image.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -5267,12 +11323,30 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.classList.add('hand-drawn-frame', 'durex-image');
 				image.dataset.nodeIndex = String(index);
 				image.dataset.nodeHref = nodeHref;
-				
+				wireFrameNavigation(image);
+
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(centerX));
-				fill.setAttribute('cy', String(centerY - 3)); // DUREX: keep top, trim bottom
-				fill.setAttribute('rx', String(220 * 0.55)); // DUREX: less horizontal fill
-				fill.setAttribute('ry', String(75 * 0.68 + 1)); // DUREX: keep top, trim bottom
+				let durexCyOff = 3;
+				try {
+					if (window.matchMedia && window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches) {
+						durexCyOff = 0;
+					}
+				} catch {}
+				fill.setAttribute('cy', String(centerY - durexCyOff + durexIpadDy));
+				fill.setAttribute(
+					'rx',
+					String(220 * durexMul * 0.55 * projectsDesktopRingMul * durexIpadMulW * durexIpadLsMulW)
+				);
+				fill.setAttribute(
+					'ry',
+					String(
+						(75 * durexMul * 0.68 + 1) *
+							projectsDesktopRingMul *
+							durexIpadMulH *
+							durexIpadLsMulH
+					)
+				);
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -5287,7 +11361,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			// Create soft hand-drawn circle with smooth curves for other nodes
-			let baseRadius = 50 + Math.random() * 30; // 50-80px radius variation (normal size)
+			let baseRadius = (50 + Math.random() * 30) * projectsDesktopRingMul; // 50-80px radius variation (normal size)
 			
 			const numPoints = 12 + Math.floor(Math.random() * 8); // 12-20 points for smoother curves
 			let pathData = '';
@@ -5374,7 +11448,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			else currentSvg.appendChild(fillPath);
 			
 			currentSvg.appendChild(circle);
-			
+			wireFrameNavigation(fillPath);
+
 			console.log(`Hand-drawn circle ${index} created for ${node.textContent.trim()}`);
 		});
 		
@@ -5390,6 +11465,23 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.log(`  - Computed display:`, window.getComputedStyle(img).display);
 			console.log(`  - Computed visibility:`, window.getComputedStyle(img).visibility);
 		});
+
+		mskSyncRepopBrainLineIpadLandscape();
+		try {
+			mskSyncByensBrainLineIpadLandscape();
+		} catch (_) {}
+		try {
+			mskSyncBrainfartsBrainLineIpadLandscape();
+		} catch (_) {}
+		try {
+			mskApplyUngeModUvIpadLandscapeTitleNudge();
+		} catch (_) {}
+		try {
+			mskApplyDurexIpadLandscapeTitleNudge();
+		} catch (_) {}
+		try {
+			mskSyncBrainfartsIpadConstructionSignOpacity();
+		} catch (_) {}
 	}
 
 
@@ -5426,7 +11518,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 
-		// Node hover effects
+		// Node hover effects (kun enheder med rigtig hover — undgå “låst” klik-/touch-tilstand på mobil)
+		function mskProjectsMindmapHoverVisualsEnabled() {
+			try {
+				return !(window.matchMedia && window.matchMedia('(hover: none)').matches);
+			} catch (err) {
+				return true;
+			}
+		}
+		const mskMindmapHoverFx = mskProjectsMindmapHoverVisualsEnabled();
+
 		nodes.forEach(node => {
 			// BRAINFARTS is "under construction" on the Projects page: keep hover animations,
 			// but prevent navigation so it is not clickable.
@@ -5440,12 +11541,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 
 			node.addEventListener('mouseenter', function() {
+				if (!mskMindmapHoverFx) return;
 				const href = (this.getAttribute('href') || '').toLowerCase();
 				const hoverKey = ((this.dataset && this.dataset.hoverKey) ? this.dataset.hoverKey : href).toLowerCase();
 				console.log('Hovering over:', href, 'hoverKey:', hoverKey);
 
 				// TWISTER hover: spark animation over D&AD logo
-				const badge = document.querySelector('.dandd-badge');
+				const badge = document.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 				if (badge) {
 					if (hoverKey.includes('twister')) badge.classList.add('is-sparking');
 					else badge.classList.remove('is-sparking');
@@ -5475,11 +11577,24 @@ document.addEventListener('DOMContentLoaded', function() {
 				else stopBrainFart();
 
 				// Make it clear the tab is clickable: pulse the matching hand-drawn circle frame
+				const container = document.querySelector('.brainstorm-container');
 				const currentSvg = document.querySelector('.connecting-lines');
 				const idx = this.dataset.nodeIndex;
 				const nodeHref = (this.dataset.nodeHref || href).toLowerCase();
 				const frame =
-					(currentSvg && nodeHref && currentSvg.querySelector(`.hand-drawn-frame[data-node-href="${nodeHref}"]`)) ||
+					(container &&
+						nodeHref &&
+						container.querySelector(
+							`.msk-portrait-ring-overlay.hand-drawn-frame[data-node-href="${nodeHref}"]`
+						)) ||
+					(currentSvg &&
+						nodeHref &&
+						currentSvg.querySelector(`.hand-drawn-frame[data-node-href="${nodeHref}"]`)) ||
+					(container &&
+						idx &&
+						container.querySelector(
+							`.msk-portrait-ring-overlay.hand-drawn-frame[data-node-index="${idx}"]`
+						)) ||
 					(currentSvg && idx && currentSvg.querySelector(`.hand-drawn-frame[data-node-index="${idx}"]`));
 				const fill =
 					(currentSvg && nodeHref && currentSvg.querySelector(`.frame-fill[data-node-href="${nodeHref}"]`)) ||
@@ -5497,8 +11612,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					frame.style.filter = 'drop-shadow(0 0 16px rgba(118, 75, 162, 0.65)) drop-shadow(0 0 28px rgba(102, 126, 234, 0.55)) drop-shadow(0 10px 18px rgba(0,0,0,0.22)) brightness(1.08)';
 				}
 
-				// Ensure the hovered line is visually complete (above the purple fill)
-				if (line && line.parentNode === currentSvg) {
+				// Ensure the hovered line is visually complete (above the purple fill ellipse).
+				// Durex: ikke flyt linjen til slutningen — så ligger linje 6 under cirkel-asset (appendChild ellers mal ovenpå ringen).
+				if (line && line.parentNode === currentSvg && !hoverKey.includes('durex')) {
 					currentSvg.appendChild(line);
 				}
 				const condomAsset = document.querySelector('.condom-asset');
@@ -5526,7 +11642,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (kornAsset) {
 						kornAsset.style.display = 'block';
 						kornAsset.style.opacity = '1';
-						kornAsset.style.animation = 'kornRotateOnce 1s ease-in-out forwards';
+						kornAsset.style.animation = 'kornRotateOnce 1.1s ease-in-out forwards';
 					}
 				} else if (hoverKey.includes('repop')) {
 					// Repop - show kasket asset
@@ -5592,12 +11708,26 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 
 			node.addEventListener('mouseleave', function() {
+				if (!mskMindmapHoverFx) return;
 				const href = this.getAttribute('href');
+				const container = document.querySelector('.brainstorm-container');
 				const currentSvg = document.querySelector('.connecting-lines');
 				const idx = this.dataset.nodeIndex;
 				const nodeHref = (this.dataset.nodeHref || (href || '')).toLowerCase();
 				const frame =
-					(currentSvg && nodeHref && currentSvg.querySelector(`.hand-drawn-frame[data-node-href="${nodeHref}"]`)) ||
+					(container &&
+						nodeHref &&
+						container.querySelector(
+							`.msk-portrait-ring-overlay.hand-drawn-frame[data-node-href="${nodeHref}"]`
+						)) ||
+					(currentSvg &&
+						nodeHref &&
+						currentSvg.querySelector(`.hand-drawn-frame[data-node-href="${nodeHref}"]`)) ||
+					(container &&
+						idx &&
+						container.querySelector(
+							`.msk-portrait-ring-overlay.hand-drawn-frame[data-node-index="${idx}"]`
+						)) ||
 					(currentSvg && idx && currentSvg.querySelector(`.hand-drawn-frame[data-node-index="${idx}"]`));
 				const fill =
 					(currentSvg && nodeHref && currentSvg.querySelector(`.frame-fill[data-node-href="${nodeHref}"]`)) ||
@@ -5616,7 +11746,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Stop farting when leaving
 				stopBrainFart();
 				// Stop D&AD sparks when leaving
-				const badge = document.querySelector('.dandd-badge');
+				const badge = document.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 				if (badge) badge.classList.remove('is-sparking');
 				// Stop Kravling stars when leaving
 				const kravlingBadge = document.querySelector('.kravling-nomineret-badge');
@@ -5657,46 +11787,222 @@ document.addEventListener('DOMContentLoaded', function() {
 		createTwisterTongues();
 
 		// Ensure nodes are placed before drawing lines/frames.
+		mskApplyProjectsPortraitPhoneCanvasStyles();
 		positionNodesPerfectCircle();
-		createAndPositionDandDLogo();
-		createAndPositionTwisterDandDLine();
-		createAndPositionRepopKravlingLine();
-		createAndPositionKravlingNomineretBadge();
-		createAndPositionKobajerArrow();
-		
-		// Create connecting lines dynamically
-		createConnectingLines();
-		
+		refreshProjectsMindmapStandaloneExtras();
+		mskEnsureProjectsPortraitSvgBox();
+
+		let mskPortraitPaintRetryCount = 0;
+		let mskLandscapePaintRetryCount = 0;
+
+		function paintProjectsMindmapGraphics(force) {
+			const redrawOpts = { force: !!force };
+			if (force) {
+				try {
+					const svg = document.querySelector('.connecting-lines');
+					if (svg) delete svg.dataset.mskDynamicGraphicsBuilt;
+				} catch (_) {}
+			}
+			mskProjectsSyncLayoutBeforePaint();
+			createConnectingLines(redrawOpts);
+			createHandDrawnFrames(redrawOpts);
+			mskProjectsMindmapMarkGraphicsBuilt();
+			try {
+				if (
+					mskIsProjectsPortraitTouchGridMode() &&
+					!mskProjectsMindmapPortraitFramesReady() &&
+					mskPortraitPaintRetryCount < 8
+				) {
+					mskPortraitPaintRetryCount += 1;
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							try {
+								positionNodesPerfectCircle();
+								mskProjectsSyncLayoutBeforePaint();
+								paintProjectsMindmapGraphics(true);
+							} catch (_) {}
+						});
+					});
+				} else if (
+					mskIsProjectsTabletLandscapeViewport() &&
+					!mskProjectsMindmapIpadLandscapeFramesReady() &&
+					mskLandscapePaintRetryCount < 8
+				) {
+					mskLandscapePaintRetryCount += 1;
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							try {
+								positionNodesPerfectCircle();
+								mskProjectsSyncLayoutBeforePaint();
+								paintProjectsMindmapGraphics(true);
+							} catch (_) {}
+						});
+					});
+				}
+			} catch (_) {}
+		}
+
+		try {
+			paintProjectsMindmapGraphics(true);
+		} catch (paintErr) {
+			try {
+				console.error('Projects mindmap paint failed:', paintErr);
+			} catch (_) {}
+		}
+
 		// Create hand-drawn frames around project tabs
-		createHandDrawnFrames();
-		
+		try {
+			positionBrainfartsBuildNote();
+			try {
+				mskApplyBrainfartsIpadLandscapeConstructionSign();
+				mskSyncBrainfartsIpadConstructionSignOpacity();
+			} catch (_) {}
+		} finally {
+			mskApplyProjectsPortraitPhoneCanvasStyles();
+			mskProjectsMindmapReveal();
+			try {
+				if (mskIsProjectsPortraitTouchGridMode()) {
+					window.scrollTo(0, 0);
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							try {
+								positionNodesPerfectCircle();
+								refreshProjectsMindmapStandaloneExtras();
+								mskEnsureProjectsPortraitSvgBox();
+								paintProjectsMindmapGraphics(true);
+								positionBrainfartsBuildNote();
+							} catch (_) {}
+						});
+					});
+				}
+			} catch (_) {}
+		}
+
 		document.addEventListener('mousemove', updatePupilPosition);
-		
-		// Recreate lines and frames on window resize
-		window.addEventListener('resize', function() {
-			setTimeout(() => {
-				positionNodesPerfectCircle();
-				createAndPositionDandDLogo();
-				createAndPositionTwisterDandDLine();
-				createAndPositionRepopKravlingLine();
-				createAndPositionKravlingNomineretBadge();
-				createAndPositionKobajerArrow();
-				createConnectingLines();
-				createHandDrawnFrames();
-			}, 100);
+
+		function runProjectsMindmapLayoutTick(force) {
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					try {
+						const layoutChanged = !!(force || mskProjectsMindmapLayoutResizeMeaningful());
+						const needsGraphics =
+							layoutChanged ||
+							mskProjectsMindmapNeedsGraphicRebuild() ||
+							(force &&
+								(mskIsProjectsPortraitTouchGridMode() ||
+									mskIsProjectsTabletLandscapeViewport()));
+						const alreadyPainted = document.documentElement.classList.contains(
+							'msk-projects-mindmap-painted'
+						);
+						if (!layoutChanged && !needsGraphics && alreadyPainted) return;
+
+						if (layoutChanged) {
+							positionNodesPerfectCircle();
+						}
+						refreshProjectsMindmapStandaloneExtras();
+						mskApplyProjectsPortraitPhoneCanvasStyles();
+						mskProjectsSyncLayoutBeforePaint();
+						if (needsGraphics) {
+							const redrawOpts = { force: true };
+							try {
+								const svg = document.querySelector('.connecting-lines');
+								if (svg) delete svg.dataset.mskDynamicGraphicsBuilt;
+							} catch (_) {}
+							createConnectingLines(redrawOpts);
+							createHandDrawnFrames(redrawOpts);
+							mskProjectsMindmapMarkGraphicsBuilt();
+						}
+						positionBrainfartsBuildNote();
+						try {
+							mskApplyBrainfartsIpadLandscapeConstructionSign();
+							mskSyncBrainfartsIpadConstructionSignOpacity();
+						} catch (_) {}
+						const lv = mskProjectsLayoutViewportBox();
+						mskProjectsMindmapLastLayoutIw = lv.w;
+						mskProjectsMindmapLastLayoutIh = lv.h;
+					} catch {}
+				});
+			});
+		}
+
+		function refreshProjectsMindmapLayout() {
+			/* Samle burst (resize + flere inner*-flap) — undgå at fjerne alle .dynamic-mindmap-line flere gange i træk */
+			try {
+				if (mskProjectsMindmapRefreshDebounce) clearTimeout(mskProjectsMindmapRefreshDebounce);
+			} catch {}
+			mskProjectsMindmapRefreshDebounce = setTimeout(() => {
+				mskProjectsMindmapRefreshDebounce = null;
+				if (!mskProjectsMindmapLayoutResizeMeaningful()) return;
+				runProjectsMindmapLayoutTick();
+			}, 150);
+		}
+		try {
+			const _lv0 = mskProjectsLayoutViewportBox();
+			mskProjectsMindmapLastLayoutIw = _lv0.w;
+			mskProjectsMindmapLastLayoutIh = _lv0.h;
+		} catch {}
+		try {
+			window.__mskProjectsRelayout = runProjectsMindmapLayoutTick;
+			window.__mskProjectsRepaintPortraitGraphics = function (force) {
+				try {
+					runProjectsMindmapLayoutTick(!!force);
+				} catch (_) {}
+			};
+		} catch (_) {}
+
+		if (!document.documentElement.dataset.mskProjectsMindmapRelisten) {
+			document.documentElement.dataset.mskProjectsMindmapRelisten = '1';
+			window.addEventListener('msk-relayout-projects-mindmap', () => {
+				try {
+					mskProjectsMindmapLastLayoutIw = -1;
+					mskProjectsMindmapLastLayoutIh = -1;
+				} catch {}
+				try {
+					mskApplyProjectsIpadLandscapeDocumentMode();
+					runProjectsMindmapLayoutTick(true);
+				} catch {}
+			});
+		}
+
+		window.addEventListener('resize', refreshProjectsMindmapLayout);
+		/* Chrome: flere resize-ticks efter rotation — ekstra pass når mål er stabile */
+		window.addEventListener('orientationchange', () => {
+			try {
+				mskProjectsMindmapLastLayoutIw = -1;
+				mskProjectsMindmapLastLayoutIh = -1;
+			} catch {}
+			try {
+				if (mskProjectsMindmapRefreshDebounce) clearTimeout(mskProjectsMindmapRefreshDebounce);
+			} catch {}
+			[40, 280, 520].forEach((ms) => {
+				setTimeout(() => mskProjectsMindmapRelayoutAfterTabletOrientation(true), ms);
+			});
 		});
+		/* Fuld layout: window.resize + orientationchange (ingen visualViewport-overlay — undgår hoppende streger). */
 
 		// Mark as initialized to avoid duplicate event listeners on re-run.
 		brain.dataset.animInit = '1';
+		try {
+			mskBindProjectsMindmapLinkBlurAfterTap();
+		} catch (_) {}
 		if (isPreview) {
 			try {
 				const container = document.querySelector('.brainstorm-container');
-				if (container) container.classList.add('preview-ready');
+				if (container) {
+					container.classList.add('preview-ready');
+					container.dataset.mskRevealed = '1';
+					document.documentElement.classList.remove('msk-mindmap-booting');
+					document.documentElement.classList.add('msk-projects-mindmap-painted');
+					document.documentElement.dataset.mskMindmapRevealed = '1';
+				}
 			} catch {}
 		}
 	}
 
-	// Initialize brain animations
+	// Initialize brain animations (eksponeret til failsafe i projects.html)
+	try {
+		window.__mskProjectsMindmapInitFn = initBrainAnimations;
+	} catch (_) {}
 	initBrainAnimations();
 
 	// Re-run init when navigating to the projects section (e.g. clicking "projekter")
@@ -5709,6 +12015,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 });
+
+/* Samme video-play design hvis DOM allerede er klar (script sidst i body), ved tilbage fra bfcache, m.m. */
+try {
+	if (document.readyState !== 'loading') {
+		mskInitNativeVideoPlayOverlays();
+	}
+} catch {}
+try {
+	window.addEventListener('pageshow', function (ev) {
+		try {
+			if (ev.persisted) mskInitNativeVideoPlayOverlays();
+		} catch {}
+	});
+} catch {}
 
 // Ensure lazy video init runs after DOM is ready
 window.addEventListener('load', function () {
@@ -5736,6 +12056,491 @@ window.addEventListener('load', function () {
 	});
 }); 
 
+/**
+ * Projektsider: klik på billeder åbner central lightbox; video med dobbeltklik (enkeltklik = afspil inline).
+ * Afvis med data-no-lightbox på elementet eller forælder .msk-no-asset-lightbox.
+ */
+(function initMskProjectAssetLightbox() {
+	const LB_ID = 'msk-asset-lightbox';
+	let lastFocus = null;
+
+	function isLightboxPage() {
+		try {
+			if (window.self !== window.top) return false;
+			if (document.documentElement.classList.contains('transition-preview')) return false;
+			const b = document.body;
+			if (!b || !b.classList) return false;
+			const deny = new Set([
+				'projects-page',
+				'home-notebook-page',
+				'about-sketchbook-page',
+				'contact-sketchbook-page',
+			]);
+			return [...b.classList].some((c) => c.endsWith('-page') && !deny.has(c));
+		} catch {
+			return false;
+		}
+	}
+
+	function hasNoLightbox(el) {
+		let n = el;
+		for (let i = 0; i < 12 && n; i++) {
+			if (n.getAttribute && n.getAttribute('data-no-lightbox') !== null) return true;
+			if (n.classList && n.classList.contains('msk-no-asset-lightbox')) return true;
+			n = n.parentElement;
+		}
+		return false;
+	}
+
+	function shouldExcludeImg(el) {
+		if (!el || String(el.tagName).toLowerCase() !== 'img') return true;
+		if (hasNoLightbox(el)) return true;
+		if (el.closest && el.closest('.navbar')) return true;
+		if (el.closest && el.closest(`#${LB_ID}`)) return true;
+		const alt = (el.getAttribute('alt') || '').toLowerCase();
+		if (/\blogo\b/i.test(alt)) return true;
+		const cls = String(el.className || '').toLowerCase();
+		if (cls.includes('logo') && !cls.includes('poster') && !cls.includes('headline')) return true;
+		return false;
+	}
+
+	function shouldExcludeVideo(el) {
+		if (!el || String(el.tagName).toLowerCase() !== 'video') return true;
+		if (hasNoLightbox(el)) return true;
+		if (el.closest && el.closest('.navbar')) return true;
+		if (el.closest && el.closest(`#${LB_ID}`)) return true;
+		return false;
+	}
+
+	/**
+	 * Samme kant-sanitering som --vh/--vw på projektsider (layout + inner), samme tal som du ser i DevTools.
+	 * Bruges til lightbox: layout-kanter + orienterings-korrektur (RDM/WebKit).
+	 */
+	function mskAssetLightboxViewportSidesPx() {
+		const lb = mskProjectsLayoutViewportBox();
+		let rw = lb.w;
+		let rh = lb.h;
+		const iw = Math.round(Math.max(1, window.innerWidth || 0));
+		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (ih >= 200) rh = Math.round(Math.max(rh, ih, lb.h));
+		if (iw >= 200) rw = Math.round(Math.max(rw, iw, lb.w));
+		if (rh < 80 && lb.h >= 80) rh = lb.h;
+		if (rw < 80 && lb.w >= 80) rw = lb.w;
+
+		/*
+		 * RDM / WebKit kan bytte clientWidth ↔ clientHeight ift. orientation.
+		 * Brug CSS orientation + fallback så “bred” altid er layout-bredde og “høj” layout-højde.
+		 */
+		let portrait;
+		try {
+			portrait = window.matchMedia ? window.matchMedia('(orientation: portrait)').matches : null;
+		} catch {
+			portrait = null;
+		}
+		if (portrait == null) {
+			try {
+				const ot = screen.orientation && screen.orientation.type;
+				if (ot && String(ot).includes('portrait')) portrait = true;
+				else if (ot && String(ot).includes('landscape')) portrait = false;
+			} catch {
+				portrait = null;
+			}
+		}
+		if (portrait == null) {
+			portrait = rh >= rw;
+		}
+		if (portrait && rw > rh) {
+			const tmp = rw;
+			rw = rh;
+			rh = tmp;
+		} else if (!portrait && rh > rw) {
+			const tmp = rw;
+			rw = rh;
+			rh = tmp;
+		}
+		return { rw, rh };
+	}
+
+	function applyMskAssetLightboxBox(root) {
+		if (!root) return;
+		let rw;
+		let rh;
+		const dRw = root.dataset.mskLbRw;
+		const dRh = root.dataset.mskLbRh;
+		if (dRw != null && dRw !== '' && dRh != null && dRh !== '') {
+			rw = parseFloat(dRw, 10);
+			rh = parseFloat(dRh, 10);
+		}
+		if (!(Number.isFinite(rw) && rw > 0 && Number.isFinite(rh) && rh > 0)) {
+			const b = mskAssetLightboxViewportSidesPx();
+			rw = b.rw;
+			rh = b.rh;
+			try {
+				root.dataset.mskLbRw = String(rw);
+				root.dataset.mskLbRh = String(rh);
+			} catch {}
+		}
+		/*
+		 * Max-ramme i viewport. Når medie-dimensioner kendes: tilpas frame til
+		 * aspect ratio (hele enheden synlig — ikke crop via object-fit:cover).
+		 */
+		const padReserve = 72;
+		const frame = root.querySelector('.msk-asset-lightbox__frame');
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		if (!frame || !stage) return;
+		const maxW = Math.min(0.96 * rw, 1100);
+		const maxH = Math.min(0.86 * rh, 920, Math.max(160, rh - padReserve));
+		let frameW = maxW;
+		let stageH = Math.min(0.78 * rh, 900, Math.max(160, rh - padReserve));
+		try {
+			const media = stage.querySelector('.msk-asset-lightbox__img, .msk-asset-lightbox__video');
+			if (media) {
+				let nw = 0;
+				let nh = 0;
+				if (media.tagName === 'IMG') {
+					nw = media.naturalWidth || 0;
+					nh = media.naturalHeight || 0;
+				} else if (media.tagName === 'VIDEO') {
+					nw = media.videoWidth || 0;
+					nh = media.videoHeight || 0;
+				}
+				if (nw > 0 && nh > 0) {
+					const scale = Math.min(maxW / nw, maxH / nh);
+					frameW = Math.max(140, nw * scale);
+					stageH = Math.max(140, nh * scale);
+				}
+			}
+		} catch (_) {}
+		const fw = `${Math.round(frameW)}px`;
+		const sh = `${Math.round(stageH)}px`;
+		/* important: slår eventuel side-specifik !important/overskrivning i RDM */
+		frame.style.setProperty('width', fw, 'important');
+		frame.style.setProperty('min-width', fw, 'important');
+		frame.style.setProperty('max-width', fw, 'important');
+		stage.style.setProperty('width', fw, 'important');
+		stage.style.setProperty('min-width', fw, 'important');
+		stage.style.setProperty('max-width', fw, 'important');
+		stage.style.setProperty('min-height', sh, 'important');
+		stage.style.setProperty('height', sh, 'important');
+		stage.style.setProperty('max-height', sh, 'important');
+	}
+
+	function clearMskAssetLightboxBox(root) {
+		if (!root) return;
+		const frame = root.querySelector('.msk-asset-lightbox__frame');
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		if (frame) {
+			frame.style.removeProperty('width');
+			frame.style.removeProperty('min-width');
+			frame.style.removeProperty('max-width');
+		}
+		if (stage) {
+			try {
+				stage.style.removeProperty('width');
+				stage.style.removeProperty('min-width');
+				stage.style.removeProperty('max-width');
+			} catch {}
+			stage.style.removeProperty('min-height');
+			stage.style.removeProperty('height');
+			stage.style.removeProperty('max-height');
+		}
+		try {
+			delete root.dataset.mskLbRw;
+			delete root.dataset.mskLbRh;
+			delete root.dataset.mskLbVmin;
+		} catch {}
+	}
+
+	function ensureShell() {
+		let root = document.getElementById(LB_ID);
+		if (root) return root;
+		root = document.createElement('div');
+		root.id = LB_ID;
+		root.className = 'msk-asset-lightbox';
+		root.setAttribute('role', 'dialog');
+		root.setAttribute('aria-modal', 'true');
+		root.setAttribute('aria-hidden', 'true');
+		root.innerHTML = [
+			'<div class="msk-asset-lightbox__backdrop" data-msk-lb-dismiss="1"></div>',
+			'<button type="button" class="msk-asset-lightbox__close" aria-label="Luk"></button>',
+			'<div class="msk-asset-lightbox__frame">',
+			'<div class="msk-asset-lightbox__stage"></div>',
+			'</div>',
+		].join('');
+		document.body.appendChild(root);
+		root.querySelector('.msk-asset-lightbox__backdrop').addEventListener('click', close);
+		root.querySelector('.msk-asset-lightbox__close').addEventListener('click', (e) => {
+			try {
+				e.preventDefault();
+			} catch {}
+			close();
+		});
+		return root;
+	}
+
+	function buildVideoFrom(sourceEl) {
+		const v = document.createElement('video');
+		v.setAttribute('controls', '');
+		v.setAttribute('playsinline', '');
+		v.className = 'msk-asset-lightbox__video';
+		const poster = sourceEl.getAttribute('poster');
+		if (poster) v.setAttribute('poster', poster);
+		let got = false;
+		try {
+			sourceEl.querySelectorAll('source').forEach((s) => {
+				const u = s.getAttribute('src') || s.src;
+				if (!u) return;
+				const ns = document.createElement('source');
+				ns.src = u;
+				if (s.getAttribute('type')) ns.setAttribute('type', s.getAttribute('type'));
+				v.appendChild(ns);
+				got = true;
+			});
+		} catch {}
+		if (!got && sourceEl.currentSrc) {
+			v.src = sourceEl.currentSrc;
+		} else if (!got && sourceEl.src) {
+			v.src = sourceEl.src;
+		}
+		try {
+			v.load();
+		} catch {}
+		return v;
+	}
+
+	function openFromImg(el) {
+		const root = ensureShell();
+		try {
+			delete root.dataset.mskLbRw;
+			delete root.dataset.mskLbRh;
+			delete root.dataset.mskLbVmin;
+		} catch {}
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		stage.innerHTML = '';
+		const fullSrc = el.getAttribute('data-lightbox-src') || el.currentSrc || el.getAttribute('src');
+		const img = document.createElement('img');
+		img.src = fullSrc;
+		img.alt = el.getAttribute('alt') || '';
+		img.className = 'msk-asset-lightbox__img';
+		img.decoding = 'async';
+		img.loading = 'eager';
+		stage.appendChild(img);
+		img.addEventListener(
+			'load',
+			() => {
+				try {
+					applyMskAssetLightboxBox(root);
+				} catch {}
+			},
+			{ once: true },
+		);
+		try {
+			if (img.decode) {
+				img.decode().then(
+					() => {
+						try {
+							applyMskAssetLightboxBox(root);
+						} catch {}
+					},
+					() => {},
+				);
+			}
+		} catch {}
+		root.setAttribute('aria-hidden', 'false');
+		root.classList.add('is-open');
+		document.body.classList.add('msk-asset-lightbox-open');
+		lastFocus = document.activeElement;
+		/* Fokus på dialog-roden — ikke på luk-knappen (undgår at knappen skifter udseende 1. vs 2. åbning pga. :focus) */
+		try {
+			if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+			root.focus({ preventScroll: true });
+		} catch {}
+		applyMskAssetLightboxBox(root);
+		try {
+			requestAnimationFrame(() => applyMskAssetLightboxBox(root));
+		} catch {}
+	}
+
+	function openFromVideo(sourceEl) {
+		try {
+			sourceEl.pause();
+		} catch {}
+		const root = ensureShell();
+		try {
+			delete root.dataset.mskLbRw;
+			delete root.dataset.mskLbRh;
+			delete root.dataset.mskLbVmin;
+		} catch {}
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		stage.innerHTML = '';
+		const vid = buildVideoFrom(sourceEl);
+		stage.appendChild(vid);
+		vid.addEventListener(
+			'loadedmetadata',
+			() => {
+				try {
+					applyMskAssetLightboxBox(root);
+				} catch {}
+			},
+			{ once: true },
+		);
+		try {
+			mskInitNativeVideoPlayOverlays();
+		} catch {}
+		root.setAttribute('aria-hidden', 'false');
+		root.classList.add('is-open');
+		document.body.classList.add('msk-asset-lightbox-open');
+		lastFocus = document.activeElement;
+		try {
+			if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+			root.focus({ preventScroll: true });
+		} catch {}
+		applyMskAssetLightboxBox(root);
+		try {
+			requestAnimationFrame(() => applyMskAssetLightboxBox(root));
+		} catch {}
+	}
+
+	function close() {
+		const root = document.getElementById(LB_ID);
+		if (!root || !root.classList.contains('is-open')) return;
+		clearMskAssetLightboxBox(root);
+		const v = root.querySelector('.msk-asset-lightbox__video');
+		if (v) {
+			try {
+				v.pause();
+			} catch {}
+		}
+		const stage = root.querySelector('.msk-asset-lightbox__stage');
+		if (stage) stage.innerHTML = '';
+		root.classList.remove('is-open');
+		root.setAttribute('aria-hidden', 'true');
+		document.body.classList.remove('msk-asset-lightbox-open');
+		try {
+			root.blur();
+		} catch {}
+		if (lastFocus && typeof lastFocus.focus === 'function') {
+			try {
+				lastFocus.focus();
+			} catch {}
+		}
+		lastFocus = null;
+	}
+
+	function isDesktopPointerLightbox() {
+		try {
+			return window.matchMedia && window.matchMedia('(hover: hover)').matches;
+		} catch {
+			return true;
+		}
+	}
+
+	document.addEventListener(
+		'click',
+		(e) => {
+			if (!isLightboxPage()) return;
+			const t = e.target;
+			if (!t || !t.tagName) return;
+			const tag = String(t.tagName).toLowerCase();
+
+			if (tag === 'img') {
+				if (shouldExcludeImg(t)) return;
+				try {
+					e.preventDefault();
+					e.stopPropagation();
+				} catch {}
+				openFromImg(t);
+				return;
+			}
+
+			/* Computer / mus: ét klik åbner video i lightbox. Touch: enkeltklik = afspilning; brug dobbeltklik. */
+			if (tag === 'video') {
+				if (!isDesktopPointerLightbox()) return;
+				if (shouldExcludeVideo(t)) return;
+				try {
+					e.preventDefault();
+					e.stopPropagation();
+				} catch {}
+				openFromVideo(t);
+			}
+		},
+		true
+	);
+
+	document.addEventListener(
+		'dblclick',
+		(e) => {
+			if (!isLightboxPage()) return;
+			if (isDesktopPointerLightbox()) return;
+			const t = e.target;
+			if (!t || String(t.tagName).toLowerCase() !== 'video') return;
+			if (shouldExcludeVideo(t)) return;
+			try {
+				e.preventDefault();
+				e.stopPropagation();
+			} catch {}
+			openFromVideo(t);
+		},
+		true
+	);
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key !== 'Escape') return;
+		const root = document.getElementById(LB_ID);
+		if (!root || !root.classList.contains('is-open')) return;
+		try {
+			e.preventDefault();
+		} catch {}
+		close();
+	});
+
+	function onMskAssetLightboxViewportChange() {
+		try {
+			const root = document.getElementById(LB_ID);
+			if (root && root.classList.contains('is-open')) {
+				try {
+					delete root.dataset.mskLbRw;
+					delete root.dataset.mskLbRh;
+					delete root.dataset.mskLbVmin;
+				} catch {}
+				applyMskAssetLightboxBox(root);
+			}
+		} catch {}
+	}
+	window.addEventListener('resize', onMskAssetLightboxViewportChange, { passive: true });
+	window.addEventListener('orientationchange', onMskAssetLightboxViewportChange, { passive: true });
+	try {
+		if (window.visualViewport) {
+			window.visualViewport.addEventListener('resize', onMskAssetLightboxViewportChange, { passive: true });
+		}
+	} catch {}
+
+	function refreshLightboxRootClass() {
+		try {
+			document.documentElement.classList.toggle('msk-asset-lightbox-active', isLightboxPage());
+			/* Synk cursor med shouldExcludeImg — ellers får logoer zoom-in selvom klik er afvist */
+			if (isLightboxPage()) {
+				document
+					.querySelectorAll(
+						'.page-content img, .unge-mod-uv-content img, .brainfarts-content img, main img'
+					)
+					.forEach((img) => {
+						try {
+							if (shouldExcludeImg(img) && !img.hasAttribute('data-no-lightbox')) {
+								img.setAttribute('data-no-lightbox', '');
+							}
+						} catch {}
+					});
+			}
+		} catch {}
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', refreshLightboxRootClass);
+	} else {
+		refreshLightboxRootClass();
+	}
+})();
+
 // Global corner page-turn handles (all pages).
 // Uses simple drag-threshold navigation, and triggers existing click-based flip transitions when available.
 (function initGlobalCornerPageTurnHandles() {
@@ -5754,7 +12559,7 @@ window.addEventListener('load', function () {
 	// If a page already injected its own handles (interactive), don't add duplicates.
 	if (document.querySelector('.page-turn-handle--left') || document.querySelector('.page-turn-handle--right')) return;
 
-	const DRAG_PX = Math.max(220, Math.min(520, Math.round(window.innerWidth * 0.32)));
+	const DRAG_PX = Math.max(220, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.32)));
 	const THRESH = Math.round(DRAG_PX * 0.5); // only commit after passing the middle
 
 	function normalizeFileName() {
@@ -5827,3 +12632,294 @@ window.addEventListener('load', function () {
 		window.addEventListener('pointercancel', onUp, true);
 	}, { passive: false });
 })();
+
+/** Kontakt + iPad/tablet landskab/portræt: lås dokument-scroll (touch/wheel) og fjern ødelagt inline --vh. */
+(function mskContactIpadLandscapeNoScroll() {
+	function isContactPage() {
+		return (
+			document.body &&
+			document.body.classList &&
+			document.body.classList.contains('contact-sketchbook-page')
+		);
+	}
+	function isLandscapeLock() {
+		try {
+			if (!window.matchMedia) return false;
+			if (!window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches) return false;
+			return (
+				window.matchMedia('(orientation: landscape)').matches ||
+				window.matchMedia('(min-aspect-ratio: 1/1)').matches
+			);
+		} catch {
+			return false;
+		}
+	}
+	function isPortraitLock() {
+		try {
+			if (!window.matchMedia) return false;
+			if (!window.matchMedia('(min-width: 641px) and (max-width: 1366px)').matches) return false;
+			if (!window.matchMedia('(orientation: portrait)').matches) return false;
+			return !isLandscapeLock();
+		} catch {
+			return false;
+		}
+	}
+	function isLockViewport() {
+		return isLandscapeLock() || isPortraitLock();
+	}
+	function applyLock() {
+		if (!isContactPage()) return;
+		const landscapeOn = isLandscapeLock();
+		const portraitOn = isPortraitLock();
+		const on = landscapeOn || portraitOn;
+		const root = document.documentElement;
+		const body = document.body;
+		root.classList.toggle('msk-contact-ipad-landscape-no-scroll', landscapeOn);
+		root.classList.toggle('msk-contact-ipad-portrait-no-scroll', portraitOn);
+		if (on) {
+			root.style.removeProperty('--vh');
+			root.style.removeProperty('--vw');
+			root.style.overflow = 'hidden';
+			root.style.height = '100%';
+			root.style.maxHeight = '100%';
+			root.style.position = 'fixed';
+			root.style.width = '100%';
+			root.style.inset = '0';
+			body.style.overflow = 'hidden';
+			body.style.height = '100%';
+			body.style.maxHeight = '100%';
+			body.style.position = 'fixed';
+			body.style.width = '100%';
+			body.style.inset = '0';
+		} else {
+			['overflow', 'height', 'maxHeight', 'position', 'width', 'inset'].forEach((prop) => {
+				root.style[prop] = '';
+				body.style[prop] = '';
+			});
+		}
+	}
+	function blockScroll(e) {
+		/* Aldrig blokér scroll på projektsider (case studies) */
+		try {
+			const b = document.body;
+			if (
+				b &&
+				b.classList &&
+				(b.classList.contains('repop-page') ||
+					b.classList.contains('durex-page') ||
+					b.classList.contains('naturlig-page') ||
+					b.classList.contains('kobajer-page') ||
+					b.classList.contains('twister-page') ||
+					b.classList.contains('byens-landhandel-page') ||
+					b.classList.contains('brainfarts-page') ||
+					b.classList.contains('unge-mod-uv-page'))
+			) {
+				return;
+			}
+		} catch (_) {}
+		if (!isContactPage() || !isLockViewport()) return;
+		if (mskAllowBrowserZoomGesture(e)) return;
+		if (mskIsBrowserPageZoomed()) return;
+		e.preventDefault();
+	}
+	applyLock();
+	window.addEventListener('resize', applyLock);
+	window.addEventListener('orientationchange', function () {
+		window.setTimeout(applyLock, 50);
+	});
+	document.addEventListener('DOMContentLoaded', applyLock);
+	window.addEventListener(
+		'touchmove',
+		blockScroll,
+		{ passive: false, capture: true }
+	);
+	window.addEventListener('wheel', blockScroll, { passive: false, capture: true });
+})();
+
+/** Projekter + iPad/tablet landskab: lås dokument-scroll (som kontakt). */
+(function mskProjectsIpadLandscapeNoScroll() {
+	function isProjectsPage() {
+		return (
+			document.body &&
+			document.body.classList &&
+			document.body.classList.contains('projects-page') &&
+			document.body.classList.contains('sketchbook-theme')
+		);
+	}
+	function isLandscapeLock() {
+		try {
+			if (!window.matchMedia) return false;
+			if (!window.matchMedia('(min-width: 1024px) and (max-width: 1366px)').matches) return false;
+			return (
+				window.matchMedia('(orientation: landscape)').matches ||
+				window.matchMedia('(min-aspect-ratio: 1/1)').matches
+			);
+		} catch {
+			return false;
+		}
+	}
+	function scheduleMindmapRelayoutAfterLock() {
+		try {
+			if (typeof window.mskProjectsMindmapRelayoutAfterTabletOrientation === 'function') {
+				window.mskProjectsMindmapRelayoutAfterTabletOrientation(true);
+			} else if (typeof window.__mskProjectsRelayout === 'function') {
+				window.__mskProjectsRelayout(true);
+			}
+		} catch (_) {}
+	}
+	function applyLock() {
+		if (!isProjectsPage()) return;
+		const on = mskApplyProjectsIpadLandscapeDocumentMode();
+		if (on) {
+			document.documentElement.style.removeProperty('--vh');
+			document.documentElement.style.removeProperty('--vw');
+			scheduleMindmapRelayoutAfterLock();
+		}
+	}
+	function blockScroll(e) {
+		if (!isProjectsPage()) return;
+		try {
+			/* Kun blokér når dokumentet faktisk er låst — undgå at wheel-capture spilder over på projektsider */
+			const html = document.documentElement;
+			const locked =
+				html.classList.contains('msk-projects-ipad-landscape-no-scroll') ||
+				html.classList.contains('msk-projects-phone-portrait-no-scroll') ||
+				html.classList.contains('msk-projects-ipad-landscape') ||
+				html.classList.contains('msk-projects-phone-portrait');
+			if (!locked) return;
+			if (
+				mskIsProjectsTabletLandscapeViewport() ||
+				mskIsProjectsPhonePortraitViewport()
+			) {
+				if (mskAllowBrowserZoomGesture(e)) return;
+				if (mskIsBrowserPageZoomed()) return;
+				e.preventDefault();
+			}
+		} catch (_) {}
+	}
+	function applyLockAfterReady() {
+		applyLock();
+	}
+	window.addEventListener('resize', applyLock);
+	window.addEventListener('orientationchange', function () {
+		window.setTimeout(function () {
+			applyLock();
+			try {
+				if (typeof window.mskProjectsMindmapRelayoutAfterTabletOrientation === 'function') {
+					window.mskProjectsMindmapRelayoutAfterTabletOrientation(true);
+				}
+			} catch (_) {}
+		}, 50);
+		window.setTimeout(function () {
+			try {
+				if (typeof window.mskProjectsMindmapRelayoutAfterTabletOrientation === 'function') {
+					window.mskProjectsMindmapRelayoutAfterTabletOrientation(true);
+				}
+			} catch (_) {}
+		}, 320);
+	});
+	document.addEventListener('DOMContentLoaded', () => {
+		window.setTimeout(applyLockAfterReady, 0);
+	});
+	window.addEventListener(
+		'touchmove',
+		blockScroll,
+		{ passive: false, capture: true }
+	);
+	window.addEventListener('wheel', blockScroll, { passive: false, capture: true });
+})();
+
+/** Når siden er zoomet: tillad pan/scroll (html-klasse til CSS). */
+(function mskBrowserZoomPanMode() {
+	function sync() {
+		mskSyncBrowserZoomPanMode();
+	}
+	sync();
+	if (window.visualViewport) {
+		window.visualViewport.addEventListener('resize', sync, { passive: true });
+		window.visualViewport.addEventListener('scroll', sync, { passive: true });
+	}
+	window.addEventListener('resize', sync, { passive: true });
+	window.addEventListener('orientationchange', () => window.setTimeout(sync, 50), { passive: true });
+	document.addEventListener('DOMContentLoaded', sync);
+})();
+
+/**
+ * Desktop: projektsider (case studies) — ryd hængende overflow/position-låse fra mindmap/transitions.
+ * Telefon/tablet røres ikke.
+ */
+(function mskDesktopProjectCaseStudyAllowScroll() {
+	const CASE_STUDY = [
+		'repop-page',
+		'naturlig-page',
+		'durex-page',
+		'kobajer-page',
+		'twister-page',
+		'byens-landhandel-page',
+		'brainfarts-page',
+		'unge-mod-uv-page'
+	];
+	function isDesktop() {
+		try {
+			if (!window.matchMedia) return (window.innerWidth || 0) >= 1025;
+			return (
+				window.matchMedia('(min-width: 1025px)').matches ||
+				(window.matchMedia('(min-width: 1024px)').matches &&
+					window.matchMedia('(hover: hover)').matches &&
+					window.matchMedia('(pointer: fine)').matches)
+			);
+		} catch (_) {
+			return (window.innerWidth || 0) >= 1025;
+		}
+	}
+	function isCaseStudyPage() {
+		try {
+			const b = document.body;
+			if (!b || !b.classList) return false;
+			if (b.classList.contains('projects-page')) return false;
+			return CASE_STUDY.some((c) => b.classList.contains(c));
+		} catch (_) {
+			return false;
+		}
+	}
+	function unlock() {
+		try {
+			if (!isCaseStudyPage() || !isDesktop()) return;
+			const html = document.documentElement;
+			const body = document.body;
+			/* Safari: kun html scroller; body overflow:visible (begge akser) */
+			html.style.setProperty('overflow-x', 'hidden', 'important');
+			html.style.setProperty('overflow-y', 'scroll', 'important');
+			html.style.setProperty('overscroll-behavior-y', 'auto', 'important');
+			html.style.setProperty('height', 'auto', 'important');
+			html.style.setProperty('max-height', 'none', 'important');
+			html.style.setProperty('position', 'static', 'important');
+			html.style.removeProperty('inset');
+			html.style.removeProperty('width');
+			/* Én shorthand — undgå mixed overflow-x/y der gør overflow-y til auto */
+			body.style.setProperty('overflow', 'visible', 'important');
+			body.style.setProperty('overscroll-behavior-y', 'auto', 'important');
+			body.style.setProperty('height', 'auto', 'important');
+			body.style.setProperty('max-height', 'none', 'important');
+			body.style.setProperty('position', 'relative', 'important');
+			body.style.removeProperty('inset');
+			body.style.removeProperty('width');
+			html.classList.remove(
+				'msk-projects-ipad-landscape-no-scroll',
+				'msk-projects-phone-portrait-no-scroll',
+				'msk-projects-ipad-landscape',
+				'msk-projects-phone-portrait',
+				'msk-mindmap-booting'
+			);
+			body.classList.remove('ai-close-active');
+		} catch (_) {}
+	}
+	unlock();
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', unlock);
+	}
+	window.addEventListener('pageshow', unlock);
+	window.addEventListener('load', unlock);
+})();
+
+/* Fjernet mskProjectsIpadLandscapeMindmapBoot + mskProjectsMindmapGuaranteedRunner — gav blink ved refresh. */
