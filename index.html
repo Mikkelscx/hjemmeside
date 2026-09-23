@@ -9,11 +9,46 @@
     <title>MSC - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = Date.now();
-        document.write('<link rel="stylesheet" href="styles.css?v=' + window.mskAssetV + '">');
+        window.mskAssetV = '20260923p2';
+        document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
+    <style id="msk-open-projects-fix">
+    @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+        body.home-notebook-page.home-opened-projects .home-notebook__cover-front,
+        body.home-notebook-page.home-opened-projects .home-notebook__title,
+        body.home-notebook-page.home-opened-projects .home-notebook__title-img,
+        body.home-notebook-page.home-opened-projects .home-notebook__volume,
+        body.home-notebook-page.home-opened-projects .home-notebook__page-block,
+        body.home-notebook-page.home-opened-projects .home-notebook__page-stack,
+        body.home-notebook-page.home-opened-projects .home-notebook__spine,
+        body.home-notebook-page.home-opened-projects .home-notebook__fore-edge,
+        body.home-notebook-page.home-opened-projects .home-notebook__spine-band {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+        body.home-notebook-page.home-opened-projects .home-notebook__cover {
+            transform: none !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 50vw !important;
+            height: 100vh !important;
+            background: transparent !important;
+            overflow: hidden !important;
+        }
+        body.home-notebook-page.home-opened-projects .home-notebook__cover-back {
+            display: block !important;
+            position: absolute !important;
+            inset: 0 !important;
+            transform: none !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            backface-visibility: visible !important;
+        }
+    }
+    </style>
 </head>
 <body class="home-notebook-page">
     <!-- Navigation -->
@@ -95,7 +130,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script.js?v=' + (window.mskAssetV || Date.now()) + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260923p2') + '.js"><\/script>');
     })();
     </script>
 </body>
