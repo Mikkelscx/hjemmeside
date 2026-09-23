@@ -3946,6 +3946,18 @@ body.home-notebook-page.home-opened-projects {
         perspective: 1180px;
         -webkit-perspective: 1180px;
     }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__volume {
+        display: block;
+        position: fixed;
+        top: var(--bookTop);
+        left: calc(50vw - var(--bookW) / 2);
+        width: var(--bookW);
+        height: var(--bookH);
+        pointer-events: none;
+        z-index: 0;
+        transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+    }
     body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__cover {
         overflow: visible;
         transform-style: preserve-3d;
@@ -4124,6 +4136,7 @@ body.home-notebook-page.home-opened-projects {
         height: calc(var(--bookH) - 20px);
         transform: none;
     }
+    body.home-notebook-page.home-shift-projects .home-notebook__volume,
     body.home-notebook-page.home-shift-projects .home-notebook__book-shadow,
     body.home-notebook-page.home-shift-projects .home-notebook__page-block,
     body.home-notebook-page.home-shift-projects .home-notebook__page-stack,
@@ -4132,6 +4145,7 @@ body.home-notebook-page.home-opened-projects {
     body.home-notebook-page.home-shift-projects .home-notebook__head-edge,
     body.home-notebook-page.home-shift-projects .home-notebook__tail-edge,
     body.home-notebook-page.home-shift-projects .home-notebook__spine-band,
+    body.home-notebook-page.home-opening-layout .home-notebook__volume,
     body.home-notebook-page.home-opening-layout .home-notebook__book-shadow,
     body.home-notebook-page.home-opening-layout .home-notebook__page-block,
     body.home-notebook-page.home-opening-layout .home-notebook__page-stack,
@@ -4140,6 +4154,7 @@ body.home-notebook-page.home-opened-projects {
     body.home-notebook-page.home-opening-layout .home-notebook__head-edge,
     body.home-notebook-page.home-opening-layout .home-notebook__tail-edge,
     body.home-notebook-page.home-opening-layout .home-notebook__spine-band,
+    body.home-notebook-page.home-opening-projects .home-notebook__volume,
     body.home-notebook-page.home-opening-projects .home-notebook__book-shadow,
     body.home-notebook-page.home-opening-projects .home-notebook__page-block,
     body.home-notebook-page.home-opening-projects .home-notebook__page-stack,
@@ -4148,6 +4163,7 @@ body.home-notebook-page.home-opened-projects {
     body.home-notebook-page.home-opening-projects .home-notebook__head-edge,
     body.home-notebook-page.home-opening-projects .home-notebook__tail-edge,
     body.home-notebook-page.home-opening-projects .home-notebook__spine-band,
+    body.home-notebook-page.home-opened-projects .home-notebook__volume,
     body.home-notebook-page.home-opened-projects .home-notebook__book-shadow,
     body.home-notebook-page.home-opened-projects .home-notebook__page-block,
     body.home-notebook-page.home-opened-projects .home-notebook__page-stack,
@@ -4298,9 +4314,7 @@ body.home-notebook-page.home-opened-projects .home-notebook__spread {
         border-radius: 0 !important;
         transform-origin: 0% 50%;
     }
-    body.home-notebook-page.home-shift-projects .home-notebook__title,
-    body.home-notebook-page.home-opening-layout .home-notebook__title,
-    body.home-notebook-page.home-opening-projects .home-notebook__title {
+    body.home-notebook-page.home-shift-projects:not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__title {
         position: absolute !important;
         inset: 0 !important;
         width: auto !important;
@@ -4311,6 +4325,20 @@ body.home-notebook-page.home-opened-projects .home-notebook__spread {
         transition: none !important;
         opacity: 1 !important;
         z-index: 2 !important;
+    }
+    body.home-notebook-page.home-opening-layout .home-notebook__title,
+    body.home-notebook-page.home-opening-projects .home-notebook__title,
+    body.home-notebook-page.home-opened-projects .home-notebook__title,
+    body.home-notebook-page.home-opening-layout .home-notebook__title-img,
+    body.home-notebook-page.home-opening-projects .home-notebook__title-img,
+    body.home-notebook-page.home-opened-projects .home-notebook__title-img,
+    body.home-notebook-page.home-opened-projects .home-notebook__cover-front {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    body.home-notebook-page.home-opened-projects .home-notebook__cover-front {
+        display: none !important;
     }
     body.home-notebook-page.home-shift-projects .home-notebook__cover {
         transform: perspective(1400px) rotateY(0deg);
@@ -4480,6 +4508,7 @@ body.home-notebook-page.home-opening-projects .home-notebook {
 }
 
 .home-notebook__book-shadow,
+.home-notebook__volume,
 .home-notebook__page-block,
 .home-notebook__page-stack,
 .home-notebook__spine,
