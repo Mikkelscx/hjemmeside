@@ -3939,6 +3939,226 @@ body.home-notebook-page.home-opened-projects {
             1px 2px 5px rgba(0,0,0,0.14),
             inset -1px 0 0 rgba(255,255,255,0.35);
     }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) {
+        --bookThick: 48px;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook {
+        perspective: 1180px;
+        -webkit-perspective: 1180px;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__cover {
+        overflow: visible;
+        transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__book-shadow {
+        display: block;
+        position: fixed;
+        top: calc(var(--bookTop) + var(--bookH) - 36px);
+        left: 50%;
+        width: calc(var(--bookW) * 0.82);
+        height: 56px;
+        margin-left: calc(var(--bookW) * -0.41);
+        background: radial-gradient(ellipse at center, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0.16) 44%, transparent 74%);
+        filter: blur(12px);
+        pointer-events: none;
+        z-index: 0;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__page-block {
+        display: block;
+        position: absolute;
+        top: 12px;
+        left: 11px;
+        right: 11px;
+        bottom: 12px;
+        border-radius: 11px;
+        background:
+            repeating-linear-gradient(
+                90deg,
+                rgba(80,55,25,0.05) 0px,
+                rgba(80,55,25,0.05) 1px,
+                transparent 3px
+            ),
+            linear-gradient(180deg, #f7f1e4 0%, #efe4d0 100%);
+        box-shadow:
+            inset 0 0 0 1px rgba(80,60,30,0.08),
+            inset 0 0 18px rgba(80,55,25,0.06);
+        transform: translateZ(-24px);
+        -webkit-transform: translateZ(-24px);
+        pointer-events: none;
+        z-index: 0;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__spine {
+        display: block;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 48px;
+        transform-origin: 0% 50%;
+        transform: rotateY(90deg);
+        -webkit-transform: rotateY(90deg);
+        border-radius: 10px 0 0 10px;
+        background:
+            linear-gradient(90deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 38%, rgba(0,0,0,0.22) 72%, rgba(0,0,0,0.38) 100%),
+            radial-gradient(75% 50% at 30% 18%, rgba(255,255,255,0.10) 0%, transparent 55%),
+            url("assets/notebook-leather.webp");
+        background-size: auto, auto, cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        box-shadow:
+            inset 2px 0 0 rgba(255,255,255,0.08),
+            inset -3px 0 8px rgba(0,0,0,0.35);
+        pointer-events: none;
+        z-index: 4;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__fore-edge {
+        display: block;
+        position: absolute;
+        top: 11px;
+        bottom: 11px;
+        right: 0;
+        width: 48px;
+        transform-origin: 100% 50%;
+        transform: rotateY(-90deg);
+        -webkit-transform: rotateY(-90deg);
+        border-radius: 0 1px 1px 0;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.28) 0%, transparent 16%, transparent 84%, rgba(80,55,25,0.16) 100%),
+            repeating-linear-gradient(
+                90deg,
+                #f8f1e2 0px,
+                #efe3c8 1px,
+                #e5d4b4 2px,
+                #f3ead6 3px
+            );
+        box-shadow:
+            inset 0 0 10px rgba(0,0,0,0.12),
+            1px 0 0 rgba(255,255,255,0.22);
+        pointer-events: none;
+        z-index: 4;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__head-edge,
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__tail-edge {
+        display: block;
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        height: 48px;
+        background:
+            repeating-linear-gradient(
+                0deg,
+                #f8f1e2 0px,
+                #efe3c8 1px,
+                #e5d4b4 2px,
+                #f3ead6 3px
+            );
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.10);
+        pointer-events: none;
+        z-index: 3;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__head-edge {
+        top: 0;
+        transform-origin: 50% 0%;
+        transform: rotateX(90deg);
+        -webkit-transform: rotateX(90deg);
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__tail-edge {
+        bottom: 0;
+        transform-origin: 50% 100%;
+        transform: rotateX(-90deg);
+        -webkit-transform: rotateX(-90deg);
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__spine-band {
+        display: block;
+        position: absolute;
+        top: 16px;
+        bottom: 16px;
+        left: 14px;
+        width: 22px;
+        border-radius: 12px;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 30%, rgba(0,0,0,0.18) 100%),
+            linear-gradient(90deg, rgba(0,0,0,0.32) 0%, rgba(255,255,255,0.05) 45%, rgba(0,0,0,0.36) 100%);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+        pointer-events: none;
+        z-index: 3;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__page-stack {
+        display: block;
+        position: absolute;
+        top: 10px;
+        bottom: 10px;
+        right: 0;
+        width: 48px;
+        transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+        pointer-events: none;
+        z-index: 0;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__page-leaf {
+        position: absolute;
+        top: calc(var(--i) * 0.55px);
+        bottom: calc(var(--i) * 0.55px);
+        right: calc(var(--i) * -2.8px);
+        width: 10px;
+        border-radius: 0 3px 3px 0;
+        background:
+            repeating-linear-gradient(
+                180deg,
+                #f8f1e2 0px,
+                #efe3c8 1px,
+                #e6d6b8 2px,
+                #f3ead6 3px
+            );
+        box-shadow:
+            1px 0 0 rgba(255,255,255,0.28),
+            inset 0 0 0 1px rgba(80,60,30,0.06);
+        transform: translateZ(calc((var(--i) + 1) * -3px));
+        pointer-events: none;
+    }
+    body.home-notebook-page:not(.home-shift-projects):not(.home-opening-layout):not(.home-opening-projects):not(.home-opened-projects) .home-notebook__pages {
+        width: 28px;
+        left: calc(50vw + var(--bookW) / 2 - 4px);
+        top: calc(var(--bookTop) + 10px);
+        height: calc(var(--bookH) - 20px);
+        transform: none;
+    }
+    body.home-notebook-page.home-shift-projects .home-notebook__book-shadow,
+    body.home-notebook-page.home-shift-projects .home-notebook__page-block,
+    body.home-notebook-page.home-shift-projects .home-notebook__page-stack,
+    body.home-notebook-page.home-shift-projects .home-notebook__spine,
+    body.home-notebook-page.home-shift-projects .home-notebook__fore-edge,
+    body.home-notebook-page.home-shift-projects .home-notebook__head-edge,
+    body.home-notebook-page.home-shift-projects .home-notebook__tail-edge,
+    body.home-notebook-page.home-shift-projects .home-notebook__spine-band,
+    body.home-notebook-page.home-opening-layout .home-notebook__book-shadow,
+    body.home-notebook-page.home-opening-layout .home-notebook__page-block,
+    body.home-notebook-page.home-opening-layout .home-notebook__page-stack,
+    body.home-notebook-page.home-opening-layout .home-notebook__spine,
+    body.home-notebook-page.home-opening-layout .home-notebook__fore-edge,
+    body.home-notebook-page.home-opening-layout .home-notebook__head-edge,
+    body.home-notebook-page.home-opening-layout .home-notebook__tail-edge,
+    body.home-notebook-page.home-opening-layout .home-notebook__spine-band,
+    body.home-notebook-page.home-opening-projects .home-notebook__book-shadow,
+    body.home-notebook-page.home-opening-projects .home-notebook__page-block,
+    body.home-notebook-page.home-opening-projects .home-notebook__page-stack,
+    body.home-notebook-page.home-opening-projects .home-notebook__spine,
+    body.home-notebook-page.home-opening-projects .home-notebook__fore-edge,
+    body.home-notebook-page.home-opening-projects .home-notebook__head-edge,
+    body.home-notebook-page.home-opening-projects .home-notebook__tail-edge,
+    body.home-notebook-page.home-opening-projects .home-notebook__spine-band,
+    body.home-notebook-page.home-opened-projects .home-notebook__book-shadow,
+    body.home-notebook-page.home-opened-projects .home-notebook__page-block,
+    body.home-notebook-page.home-opened-projects .home-notebook__page-stack,
+    body.home-notebook-page.home-opened-projects .home-notebook__spine,
+    body.home-notebook-page.home-opened-projects .home-notebook__fore-edge,
+    body.home-notebook-page.home-opened-projects .home-notebook__head-edge,
+    body.home-notebook-page.home-opened-projects .home-notebook__tail-edge,
+    body.home-notebook-page.home-opened-projects .home-notebook__spine-band {
+        display: none !important;
+        opacity: 0 !important;
+    }
 }
 
 body.home-notebook-page.home-opening-layout .home-notebook__cover,
@@ -4257,6 +4477,17 @@ body.home-notebook-page.home-opening-projects .home-notebook {
         inset 0 -18px 28px rgba(0,0,0,0.38);
     filter: contrast(1.18) saturate(1.08);
     z-index: 1;
+}
+
+.home-notebook__book-shadow,
+.home-notebook__page-block,
+.home-notebook__page-stack,
+.home-notebook__spine,
+.home-notebook__fore-edge,
+.home-notebook__head-edge,
+.home-notebook__tail-edge,
+.home-notebook__spine-band {
+    display: none;
 }
 
 .home-notebook__cover-front {
