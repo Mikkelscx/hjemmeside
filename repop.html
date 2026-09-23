@@ -3,17 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Repop by Depop - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css">
+    <script>
+    (function () {
+        window.mskAssetV = Date.now();
+        document.write('<link rel="stylesheet" href="styles.css?v=' + window.mskAssetV + '">');
+    })();
+    </script>
+    <noscript><link rel="stylesheet" href="styles.css"></noscript>
     <style>
-        /* Small navbar override */
+        
+        /*
+         * Desktop Safari: tving dokument-scroll (file:// + WebKit kan ellers låse ved
+         * overflow-x:hidden på html+body). Telefon/tablet uændret.
+         */
+        @media (min-width: 1025px),
+               (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+            html {
+                overflow-x: hidden !important;
+                overflow-x: clip !important;
+                overflow-y: scroll !important;
+                overscroll-behavior-y: auto !important;
+                height: auto !important;
+                max-height: none !important;
+                min-height: 0 !important;
+                position: static !important;
+            }
+            html body.repop-page,
+            body.repop-page {
+                overflow: visible !important;
+                overscroll-behavior-y: auto !important;
+                height: auto !important;
+                max-height: none !important;
+                min-height: auto !important;
+                position: relative !important;
+                inset: auto !important;
+            }
+        }
+/* Layout-only: farver kommer fra styles.css (repop-page navbar-tokens) */
         .repop-page .navbar {
-            background-color: #fff !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
             position: fixed !important;
             top: 0 !important;
             width: 100% !important;
-            z-index: 1000 !important;
+            z-index: 20000 !important;
         }
         
         .repop-page .nav-container {
@@ -22,27 +57,276 @@
             padding: 0 20px !important;
         }
         
-        .repop-page .nav-menu {
-            display: flex !important;
-            justify-content: center !important;
-            list-style: none !important;
-            padding: 0.3rem 0 !important;
+        /* Vandret top-menu kun på desktop — tablet burger undgår center i højt panel (dead space) */
+        @media (min-width: 1025px) {
+            .repop-page .nav-menu {
+                display: flex !important;
+                justify-content: center !important;
+                list-style: none !important;
+                padding: 0.3rem 0 !important;
+            }
         }
         
-        .repop-page .nav-item {
-            margin: 0 1.5rem !important;
+        /* Kalender-markører: desktop-fallback — SoMe/Post over, øvrige under */
+        html body.repop-page .repop-lfw-overview {
+            overflow: visible;
+            padding-top: 2.75rem;
+            padding-bottom: 2.5rem;
         }
-        
-        .repop-page .nav-link {
-            text-decoration: none !important;
-            color: #333 !important;
-            font-weight: 600 !important;
-            font-size: 0.8rem !important;
-            transition: opacity 0.2s ease !important;
+        html body.repop-page .repop-lfw-overview .repop-lfw-marker {
+            text-align: center;
         }
-        
-        .repop-page .nav-link:hover {
-            opacity: 0.7 !important;
+        html body.repop-page .repop-lfw-overview .repop-lfw-marker p,
+        html body.repop-page .repop-lfw-overview .repop-lfw-marker .repop-lfw-marker__sub {
+            max-width: 100%;
+            width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+            transform: translate(-50%, calc(-100% - 10px));
+        }
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+            top: 28.4%;
+            left: 33.8%;
+        }
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+            top: 28.4%;
+            left: 68.3%;
+        }
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre,
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup,
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+            transform: translateX(-50%);
+        }
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+            top: 73%;
+            left: 17.1%;
+        }
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+            top: 73%;
+            left: 51.2%;
+        }
+        html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+            top: 73%;
+            left: 85.8%;
+        }
+
+        /*
+         * LFW mobil ≤768px — én samlet blok med html body … (højere specificitet end gammel body.-blok).
+         * Værdier duplikeres i apply() nedenfor med !important som backup.
+         */
+        @media screen and (max-width: 768px) {
+            html body.repop-page .repop-lfw-segment {
+                padding: 0.65rem 0 1.45rem !important;
+                margin: 1.55rem 0 !important;
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+            }
+            html body.repop-page .repop-lfw-segment > h3 {
+                padding-left: 1.35rem !important;
+                padding-right: 1.35rem !important;
+                box-sizing: border-box !important;
+            }
+            html body.repop-page .repop-lfw-segment .repop-mobile-stack.repop-mobile-stack--lfw,
+            html body.repop-page .repop-lfw-segment .repop-mobile-stack {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 1.3rem !important;
+            }
+            html body.repop-page .repop-lfw-segment .repop-mobile-stack__text {
+                order: 1 !important;
+                display: block !important;
+                flex: 0 1 auto !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding-left: 1.35rem !important;
+                padding-right: 1.35rem !important;
+                padding-top: 0 !important;
+                min-height: 0 !important;
+                justify-content: flex-start !important;
+                align-self: stretch !important;
+                box-sizing: border-box !important;
+            }
+            html body.repop-page .repop-lfw-segment .repop-mobile-stack__text h4:first-child {
+                margin-top: 0 !important;
+            }
+            html body.repop-page .repop-lfw-segment .repop-mobile-stack__media {
+                order: 2 !important;
+                flex: none !important;
+                align-self: stretch !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                text-align: center !important;
+                overflow: hidden !important;
+            }
+            html body.repop-page .repop-lfw-segment .repop-mobile-stack__media img {
+                width: 100% !important;
+                max-width: none !important;
+                height: auto !important;
+                display: block !important;
+                border: none !important;
+                box-sizing: border-box !important;
+            }
+            html body.repop-page .repop-lfw-segment .repop-mobile-stack__media img.repop-lfw-img--promo {
+                border-radius: 0 0 12px 12px !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+            }
+            html body.repop-page .page-content {
+                /* Under fast MENU: brug samme offset som --navBarTotal; mindre top-margin end før (mindre “hul”) */
+                padding: var(--navBarTotal, calc(52px + env(safe-area-inset-top, 0px))) 1.2rem 1.45rem !important;
+                margin: 6px auto 18px !important;
+            }
+            html body.repop-page h2.repop-lfw-heading {
+                margin: 0.85rem 0 0.6rem 0 !important;
+            }
+            html body.repop-page .repop-video-wrap {
+                margin: 0.9rem 0 !important;
+            }
+            html body.repop-page .repop-lfw-overview {
+                margin: 1.25rem 0 !important;
+                padding: 0.55rem 1.15rem 1.5rem !important;
+                box-sizing: border-box !important;
+            }
+            html body.repop-page .repop-lfw-overview__track .repop-lfw-overview__img {
+                width: 90% !important;
+                max-width: 90% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            html body.repop-page .repop-lfw-overview .repop-lfw-marker p {
+                font-size: clamp(0.66rem, 2.45vw, 0.8rem) !important;
+                line-height: 1.25 !important;
+            }
+            html body.repop-page .repop-lfw-overview .repop-lfw-marker p + p,
+            html body.repop-page .repop-lfw-overview .repop-lfw-marker__sub {
+                margin-top: 0.45rem !important;
+            }
+            html body.repop-page .repop-lfw-overview .repop-lfw-marker__sub {
+                white-space: normal !important;
+                text-align: center !important;
+                line-height: 1.28 !important;
+            }
+            /* LFW asset 6: markør-positioner pr. slug (matcher styles.css) */
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+                top: 11% !important;
+                left: 23% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+                top: 70% !important;
+                left: 13% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+                left: 55% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                top: 5% !important;
+                left: 69% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+                left: 81% !important;
+            }
+        }
+        @media screen and (max-width: 640px) and (orientation: portrait),
+               screen and (max-width: 640px) and (max-aspect-ratio: 1/1) {
+            /* Næsten fuld bredde i portræt: modvirker .page-content side-padding (~1.15rem) */
+            html body.repop-page .repop-lfw-overview {
+                padding: 0.55rem 0.42rem 1.5rem !important;
+                margin-left: -1.1rem !important;
+                margin-right: -1.1rem !important;
+                width: calc(100% + 2.2rem) !important;
+                max-width: none !important;
+                box-sizing: border-box !important;
+                overflow-x: visible !important;
+                overflow-y: visible !important;
+            }
+            html body.repop-page .repop-lfw-overview__track .repop-lfw-overview__img {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            html body.repop-page .repop-lfw-overview .repop-lfw-marker {
+                max-width: min(46vw, 11rem) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+                top: 2% !important;
+                left: 28% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+                top: 70% !important;
+                left: 18% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+                left: 52% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                top: 2% !important;
+                left: 72% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+                left: 84% !important;
+            }
+        }
+        /*
+         * Mobil landskab: samme breakpoint som styles.css — sidst i <style> så !important slår igennem
+         * (undgår at inline top/left på HTML overskygger).
+         */
+        @media screen and (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+               screen and (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                transform: translate(-50%, calc(-100% - 8px)) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+                top: 26% !important;
+                left: 40% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                top: 26% !important;
+                left: 61% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+                left: 29% !important;
+            }
+        }
+        /* iPad / tablet landskab (1024–1600): SoMe + Post — lidt højere (afbalanceret) */
+        @media screen and (min-width: 1024px) and (max-width: 1600px) and (orientation: landscape),
+               screen and (min-width: 1024px) and (max-width: 1600px) and (min-aspect-ratio: 11/10) {
+            html body.repop-page .repop-lfw-overview {
+                padding-top: 1.36rem !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some,
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                transform: translateX(-50%) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--some {
+                top: 19.9% !important;
+                left: 34% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--post {
+                top: 19.9% !important;
+                left: 68.5% !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--pre {
+                top: 72.5% !important;
+                left: 18% !important;
+                transform: translateX(-50%) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--popup {
+                top: 72.5% !important;
+                left: 52% !important;
+                transform: translateX(-50%) !important;
+            }
+            html body.repop-page .repop-lfw-overview__track > .repop-lfw-marker--ooh {
+                top: 72.5% !important;
+                left: 85.5% !important;
+                transform: translateX(-50%) !important;
+            }
         }
     </style>
 
@@ -88,38 +372,38 @@
         <p style="text-align: center; margin: 0.2rem auto; font-size: 1.2rem;">Få Depop til at blive the talk of town</p>
         
         <!-- 2x2 Grid Layout -->
-        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 15px; padding: 1.5rem; margin: 1.5rem 0; color: white;">
-            <h1 style="text-align: center; margin-bottom: 1.5rem; font-size: 2rem; font-weight: bold;">Repop by Depop</h1>
+        <div class="repop-brief-box" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 15px; padding: 1.5rem; margin: 1.5rem 0; color: white;">
+            <h1 class="repop-brief-inner-title" style="text-align: center; margin-bottom: 1.5rem; font-size: 2rem; font-weight: bold;">Repop by Depop</h1>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0.5rem;">
+            <div class="repop-inline-brief-grid" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 0.5rem; align-content: start; width: 100%; box-sizing: border-box;">
                 <!-- Problem -->
                 <div style="padding: 0.8rem;">
                     <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center;">Problem</h2>
-                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%;">Modeindustriens jagt på nye trends og salg resulterer i 90 millioner ton tekstilaffald årligt.</p>
+                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 100%;">Modeindustriens jagt på nye trends og salg resulterer i 90 millioner ton tekstilaffald årligt.</p>
                 </div>
                 
                 <!-- Observation -->
                 <div style="padding: 0.8rem;">
                     <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center;">Observation</h2>
-                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%;">Gen Z får inspiration til tøj og accessories via SoMe-posts, outdoor reklamer og influencere.</p>
+                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 100%;">Gen Z får inspiration til tøj og accessories via SoMe-posts, outdoor reklamer og influencere.</p>
                 </div>
                 
                 <!-- Indsigt -->
                 <div style="padding: 0.8rem;">
                     <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center;">Indsigt</h2>
-                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%;">Grundet hverdagens høje tempo, er de blevet vant til at tage billeder og screenshots af de vigtigste ting – også deres modeinspiration.</p>
+                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 100%;">Grundet hverdagens høje tempo, er de blevet vant til at tage billeder og screenshots af de vigtigste ting – også deres modeinspiration.</p>
                 </div>
                 
                 <!-- Løsning -->
                 <div style="padding: 0.8rem;">
                     <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.5rem; text-align: center;">Løsning</h2>
-                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 90%;">Vi har lavet en tilføjelse til Depop's app. Appen har allerede adgang til brugernes fotobiblioteker, hvilket vores tilføjelse "Repop by Depop" udnytter sammen med object detection AI til at forvandle inspirationsbilleder til mulige genbrugssalg.</p>
+                    <p style="font-size: 1.1rem; line-height: 1.35; text-align: center; margin: 0 auto; max-width: 100%;">Vi har lavet en tilføjelse til Depop's app. Appen har allerede adgang til brugernes fotobiblioteker, hvilket vores tilføjelse "Repop by Depop" udnytter sammen med object detection AI til at forvandle inspirationsbilleder til mulige genbrugssalg.</p>
                 </div>
             </div>
         </div>
         
         <!-- YouTube Video -->
-        <div style="margin: 2rem 0; text-align: center;">
+        <div class="repop-video-wrap" style="margin: 2rem 0; text-align: center;">
             <div style="position: relative; width: 100%; height: 0; padding-bottom: 56.25%; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);">
                 <video controls playsinline preload="metadata" poster="assets/Depop-thumb-51s.jpg"
                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; display: block; object-fit: cover; background: #000;">
@@ -130,20 +414,20 @@
         </div>
         
         <!-- London Fashion Week Section -->
-        <h2 style="text-align: center; margin: 2rem 0 1rem 0; font-size: 2rem; font-weight: bold; color: #333;">London Fashion Week (LFC) Aktiveringer</h2>
+        <h2 class="repop-lfw-heading" style="text-align: center; margin: 2rem 0 1rem 0; font-size: 2rem; font-weight: bold; color: #333;">London Fashion Week (LFC) Aktiveringer</h2>
         
         <!-- London Fashion Week Content -->
-        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+        <div class="repop-lfw-segment repop-lfw-segment--first" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
             <h3 style="color: white; font-size: 2rem; margin: 0 0 1.5rem 0; font-weight: bold; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); text-align: center;">London Fashion Week Aktiveringer</h3>
             
-            <div style="display: flex; gap: 2rem; align-items: center;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - Image -->
-                <div style="flex: 1; text-align: center;">
-                    <img src="assets/repop SoMe 1.png" alt="Repop SoMe 1" style="max-width: 80%; height: auto; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">
+                <div class="repop-mobile-stack__media" style="text-align: center;">
+                    <img src="assets/repop SoMe 1.png" alt="Repop SoMe 1" class="repop-lfw-img--promo" style="height: auto; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">
                 </div>
                 
                 <!-- Right Side - Før LFW Text -->
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 300px;">
+                <div class="repop-mobile-stack__text">
                     <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Før LFW</h4>
                     <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Vi bruger SoMe til at kommentere på modehusenes, og store mode-influenceres, opslag og vender opmærksomheden fra fast fashion til genbrugs fashion.</p>
                     <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Dette foregår på Instagram og TikTok, da det er der vores målgruppe befinder sig.</p>
@@ -153,66 +437,65 @@
         </div>
         
         <!-- Additional Før LFW Content -->
-        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div style="display: flex; gap: 2rem; align-items: center;">
+        <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - Text -->
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 200px; padding-left: 0;">
+                <div class="repop-mobile-stack__text repop-mobile-stack__text--pad-left-0-lg">
                     <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Før LFW</h4>
                     <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">For at skabe opmærksomhed og danne omtale, vil vi i ugerne op til London Fashion Week (LFW) tage LFWs egne out of home reklamer og gennem guerilla klistermærker forvandle dem til reklamer for Depops genbrugs markedsplads.</p>
                 </div>
                 
                 <!-- Right Side - Før LFW Asset 2 -->
-                <div style="flex: 1; text-align: center;">
-                    <img src="assets/Før LFW asset 2.png" alt="Før LFW Asset 2" style="max-width: 80%; height: auto;">
+                <div class="repop-mobile-stack__media" style="text-align: center;">
+                    <img src="assets/Før LFW asset 2.png" alt="Før LFW Asset 2" style="height: auto;">
                 </div>
             </div>
         </div>
         
         <!-- Under LFW Content -->
-        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div style="display: flex; gap: 2rem; align-items: center;">
+        <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - LFW Asset 3 -->
-                <div style="flex: 1; text-align: center;">
-                    <img src="assets/LFW asset 3.png" alt="LFW Asset 3" style="max-width: 80%; height: auto;">
+                <div class="repop-mobile-stack__media" style="text-align: center;">
+                    <img src="assets/LFW asset 3.png" alt="LFW Asset 3" style="height: auto;">
                 </div>
                 
                 <!-- Right Side - Under LFW Text -->
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 200px;">
+                <div class="repop-mobile-stack__text">
                     <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Under LFW</h4>
-                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Depop stjæler rampelyset ude foran eksisterende brands shows under LFW.</p>
-                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Så når f. eks. Chanel laver modeshow, så laver Depop et ude foran.</p>
+                    <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Depop stjæler rampelyset ude foran eksisterende brands shows under LFW. Så når f. eks. Chanel laver modeshow, så laver Depop et ude foran.</p>
                     <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Twistet er: Depops modeller har kun tøj på fra det valgte modehus' forrige kollektioner.</p>
                 </div>
             </div>
         </div>
         
         <!-- Efter LFW Content -->
-        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div style="display: flex; gap: 0.2rem; align-items: center;">
+        <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - Efter LFW Text -->
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 200px; padding-right: 0; margin-left: 4rem;">
+                <div class="repop-mobile-stack__text repop-mobile-stack__text--pad-right-0-lg">
                     <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Efter LFW</h4>
                     <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">For at holde kampagnen og brandet relevant i længst muligt tid, vælger vi, at kommentere på nøje udvalgte OOHs fra tøj brands.</p>
                     <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Vi reagerer altså hurtigt på deres printannoncer, hvis det lægger op til vores platforms tekstbaserede præmisser.</p>
                 </div>
                 
                 <!-- Right Side - LFW Asset 4 -->
-                <div style="flex: 1; text-align: center;">
-                    <img src="assets/LFW asset 4.png" alt="LFW Asset 4" style="max-width: 110%; height: auto;">
+                <div class="repop-mobile-stack__media" style="text-align: center;">
+                    <img src="assets/LFW asset 4.png" alt="LFW Asset 4" data-lfw-content-frac="0.616" style="height: auto;">
                 </div>
             </div>
         </div>
         
         <!-- Additional Efter LFW Content -->
-        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
-            <div style="display: flex; gap: 2rem; align-items: center;">
+        <div class="repop-lfw-segment" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; box-shadow: 0 15px 35px rgba(255, 68, 68, 0.3); color: white;">
+            <div class="repop-mobile-stack repop-mobile-stack--lfw" style="display: flex; flex-direction: row; align-items: flex-start; gap: 2rem;">
                 <!-- Left Side - LFW Asset 5 -->
-                <div style="flex: 1; text-align: center;">
-                    <img src="assets/LFW asset 5.png" alt="LFW Asset 5" style="max-width: 110%; height: auto;">
+                <div class="repop-mobile-stack__media" style="text-align: center;">
+                    <img src="assets/LFW asset 5.png" alt="LFW Asset 5" data-lfw-content-frac="0.71" style="height: auto;">
                 </div>
                 
                 <!-- Right Side - Additional Efter LFW Text -->
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 200px;">
+                <div class="repop-mobile-stack__text">
                     <h4 style="color: white; font-size: 1.5rem; margin: 0 0 1rem 0; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); text-align: left;">Efter LFW</h4>
                     <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Efter London Fashion Week udvider vi vores guerilla-kampagne fra kun være på LFWs egne reklamer til alle modehusenes.</p>
                     <p style="color: white; line-height: 1.6; margin: 0.5rem 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); text-align: left;">Derudover er der nu også en QR kode, som henviser til vores nye "Repop by Depop" feature i appen – eller på hjemmesiden hvis man ikke har appen.</p>
@@ -220,32 +503,132 @@
             </div>
         </div>
         
-        <!-- Overview Image Box -->
-        <div style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; color: white; text-align: center; position: relative;">
-            <div style="position: absolute; top: 70%; left: 21%; z-index: 10; text-align: center; transform: translateX(-50%);">
-                <p style="color: white; line-height: 1; margin: 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Pre LFW guerilla</p>
-                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 0.5rem;">1–18 September</p>
-            </div>
-            <div style="position: absolute; top: 25%; left: 35%; z-index: 10; text-align: center; transform: translateX(-50%);">
+        <!-- Overview Image Box: markører er absolute på track (samme zigzag-layout på mobil portræt via horisontal scroll) -->
+        <div class="repop-lfw-overview" style="background: linear-gradient(135deg, #ff4444 0%, #ff8844 100%); border-radius: 20px; padding: 2.5rem; margin: 2rem 0; color: white; text-align: center; position: relative;">
+            <div class="repop-lfw-overview__track">
+            <img class="repop-lfw-overview__img" src="assets/LFW asset 6.png" alt="Kampagneoversigt Repop × LFW" style="height: auto; display: block; margin: 0 auto;" data-no-lightbox>
+            <img class="repop-lfw-hotspot repop-lfw-hotspot--some" src="assets/repop SoMe 1.png" alt="Coming Soon SoMe">
+            <img class="repop-lfw-hotspot repop-lfw-hotspot--pre" src="assets/Før LFW asset 2.png" alt="Pre LFW guerilla">
+            <img class="repop-lfw-hotspot repop-lfw-hotspot--popup" src="assets/LFW asset 3.png" alt="Pop-up catwalk">
+            <img class="repop-lfw-hotspot repop-lfw-hotspot--post" src="assets/LFW asset 5.png" alt="Post LFW guerilla">
+            <img class="repop-lfw-hotspot repop-lfw-hotspot--ooh" src="assets/LFW asset 4.png" alt="Kontekstuelle OOHs">
+            <div class="repop-lfw-marker repop-lfw-marker--some" style="position: absolute; z-index: 10; text-align: center;">
                 <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Coming Soon SoMe</p>
-                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 0.5rem;">Fra 1. September og frem</p>
+                <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">Fra 1. September<br />og frem</p>
             </div>
-            <div style="position: absolute; top: 25%; left: 67%; z-index: 10; text-align: center; transform: translateX(-50%);">
-                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap; margin-left: -0.2rem;">Post LFW guerilla</p>
-                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 1.2rem;">22–30 September</p>
+            <div class="repop-lfw-marker repop-lfw-marker--pre" style="position: absolute; z-index: 10; text-align: center; transform: translateX(-50%);">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Pre LFW guerilla</p>
+                <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">1–18<br />September</p>
             </div>
-            <img src="assets/LFW asset 6.png" alt="Campaign Overview" style="max-width: 95%; height: auto;">
-            <div style="position: absolute; top: 70%; left: 83%; z-index: 10; text-align: center; transform: translateX(-50%);">
-                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Kontekstuelle OOHs</p>
-                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 0.3rem;">Fra 22. September og frem</p>
-            </div>
-            <div style="position: absolute; top: 70%; left: 51%; z-index: 10; text-align: center; transform: translateX(-50%);">
+            <div class="repop-lfw-marker repop-lfw-marker--popup" style="position: absolute; top: 70%; left: 51%; z-index: 10; text-align: center; transform: translateX(-50%);">
                 <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Pop-up catwalk</p>
-                <p style="color: white; line-height: 1; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); white-space: nowrap; margin-left: 0.8rem;">18–22 September</p>
+                <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">18–22<br />September</p>
+            </div>
+            <div class="repop-lfw-marker repop-lfw-marker--post" style="position: absolute; z-index: 10; text-align: center;">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Post LFW guerilla</p>
+                <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">22–30<br />September</p>
+            </div>
+            <div class="repop-lfw-marker repop-lfw-marker--ooh" style="position: absolute; top: 70%; left: 83%; z-index: 10; text-align: center; transform: translateX(-50%);">
+                <p style="color: white; line-height: 1; margin: 0; font-size: 1.3rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); font-weight: bold; white-space: nowrap;">Kontekstuelle OOHs</p>
+                <p class="repop-lfw-marker__sub" style="color: white; line-height: 1.2; margin: 0.5rem 0 0 0; font-size: 1rem; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">Fra 22. September<br />og frem</p>
+            </div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+    /* Kun LFW-billeder med data-lfw-content-frac (zoom) — layout/stemning styres af <style> ovenfor */
+    (function () {
+        var mqPhone = "(max-width: 768px)";
+        /** Tablet portræt fra 641px — samme som CSS Z-layout + mockup-frac */
+        var mqIpadPortrait =
+            "(min-width: 641px) and (max-width: 1024px) and (orientation: portrait), " +
+            "(min-width: 641px) and (max-width: 1024px) and (max-aspect-ratio: 1/1)";
+        /** iPad / tablet landskab: frac-zoom. Ikke laptops (hover/fine) — de bruger desktop 50/50. */
+        var mqIpadLandscape =
+            "(min-width: 1024px) and (max-width: 1600px) and (hover: none) and (pointer: coarse) and (orientation: landscape), " +
+            "(min-width: 1024px) and (max-width: 1600px) and (hover: none) and (pointer: coarse) and (min-aspect-ratio: 11/10)";
+        var mqDesktop =
+            "(min-width: 1025px) and (hover: hover) and (pointer: fine)";
+        var PORTRAIT_FRAC_SHRINK_PHONE = 0.96;
+        /** Fintrim iPad: under 0.96, stadig med zoom (ikke „før“ uden zoom) */
+        var PORTRAIT_FRAC_SHRINK_IPAD = 0.945;
+        /** iPad landskab: lidt større zoom + venstrejusteret (overflow mod højre — overlap med tekst undgås) */
+        var LANDSCAPE_FRAC_SHRINK = 0.985;
+        var DESKTOP_FRAC_SHRINK = 1;
+        function apply() {
+            var phone = window.matchMedia(mqPhone).matches;
+            var ipadPortrait = window.matchMedia(mqIpadPortrait).matches;
+            var ipadLandscape = window.matchMedia(mqIpadLandscape).matches;
+            var desktop = window.matchMedia(mqDesktop).matches;
+            var useFracZoom = phone || ipadPortrait || ipadLandscape || desktop;
+            var fracShrink = PORTRAIT_FRAC_SHRINK_PHONE;
+            if (desktop) {
+                fracShrink = DESKTOP_FRAC_SHRINK;
+            } else if (ipadLandscape) {
+                fracShrink = LANDSCAPE_FRAC_SHRINK;
+            } else if (ipadPortrait) {
+                fracShrink = PORTRAIT_FRAC_SHRINK_IPAD;
+            }
+            document.querySelectorAll(".repop-lfw-segment .repop-mobile-stack__media img").forEach(function (img) {
+                var fracRaw = img.getAttribute("data-lfw-content-frac");
+                var frac = fracRaw == null ? NaN : parseFloat(fracRaw);
+                if (useFracZoom) {
+                    if (!isNaN(frac) && frac > 0 && frac < 1) {
+                        var wPct = (100 / frac) * fracShrink;
+                        img.style.setProperty("width", wPct + "%", "important");
+                        img.style.setProperty("max-width", "none", "important");
+                        if (ipadLandscape) {
+                            img.style.setProperty("margin-left", "0", "important");
+                            img.style.setProperty("margin-right", "0", "important");
+                        } else {
+                            var mlPct = (100 - wPct) / 2;
+                            img.style.setProperty("margin-left", mlPct + "%", "important");
+                            img.style.setProperty("margin-right", desktop ? mlPct + "%" : "0", "important");
+                        }
+                    } else if (desktop) {
+                        img.style.removeProperty("width");
+                        img.style.removeProperty("max-width");
+                        img.style.removeProperty("margin-left");
+                        img.style.removeProperty("margin-right");
+                    } else {
+                        img.style.setProperty("width", "100%", "important");
+                        img.style.setProperty("max-width", "none", "important");
+                        img.style.removeProperty("margin-left");
+                        img.style.removeProperty("margin-right");
+                    }
+                    img.style.setProperty("height", "auto", "important");
+                    img.style.setProperty("display", "block", "important");
+                    img.style.setProperty("box-sizing", "border-box", "important");
+                } else {
+                    img.style.removeProperty("width");
+                    img.style.removeProperty("max-width");
+                    img.style.removeProperty("margin-left");
+                    img.style.removeProperty("margin-right");
+                    img.style.removeProperty("height");
+                    img.style.removeProperty("display");
+                    img.style.removeProperty("box-sizing");
+                }
+            });
+        }
+        function go() {
+            apply();
+        }
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", go);
+        } else {
+            go();
+        }
+        window.addEventListener("resize", function () {
+            clearTimeout(window.__repopLfwLayoutT);
+            window.__repopLfwLayoutT = setTimeout(apply, 80);
+        });
+    })();
+    </script>
+    <script>
+    (function () {
+        document.write('<script src="script.js?v=' + (window.mskAssetV || Date.now()) + '"><\/script>');
+    })();
+    </script>
 </body>
 </html> 

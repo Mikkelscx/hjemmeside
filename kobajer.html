@@ -2,9 +2,194 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="theme-color" content="#3e524c">
     <title>Købajer - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css">
+    <script>
+    (function () {
+        window.mskAssetV = Date.now();
+        document.write('<link rel="stylesheet" href="styles.css?v=' + window.mskAssetV + '">');
+    })();
+    </script>
+    <noscript><link rel="stylesheet" href="styles.css"></noscript>
+    <!-- Bund-CTA m.m.: spejler styles.css iPad-blok — inline så Safari/Chrome på tablet slår cache -->
+    <style>
+        
+        /*
+         * Desktop Safari: tving dokument-scroll (file:// + WebKit kan ellers låse ved
+         * overflow-x:hidden på html+body). Telefon/tablet uændret.
+         */
+        @media (min-width: 1025px),
+               (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+            html {
+                overflow-x: hidden !important;
+                overflow-x: clip !important;
+                overflow-y: scroll !important;
+                overscroll-behavior-y: auto !important;
+                height: auto !important;
+                max-height: none !important;
+                min-height: 0 !important;
+                position: static !important;
+            }
+            html body.kobajer-page,
+            body.kobajer-page {
+                overflow: visible !important;
+                overscroll-behavior-y: auto !important;
+                height: auto !important;
+                max-height: none !important;
+                min-height: auto !important;
+                position: relative !important;
+                inset: auto !important;
+            }
+        }
+@media (min-width: 641px) and (max-width: 1366px) {
+            body.kobajer-page .kobajer-info-boxes {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                grid-auto-flow: row !important;
+                align-content: start !important;
+                gap: 1rem 1.05rem !important;
+                margin: 1.35rem 0 !important;
+                align-items: start !important;
+            }
+            body.kobajer-page .kobajer-info-box:nth-child(1) {
+                grid-column: 1 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-info-box:nth-child(2) {
+                grid-column: 2 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-info-box:nth-child(3) {
+                grid-column: 1 / -1 !important;
+                grid-row: 2 !important;
+                justify-self: center !important;
+                width: calc((100% - 1.05rem) / 2) !important;
+                max-width: calc((100% - 1.05rem) / 2) !important;
+                box-sizing: border-box !important;
+            }
+            body.kobajer-page .kobajer-info-box {
+                padding: 1rem 0.75rem !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+            }
+            body.kobajer-page .kobajer-can-image {
+                max-height: min(520px, 42vmin) !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+            }
+            body.kobajer-page .kobajer-steps {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                grid-auto-flow: row !important;
+                align-content: start !important;
+                gap: 1rem 1.05rem !important;
+                margin: 1.35rem 0 !important;
+                align-items: start !important;
+            }
+            body.kobajer-page .kobajer-step-box:nth-child(1) {
+                grid-column: 1 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-step-box:nth-child(2) {
+                grid-column: 2 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-step-box:nth-child(3) {
+                grid-column: 1 / -1 !important;
+                grid-row: 2 !important;
+                justify-self: center !important;
+                width: calc((100% - 1.05rem) / 2) !important;
+                max-width: calc((100% - 1.05rem) / 2) !important;
+                box-sizing: border-box !important;
+            }
+            body.kobajer-page .kobajer-step-box {
+                padding: 1rem 0.75rem !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+                justify-content: flex-start !important;
+            }
+            body.kobajer-page .kobajer-step-image {
+                max-height: min(520px, 42vmin) !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                margin-top: 0.65rem !important;
+                transform: none !important;
+            }
+            body.kobajer-page .kobajer-bottom-cta {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin-top: 1.35rem !important;
+                padding: 0 !important;
+                gap: 0 !important;
+            }
+            body.kobajer-page .kobajer-bottom-cta__item {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                min-height: 0 !important;
+                margin: 0 0 0.85rem 0 !important;
+            }
+            body.kobajer-page .kobajer-bottom-cta__item:last-child {
+                margin-bottom: 0 !important;
+            }
+            body.kobajer-page .kobajer-bottom-cta__img {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: 600px !important;
+                object-fit: contain !important;
+                image-rendering: high-quality !important;
+            }
+        }
+
+        @media (min-width: 900px) and (max-width: 1366px) and (orientation: landscape),
+            (min-width: 900px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
+            body.kobajer-page .kobajer-info-boxes {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+            body.kobajer-page .kobajer-info-box:nth-child(1) {
+                grid-column: 1 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-info-box:nth-child(2) {
+                grid-column: 2 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-info-box:nth-child(3) {
+                grid-column: 3 !important;
+                grid-row: 1 !important;
+                width: auto !important;
+                max-width: none !important;
+                justify-self: stretch !important;
+            }
+            body.kobajer-page .kobajer-steps {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+            body.kobajer-page .kobajer-step-box:nth-child(1) {
+                grid-column: 1 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-step-box:nth-child(2) {
+                grid-column: 2 !important;
+                grid-row: 1 !important;
+            }
+            body.kobajer-page .kobajer-step-box:nth-child(3) {
+                grid-column: 3 !important;
+                grid-row: 1 !important;
+                width: auto !important;
+                max-width: none !important;
+                justify-self: stretch !important;
+            }
+        }
+    </style>
 </head>
 <body class="kobajer-page">
     <!-- Navigation -->
@@ -96,30 +281,31 @@
         </div>
         
         <h3>Hvis folk oplever diskrimination, vil vi opfordre dem til at handle – og placere klistermærket dér, hvor de oplevede diskriminationen.</h3>
-        
-        <div style="text-align: center; margin-top: 2rem;">
-            <img src="assets/hvordan-ser-det-ud.webp" alt="Hvordan ser det ud" style="max-width: 100%; height: auto; max-height: 500px; object-fit: contain; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);">
+        <!-- Kilder er 2× Lanczos-opskalerede webp (backup: assets/kobajer-orig-2025-04-25/). Neurale AI-upscalere (Real-ESRGAN m.fl.) findes ikke i dette køb; højst mulig nøjagtighed: re-eksport fra Figma. -->
+        <div class="kobajer-mockup kobajer-mockup--hvordan">
+            <img class="kobajer-mockup-img" src="assets/hvordan-ser-det-ud.webp" width="2210" height="1192" alt="Hvordan ser det ud" decoding="async">
         </div>
-        
-        <div style="text-align: center; margin-top: 2rem;">
-            <img src="assets/frontpage.png.webp" alt="Frontpage" style="width: 100%; height: auto; max-height: 600px; object-fit: contain;">
+        <div class="kobajer-mockup kobajer-mockup--frontpage">
+            <img class="kobajer-mockup-img" src="assets/frontpage.png.webp" width="1184" height="666" alt="Frontpage" loading="lazy" decoding="async">
         </div>
-        
-        <div style="display: flex; justify-content: space-between; margin-top: 2rem; gap: 2rem;">
-            <div style="flex: 1; text-align: center;">
-                <img src="assets/anmeld.png.webp" alt="Anmeld" style="max-width: 100%; height: auto; max-height: 400px; object-fit: contain;">
+        <div class="kobajer-bottom-cta">
+            <div class="kobajer-bottom-cta__item">
+                <img src="assets/anmeld.png.webp" alt="Anmeld" class="kobajer-bottom-cta__img" width="2368" height="1332" loading="lazy" decoding="async">
             </div>
-            <div style="flex: 1; text-align: center;">
-                <img src="assets/boykot.png.webp" alt="Boykot" style="max-width: 100%; height: auto; max-height: 400px; object-fit: contain;">
+            <div class="kobajer-bottom-cta__item">
+                <img src="assets/boykot.png.webp" alt="Boykot" class="kobajer-bottom-cta__img" width="1184" height="666" loading="lazy" decoding="async">
             </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 2rem;">
-            <img src="assets/sig fra.png.webp" alt="Sig fra" style="max-width: 100%; height: auto; max-height: 400px; object-fit: contain;">
+            <div class="kobajer-bottom-cta__item">
+                <img src="assets/sig fra.png.webp" alt="Sig fra" class="kobajer-bottom-cta__img" width="1184" height="666" loading="lazy" decoding="async">
+            </div>
         </div>
         
     </div>
 
-    <script src="script.js"></script>
+    <script>
+    (function () {
+        document.write('<script src="script.js?v=' + (window.mskAssetV || Date.now()) + '"><\/script>');
+    })();
+    </script>
 </body>
 </html> 

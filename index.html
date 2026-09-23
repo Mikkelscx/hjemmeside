@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>MSC - Mikkel's Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=safari-home-book-2230-20260923">
+    <script>
+    (function () {
+        window.mskAssetV = Date.now();
+        document.write('<link rel="stylesheet" href="styles.css?v=' + window.mskAssetV + '">');
+    })();
+    </script>
+    <noscript><link rel="stylesheet" href="styles.css"></noscript>
 </head>
 <body class="home-notebook-page">
     <!-- Navigation -->
@@ -67,6 +74,10 @@
         </div>
     </main>
 
-    <script src="script.js?v=safari-home-book-2230-20260923"></script>
+    <script>
+    (function () {
+        document.write('<script src="script.js?v=' + (window.mskAssetV || Date.now()) + '"><\/script>');
+    })();
+    </script>
 </body>
 </html> 
