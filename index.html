@@ -9,13 +9,24 @@
     <title>MSC - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p4';
+        window.mskAssetV = '20260924p5';
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
     <style id="msk-open-projects-fix">
     @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+        body.home-notebook-page.home-shift-projects .home-notebook__title,
+        body.home-notebook-page.home-opening-layout .home-notebook__title,
+        body.home-notebook-page.home-opening-projects .home-notebook__title,
+        body.home-notebook-page.home-shift-projects .home-notebook__title-img,
+        body.home-notebook-page.home-opening-layout .home-notebook__title-img,
+        body.home-notebook-page.home-opening-projects .home-notebook__title-img {
+            opacity: 1 !important;
+            visibility: visible !important;
+            animation: none !important;
+            mix-blend-mode: normal !important;
+        }
         body.home-notebook-page.home-opened-projects .home-notebook__cover,
         body.home-notebook-page.home-opened-projects .home-notebook__cover-front,
         body.home-notebook-page.home-opened-projects .home-notebook__title,
@@ -124,7 +135,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p4') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p5') + '.js"><\/script>');
     })();
     </script>
 </body>
