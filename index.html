@@ -9,16 +9,21 @@
     <title>MSC - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p10';
+        window.mskAssetV = '20260924p11';
+        try {
+            if (/\bChrome\//.test(navigator.userAgent || '') && !/\bOPR\//.test(navigator.userAgent || '')) {
+                document.documentElement.classList.add('msk-blink');
+            }
+        } catch (_) {}
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
     <style id="msk-open-projects-fix">
     @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
-        body.home-notebook-page.home-shift-projects .home-notebook__title,
-        body.home-notebook-page.home-opening-layout .home-notebook__title,
-        body.home-notebook-page.home-opening-projects .home-notebook__title {
+        html:not(.msk-blink) body.home-notebook-page.home-shift-projects .home-notebook__title,
+        html:not(.msk-blink) body.home-notebook-page.home-opening-layout .home-notebook__title,
+        html:not(.msk-blink) body.home-notebook-page.home-opening-projects .home-notebook__title {
             position: absolute !important;
             inset: 0 !important;
             display: flex !important;
@@ -29,9 +34,9 @@
             visibility: visible !important;
             animation: none !important;
         }
-        body.home-notebook-page.home-shift-projects .home-notebook__title-img,
-        body.home-notebook-page.home-opening-layout .home-notebook__title-img,
-        body.home-notebook-page.home-opening-projects .home-notebook__title-img {
+        html:not(.msk-blink) body.home-notebook-page.home-shift-projects .home-notebook__title-img,
+        html:not(.msk-blink) body.home-notebook-page.home-opening-layout .home-notebook__title-img,
+        html:not(.msk-blink) body.home-notebook-page.home-opening-projects .home-notebook__title-img {
             opacity: 1 !important;
             visibility: visible !important;
             mix-blend-mode: normal !important;
@@ -160,7 +165,53 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p10') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p11') + '.js"><\/script>');
+    })();
+    </script>
+    <script>
+    (function () {
+        if (!document.documentElement.classList.contains('msk-blink')) return;
+        var navTimer = 0;
+        var halfTimer = 0;
+        var armed = false;
+        function dest() {
+            try {
+                var a = document.querySelector('a.nav-link[href="projects.html"]');
+                return (a && a.href) || 'projects.html';
+            } catch (_) {
+                return 'projects.html';
+            }
+        }
+        function killCover() {
+            var cover = document.querySelector('main.home-notebook .home-notebook__cover');
+            if (!cover) return;
+            try {
+                cover.style.setProperty('animation', 'none', 'important');
+                cover.style.setProperty('will-change', 'auto', 'important');
+            } catch (_) {}
+            if (cover.parentNode) cover.parentNode.removeChild(cover);
+        }
+        function go() {
+            if (armed) return;
+            armed = true;
+            killCover();
+            try { window.location.replace(dest()); } catch (_) { window.location.href = dest(); }
+        }
+        function arm() {
+            if (halfTimer) return;
+            halfTimer = window.setTimeout(function () {
+                document.body.classList.add('home-cover-open-half');
+                killCover();
+            }, 2600);
+            navTimer = window.setTimeout(go, 2860);
+        }
+        document.addEventListener('click', function (e) {
+            var a = e.target && e.target.closest ? e.target.closest('a') : null;
+            if (!a) return;
+            var href = (a.getAttribute('href') || '').trim();
+            if (href !== 'projects.html') return;
+            window.setTimeout(arm, 0);
+        }, true);
     })();
     </script>
 </body>
