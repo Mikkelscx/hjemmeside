@@ -9,7 +9,7 @@
     <title>MSC - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p11';
+        window.mskAssetV = '20260924p12';
         try {
             if (/\bChrome\//.test(navigator.userAgent || '') && !/\bOPR\//.test(navigator.userAgent || '')) {
                 document.documentElement.classList.add('msk-blink');
@@ -165,7 +165,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p11') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p12') + '.js"><\/script>');
     })();
     </script>
     <script>
@@ -202,8 +202,8 @@
             halfTimer = window.setTimeout(function () {
                 document.body.classList.add('home-cover-open-half');
                 killCover();
-            }, 2600);
-            navTimer = window.setTimeout(go, 2860);
+            }, 2180);
+            navTimer = window.setTimeout(go, 2360);
         }
         document.addEventListener('click', function (e) {
             var a = e.target && e.target.closest ? e.target.closest('a') : null;
