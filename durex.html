@@ -131,7 +131,7 @@
             margin: 0 0 0.45rem 0;
         }
 
-        /* Kampagnevideo: fladt brand-billede (ingen play/kort-look) indtil afspilning */
+        /* Kampagnevideo: brand-thumbnail; play-logo på computer */
         .durex-kampagnevideo-wrap {
             position: relative;
             width: 100%;
@@ -226,6 +226,44 @@
             outline: 2px solid #1976D2;
             outline-offset: 3px;
         }
+        .durex-kampagnevideo-play {
+            display: none;
+        }
+        @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+            .durex-kampagnevideo-wrap,
+            .durex-kampagnevideo-wrap * {
+                cursor: pointer !important;
+            }
+            .durex-kampagnevideo-thumb-panel {
+                position: relative;
+            }
+            .durex-kampagnevideo-play {
+                display: block;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 5.1rem;
+                height: 5.1rem;
+                transform: translate(-50%, -50%);
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.52);
+                box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+                pointer-events: none;
+            }
+            .durex-kampagnevideo-play::after {
+                content: '';
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 2.35rem;
+                height: 2.75rem;
+                margin-left: 0.19rem;
+                transform: translate(-50%, -50%);
+                background-color: rgba(21, 42, 68, 0.72);
+                -webkit-clip-path: polygon(0 0, 100% 50%, 0 100%);
+                clip-path: polygon(0 0, 100% 50%, 0 100%);
+            }
+        }
     </style>
 </head>
 <body class="durex-page">
@@ -288,6 +326,7 @@
                 <button type="button" class="durex-kampagnevideo-overlay" id="durex-kampagnevideo-overlay" aria-label="Afspil kampagnevideo">
                     <span class="durex-kampagnevideo-thumb-panel" aria-hidden="true">
                         <img class="durex-kampagnevideo-thumb-logo" src="assets/Durex-logo.png" alt="" width="620" height="260" decoding="async" data-no-lightbox>
+                        <span class="durex-kampagnevideo-play"></span>
                     </span>
                 </button>
             </div>
