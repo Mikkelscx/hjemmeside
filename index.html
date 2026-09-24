@@ -9,7 +9,7 @@
     <title>MSC - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p9';
+        window.mskAssetV = '20260924p10';
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
@@ -38,14 +38,24 @@
             width: min(480px, calc(var(--bookW) * 0.82)) !important;
             max-width: 86% !important;
         }
+        body.home-notebook-page.home-opening-projects.home-cover-open-half .home-notebook__cover-front,
+        body.home-notebook-page.home-opening-projects.home-cover-open-half .home-notebook__title,
+        body.home-notebook-page.home-opening-projects.home-cover-open-half .home-notebook__title-img {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
         body.home-notebook-page.home-opened-projects .home-notebook__cover,
         body.home-notebook-page.home-opened-projects .home-notebook__cover-front,
         body.home-notebook-page.home-opened-projects .home-notebook__title,
         body.home-notebook-page.home-opened-projects .home-notebook__volume,
+        body.home-notebook-page.home-opened-projects .home-notebook__flat-left,
         body.home-notebook-page.home-opened-projects .home-notebook__projekter-left {
             display: none !important;
             opacity: 0 !important;
             visibility: hidden !important;
+            animation: none !important;
+            transform: none !important;
         }
         body.home-notebook-page.home-opened-projects .home-notebook__spread {
             left: 0 !important;
@@ -150,7 +160,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p9') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p10') + '.js"><\/script>');
     })();
     </script>
 </body>

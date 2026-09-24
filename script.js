@@ -5589,13 +5589,75 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 
+		function mskIsBlinkEngine() {
+			try {
+				const ua = String(navigator.userAgent || '');
+				return /\bChrome\//.test(ua) && !/\bOPR\//.test(ua);
+			} catch (_) {
+				return false;
+			}
+		}
+
+		function hideOpeningCoverFront() {
+			const notebook = document.querySelector('main.home-notebook[aria-label="Forside"]')
+				|| document.querySelector('main.home-notebook');
+			if (!notebook) return;
+			notebook.querySelectorAll([
+				'.home-notebook__cover-front',
+				'.home-notebook__title',
+				'.home-notebook__title-img'
+			].join(',')).forEach((el) => {
+				el.style.setProperty('display', 'none', 'important');
+				el.style.setProperty('opacity', '0', 'important');
+				el.style.setProperty('visibility', 'hidden', 'important');
+				el.style.setProperty('pointer-events', 'none', 'important');
+			});
+		}
+
+		function promoteLeftProjectsFlat() {
+			const notebook = document.querySelector('main.home-notebook[aria-label="Forside"]')
+				|| document.querySelector('main.home-notebook');
+			if (!notebook) return;
+			const left = notebook.querySelector('.home-notebook__projekter-left');
+			if (!left) return;
+			let pane = notebook.querySelector('.home-notebook__flat-left');
+			if (!pane) {
+				pane = document.createElement('div');
+				pane.className = 'home-notebook__flat-left';
+				pane.setAttribute('aria-hidden', 'true');
+				notebook.appendChild(pane);
+			}
+			if (left.parentElement !== pane) pane.appendChild(left);
+			left.style.setProperty('left', '0', 'important');
+			left.style.setProperty('top', '0', 'important');
+			left.style.setProperty('width', '100vw', 'important');
+			left.style.setProperty('height', '100vh', 'important');
+			left.style.setProperty('transform', 'none', 'important');
+			left.style.setProperty('opacity', '1', 'important');
+			left.style.setProperty('visibility', 'visible', 'important');
+		}
+
 		function flattenOpenedProjectsCover() {
 			const notebook = document.querySelector('main.home-notebook[aria-label="Forside"]')
 				|| document.querySelector('main.home-notebook');
 			if (!notebook) return;
+			notebook.style.setProperty('perspective', 'none', 'important');
+			notebook.style.setProperty('transform-style', 'flat', 'important');
+			notebook.style.setProperty('-webkit-transform-style', 'flat', 'important');
+			const cover = notebook.querySelector('.home-notebook__cover');
+			if (cover) {
+				cover.style.setProperty('animation', 'none', 'important');
+				cover.style.setProperty('will-change', 'auto', 'important');
+				cover.style.setProperty('transform', 'none', 'important');
+				cover.style.setProperty('transform-style', 'flat', 'important');
+				cover.style.setProperty('-webkit-transform-style', 'flat', 'important');
+			}
+			hideOpeningCoverFront();
 			const hide = notebook.querySelectorAll([
 				'.home-notebook__cover',
 				'.home-notebook__cover-front',
+				'.home-notebook__cover-back',
+				'.home-notebook__flat-left',
 				'.home-notebook__title',
 				'.home-notebook__volume',
 				'.home-notebook__page-block',
@@ -5707,28 +5769,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const goToProjects = () => {
 				if (desktopFine) {
-					try {
-						history.pushState({ mskHomeOpen: 1 }, '', targetHref);
-						document.title = 'Projects - Mikkel\'s Portfolio';
-					} catch (_) {}
 					body.classList.add('home-opened-projects');
 					body.classList.add('home-projects-live');
 					body.classList.remove('home-opening-center');
 					body.classList.remove('home-opening-projects');
 					body.classList.remove('home-opening-layout');
 					body.classList.remove('home-shift-projects');
+					body.classList.remove('home-cover-open-half');
 					flattenOpenedProjectsCover();
 					body.style.removeProperty('--precenterShiftX');
-					[rightFrame, leftFrame].filter(Boolean).forEach((fr) => {
-						try {
-							fr.removeAttribute('tabindex');
-							const doc = fr.contentDocument;
-							if (!doc) return;
-							doc.querySelectorAll('a[href]').forEach((a) => {
-								a.setAttribute('target', '_top');
-							});
-						} catch (_) {}
-					});
 					window.setTimeout(() => {
 						window.location.replace(targetHref);
 					}, 40);
@@ -5767,12 +5816,29 @@ document.addEventListener('DOMContentLoaded', function() {
 							gone = true;
 							goToProjects();
 						};
+						const onHalf = () => {
+							if (gone) return;
+							body.classList.add('home-cover-open-half');
+							hideOpeningCoverFront();
+							if (mskIsBlinkEngine()) {
+								promoteLeftProjectsFlat();
+								if (cover) {
+									cover.style.setProperty('opacity', '0', 'important');
+									cover.style.setProperty('visibility', 'hidden', 'important');
+									cover.style.setProperty('pointer-events', 'none', 'important');
+								}
+							}
+						};
+						const onAnimEnd = (ev) => {
+							if (ev && ev.animationName && ev.animationName !== 'homeCoverOpen') return;
+							nav();
+						};
 						if (cover) {
-							cover.addEventListener('animationend', (ev) => {
-								if (!ev || ev.animationName === 'homeCoverOpen') nav();
-							}, { once: true });
+							cover.addEventListener('animationend', onAnimEnd);
+							cover.addEventListener('webkitAnimationEnd', onAnimEnd);
 						}
-						window.setTimeout(nav, flipMs + 32);
+						window.setTimeout(onHalf, Math.max(120, Math.round(flipMs * 0.5)));
+						window.setTimeout(nav, flipMs + 80);
 						return;
 					}
 				});
