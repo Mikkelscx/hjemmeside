@@ -124,7 +124,7 @@
     <link rel="preload" as="image" href="assets/D&amp;AD%20VINDER.webp">
     <script>
     (function () {
-        window.mskAssetV = '20260924p26';
+        window.mskAssetV = '20260924p27';
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
@@ -238,6 +238,12 @@
         max-width: 182px !important;
         width: 100% !important;
         transform: none !important;
+      }
+      /* TWISTER-ordet ned i ovalen — inline så file:// / DevTools ikke kan cache en gammel CSS-fil */
+      body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
+      body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
+        transform: translateY(86px) scaleX(1.05) !important;
+        transform-origin: center top !important;
       }
       html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline,
       html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
@@ -619,7 +625,7 @@
     <script>(function(){var v=window.mskAssetV||Date.now();document.write('<script src="projects-ipad-portrait-lock.js?v=' + v + '"><\/script>');})();</script>
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p26') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p27') + '.js"><\/script>');
     })();
     </script>
     <script>
