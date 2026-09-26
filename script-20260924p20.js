@@ -14,7 +14,7 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-const MSK_PROJECTS_LANDSCAPE_FIT = 0.86;
+const MSK_PROJECTS_LANDSCAPE_FIT = 0.66;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
 const MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX = 16;
 /** iPad landskab: hold mindmap centreret (ikke skubbet i kanten — Brainfarts skal have luft) */
@@ -545,15 +545,6 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 		if (container) {
 			if (tabletLandscape || phoneLandscape) {
 				container.classList.remove('projects-mindmap--portrait', 'projects-mindmap--phone-canvas');
-				container
-					.querySelectorAll(
-						'.kravling-nomineret-badge--inline, .dandd-badge--inline, .kobajer-kravling-2024-badge--inline, .brainfarts-build__sign--inline'
-					)
-					.forEach((el) => {
-						try {
-							el.remove();
-						} catch (_) {}
-					});
 			} else if (portraitGrid) {
 				container.classList.add('projects-mindmap--portrait');
 				container.classList.remove('projects-mindmap--phone-canvas');
@@ -828,8 +819,7 @@ function positionBrainfartsBuildNote() {
 		if (!build) return;
 		const w = mskProjectsLayoutViewportBox().w || 0;
 		const tabletLs = !!mskIsProjectsTabletLandscapeViewport();
-		const phoneLs = !!mskIsProjectsPhoneLandscapeViewport();
-		if (w < 1025 && !tabletLs && !phoneLs) {
+		if (w < 1025 && !tabletLs) {
 			build.style.removeProperty('left');
 			build.style.removeProperty('top');
 			build.style.removeProperty('right');
@@ -837,7 +827,7 @@ function positionBrainfartsBuildNote() {
 			build.style.removeProperty('transform');
 			return;
 		}
-		if (mskIsProjectsShortLandscapeViewport() && !tabletLs && !phoneLs) {
+		if (mskIsProjectsShortLandscapeViewport() && !tabletLs) {
 			build.style.removeProperty('left');
 			build.style.removeProperty('top');
 			build.style.removeProperty('right');
@@ -856,10 +846,10 @@ function positionBrainfartsBuildNote() {
 			ringRect = bfNode.getBoundingClientRect();
 		}
 		const cx = ringRect.left + ringRect.width / 2 - cRect.left;
-		const leftNudgePx = tabletLs ? 78 : phoneLs ? 40 : 48;
+		const leftNudgePx = tabletLs ? 78 : 48;
 		const leftPx = cx - leftNudgePx;
 		/* Højere op mod ringen — på tablet tættere på Brainfarts så skiltet ikke rammer Kø-bajer */
-		const topPx = ringRect.bottom - cRect.top - (tabletLs ? 96 : phoneLs ? 52 : 70);
+		const topPx = ringRect.bottom - cRect.top - (tabletLs ? 96 : 70);
 		build.style.setProperty('left', `${Math.round(leftPx)}px`, 'important');
 		build.style.setProperty('top', `${Math.round(topPx)}px`, 'important');
 		build.style.setProperty('right', 'auto', 'important');
@@ -7497,25 +7487,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 				const cw = container.getBoundingClientRect().width;
 				if (
-					mskIsProjectsTabletLandscapeViewport() ||
-					mskIsProjectsPhoneLandscapeViewport() ||
-					mskIsProjectsShortLandscapeViewport()
-				) {
-					container
-						.querySelectorAll(
-							'.kravling-nomineret-badge--inline, .dandd-badge--inline, .kobajer-kravling-2024-badge--inline, .brainfarts-build__sign--inline'
-						)
-						.forEach((el) => {
-							try {
-								el.remove();
-							} catch (_) {}
-						});
-					return;
-				}
-				if (
 					!(
 						narrow ||
 						cw <= 640 ||
+						mskIsProjectsShortLandscapeViewport() ||
 						mskIsProjectsTabletPortraitViewport() ||
 						mskIsProjectsPhonePortraitViewport()
 					)

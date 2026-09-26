@@ -12954,12 +12954,14 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         --projectsScaleMin: 0.64;
         /* Samlet scale for hele mindmap (hjerne, linjer, cirkler, faner) — kun kort mobil-landscape */
         /* Skal matche MSK_PROJECTS_LANDSCAPE_FIT i script.js (layout-rx kompenserer for denne scale) */
-        --projectsLandscapeFit: 0.86;
-        --projectsBrainSize: 118px;
+        --projectsLandscapeFit: 0.66;
+        --projectsBrainSize: 104px;
         transform-origin: 50% 50%;
+        /* Centreret bedre i viewport — samme scale (--projectsLandscapeFit), mere synligt areal */
+        /* Lidt mod venstre: mindre “tom” højre side på mobil i landscape (Safari/Chrome) */
         transform:
-            translateX(env(safe-area-inset-left, 0px))
-            translateY(env(safe-area-inset-top, 0px))
+            translateX(calc(env(safe-area-inset-left) - 24px))
+            translateY(calc(4px + env(safe-area-inset-top)))
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
@@ -18765,48 +18767,6 @@ html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow {
     width: 66px !important;
     transform: rotate(115deg) scale(1, 1.4) !important;
-}
-
-/*
- * Telefon landskab: samme komposition som computer — Kravling/D&AD/skilt uden for cirklerne,
- * ikke de indlejrede mobil-badges. Hele ellipsen skal være synlig.
- */
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container {
-    --projectsLandscapeFit: 0.86;
-    --projectsBrainSize: 118px;
-    transform:
-        translateX(env(safe-area-inset-left, 0px))
-        translateY(env(safe-area-inset-top, 0px))
-        scale(0.86) !important;
-    transform-origin: 50% 50% !important;
-}
-
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kravling-nomineret-badge--inline,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .dandd-badge--inline,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__sign--inline {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-}
-
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
-    width: 110px;
-    height: 140px;
 }
 
 /*
