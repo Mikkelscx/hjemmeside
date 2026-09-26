@@ -91,11 +91,19 @@
         }
         if (isDesktopPointer) {
           var fromHomeOpen = false;
+          var fromProjectPage = false;
           try { fromHomeOpen = sessionStorage.getItem('mskHomeOpenToProjects') === '1'; } catch (eHome) {}
+          try {
+            fromProjectPage = /(repop|durex|twister|kobajer|brainfarts|unge-mod-uv|byens-landhandel|naturli|lfw|project[123])\.html/i.test(document.referrer || '');
+          } catch (eRef) {}
           if (fromHomeOpen) {
             try { sessionStorage.removeItem('mskHomeOpenToProjects'); } catch (eClr) {}
             document.documentElement.dataset.mskFromHomeOpen = '1';
+          }
+          if (fromHomeOpen || fromProjectPage) {
             document.documentElement.classList.add('msk-projects-mindmap-painted');
+            document.documentElement.classList.remove('msk-mindmap-booting');
+            document.documentElement.dataset.mskMindmapRevealed = '1';
           } else {
             document.documentElement.classList.add('msk-mindmap-booting');
             document.documentElement.classList.remove('msk-projects-mindmap-painted');
@@ -116,7 +124,7 @@
     <link rel="preload" as="image" href="assets/D&amp;AD%20VINDER.webp">
     <script>
     (function () {
-        window.mskAssetV = '20260924p13';
+        window.mskAssetV = '20260924p14';
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
@@ -598,7 +606,7 @@
     <script>(function(){var v=window.mskAssetV||Date.now();document.write('<script src="projects-ipad-portrait-lock.js?v=' + v + '"><\/script>');})();</script>
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p13') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p14') + '.js"><\/script>');
     })();
     </script>
     <script>
@@ -648,9 +656,19 @@
           if (!document.body || !document.body.classList.contains('projects-page')) return;
           var portrait = isPortraitTouchProjects();
           var ipadLs = isIpadLandscapeProjects();
-          if (!portrait && !ipadLs) return;
+          var desktop = false;
+          try {
+            desktop = !!(
+              window.matchMedia &&
+              window.matchMedia('(hover: hover)').matches &&
+              window.matchMedia('(pointer: fine)').matches &&
+              (window.innerWidth || 0) >= 1025
+            );
+          } catch (eDesk) {}
+          if (!portrait && !ipadLs && !desktop) return;
           document.documentElement.classList.remove('msk-mindmap-booting');
           document.documentElement.classList.add('msk-projects-mindmap-painted');
+          document.documentElement.dataset.mskMindmapRevealed = '1';
           if (portrait && document.documentElement.classList.contains('msk-projects-phone-portrait')) {
             document.documentElement.classList.add('msk-projects-phone-portrait-no-scroll');
           }
@@ -690,6 +708,10 @@
       }
       window.addEventListener('load', function () {
         window.setTimeout(revealAndRelayout, 80);
+      });
+      window.addEventListener('pageshow', function () {
+        window.setTimeout(revealAndRelayout, 0);
+        window.setTimeout(revealAndRelayout, 200);
       });
       window.addEventListener('orientationchange', function () {
         window.setTimeout(revealAndRelayout, 160);
