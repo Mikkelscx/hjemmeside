@@ -7349,7 +7349,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
-				if (href.includes('repop')) y += touchLayout ? 14 : tabletLandscape ? 28 : 35;
+				if (href.includes('repop')) y += touchLayout ? 14 : tabletLandscape ? 10 : 35;
 				/* Kort mobil-landscape: cirkel + indhold lidt op */
 				if (href.includes('repop') && isShortLandscape) y -= 20;
 				/* Kort landscape: skub højre-side (Naturli / Durex / Unge) fra hinanden — mindre overlap på tværs af enheder */

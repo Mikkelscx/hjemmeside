@@ -9,7 +9,7 @@
     <title>Repop by Depop - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p30';
+        window.mskAssetV = '20260924p50';
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
@@ -43,27 +43,30 @@
                 inset: auto !important;
             }
         }
-/* Layout-only: farver kommer fra styles.css (repop-page navbar-tokens) */
+/* Layout-only: farver kommer fra styles.css (repop-page navbar-tokens).
+           Placering følger de andre sider. Egne mål kun på computer. */
         .repop-page .navbar {
             position: fixed !important;
             top: 0 !important;
             width: 100% !important;
             z-index: 20000 !important;
         }
-        
-        .repop-page .nav-container {
-            max-width: 1200px !important;
-            margin: 0 auto !important;
-            padding: 0 20px !important;
-        }
-        
-        /* Vandret top-menu kun på desktop — tablet burger undgår center i højt panel (dead space) */
-        @media (min-width: 1025px) {
+
+        @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+            .repop-page .nav-container {
+                max-width: 1200px !important;
+                margin: 0 auto !important;
+                padding: 0 20px !important;
+            }
             .repop-page .nav-menu {
                 display: flex !important;
                 justify-content: center !important;
                 list-style: none !important;
+                margin: 0 !important;
                 padding: 0.3rem 0 !important;
+            }
+            .repop-page .nav-item {
+                margin: 0 !important;
             }
         }
         
@@ -627,7 +630,7 @@
     </script>
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p30') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p50') + '.js"><\/script>');
     })();
     </script>
 </body>

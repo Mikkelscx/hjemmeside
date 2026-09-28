@@ -83,15 +83,15 @@
         } else if (landscape && inTabletBand) {
           document.documentElement.classList.add(
             'msk-projects-ipad-landscape',
-            'msk-projects-ipad-landscape-no-scroll'
+            'msk-projects-ipad-landscape-no-scroll',
+            'msk-mindmap-booting'
           );
-          if (!isDesktopPointer) {
-            document.documentElement.classList.add('msk-mindmap-booting');
-          }
+          document.documentElement.classList.remove('msk-projects-mindmap-painted');
         }
         if (isDesktopPointer) {
           var fromHomeOpen = false;
           var fromProjectPage = false;
+          var ipadLsBoot = document.documentElement.classList.contains('msk-projects-ipad-landscape');
           try { fromHomeOpen = sessionStorage.getItem('mskHomeOpenToProjects') === '1'; } catch (eHome) {}
           try {
             fromProjectPage = /(repop|durex|twister|kobajer|brainfarts|unge-mod-uv|byens-landhandel|naturli|lfw|project[123])\.html/i.test(document.referrer || '');
@@ -100,7 +100,11 @@
             try { sessionStorage.removeItem('mskHomeOpenToProjects'); } catch (eClr) {}
             document.documentElement.dataset.mskFromHomeOpen = '1';
           }
-          if (fromHomeOpen || fromProjectPage) {
+          /* iPad landskab: vis først efter ellipse-layout — ellers hopper noderne ved tilbage fra projekt. */
+          if (ipadLsBoot) {
+            document.documentElement.classList.add('msk-mindmap-booting');
+            document.documentElement.classList.remove('msk-projects-mindmap-painted');
+          } else if (fromHomeOpen || fromProjectPage) {
             document.documentElement.classList.add('msk-projects-mindmap-painted');
             document.documentElement.classList.remove('msk-mindmap-booting');
             document.documentElement.dataset.mskMindmapRevealed = '1';
@@ -124,7 +128,7 @@
     <link rel="preload" as="image" href="assets/D&amp;AD%20VINDER.webp">
     <script>
     (function () {
-        window.mskAssetV = '20260924p30';
+        window.mskAssetV = '20260924p50';
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
@@ -163,6 +167,21 @@
     @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
            (min-width: 1024px) and (max-width: 1366px) and (min-aspect-ratio: 1/1) {
       body.projects-page.sketchbook-theme .projects-mobile { display: none !important; }
+      html.msk-projects-ipad-landscape:not(.msk-projects-mindmap-painted) body.projects-page.sketchbook-theme .brainstorm-container,
+      html.msk-projects-ipad-landscape-no-scroll:not(.msk-projects-mindmap-painted) body.projects-page.sketchbook-theme .brainstorm-container,
+      html.msk-mindmap-booting.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container,
+      html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+      }
       html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;
         visibility: visible !important;
@@ -240,9 +259,11 @@
         transform: none !important;
       }
       /* TWISTER-ordet ned i ovalen — inline så file:// / DevTools ikke kan cache en gammel CSS-fil */
-      body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
-      body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-        transform: translateY(48px) scaleX(1.05) !important;
+      html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
+      html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister,
+      html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
+      html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
+        transform: translateY(22px) scaleX(1.05) !important;
         transform-origin: center top !important;
       }
       html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline,
@@ -262,13 +283,24 @@
     }
     </style>
     <style id="msk-twister-ipad-ls-center">
-    /* Ingen max-width-MQ: iPad Pro 1366 kan ramme ved siden af 1366px i DevTools. */
+    /* iPad landskab: TWISTER-ordet ned i ovalens visuelle centrum (kun img-transform). */
+    html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title,
+    html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title,
+    html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title,
+    html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title {
+        display: block !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
     html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
     html.msk-projects-ipad-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister,
     html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
     html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-        transform: translateY(48px) scaleX(1.05) !important;
+        transform: translateY(22px) scaleX(1.05) !important;
         transform-origin: center top !important;
+        position: relative !important;
+        top: 0 !important;
+        margin-top: 0 !important;
     }
     </style>
     <style id="msk-projects-phone-portrait-guaranteed-css">
@@ -635,7 +667,7 @@
     <script>(function(){var v=window.mskAssetV||Date.now();document.write('<script src="projects-ipad-portrait-lock.js?v=' + v + '"><\/script>');})();</script>
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p30') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p50') + '.js"><\/script>');
     })();
     </script>
     <script>
@@ -680,7 +712,7 @@
           return false;
         }
       }
-      function revealAndRelayout() {
+      function revealAndRelayout(reason) {
         try {
           if (!document.body || !document.body.classList.contains('projects-page')) return;
           var portrait = isPortraitTouchProjects();
@@ -695,6 +727,29 @@
             );
           } catch (eDesk) {}
           if (!portrait && !ipadLs && !desktop) return;
+          if (ipadLs && reason !== 'orientation') {
+            var html = document.documentElement;
+            var ready = false;
+            try {
+              ready = typeof window.mskProjectsIpadLsReadyToReveal === 'function' && window.mskProjectsIpadLsReadyToReveal();
+            } catch (eReady) {}
+            if (typeof window.__mskProjectsMindmapInitFn === 'function') {
+              window.__mskProjectsMindmapInitFn();
+            }
+            if (typeof window.__mskProjectsRelayout === 'function') {
+              window.__mskProjectsRelayout(true);
+            }
+            try {
+              ready = typeof window.mskProjectsIpadLsReadyToReveal === 'function' && window.mskProjectsIpadLsReadyToReveal();
+            } catch (eReady2) {}
+            if (!ready) return;
+            if (
+              html.classList.contains('msk-projects-mindmap-painted') &&
+              html.dataset.mskMindmapRevealed === '1'
+            ) {
+              return;
+            }
+          }
           document.documentElement.classList.remove('msk-mindmap-booting');
           document.documentElement.classList.add('msk-projects-mindmap-painted');
           document.documentElement.dataset.mskMindmapRevealed = '1';
@@ -726,9 +781,9 @@
         } catch (e) {}
       }
       function schedule() {
-        revealAndRelayout();
-        window.setTimeout(revealAndRelayout, 320);
-        window.setTimeout(revealAndRelayout, 640);
+        revealAndRelayout('boot');
+        window.setTimeout(function () { revealAndRelayout('retry'); }, 320);
+        window.setTimeout(function () { revealAndRelayout('retry'); }, 640);
       }
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', schedule);
@@ -736,15 +791,51 @@
         schedule();
       }
       window.addEventListener('load', function () {
-        window.setTimeout(revealAndRelayout, 80);
+        window.setTimeout(function () { revealAndRelayout('retry'); }, 80);
       });
       window.addEventListener('pageshow', function () {
-        window.setTimeout(revealAndRelayout, 0);
-        window.setTimeout(revealAndRelayout, 200);
+        window.setTimeout(function () { revealAndRelayout('retry'); }, 0);
+        window.setTimeout(function () { revealAndRelayout('retry'); }, 200);
       });
       window.addEventListener('orientationchange', function () {
-        window.setTimeout(revealAndRelayout, 160);
+        window.setTimeout(function () { revealAndRelayout('orientation'); }, 160);
       });
+    })();
+    </script>
+    <script>
+    (function () {
+      function centerTwisterIpadLs() {
+        try {
+          var html = document.documentElement;
+          if (
+            !html.classList.contains('msk-projects-ipad-landscape') &&
+            !html.classList.contains('msk-projects-ipad-landscape-no-scroll')
+          ) return;
+          if (typeof window.mskApplyTwisterIpadLandscapeTitleNudge === 'function') {
+            window.mskApplyTwisterIpadLandscapeTitleNudge();
+            return;
+          }
+          var img = document.querySelector(
+            '.brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister, .brainstorm-container .project-node[href*="twister"] .project-node__title-img--twister'
+          );
+          if (!img) return;
+          var wrap = img.closest('.project-node__title');
+          if (wrap) {
+            wrap.style.setProperty('display', 'block', 'important');
+            wrap.style.setProperty('padding-top', '0', 'important');
+            wrap.style.setProperty('padding-bottom', '0', 'important');
+          }
+          img.style.setProperty('transform-origin', 'center top', 'important');
+          img.style.setProperty('transform', 'translateY(22px) scaleX(1.05)', 'important');
+        } catch (e) {}
+      }
+      function run() {
+        centerTwisterIpadLs();
+        window.setTimeout(centerTwisterIpadLs, 80);
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+      else run();
+      window.addEventListener('load', function () { window.setTimeout(centerTwisterIpadLs, 80); });
     })();
     </script>
 </body>

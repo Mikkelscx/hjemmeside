@@ -9,7 +9,7 @@
     <title>BRAINFARTS - Mikkel Skrøder-Christensen</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p30';
+        window.mskAssetV = '20260924p50';
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
     </script>
@@ -624,6 +624,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             new FartCloudGame();
         });
+    </script>
+    <script>
+    (function () {
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p50') + '.js"><\/script>');
+    })();
     </script>
 </body>
 </html> 
