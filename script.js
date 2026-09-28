@@ -2191,62 +2191,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			startFlipToAbout(a.href);
 		}, true);
 
-		/* Tablet-demo: siden følger fingeren med efterslæb og et let bøj, i stedet for at være en stiv plade. Computer er uændret. */
-		function mskTabletPageDragDemo() {
-			try {
-				const w = Math.round(window.innerWidth || 0);
-				const h = Math.round(window.innerHeight || 0);
-				if (w <= 640 || h <= 520) return false;
-				const longSide = Math.max(w, h);
-				const shortSide = Math.min(w, h);
-				return longSide >= 1024 && longSide <= 1400 && shortSide >= 600;
-			} catch {
-				return false;
-			}
-		}
-
-		function mskStopTabletPageDrag(flipEl) {
-			if (!flipEl) return;
-			flipEl._mskDragLive = false;
-			if (flipEl._mskDragRaf) {
-				cancelAnimationFrame(flipEl._mskDragRaf);
-				flipEl._mskDragRaf = 0;
-			}
-		}
-
-		function mskDriveTabletPageDrag(flipEl, targetP, sign) {
-			if (!flipEl) return;
-			flipEl._mskDragTarget = Math.max(0, Math.min(1, targetP));
-			flipEl._mskDragSign = sign < 0 ? -1 : 1;
-			flipEl._mskDragLive = true;
-			if (flipEl._mskDragRaf) return;
-			if (typeof flipEl._mskDragShown !== 'number') flipEl._mskDragShown = 0;
-			const step = () => {
-				const target = flipEl._mskDragTarget || 0;
-				let shown = flipEl._mskDragShown || 0;
-				shown += (target - shown) * 0.18;
-				if (Math.abs(target - shown) < 0.0012) shown = target;
-				flipEl._mskDragShown = shown;
-				const vh = Math.max(1, window.innerHeight || 1);
-				const y = typeof flipEl._mskDragY === 'number' ? flipEl._mskDragY : vh * 0.82;
-				const ny = y / vh - 0.62;
-				const bend = Math.max(-9, Math.min(9, ny * 14)) * (1 - shown);
-				const bow = Math.sin(Math.min(1, shown) * Math.PI) * 0.045;
-				const angle = (flipEl._mskDragSign || -1) * 180 * shown;
-				flipEl.style.animation = 'none';
-				flipEl.style.transition = 'none';
-				flipEl.style.transform =
-					'perspective(920px) rotateX(' + bend.toFixed(2) + 'deg) rotateY(' +
-					angle.toFixed(2) + 'deg) scaleY(' + (1 - bow).toFixed(4) + ')';
-				if (flipEl._mskDragLive && Math.abs((flipEl._mskDragTarget || 0) - shown) > 0.001) {
-					flipEl._mskDragRaf = requestAnimationFrame(step);
-				} else {
-					flipEl._mskDragRaf = 0;
-				}
-			};
-			flipEl._mskDragRaf = requestAnimationFrame(step);
-		}
-
 		// Drag-to-turn from Projekter -> Om mig (corner pull).
 		(function initProjectsToAboutDrag() {
 			const DRAG_CLASS = 'projects-about-dragging';
@@ -2277,8 +2221,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (flipEl) {
 						flipEl.style.animation = 'none';
 						flipEl.style.transition = 'none';
-						if (mskTabletPageDragDemo()) mskDriveTabletPageDrag(flipEl, progress, -1);
-						else flipEl.style.transform = `rotateY(${angle}deg)`;
+						flipEl.style.transform = `rotateY(${angle}deg)`;
 					}
 				} catch {}
 
@@ -2371,10 +2314,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					} else {
 						p = 0.5 + ((seamX - x) / Math.max(1, seamX)) * 0.5;
 					}
-					if (mskTabletPageDragDemo()) {
-						try { if (flipEl && ev) flipEl._mskDragY = ev.clientY; } catch {}
-						setProgress(p, flipEl, overlay);
-					} else if (!rafId) {
+					if (!rafId) {
 						rafId = requestAnimationFrame(() => {
 							rafId = 0;
 							setProgress(p, flipEl, overlay);
@@ -2383,7 +2323,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 
 				function onUp(ev) {
-					try { mskStopTabletPageDrag(flipEl); } catch {}
 					try {
 						if (ev) {
 							ev.preventDefault();
@@ -3127,8 +3066,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (flipEl) {
 						flipEl.style.animation = 'none';
 						flipEl.style.transition = 'none';
-						if (mskTabletPageDragDemo()) mskDriveTabletPageDrag(flipEl, progress, 1);
-						else flipEl.style.transform = `rotateY(${angle}deg)`;
+						flipEl.style.transform = `rotateY(${angle}deg)`;
 					}
 				} catch {}
 
@@ -3214,10 +3152,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					} else {
 						p = 0.5 + ((x - seamX) / Math.max(1, (vw - seamX))) * 0.5;
 					}
-					if (mskTabletPageDragDemo()) {
-						try { if (flipEl && ev) flipEl._mskDragY = ev.clientY; } catch {}
-						setProgress(p, x, seamX, flipEl, overlay);
-					} else if (!rafId) {
+					if (!rafId) {
 						rafId = requestAnimationFrame(() => {
 							rafId = 0;
 							setProgress(p, x, seamX, flipEl, overlay);
@@ -3226,7 +3161,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 
 				function onUp(ev) {
-					try { mskStopTabletPageDrag(flipEl); } catch {}
 					try {
 						if (ev) {
 							ev.preventDefault();
@@ -3500,8 +3434,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (flipEl) {
 						flipEl.style.animation = 'none';
 						flipEl.style.transition = 'none';
-						if (mskTabletPageDragDemo()) mskDriveTabletPageDrag(flipEl, progress, -1);
-						else flipEl.style.transform = `rotateY(${angle}deg)`;
+						flipEl.style.transform = `rotateY(${angle}deg)`;
 					}
 				} catch {}
 
@@ -3581,10 +3514,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					} else {
 						p = 0.5 + ((seamX - x) / Math.max(1, seamX)) * 0.5;
 					}
-					if (mskTabletPageDragDemo()) {
-						try { if (flipEl && ev) flipEl._mskDragY = ev.clientY; } catch {}
-						setProgress(p, x, seamX, flipEl, overlay);
-					} else if (!rafId) {
+					if (!rafId) {
 						rafId = requestAnimationFrame(() => {
 							rafId = 0;
 							setProgress(p, x, seamX, flipEl, overlay);
@@ -3593,7 +3523,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 
 				function onUp(ev) {
-					try { mskStopTabletPageDrag(flipEl); } catch {}
 					try {
 						if (ev) {
 							ev.preventDefault();
@@ -3836,8 +3765,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (flipEl) {
 						flipEl.style.animation = 'none';
 						flipEl.style.transition = 'none';
-						if (mskTabletPageDragDemo()) mskDriveTabletPageDrag(flipEl, progress, 1);
-						else flipEl.style.transform = `rotateY(${angle}deg)`;
+						flipEl.style.transform = `rotateY(${angle}deg)`;
 					}
 				} catch {}
 
@@ -3914,10 +3842,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					} else {
 						p = 0.5 + ((x - seamX) / Math.max(1, (vw - seamX))) * 0.5;
 					}
-					if (mskTabletPageDragDemo()) {
-						try { if (flipEl && ev) flipEl._mskDragY = ev.clientY; } catch {}
-						setProgress(p, x, seamX, flipEl, overlay);
-					} else if (!rafId) {
+					if (!rafId) {
 						rafId = requestAnimationFrame(() => {
 							rafId = 0;
 							setProgress(p, x, seamX, flipEl, overlay);
@@ -3926,7 +3851,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 
 				function onUp(ev) {
-					try { mskStopTabletPageDrag(flipEl); } catch {}
 					try {
 						if (ev) {
 							ev.preventDefault();
@@ -13495,7 +13419,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 29 sep - klokken 00:51';
+		el.textContent = 'update tirsdag 29 sep - klokken 00:34';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
