@@ -3114,13 +3114,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				fy = flipEl._mskHoldFy + (cornerY - flipEl._mskHoldFy) * u;
 			}
 		}
-		const contactFlip = flipEl.classList.contains('contact-about-turn__flip');
-		const slack = contactFlip ? -160 : undefined;
+		const slack = flipEl.classList.contains('contact-about-turn__flip') ? -160 : undefined;
 		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir, slack);
 		fx = glued.fx;
 		fy = glued.fy;
-		// Kontakt snaps at the gutter. The corner follows the finger up to the middle and no further.
-		if (contactFlip) fx = Math.min(fx, W);
 		if (!flipEl._mskPaperAnim) {
 			flipEl._mskHoldFx = fx;
 			flipEl._mskHoldFy = fy;
@@ -5182,54 +5179,32 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (flipEl) { flipEl._mskPaperCornerY = null; flipEl._mskHoldFx = null; flipEl._mskPaperSideBand = false; }
 				try { mskPaperNotePointer(flipEl, e); } catch {}
 
-				let snapped = false;
-				function snapAtMiddle() {
-					if (snapped) return;
-					snapped = true;
-					dragging = false;
-					window.removeEventListener('pointermove', onMove, true);
-					window.removeEventListener('pointerup', onUp, true);
-					window.removeEventListener('pointercancel', onUp, true);
-					try {
-						if (flipEl && flipEl._mskPaperSettleRaf) cancelAnimationFrame(flipEl._mskPaperSettleRaf);
-						if (flipEl) {
-							flipEl._mskPaperSettling = false;
-							flipEl._mskPaperAnim = false;
-						}
-					} catch {}
-					mskArmPageTurnGhostClickGuard(520);
-					window.setTimeout(() => { window.location.href = 'about.html'; }, 180);
-				}
-
 				function onMove(ev) {
-					if (!dragging || snapped) return;
-					const rawX = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
+					if (!dragging) return;
+					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
 					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
-					const x = Math.min(rawX, seamX);
 
-					// The sheet follows the finger until the gutter, then snaps.
+					// The sheet follows the finger across the whole page.
+					// startX -> seam = 0..0.5, seam -> right edge = 0.5..1
 					let p = 0;
 					if (x <= startX) {
 						p = 0;
-					} else {
+					} else if (x <= seamX) {
 						const denom = Math.max(1, (seamX - startX));
 						p = ((x - startX) / denom) * 0.5;
+					} else {
+						p = 0.5 + ((x - seamX) / Math.max(1, (vw - seamX))) * 0.5;
 					}
 					if (mskIsTabletPaperDrag()) {
-						if (rawX >= seamX && ev) {
-							mskPaperNotePointer(flipEl, { clientX: seamX, clientY: ev.clientY, pointerType: ev.pointerType, type: ev.type });
-						} else {
-							mskPaperNotePointer(flipEl, ev);
-						}
-						setProgress(p, Math.min(x, seamX - 1), seamX, flipEl, overlay);
+						mskPaperNotePointer(flipEl, ev);
+						setProgress(p, x, seamX, flipEl, overlay);
 					} else if (!rafId) {
 						rafId = requestAnimationFrame(() => {
 							rafId = 0;
-							setProgress(p, Math.min(x, seamX - 1), seamX, flipEl, overlay);
+							setProgress(p, x, seamX, flipEl, overlay);
 						});
 					}
-					if (rawX >= seamX) snapAtMiddle();
 				}
 
 				function onUp(ev) {
@@ -5256,8 +5231,24 @@ document.addEventListener('DOMContentLoaded', function() {
 						return;
 					}
 
-					// Releasing past the threshold snaps at the gutter instead of opening the whole next spread.
-					snapAtMiddle();
+					mskArmPageTurnGhostClickGuard(520);
+
+					let finishMs = 520;
+					try {
+						if (flipEl && !paperRel) {
+							const ease = getPageFlipEase('cubic-bezier(.42,0,.58,1)');
+							const remaining = Math.max(0, 1 - progress);
+							finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
+							flipEl.style.transition = `transform ${finishMs}ms ${ease}`;
+							flipEl.style.transform = `rotateY(180deg)`;
+						}
+						overlay.classList.add('swap-flip-mid');
+						overlay.classList.add('swap-under-left');
+						window.setTimeout(() => {
+							try { overlay.classList.add('swap-under-right'); } catch {}
+						}, Math.round(Math.max(0, finishMs - 40)));
+					} catch {}
+					window.setTimeout(() => { window.location.href = 'about.html'; }, Math.round(Math.max(520, Math.min(FLIP_MS + 140, (FLIP_MS * (1 - progress)) + 260))));
 				}
 
 				window.addEventListener('pointermove', onMove, true);
@@ -14807,7 +14798,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 00:21';
+		el.textContent = 'update mandag 12 okt - klokken 00:27';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
