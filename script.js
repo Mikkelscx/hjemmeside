@@ -2916,12 +2916,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}) || frames[0] || null;
 		const backFrame = (back && back.querySelector('iframe')) || held;
 		// Bagsiden er den anden side af arket — den iframe menuen allerede har som bagside.
-		// Kontakt's curl is the sheet being pulled, so the peel follows the finger.
-		let flapFrame = backFrame;
-		if (flipEl.classList.contains('contact-about-turn__flip')) {
-			const contactSheet = flipEl.querySelector('.contact-about-turn__flip-front--contact');
-			if (contactSheet) flapFrame = contactSheet;
-		}
+		const flapFrame = backFrame;
 		const flap = document.createElement('div');
 		flap.setAttribute('aria-hidden', 'true');
 		flap.style.cssText = 'position:absolute;inset:0;z-index:7;overflow:visible;pointer-events:none;transform-origin:0 0;display:none;background:#f5f5f0;backface-visibility:visible;-webkit-backface-visibility:visible;';
@@ -2943,7 +2938,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			clone.style.setProperty('backface-visibility', 'visible', 'important');
 			clone.style.setProperty('-webkit-backface-visibility', 'visible', 'important');
 			if (contactAboutBack) {
-				clone.style.setProperty('left', '-50vw', 'important');
+				clone.style.setProperty('left', '0px', 'important');
 				clone.style.setProperty('width', '100vw', 'important');
 			} else if (flapFrame.className.indexOf('right') !== -1) {
 				clone.style.setProperty('left', '-50vw', 'important');
@@ -3062,20 +3057,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			if (underProjects) underProjects.style.setProperty('display', p > 0 ? 'none' : 'block', 'important');
 		}
-		if (flipEl.classList.contains('contact-about-turn__flip') && curl) {
-			// The left page stays Om mig. CV is the next 50%, on the right,
-			// the same split the navbar flip already uses. Do not paint CV on the left.
-			const aboutFront = flipEl.querySelector('.contact-about-turn__flip-front--about');
-			const contactFront = flipEl.querySelector('.contact-about-turn__flip-front--contact');
-			if (p >= 0.5) {
-				curl.held = null;
-				if (aboutFront) aboutFront.style.setProperty('display', 'none', 'important');
-				if (contactFront) contactFront.style.setProperty('display', 'none', 'important');
-			} else if (contactFront) {
-				curl.held = contactFront;
-				if (aboutFront) aboutFront.style.setProperty('display', 'none', 'important');
-			}
-		}
 		flipEl.style.transform = 'none';
 		flipEl.style.transformStyle = 'flat';
 		flipEl.style.overflow = 'visible';
@@ -3104,7 +3085,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			const fromTop = gy;
 			const fromBot = H - gy;
 			const cornerGrab = fromOuter <= reach && (fromTop <= reach || fromBot <= reach);
-			flipEl._mskPaperEdgeDrag = !cornerGrab;
+			// Kontakt is one centered sheet. A vertical crease cuts the cards,
+			// so this page always leafs from the nearest corner.
+			flipEl._mskPaperEdgeDrag = flipEl.classList.contains('contact-about-turn__flip') ? false : !cornerGrab;
 			if (flipEl._mskPaperEdgeDrag) flipEl._mskPaperCornerY = gy;
 			else flipEl._mskPaperCornerY = fromTop <= fromBot ? 0 : H;
 		}
@@ -3193,15 +3176,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (flapFrame) {
 					let frameLeft = 0;
 					try { frameLeft = parseFloat(getComputedStyle(flapFrame).left) || 0; } catch (e) {}
-					let mirrorAt = (W * 0.5) - frameLeft;
-					// Kontakt's back is the CV half. Mirror about the crease so that
-					// half stays on the peeled paper and reads the right way.
-					if (flipEl.classList.contains('contact-about-turn__flip') && frameLeft < -W * 0.25) {
-						let crease = mx;
-						if (Math.abs(nx) > 0.2) crease = mx + (-ny / nx) * (H * 0.5 - my);
-						crease = Math.max(16, Math.min(W, crease));
-						mirrorAt = W + crease;
-					}
+					const mirrorAt = (W * 0.5) - frameLeft;
 					flapFrame.style.setProperty('transform-origin', '0px 0px', 'important');
 					flapFrame.style.setProperty('transform', 'matrix(-1,0,0,1,' + (mirrorAt * 2).toFixed(2) + ',0)', 'important');
 				}
@@ -3252,17 +3227,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				el.style.setProperty('visibility', 'hidden', 'important');
 			});
 		}
-		if (flipEl.classList.contains('contact-about-turn__flip')) {
+		if (flipEl.classList.contains('contact-about-turn__flip') && p >= 0.5) {
 			curl.flap.style.setProperty('display', 'none', 'important');
-			if (p >= 0.5) {
-				curl.front.style.setProperty('display', 'none', 'important');
-				curl.front.style.opacity = '0';
-			} else {
-				curl.front.style.clipPath = 'none';
-				curl.front.style.opacity = '1';
-				curl.front.style.setProperty('display', 'block', 'important');
-				flipEl.style.transform = 'translateX(' + Math.round(Math.max(0, fx)) + 'px)';
-			}
+			curl.front.style.setProperty('display', 'none', 'important');
+			curl.front.style.opacity = '0';
 		}
 		flipEl._mskPaperP = p;
 		flipEl._mskPaperSign = dir;
@@ -14840,7 +14808,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 14:50';
+		el.textContent = 'update søndag 11 okt - klokken 17:49';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
