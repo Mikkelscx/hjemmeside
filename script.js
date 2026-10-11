@@ -3058,18 +3058,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (underProjects) underProjects.style.setProperty('display', p > 0 ? 'none' : 'block', 'important');
 		}
 		if (flipEl.classList.contains('contact-about-turn__flip') && curl) {
-			// First 50% of the pull is still Kontakt. Past the seam, the sheet
-			// being pulled is the CV half — the 50% after the first 50%.
+			// The left page stays Om mig. CV is the next 50%, on the right,
+			// the same split the navbar flip already uses. Do not paint CV on the left.
 			const aboutFront = flipEl.querySelector('.contact-about-turn__flip-front--about');
 			const contactFront = flipEl.querySelector('.contact-about-turn__flip-front--contact');
-			if (p >= 0.5 && aboutFront) {
-				aboutFront.style.setProperty('left', '-50vw', 'important');
-				aboutFront.style.setProperty('width', '100vw', 'important');
-				aboutFront.style.setProperty('transform', 'none', 'important');
-				aboutFront.style.setProperty('display', 'block', 'important');
-				aboutFront.style.setProperty('opacity', '1', 'important');
-				aboutFront.style.setProperty('visibility', 'visible', 'important');
-				curl.held = aboutFront;
+			if (p >= 0.5) {
+				curl.held = null;
+				if (aboutFront) aboutFront.style.setProperty('display', 'none', 'important');
+				if (contactFront) contactFront.style.setProperty('display', 'none', 'important');
 			} else if (contactFront) {
 				curl.held = contactFront;
 				if (aboutFront) aboutFront.style.setProperty('display', 'none', 'important');
@@ -3251,6 +3247,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				el.style.setProperty('opacity', '0', 'important');
 				el.style.setProperty('visibility', 'hidden', 'important');
 			});
+		}
+		if (flipEl.classList.contains('contact-about-turn__flip') && p >= 0.5) {
+			curl.front.style.setProperty('display', 'none', 'important');
+			curl.front.style.opacity = '0';
+			curl.flap.style.setProperty('display', 'none', 'important');
 		}
 		flipEl._mskPaperP = p;
 		flipEl._mskPaperSign = dir;
@@ -14828,7 +14829,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 14:35';
+		el.textContent = 'update søndag 11 okt - klokken 14:40';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
