@@ -2937,15 +2937,34 @@ document.addEventListener('DOMContentLoaded', function() {
 			clone.style.setProperty('transform', 'none', 'important');
 			clone.style.setProperty('backface-visibility', 'visible', 'important');
 			clone.style.setProperty('-webkit-backface-visibility', 'visible', 'important');
+			clone.src = flapFrame.getAttribute('src') || flapFrame.src;
 			if (contactAboutBack) {
-				clone.style.setProperty('left', '0px', 'important');
-				clone.style.setProperty('width', '100vw', 'important');
-			} else if (flapFrame.className.indexOf('right') !== -1) {
+				// CV stays inside the sheet the finger is holding.
+				flap.style.overflow = 'hidden';
 				clone.style.setProperty('left', '-50vw', 'important');
 				clone.style.setProperty('width', '100vw', 'important');
+				const sheet = document.createElement('div');
+				sheet.setAttribute('aria-hidden', 'true');
+				sheet.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;background:#f5f5f0;';
+				sheet.appendChild(clone);
+				flap.appendChild(sheet);
+				flap._mskCvSheet = sheet;
+				const showCvOnly = () => {
+					try {
+						const doc = clone.contentDocument;
+						const leftPage = doc && doc.querySelector('.about-sketchbook__page--left');
+						if (leftPage) leftPage.style.setProperty('visibility', 'hidden', 'important');
+					} catch {}
+				};
+				showCvOnly();
+				clone.addEventListener('load', showCvOnly);
+			} else {
+				if (flapFrame.className.indexOf('right') !== -1) {
+					clone.style.setProperty('left', '-50vw', 'important');
+					clone.style.setProperty('width', '100vw', 'important');
+				}
+				flap.appendChild(clone);
 			}
-			clone.src = flapFrame.getAttribute('src') || flapFrame.src;
-			flap.appendChild(clone);
 			mskStripBuildStamp(clone);
 		}
 		const shade = document.createElement('div');
@@ -3171,11 +3190,24 @@ document.addEventListener('DOMContentLoaded', function() {
 				const tx = 2 * nx * nx * mx + 2 * nx * ny * my;
 				const ty = 2 * nx * ny * mx + 2 * ny * ny * my;
 				curl.flap.style.display = 'block';
-				curl.flap.style.clipPath = poly(flapPoly);
+				curl.flap.style.clipPath = flipEl.classList.contains('contact-about-turn__flip') ? 'none' : poly(flapPoly);
 				curl.flap.style.transformOrigin = '0 0';
 				curl.flap.style.transform = 'matrix(' + [a11, a21, a12, a22, tx, ty].map((n) => n.toFixed(4)).join(',') + ')';
 				const flapFrame = curl.flap.querySelector('iframe');
-				if (flapFrame) {
+				const cvSheet = curl.flap._mskCvSheet;
+				if (cvSheet && flapFrame) {
+					flapFrame.style.setProperty('transform', 'none', 'important');
+					let minX = Infinity;
+					let maxX = -Infinity;
+					for (let pi = 0; pi < peeled.length; pi++) {
+						const px = peeled[pi][0];
+						if (px < minX) minX = px;
+						if (px > maxX) maxX = px;
+					}
+					const axis = (maxX > minX) ? (minX + maxX) * 0.5 : (W * 0.5);
+					cvSheet.style.transformOrigin = axis.toFixed(1) + 'px 50%';
+					cvSheet.style.transform = 'scaleX(-1)';
+				} else if (flapFrame) {
 					let frameLeft = 0;
 					try { frameLeft = parseFloat(getComputedStyle(flapFrame).left) || 0; } catch (e) {}
 					const mirrorAt = (W * 0.5) - frameLeft;
@@ -14804,7 +14836,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 23:15';
+		el.textContent = 'update søndag 11 okt - klokken 23:34';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
