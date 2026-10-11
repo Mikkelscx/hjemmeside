@@ -3094,10 +3094,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		let fy = py;
 		const minX = dir < 0 ? -W : 0;
 		const maxX = dir < 0 ? W : W * 2;
-		const contactFlip = flipEl.classList.contains('contact-about-turn__flip');
-		// The sheet can fold over the gutter. The spine stays glued, so the corner
-		// stops a short way past the middle instead of dragging the top across.
-		const contactPastSpine = Math.min(130, W * 0.18);
 		fx = Math.max(minX, Math.min(maxX, fx));
 		fy = Math.max(-H * 0.08, Math.min(H * 1.08, fy));
 		if (flipEl._mskPaperEdgeDrag && !flipEl._mskPaperAnim) {
@@ -3108,7 +3104,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const hp = flipEl._mskHoldP || 0;
 			if (p + 0.001 >= hp) {
 				const u = Math.max(0, Math.min(1, (p - hp) / Math.max(0.001, 1 - hp)));
-				const endX = contactFlip ? (W + contactPastSpine) : (dir < 0 ? -W : W * 2);
+				const endX = dir < 0 ? -W : W * 2;
 				const endY = cornerY;
 				fx = flipEl._mskHoldFx + (endX - flipEl._mskHoldFx) * u;
 				fy = flipEl._mskHoldFy + (endY - flipEl._mskHoldFy) * u;
@@ -3118,11 +3114,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				fy = flipEl._mskHoldFy + (cornerY - flipEl._mskHoldFy) * u;
 			}
 		}
-		const slack = contactFlip ? -160 : undefined;
+		const slack = flipEl.classList.contains('contact-about-turn__flip') ? -160 : undefined;
 		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir, slack);
 		fx = glued.fx;
 		fy = glued.fy;
-		if (contactFlip) fx = Math.min(fx, W + contactPastSpine);
 		if (!flipEl._mskPaperAnim) {
 			flipEl._mskHoldFx = fx;
 			flipEl._mskHoldFy = fy;
@@ -3216,6 +3211,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		} else {
 			curl.front.style.clipPath = poly(flat);
 		}
+		const contactFlip = flipEl.classList.contains('contact-about-turn__flip');
 		const land = (!contactFlip && flipEl._mskPaperAnim && p > 0.9) ? Math.max(0, 1 - (p - 0.9) / 0.1) : 1;
 		curl.front.style.opacity = String(land);
 		curl.flap.style.opacity = flat ? String(land) : '0';
@@ -14784,7 +14780,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 00:51';
+		el.textContent = 'update mandag 12 okt - klokken 00:54';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
