@@ -2916,7 +2916,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		}) || frames[0] || null;
 		const backFrame = (back && back.querySelector('iframe')) || held;
 		// Bagsiden er den anden side af arket — den iframe menuen allerede har som bagside.
-		const flapFrame = backFrame;
+		// Kontakt's curl is the sheet being pulled, so the peel follows the finger.
+		let flapFrame = backFrame;
+		if (flipEl.classList.contains('contact-about-turn__flip')) {
+			const contactSheet = flipEl.querySelector('.contact-about-turn__flip-front--contact');
+			if (contactSheet) flapFrame = contactSheet;
+		}
 		const flap = document.createElement('div');
 		flap.setAttribute('aria-hidden', 'true');
 		flap.style.cssText = 'position:absolute;inset:0;z-index:7;overflow:visible;pointer-events:none;transform-origin:0 0;display:none;background:#f5f5f0;backface-visibility:visible;-webkit-backface-visibility:visible;';
@@ -3203,8 +3208,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				curl.flap.style.opacity = '1';
 				curl.shade.style.display = 'none';
 				// The opened area is the next page, in place. The back face must not paint over it.
-				// On Kontakt the flap would slice the CV half, so the right page stays whole.
-				if (flipEl.classList.contains('projects-about-turn__flip') || flipEl.classList.contains('contact-about-turn__flip')) {
+				if (flipEl.classList.contains('projects-about-turn__flip')) {
 					curl.flap.style.setProperty('display', 'none', 'important');
 				}
 			}
@@ -3248,10 +3252,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				el.style.setProperty('visibility', 'hidden', 'important');
 			});
 		}
-		if (flipEl.classList.contains('contact-about-turn__flip') && p >= 0.5) {
-			curl.front.style.setProperty('display', 'none', 'important');
-			curl.front.style.opacity = '0';
+		if (flipEl.classList.contains('contact-about-turn__flip')) {
 			curl.flap.style.setProperty('display', 'none', 'important');
+			if (p >= 0.5) {
+				curl.front.style.setProperty('display', 'none', 'important');
+				curl.front.style.opacity = '0';
+			} else {
+				curl.front.style.clipPath = 'none';
+				curl.front.style.opacity = '1';
+				curl.front.style.setProperty('display', 'block', 'important');
+				flipEl.style.transform = 'translateX(' + Math.round(Math.max(0, fx)) + 'px)';
+			}
 		}
 		flipEl._mskPaperP = p;
 		flipEl._mskPaperSign = dir;
@@ -5156,11 +5167,11 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
 						else overlay.classList.remove('swap-flip-mid');
 
-						// Om mig's two halves appear together once the pull passes the first 50%.
-						if (progress >= 0.5) overlay.classList.add('swap-under-left');
+						// Om mig shows on the left as soon as the sheet starts to move.
+						if (progress > 0) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 
-						// Past the first 50%, the side being pulled is the CV half.
+						// CV is the 50% after the first 50%.
 						if (progress >= 0.5) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 					}
@@ -14829,7 +14840,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 14:40';
+		el.textContent = 'update søndag 11 okt - klokken 14:50';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
