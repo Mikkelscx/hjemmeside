@@ -5124,9 +5124,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				try {
 					if (overlay) {
-						// Same timing as CV -> Kontakt, mirrored. The side the sheet
-						// leaves becomes the next page at the middle.
-						if (progress >= 0.5) overlay.classList.add('swap-under-left');
+						// The page being revealed changes from the first pull.
+						if (progress > 0) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 
 						const cursorPastMiddle = (typeof x === 'number' && typeof seamX === 'number') ? (x >= seamX) : (progress >= 0.5);
@@ -14802,7 +14801,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 23:54';
+		el.textContent = 'update mandag 12 okt - klokken 00:03';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
