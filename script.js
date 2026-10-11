@@ -5136,9 +5136,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (progress > 0) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 
-						// CV is the 50% after the first 50%.
-						if (progress >= 0.5) overlay.classList.add('swap-under-right');
-						else overlay.classList.remove('swap-under-right');
+						// The sheet being pulled stays on the right. Do not swap that side to CV.
+						overlay.classList.remove('swap-under-right');
 					}
 				} catch {}
 			}
@@ -14805,7 +14804,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 19:10';
+		el.textContent = 'update søndag 11 okt - klokken 23:15';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
