@@ -3211,7 +3211,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		} else {
 			curl.front.style.clipPath = poly(flat);
 		}
-		const land = (flipEl._mskPaperAnim && p > 0.9) ? Math.max(0, 1 - (p - 0.9) / 0.1) : 1;
+		const contactFlip = flipEl.classList.contains('contact-about-turn__flip');
+		const land = (!contactFlip && flipEl._mskPaperAnim && p > 0.9) ? Math.max(0, 1 - (p - 0.9) / 0.1) : 1;
 		curl.front.style.opacity = String(land);
 		curl.flap.style.opacity = flat ? String(land) : '0';
 		curl.shade.style.opacity = String(land);
@@ -5125,16 +5126,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				try {
 					if (overlay) {
 						// The page being revealed changes from the first pull.
+						// The sheet itself stays Kontakt for the whole drag, so crossing
+						// the middle does not swap in the flat Om mig spread.
 						if (progress > 0) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
-
-						const cursorPastMiddle = (typeof x === 'number' && typeof seamX === 'number') ? (x >= seamX) : (progress >= 0.5);
-						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
-						else overlay.classList.remove('swap-flip-mid');
-
-						// The side the sheet lands on stays until the sheet covers it.
-						if (progress >= 0.92) overlay.classList.add('swap-under-right');
-						else overlay.classList.remove('swap-under-right');
+						overlay.classList.remove('swap-flip-mid');
+						overlay.classList.remove('swap-under-right');
 					}
 				} catch {}
 			}
@@ -5232,22 +5229,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 
 					mskArmPageTurnGhostClickGuard(520);
-
-					let finishMs = 520;
-					try {
-						if (flipEl && !paperRel) {
-							const ease = getPageFlipEase('cubic-bezier(.42,0,.58,1)');
-							const remaining = Math.max(0, 1 - progress);
-							finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
-							flipEl.style.transition = `transform ${finishMs}ms ${ease}`;
-							flipEl.style.transform = `rotateY(180deg)`;
-						}
-						overlay.classList.add('swap-flip-mid');
-						overlay.classList.add('swap-under-left');
-						window.setTimeout(() => {
-							try { overlay.classList.add('swap-under-right'); } catch {}
-						}, Math.round(Math.max(0, finishMs - 40)));
-					} catch {}
+					try { overlay.classList.add('swap-under-left'); } catch {}
 					window.setTimeout(() => { window.location.href = 'about.html'; }, Math.round(Math.max(520, Math.min(FLIP_MS + 140, (FLIP_MS * (1 - progress)) + 260))));
 				}
 
@@ -14798,7 +14780,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 00:27';
+		el.textContent = 'update mandag 12 okt - klokken 00:38';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
