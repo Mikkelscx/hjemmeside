@@ -3057,17 +3057,23 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			if (underProjects) underProjects.style.setProperty('display', p > 0 ? 'none' : 'block', 'important');
 		}
-		if (flipEl.classList.contains('contact-about-turn__flip')) {
-			const turn = flipEl.parentElement;
-			const showCvHalf = (el) => {
-				if (!el) return;
-				el.style.setProperty('left', '-50vw', 'important');
-				el.style.setProperty('width', '100vw', 'important');
-				el.style.setProperty('transform', 'none', 'important');
-			};
-			if (turn) showCvHalf(turn.querySelector('.contact-about-turn__under--left .contact-about-turn__under-frame--about'));
-			showCvHalf(flipEl.querySelector('.contact-about-turn__flip-front--about'));
-			showCvHalf(flipEl.querySelector('.contact-about-turn__flip-back'));
+		if (flipEl.classList.contains('contact-about-turn__flip') && curl) {
+			// First 50% of the pull is still Kontakt. Past the seam, the sheet
+			// being pulled is the CV half — the 50% after the first 50%.
+			const aboutFront = flipEl.querySelector('.contact-about-turn__flip-front--about');
+			const contactFront = flipEl.querySelector('.contact-about-turn__flip-front--contact');
+			if (p >= 0.5 && aboutFront) {
+				aboutFront.style.setProperty('left', '-50vw', 'important');
+				aboutFront.style.setProperty('width', '100vw', 'important');
+				aboutFront.style.setProperty('transform', 'none', 'important');
+				aboutFront.style.setProperty('display', 'block', 'important');
+				aboutFront.style.setProperty('opacity', '1', 'important');
+				aboutFront.style.setProperty('visibility', 'visible', 'important');
+				curl.held = aboutFront;
+			} else if (contactFront) {
+				curl.held = contactFront;
+				if (aboutFront) aboutFront.style.setProperty('display', 'none', 'important');
+			}
 		}
 		flipEl.style.transform = 'none';
 		flipEl.style.transformStyle = 'flat';
@@ -3201,7 +3207,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				curl.flap.style.opacity = '1';
 				curl.shade.style.display = 'none';
 				// The opened area is the next page, in place. The back face must not paint over it.
-				if (flipEl.classList.contains('projects-about-turn__flip')) {
+				// On Kontakt the flap would slice the CV half, so the right page stays whole.
+				if (flipEl.classList.contains('projects-about-turn__flip') || flipEl.classList.contains('contact-about-turn__flip')) {
 					curl.flap.style.setProperty('display', 'none', 'important');
 				}
 			}
@@ -5148,12 +5155,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
 						else overlay.classList.remove('swap-flip-mid');
 
-						// The revealed page is Om mig as soon as any of it shows, then more as the peel grows.
-						if (progress > 0) overlay.classList.add('swap-under-left');
+						// Om mig's two halves appear together once the pull passes the first 50%.
+						if (progress >= 0.5) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 
-						// Keep the visible right page as Kontakt until very late.
-						if (progress >= 0.985) overlay.classList.add('swap-under-right');
+						// Past the first 50%, the side being pulled is the CV half.
+						if (progress >= 0.5) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 					}
 				} catch {}
@@ -5194,7 +5201,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 
 				const overlay = ensureOverlay();
-				overlay.classList.add('is-ready', 'is-turning', 'swap-under-left');
+				overlay.classList.add('is-ready', 'is-turning');
 				const flipEl = overlay.querySelector('.contact-about-turn__flip');
 				if (flipEl) { flipEl._mskPaperCornerY = null; flipEl._mskHoldFx = null; flipEl._mskPaperSideBand = false; }
 				try { mskPaperNotePointer(flipEl, e); } catch {}
@@ -14821,7 +14828,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 01:18';
+		el.textContent = 'update søndag 11 okt - klokken 14:35';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
