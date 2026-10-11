@@ -2937,34 +2937,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			clone.style.setProperty('transform', 'none', 'important');
 			clone.style.setProperty('backface-visibility', 'visible', 'important');
 			clone.style.setProperty('-webkit-backface-visibility', 'visible', 'important');
-			clone.src = flapFrame.getAttribute('src') || flapFrame.src;
-			if (contactAboutBack) {
-				// CV stays inside the sheet the finger is holding.
-				flap.style.overflow = 'hidden';
+			if (flapFrame.className.indexOf('right') !== -1) {
 				clone.style.setProperty('left', '-50vw', 'important');
 				clone.style.setProperty('width', '100vw', 'important');
-				const sheet = document.createElement('div');
-				sheet.setAttribute('aria-hidden', 'true');
-				sheet.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;background:#f5f5f0;';
-				sheet.appendChild(clone);
-				flap.appendChild(sheet);
-				flap._mskCvSheet = sheet;
-				const showCvOnly = () => {
-					try {
-						const doc = clone.contentDocument;
-						const leftPage = doc && doc.querySelector('.about-sketchbook__page--left');
-						if (leftPage) leftPage.style.setProperty('visibility', 'hidden', 'important');
-					} catch {}
-				};
-				showCvOnly();
-				clone.addEventListener('load', showCvOnly);
-			} else {
-				if (flapFrame.className.indexOf('right') !== -1) {
-					clone.style.setProperty('left', '-50vw', 'important');
-					clone.style.setProperty('width', '100vw', 'important');
-				}
-				flap.appendChild(clone);
 			}
+			clone.src = flapFrame.getAttribute('src') || flapFrame.src;
+			flap.appendChild(clone);
 			mskStripBuildStamp(clone);
 		}
 		const shade = document.createElement('div');
@@ -3136,8 +3114,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				fy = flipEl._mskHoldFy + (cornerY - flipEl._mskHoldFy) * u;
 			}
 		}
-		const slack = flipEl.classList.contains('contact-about-turn__flip') ? -160 : -0.4;
-		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir, slack);
+		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir);
 		fx = glued.fx;
 		fy = glued.fy;
 		if (!flipEl._mskPaperAnim) {
@@ -3190,24 +3167,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const tx = 2 * nx * nx * mx + 2 * nx * ny * my;
 				const ty = 2 * nx * ny * mx + 2 * ny * ny * my;
 				curl.flap.style.display = 'block';
-				curl.flap.style.clipPath = flipEl.classList.contains('contact-about-turn__flip') ? 'none' : poly(flapPoly);
+				curl.flap.style.clipPath = poly(flapPoly);
 				curl.flap.style.transformOrigin = '0 0';
 				curl.flap.style.transform = 'matrix(' + [a11, a21, a12, a22, tx, ty].map((n) => n.toFixed(4)).join(',') + ')';
 				const flapFrame = curl.flap.querySelector('iframe');
-				const cvSheet = curl.flap._mskCvSheet;
-				if (cvSheet && flapFrame) {
-					flapFrame.style.setProperty('transform', 'none', 'important');
-					let minX = Infinity;
-					let maxX = -Infinity;
-					for (let pi = 0; pi < peeled.length; pi++) {
-						const px = peeled[pi][0];
-						if (px < minX) minX = px;
-						if (px > maxX) maxX = px;
-					}
-					const axis = (maxX > minX) ? (minX + maxX) * 0.5 : (W * 0.5);
-					cvSheet.style.transformOrigin = axis.toFixed(1) + 'px 50%';
-					cvSheet.style.transform = 'scaleX(-1)';
-				} else if (flapFrame) {
+				if (flapFrame) {
 					let frameLeft = 0;
 					try { frameLeft = parseFloat(getComputedStyle(flapFrame).left) || 0; } catch (e) {}
 					const mirrorAt = (W * 0.5) - frameLeft;
@@ -5159,17 +5123,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				try {
 					if (overlay) {
-						// Change DESIGN on the flipping page exactly when crossing the middle seam.
+						// Same timing as CV -> Kontakt, mirrored. The side the sheet
+						// leaves becomes the next page at the middle.
+						if (progress >= 0.5) overlay.classList.add('swap-under-left');
+						else overlay.classList.remove('swap-under-left');
+
 						const cursorPastMiddle = (typeof x === 'number' && typeof seamX === 'number') ? (x >= seamX) : (progress >= 0.5);
 						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
 						else overlay.classList.remove('swap-flip-mid');
 
-						// Om mig shows on the left as soon as the sheet starts to move.
-						if (progress > 0) overlay.classList.add('swap-under-left');
-						else overlay.classList.remove('swap-under-left');
-
-						// The sheet being pulled stays on the right. Do not swap that side to CV.
-						overlay.classList.remove('swap-under-right');
+						// The side the sheet lands on stays until the sheet covers it.
+						if (progress >= 0.92) overlay.classList.add('swap-under-right');
+						else overlay.classList.remove('swap-under-right');
 					}
 				} catch {}
 			}
@@ -14836,7 +14801,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 23:34';
+		el.textContent = 'update søndag 11 okt - klokken 23:42';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
