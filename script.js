@@ -2959,9 +2959,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	// The sheet can fold across the gutter, but the spine stays glued.
 	// Sideways travel follows the finger. Only the upward lift is eased back.
-	function mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir) {
+	function mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir, slack) {
 		const spineX = dir < 0 ? 0 : W;
 		const spine = [[spineX, 0], [spineX, H]];
+		const limit = (typeof slack === 'number') ? slack : -0.4;
 		function attached(x, y) {
 			const dx = x - cornerX;
 			const dy = y - cornerY;
@@ -2973,7 +2974,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const my = (cornerY + y) / 2;
 			for (let i = 0; i < spine.length; i++) {
 				const s = (spine[i][0] - mx) * nx + (spine[i][1] - my) * ny;
-				if (s < -0.4) return false;
+				if (s < limit) return false;
 			}
 			return true;
 		}
@@ -3116,7 +3117,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				fy = flipEl._mskHoldFy + (cornerY - flipEl._mskHoldFy) * u;
 			}
 		}
-		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir);
+		const slack = flipEl.classList.contains('contact-about-turn__flip') ? -160 : -0.4;
+		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir, slack);
 		fx = glued.fx;
 		fy = glued.fy;
 		if (!flipEl._mskPaperAnim) {
@@ -3226,11 +3228,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				el.style.setProperty('opacity', '0', 'important');
 				el.style.setProperty('visibility', 'hidden', 'important');
 			});
-		}
-		if (flipEl.classList.contains('contact-about-turn__flip') && p >= 0.5) {
-			curl.flap.style.setProperty('display', 'none', 'important');
-			curl.front.style.setProperty('display', 'none', 'important');
-			curl.front.style.opacity = '0';
 		}
 		flipEl._mskPaperP = p;
 		flipEl._mskPaperSign = dir;
@@ -14808,7 +14805,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update søndag 11 okt - klokken 17:49';
+		el.textContent = 'update søndag 11 okt - klokken 19:10';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
