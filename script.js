@@ -3069,6 +3069,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		const W = Math.max(1, flipEl.offsetWidth || 0);
 		const H = Math.max(1, flipEl.offsetHeight || 0);
+		// Kontakt: the polaroid stays on the left page. Nothing painted by the
+		// turning sheet may cross its right edge along the top. Below the photo
+		// the sheet can still fold over the middle.
+		if (flipEl.classList.contains('contact-about-turn__flip')) {
+			const stop = Math.max(0, W - 34);
+			const band = 360;
+			const left = Math.max(0, stop - 190);
+			const top = 62;
+			const outer = 'M0 0L' + stop.toFixed(1) + ' 0L' + stop.toFixed(1) + ' ' + band + 'L' + (W * 2).toFixed(1) + ' ' + band + 'L' + (W * 2).toFixed(1) + ' ' + H.toFixed(1) + 'L0 ' + H.toFixed(1) + 'Z';
+			const hole = 'M' + left.toFixed(1) + ' ' + top + 'L' + stop.toFixed(1) + ' ' + top + 'L' + stop.toFixed(1) + ' ' + band + 'L' + left.toFixed(1) + ' ' + band + 'Z';
+			flipEl.style.clipPath = "path(evenodd,'" + outer + hole + "')";
+		} else if (flipEl.style.clipPath) {
+			flipEl.style.clipPath = '';
+		}
 		const box = flipEl.getBoundingClientRect();
 		const py = (typeof flipEl._mskPaperTy === 'number') ? flipEl._mskPaperTy - box.top : H * 0.9;
 		const cornerX = dir < 0 ? W : 0;
@@ -14798,7 +14812,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 01:05';
+		el.textContent = 'update mandag 12 okt - klokken 12:51';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
