@@ -2108,7 +2108,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		document.addEventListener('pointermove', onHoverMove, true);
 		document.addEventListener('mousemove', onHoverMove, true);
-		document.addEventListener('pointerdown', () => { dropForDrag(); }, true);
+		document.addEventListener('pointerdown', (e) => {
+			const onHandle = e && e.target && e.target.closest && e.target.closest('.page-turn-handle');
+			if (!onHandle) { dropForDrag(); return; }
+			// A click on the edge takes over the lifted corner. Clearing it
+			// here drops the fold until the next move.
+			['left', 'right'].forEach((side) => {
+				const state = snaps[side];
+				if (!state) return;
+				if (state.raf) cancelAnimationFrame(state.raf);
+				snaps[side] = null;
+			});
+		}, true);
 		document.addEventListener('pointerleave', () => { releaseSnaps(''); }, true);
 	})();
 
@@ -2922,11 +2933,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		flap.style.cssText = 'position:absolute;inset:0;z-index:7;overflow:visible;pointer-events:none;transform-origin:0 0;display:none;background:#f5f5f0;backface-visibility:visible;-webkit-backface-visibility:visible;';
 		if (flapFrame) {
 			const clone = document.createElement('iframe');
-			// Kontakt -> Om mig's back iframe is the CV half, the right 50% of Om mig.
-			const contactAboutBack = flapFrame.className.indexOf('contact-about-turn__flip-back') !== -1;
-			clone.className = contactAboutBack
-				? flapFrame.className.replace(/\s*contact-about-turn__flip-back\b/g, '')
-				: flapFrame.className;
+			clone.className = flapFrame.className.replace(/\b[\w-]*flip-back[\w-]*\b/g, ' ').replace(/\s+/g, ' ').trim();
 			clone.title = '';
 			clone.setAttribute('aria-hidden', 'true');
 			clone.tabIndex = -1;
@@ -3167,6 +3174,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				const tx = 2 * nx * nx * mx + 2 * nx * ny * my;
 				const ty = 2 * nx * ny * mx + 2 * ny * ny * my;
 				curl.flap.style.display = 'block';
+				curl.flap.querySelectorAll('iframe').forEach((fr) => {
+					fr.style.setProperty('visibility', 'visible', 'important');
+					fr.style.setProperty('opacity', '1', 'important');
+				});
 				curl.flap.style.clipPath = poly(flapPoly);
 				curl.flap.style.transformOrigin = '0 0';
 				curl.flap.style.transform = 'matrix(' + [a11, a21, a12, a22, tx, ty].map((n) => n.toFixed(4)).join(',') + ')';
@@ -3330,13 +3341,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		overlay.style.transition = 'none';
 		overlay.style.opacity = '1';
 		const curl = flipEl && flipEl._mskLiveCurl;
-		if (curl && curl.front) {
-			curl.front.style.opacity = '';
-			curl.front.style.clipPath = '';
+		if (curl && curl.front) curl.front.style.opacity = '';
+		if (curl && curl.flap) {
+			curl.flap.querySelectorAll('iframe').forEach((fr) => {
+				fr.style.setProperty('visibility', 'visible', 'important');
+				fr.style.setProperty('opacity', '1', 'important');
+			});
 		}
-		if (curl && curl.flap) curl.flap.style.display = 'none';
+		// Hide the sheet's back face only. The folded corner uses its own copy.
 		if (flipEl) {
-			flipEl.querySelectorAll('[class*="flip-back"]').forEach((el) => {
+			flipEl.querySelectorAll('[class*="flip-face--back"], [class*="flip-backface"]').forEach((el) => {
+				if (curl && curl.flap && curl.flap.contains(el)) return;
 				el.style.setProperty('opacity', '0', 'important');
 				el.style.setProperty('visibility', 'hidden', 'important');
 			});
@@ -14851,7 +14866,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 23:26';
+		el.textContent = 'update mandag 12 okt - klokken 23:39';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
