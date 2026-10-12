@@ -3030,13 +3030,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			const turn = flipEl.parentElement;
 			const underLeft = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--projects');
 			const underAbout = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--about');
-			// The grabbed sheet keeps Om mig until it has turned past the middle.
-			if (p >= 0.5) {
+			let desktopFine = false;
+			try {
+				desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+			} catch {}
+			// On a computer the opening is Projekter from the first pull.
+			const showProjects = desktopFine ? (p > 0) : (p >= 0.5);
+			if (showProjects) {
 				if (underLeft) {
 					underLeft.style.setProperty('left', '0px', 'important');
 					underLeft.style.setProperty('opacity', '1', 'important');
 				}
-				if (underAbout) underAbout.style.setProperty('opacity', '0', 'important');
+				const ready = !!(underLeft && underLeft.classList.contains('is-loaded'));
+				if (underAbout && (ready || !desktopFine)) underAbout.style.setProperty('opacity', '0', 'important');
 			} else {
 				if (underLeft) underLeft.style.setProperty('opacity', '0', 'important');
 				if (underAbout) underAbout.style.setProperty('opacity', '1', 'important');
@@ -4465,8 +4471,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (progress >= 0.88) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 
-						// Next page stays covered until the sheet has turned past the middle.
-						if (progress >= 0.5) overlay.classList.add('swap-under-left');
+						// On a computer the revealed page is Projekter from the first pull.
+						if (desktopFine ? progress > 0 : progress >= 0.5) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 					}
 				} catch {}
@@ -14843,7 +14849,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 00:09';
+		el.textContent = 'update tirsdag 13 okt - klokken 00:17';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
