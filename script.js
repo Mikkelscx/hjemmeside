@@ -3186,9 +3186,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				curl.flap.style.opacity = '1';
 				curl.shade.style.display = 'none';
-				// The opened area is the next page, in place. The back face must not paint over it.
+				// Phone and tablet keep the opening as the next page in place.
+				// On a computer the folded sheet has to stay, or nothing is turning.
 				if (flipEl.classList.contains('projects-about-turn__flip')) {
-					curl.flap.style.setProperty('display', 'none', 'important');
+					let desktopFine = false;
+					try {
+						desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+					} catch {}
+					if (!desktopFine) curl.flap.style.setProperty('display', 'none', 'important');
 				}
 			}
 		}
@@ -3217,7 +3222,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			curl.front.style.clipPath = poly(flat);
 		}
 		const land = (flipEl._mskPaperAnim && p > 0.9) ? Math.max(0, 1 - (p - 0.9) / 0.1) : 1;
-		curl.front.style.opacity = String(land);
+		curl.front.style.setProperty('opacity', String(land), 'important');
 		curl.flap.style.opacity = flat ? String(land) : '0';
 		curl.shade.style.opacity = String(land);
 		if (curl.back) {
@@ -14851,7 +14856,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 00:52';
+		el.textContent = 'update tirsdag 13 okt - klokken 01:02';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
