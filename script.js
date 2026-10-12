@@ -4468,7 +4468,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (desktopFine ? pastMid : pastUdm) overlay.classList.add('swap-flip-mid');
 						else overlay.classList.remove('swap-flip-mid');
 
-						if (progress >= 0.88) overlay.classList.add('swap-under-right');
+						// The sheet being pulled is what becomes the right page.
+						// The page behind it stays until that sheet has landed.
+						if (desktopFine ? progress >= 0.97 : progress >= 0.88) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 
 						// On a computer the revealed page is Projekter from the first pull.
@@ -14849,7 +14851,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 00:39';
+		el.textContent = 'update tirsdag 13 okt - klokken 00:52';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
