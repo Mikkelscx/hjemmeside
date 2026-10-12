@@ -3190,13 +3190,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (flipEl.classList.contains('projects-about-turn__flip')) {
 					curl.flap.style.setProperty('display', 'none', 'important');
 				}
-				if (flipEl.classList.contains('about-projects-turn__flip')) {
-					let desktopFine = false;
-					try {
-						desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-					} catch {}
-					if (desktopFine) curl.flap.style.setProperty('display', 'none', 'important');
-				}
 			}
 		}
 		curl.front.style.zIndex = '2';
@@ -14856,7 +14849,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 00:29';
+		el.textContent = 'update tirsdag 13 okt - klokken 00:39';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
