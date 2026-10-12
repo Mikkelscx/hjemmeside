@@ -3215,9 +3215,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		curl.front.style.background = '#f5f5f0';
 		if (!flat) {
-			curl.front.style.clipPath = 'none';
 			curl.flap.style.display = 'none';
 			curl.shade.style.display = 'none';
+			// Placing the sheet can collapse the fold for a moment. The left
+			// page has already become Projekter, so the old sheet must not snap back over it.
+			let placing = false;
+			if (p >= 0.5 && flipEl.classList.contains('about-projects-turn__flip')) {
+				try {
+					placing = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+				} catch {}
+			}
+			curl.front.style.clipPath = placing ? 'polygon(0px 0px, 0px 0px, 0px 0px)' : 'none';
 		} else {
 			curl.front.style.clipPath = poly(flat);
 		}
@@ -14856,7 +14864,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 01:02';
+		el.textContent = 'update tirsdag 13 okt - klokken 01:18';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
