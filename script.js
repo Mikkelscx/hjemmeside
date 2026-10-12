@@ -3274,6 +3274,47 @@ document.addEventListener('DOMContentLoaded', function() {
 		flipEl._mskPaperSettleRaf = requestAnimationFrame(step);
 		return { complete: complete };
 	}
+	// A cancelled click-drag must leave the sheet ready to lift again.
+	// Removing the overlay also removes the edge signal.
+	function mskParkPageTurnOverlay(overlay, flipEl) {
+		try {
+			if (flipEl) {
+				flipEl._mskPaperCornerY = null;
+				flipEl._mskPaperSideBand = false;
+				flipEl._mskPaperTx = null;
+				flipEl._mskPaperTy = null;
+				flipEl._mskPaperAnim = false;
+				flipEl._mskPaperSettling = false;
+				flipEl._mskHoldFx = null;
+				flipEl.style.transition = '';
+				flipEl.style.animation = '';
+				flipEl.style.transform = '';
+				flipEl.style.clipPath = '';
+				flipEl.style.overflow = '';
+				flipEl.style.background = '';
+				const curl = flipEl._mskLiveCurl;
+				if (curl) {
+					if (curl.front) {
+						curl.front.style.clipPath = '';
+						curl.front.style.opacity = '';
+					}
+					if (curl.flap) {
+						curl.flap.style.display = 'none';
+						curl.flap.style.clipPath = '';
+						curl.flap.style.transform = '';
+					}
+				}
+			}
+		} catch {}
+		try {
+			if (!overlay) return;
+			overlay.classList.remove('is-ready', 'is-turning', 'swap-under-left', 'swap-under-right', 'swap-flip-mid', 'msk-snap-hover');
+			overlay.classList.add('is-preloading');
+			overlay.style.transition = '';
+			overlay.style.opacity = '';
+			overlay.style.clipPath = '';
+		} catch {}
+	}
 
 	// Projekter -> Om mig: RIGHT page turns to the LEFT (full 180°, no snaps).
 	(function initProjectsToAboutFlip() {
@@ -3545,6 +3586,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				try {
 					if (overlay) {
 						overlay.classList.remove('is-ready', 'is-turning', 'swap-under-right', 'swap-flip-mid');
+						overlay.classList.add('is-preloading');
 					}
 				} catch {}
 			}
@@ -4432,7 +4474,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				rafId = 0;
 				try { document.body.classList.remove(DRAG_CLASS, 'about-projects-flip-active', 'about-projects-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
-				try { if (overlay && overlay.parentNode) overlay.remove(); } catch {}
+				mskParkPageTurnOverlay(overlay, flipEl);
 				try {
 					if (flipEl) {
 						flipEl.style.transition = '';
@@ -4810,7 +4852,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				rafId = 0;
 				try { document.body.classList.remove(DRAG_CLASS, 'about-contact-flip-active', 'about-contact-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
-				try { if (overlay && overlay.parentNode) overlay.remove(); } catch {}
+				mskParkPageTurnOverlay(overlay, flipEl);
 				try {
 					if (flipEl) {
 						flipEl.style.transition = '';
@@ -5144,7 +5186,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				rafId = 0;
 				try { document.body.classList.remove(DRAG_CLASS, 'contact-about-flip-active', 'contact-about-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
-				try { if (overlay && overlay.parentNode) overlay.remove(); } catch {}
+				mskParkPageTurnOverlay(overlay, flipEl);
 				try {
 					if (flipEl) {
 						flipEl.style.transition = '';
@@ -14797,7 +14839,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 22:59';
+		el.textContent = 'update mandag 12 okt - klokken 23:14';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
