@@ -4451,12 +4451,16 @@ document.addEventListener('DOMContentLoaded', function() {
 						const vw = mskViewportSize().w || window.innerWidth || 1;
 						const udmX = udmaerkelserNavDesignSwapX(vw);
 						const hasX = (typeof x === 'number' && isFinite(x));
+						// The turning sheet is Om mig until it crosses the middle.
+						// Waiting for the Udmærkelser link kept the old page on the fold too long.
+						let desktopFine = false;
+						try {
+							desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+						} catch {}
+						const pastMid = hasX ? (x >= seamX) : (progress >= 0.5);
 						const pastUdm = hasX && (x >= udmX) && (progress >= 0.5);
-						if (pastUdm) {
-							overlay.classList.add('swap-flip-mid');
-						} else {
-							overlay.classList.remove('swap-flip-mid');
-						}
+						if (desktopFine ? pastMid : pastUdm) overlay.classList.add('swap-flip-mid');
+						else overlay.classList.remove('swap-flip-mid');
 
 						if (progress >= 0.88) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
@@ -14839,7 +14843,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 23:54';
+		el.textContent = 'update tirsdag 13 okt - klokken 00:09';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
