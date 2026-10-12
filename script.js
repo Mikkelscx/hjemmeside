@@ -3304,11 +3304,6 @@ document.addEventListener('DOMContentLoaded', function() {
 						curl.flap.style.transform = '';
 					}
 				}
-				flipEl.querySelectorAll('[class*="flip-back"]').forEach((el) => {
-					el.style.removeProperty('opacity');
-					el.style.removeProperty('visibility');
-					el.style.removeProperty('display');
-				});
 			}
 		} catch {}
 		try {
@@ -3319,28 +3314,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			overlay.style.opacity = '';
 			overlay.style.clipPath = '';
 		} catch {}
-	}
-	// Keep the sheets that are already painted. Rebuilding them at the
-	// first click hides the page for a frame.
-	function mskBeginPageTurnOverlay(overlay, flipEl) {
-		if (!overlay) return;
-		overlay.classList.remove('is-preloading', 'msk-snap-hover');
-		overlay.classList.add('is-ready', 'is-turning');
-		overlay.style.clipPath = '';
-		overlay.style.transition = 'none';
-		overlay.style.opacity = '1';
-		const curl = flipEl && flipEl._mskLiveCurl;
-		if (curl && curl.front) {
-			curl.front.style.opacity = '';
-			curl.front.style.clipPath = '';
-		}
-		if (curl && curl.flap) curl.flap.style.display = 'none';
-		if (flipEl) {
-			flipEl.querySelectorAll('[class*="flip-back"]').forEach((el) => {
-				el.style.setProperty('opacity', '0', 'important');
-				el.style.setProperty('visibility', 'hidden', 'important');
-			});
-		}
 	}
 
 	// Projekter -> Om mig: RIGHT page turns to the LEFT (full 180°, no snaps).
@@ -4524,10 +4497,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				body.classList.add('about-projects-flip-active', 'about-projects-flipping', DRAG_CLASS);
 				body.style.overflow = 'hidden';
 
+				try {
+					const old = document.querySelector('.about-projects-transition');
+					if (old) old.remove();
+				} catch {}
+
 				const overlay = ensureOverlay();
 				try { overlay.classList.remove('swap-flip-mid', 'swap-under-right', 'swap-under-left'); } catch {}
-				const flipEl = overlay.querySelector('.about-projects-turn__flip');
-				mskBeginPageTurnOverlay(overlay, flipEl);
+				overlay.classList.add('is-ready', 'is-turning');
 				// Ensure we mark frames as loaded during drag too (so CSS can fade them in).
 				try {
 					const frames = Array.from(overlay.querySelectorAll('iframe'));
@@ -4536,6 +4513,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (!prepOneFrame(fr)) fr.addEventListener('load', () => prepOneFrame(fr), { once: true });
 					});
 				} catch {}
+				const flipEl = overlay.querySelector('.about-projects-turn__flip');
 				if (flipEl) { flipEl._mskPaperCornerY = null; flipEl._mskHoldFx = null; flipEl._mskPaperSideBand = false; }
 				try { mskPaperNotePointer(flipEl, e); } catch {}
 
@@ -4897,9 +4875,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				body.classList.add('about-contact-flip-active', 'about-contact-flipping', DRAG_CLASS);
 				body.style.overflow = 'hidden';
 
+				try {
+					const old = document.querySelector('.about-contact-transition');
+					if (old) old.remove();
+				} catch {}
+
 				const overlay = ensureOverlay();
+				overlay.classList.add('is-ready', 'is-turning');
 				const flipEl = overlay.querySelector('.about-contact-turn__flip');
-				mskBeginPageTurnOverlay(overlay, flipEl);
 				if (flipEl) { flipEl._mskPaperCornerY = null; flipEl._mskHoldFx = null; flipEl._mskPaperSideBand = false; }
 				try { mskPaperNotePointer(flipEl, e); } catch {}
 
@@ -5226,9 +5209,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				body.classList.add('contact-about-flip-active', 'contact-about-flipping', DRAG_CLASS);
 				body.style.overflow = 'hidden';
 
+				try {
+					const old = document.querySelector('.contact-about-transition');
+					if (old) old.remove();
+				} catch {}
+
 				const overlay = ensureOverlay();
+				overlay.classList.add('is-ready', 'is-turning');
 				const flipEl = overlay.querySelector('.contact-about-turn__flip');
-				mskBeginPageTurnOverlay(overlay, flipEl);
 				if (flipEl) { flipEl._mskPaperCornerY = null; flipEl._mskHoldFx = null; flipEl._mskPaperSideBand = false; }
 				try { mskPaperNotePointer(flipEl, e); } catch {}
 
@@ -14851,7 +14839,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 23:44';
+		el.textContent = 'update mandag 12 okt - klokken 23:54';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
