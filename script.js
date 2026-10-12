@@ -3114,8 +3114,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				fy = flipEl._mskHoldFy + (cornerY - flipEl._mskHoldFy) * u;
 			}
 		}
-		const slack = flipEl.classList.contains('contact-about-turn__flip') ? -160 : undefined;
-		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir, slack);
+		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir);
 		fx = glued.fx;
 		fy = glued.fy;
 		if (!flipEl._mskPaperAnim) {
@@ -14798,7 +14797,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update mandag 12 okt - klokken 12:57';
+		el.textContent = 'update mandag 12 okt - klokken 22:59';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
