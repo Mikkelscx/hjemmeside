@@ -3061,6 +3061,31 @@ document.addEventListener('DOMContentLoaded', function() {
 				underAbout.style.setProperty('visibility', 'visible', 'important');
 			}
 			if (underProjects) underProjects.style.setProperty('display', p > 0 ? 'none' : 'block', 'important');
+			let desktopFine = false;
+			try {
+				desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+			} catch {}
+			if (desktopFine && p > 0 && turn) {
+				const leftHost = turn.querySelector('.projects-about-under--left');
+				let leftAbout = leftHost && leftHost.querySelector('.projects-about-under-frame--about');
+				if (leftHost && !leftAbout && underAbout) {
+					leftAbout = document.createElement('iframe');
+					leftAbout.className = 'projects-about-frame projects-about-frame--left projects-about-under-frame projects-about-under-frame--about';
+					leftAbout.setAttribute('aria-hidden', 'true');
+					leftAbout.tabIndex = -1;
+					leftAbout.style.pointerEvents = 'none';
+					leftAbout.src = underAbout.getAttribute('src') || underAbout.src;
+					leftHost.appendChild(leftAbout);
+				}
+				if (flipEl._mskPaperAnim && p >= 0.5) {
+					const leftProjects = leftHost && leftHost.querySelector('.projects-about-under-frame--projects');
+					if (leftAbout) {
+						leftAbout.style.setProperty('display', 'block', 'important');
+						leftAbout.style.setProperty('opacity', '1', 'important');
+					}
+					if (leftProjects) leftProjects.style.setProperty('display', 'none', 'important');
+				}
+			}
 		}
 		flipEl.style.transform = 'none';
 		flipEl.style.transformStyle = 'flat';
@@ -3187,14 +3212,20 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				curl.flap.style.opacity = '1';
 				curl.shade.style.display = 'none';
-				// Same fold as the other turns: the back of the sheet is the page itself.
-				// Phone and tablet still hide this flap.
+				let tabletFold = false;
+				let desktopFine = false;
+				try {
+					desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+					tabletFold = !!(
+						window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
+						document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
+						document.documentElement.classList.contains('msk-projects-ipad-portrait')
+					);
+				} catch {}
+				// Same fold as computer: the back of the sheet is the page itself.
+				// Phone still hides this flap. Tablet matches computer.
 				if (flipEl.classList.contains('projects-about-turn__flip')) {
-					let desktopFine = false;
-					try {
-						desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-					} catch {}
-					if (!desktopFine) {
+					if (!(desktopFine || tabletFold)) {
 						curl.flap.style.setProperty('display', 'none', 'important');
 					} else if (flapFrame) {
 						curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
@@ -3207,6 +3238,16 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						} catch {}
 					}
+				} else if (tabletFold && flapFrame) {
+					// Tablet: keep the turned page opaque so the next page does not shine through.
+					curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
+					try {
+						const doc = flapFrame.contentDocument;
+						if (doc) {
+							doc.documentElement.style.setProperty('background', '#f5f5f0', 'important');
+							if (doc.body) doc.body.style.setProperty('background', '#f5f5f0', 'important');
+						}
+					} catch {}
 				}
 			}
 		}
@@ -3227,24 +3268,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			curl.held.style.setProperty('background', '#f5f5f0', 'important');
 		}
 		curl.front.style.background = '#f5f5f0';
+		let desktopFine = false;
+		try {
+			desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+		} catch {}
+		// Landing Projekter -> Om mig: the left page is already Om mig. Fading the
+		// sheet here reveals the old Projekter design for a moment.
+		const holdProjectsAbout = desktopFine && flipEl.classList.contains('projects-about-turn__flip') && !!flipEl._mskPaperAnim && p >= 0.5;
 		if (!flat) {
-			curl.flap.style.display = 'none';
+			if (!holdProjectsAbout) curl.flap.style.display = 'none';
 			curl.shade.style.display = 'none';
-			// Placing the sheet can collapse the fold for a moment. The left
-			// page has already become Projekter, so the old sheet must not snap back over it.
+			// Placing the sheet can collapse the fold for a moment. The page
+			// underneath must stay, so the old sheet must not snap back over it.
 			let placing = false;
-			if (p >= 0.5 && flipEl.classList.contains('about-projects-turn__flip')) {
-				try {
-					placing = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-				} catch {}
-			}
-			curl.front.style.clipPath = placing ? 'polygon(0px 0px, 0px 0px, 0px 0px)' : 'none';
+			if (p >= 0.5 && desktopFine && flipEl.classList.contains('about-projects-turn__flip')) placing = true;
+			curl.front.style.clipPath = (placing || holdProjectsAbout) ? 'polygon(0px 0px, 0px 0px, 0px 0px)' : 'none';
 		} else {
 			curl.front.style.clipPath = poly(flat);
 		}
 		const land = (flipEl._mskPaperAnim && p > 0.9) ? Math.max(0, 1 - (p - 0.9) / 0.1) : 1;
 		curl.front.style.setProperty('opacity', String(land), 'important');
-		curl.flap.style.opacity = flat ? String(land) : '0';
+		curl.flap.style.opacity = holdProjectsAbout ? '1' : (flat ? String(land) : '0');
 		curl.shade.style.opacity = String(land);
 		if (curl.back) {
 			curl.back.style.setProperty('display', curl.live ? 'none' : '', 'important');
@@ -14877,7 +14921,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 16:52';
+		el.textContent = 'update onsdag 14 okt - klokken 00:24';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
