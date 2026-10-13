@@ -3186,8 +3186,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				curl.flap.style.opacity = '1';
 				curl.shade.style.display = 'none';
-				// Projekter -> Om mig: the mirrored Om mig page was covering the opening.
-				// On a computer the fold stays as paper, so the bend is visible.
+				// Projekter -> Om mig: the fold is the back of the sheet (Om mig's left page).
+				// Phone and tablet keep that flap hidden. On a computer the page design stays on the paper.
 				if (flipEl.classList.contains('projects-about-turn__flip')) {
 					let desktopFine = false;
 					try {
@@ -3195,11 +3195,23 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch {}
 					if (!desktopFine) {
 						curl.flap.style.setProperty('display', 'none', 'important');
-					} else if (flapFrame) {
+					} else if (flapFrame && cuts && cuts.length >= 2) {
+						// The full back page was covering Projekter and Om mig, so their
+						// design disappeared. Keep a paper lip on the crease only.
 						flapFrame.style.setProperty('display', 'none', 'important');
-						curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
-						curl.flap.style.setProperty('background-image', 'linear-gradient(transparent 24px, #c8c8c8 24px, #c8c8c8 25px, transparent 25px)', 'important');
-						curl.flap.style.setProperty('background-size', '100% 25px', 'important');
+						const lip = 52;
+						const c0 = cuts[0];
+						const c1 = cuts[1];
+						const band = [
+							c0,
+							c1,
+							[c1[0] - nx * lip, c1[1] - ny * lip],
+							[c0[0] - nx * lip, c0[1] - ny * lip]
+						];
+						curl.flap.style.clipPath = poly(band);
+						curl.flap.style.setProperty('background-color', '#f3f1ea', 'important');
+						curl.flap.style.setProperty('background-image', 'linear-gradient(90deg, rgba(70,55,40,0.28), rgba(70,55,40,0) 18px), linear-gradient(transparent 24px, #c4c4c4 24px, #c4c4c4 25px, transparent 25px)', 'important');
+						curl.flap.style.setProperty('background-size', '100% 100%, 100% 25px', 'important');
 					}
 				}
 			}
@@ -14871,7 +14883,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 15:42';
+		el.textContent = 'update tirsdag 13 okt - klokken 15:57';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
