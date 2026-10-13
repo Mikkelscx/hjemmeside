@@ -2937,7 +2937,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			clone.style.setProperty('transform', 'none', 'important');
 			clone.style.setProperty('backface-visibility', 'visible', 'important');
 			clone.style.setProperty('-webkit-backface-visibility', 'visible', 'important');
-			if (flapFrame.className.indexOf('right') !== -1) {
+			if (flapFrame.className.indexOf('right') !== -1 || flapFrame.className.indexOf('projects-about-turn__flip-back') !== -1) {
 				clone.style.setProperty('left', '-50vw', 'important');
 				clone.style.setProperty('width', '100vw', 'important');
 			}
@@ -3052,14 +3052,25 @@ document.addEventListener('DOMContentLoaded', function() {
 			const turn = flipEl.parentElement;
 			const underAbout = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--about');
 			const underProjects = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--projects');
-			if (underAbout) {
-				underAbout.style.setProperty('left', '-50vw', 'important');
-				underAbout.style.setProperty('width', '100vw', 'important');
-				underAbout.style.setProperty('display', p > 0 ? 'block' : 'none', 'important');
-				underAbout.style.setProperty('opacity', '1', 'important');
-				underAbout.style.setProperty('visibility', 'visible', 'important');
+			let desktopFine = false;
+			try {
+				desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+			} catch {}
+			// On a computer the sheet being held stays Projekter. Om mig is the folded page,
+			// the same way the other turns keep one page and fold the next one on top.
+			if (desktopFine) {
+				if (underAbout) underAbout.style.setProperty('display', 'none', 'important');
+				if (underProjects) underProjects.style.setProperty('display', 'block', 'important');
+			} else {
+				if (underAbout) {
+					underAbout.style.setProperty('left', '-50vw', 'important');
+					underAbout.style.setProperty('width', '100vw', 'important');
+					underAbout.style.setProperty('display', p > 0 ? 'block' : 'none', 'important');
+					underAbout.style.setProperty('opacity', '1', 'important');
+					underAbout.style.setProperty('visibility', 'visible', 'important');
+				}
+				if (underProjects) underProjects.style.setProperty('display', p > 0 ? 'none' : 'block', 'important');
 			}
-			if (underProjects) underProjects.style.setProperty('display', p > 0 ? 'none' : 'block', 'important');
 		}
 		flipEl.style.transform = 'none';
 		flipEl.style.transformStyle = 'flat';
@@ -3186,8 +3197,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				curl.flap.style.opacity = '1';
 				curl.shade.style.display = 'none';
-				// Projekter -> Om mig: the fold is the back of the sheet (Om mig's left page).
-				// Phone and tablet keep that flap hidden. On a computer the page design stays on the paper.
+				// Same fold as the other turns: the back of the sheet is the page itself.
+				// Phone and tablet still hide this flap.
 				if (flipEl.classList.contains('projects-about-turn__flip')) {
 					let desktopFine = false;
 					try {
@@ -3195,23 +3206,16 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch {}
 					if (!desktopFine) {
 						curl.flap.style.setProperty('display', 'none', 'important');
-					} else if (flapFrame && cuts && cuts.length >= 2) {
-						// The full back page was covering Projekter and Om mig, so their
-						// design disappeared. Keep a paper lip on the crease only.
-						flapFrame.style.setProperty('display', 'none', 'important');
-						const lip = 52;
-						const c0 = cuts[0];
-						const c1 = cuts[1];
-						const band = [
-							c0,
-							c1,
-							[c1[0] - nx * lip, c1[1] - ny * lip],
-							[c0[0] - nx * lip, c0[1] - ny * lip]
-						];
-						curl.flap.style.clipPath = poly(band);
-						curl.flap.style.setProperty('background-color', '#f3f1ea', 'important');
-						curl.flap.style.setProperty('background-image', 'linear-gradient(90deg, rgba(70,55,40,0.28), rgba(70,55,40,0) 18px), linear-gradient(transparent 24px, #c4c4c4 24px, #c4c4c4 25px, transparent 25px)', 'important');
-						curl.flap.style.setProperty('background-size', '100% 100%, 100% 25px', 'important');
+					} else if (flapFrame) {
+						curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
+						curl.flap.style.setProperty('background-image', 'none', 'important');
+						try {
+							const doc = flapFrame.contentDocument;
+							if (doc) {
+								doc.documentElement.style.setProperty('background', '#f5f5f0', 'important');
+								if (doc.body) doc.body.style.setProperty('background', '#f5f5f0', 'important');
+							}
+						} catch {}
 					}
 				}
 			}
@@ -3582,9 +3586,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				const angle = -180 * progress;
 				try {
 					if (overlay) {
-						// Om mig's right page (CV) is under the sheet as soon as any of it shows.
-						// Do not swap the turning sheet itself onto Om mig's left page mid-drag.
-						if (progress > 0) overlay.classList.add('swap-under-right');
+						// On a computer the page under the sheet stays Projekter, like the other turns.
+						// Phone and tablet still reveal Om mig's right page under the sheet.
+						let desktopFine = false;
+						try {
+							desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+						} catch {}
+						if (!desktopFine && progress > 0) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 						overlay.classList.remove('swap-flip-mid');
 					}
@@ -14883,7 +14891,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 15:57';
+		el.textContent = 'update tirsdag 13 okt - klokken 16:21';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
