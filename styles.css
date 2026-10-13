@@ -7634,47 +7634,56 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
     transform: translateY(-50%);
 }
 
-/* OM MIG: iPad/tablet landskab — Udmærkelser i flow + brødtekst/CV på 25px-gitter (inkl. iPad Pro 13 @ 1376). */
+/* OM MIG: iPad/tablet landskab — papir fylder viewport (ingen brun bjælke) + tekst på 25px-streger (inkl. iPad Pro 13 @ 1376). */
 @media (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
-    /* Papir + linjer følger indholdet (som portræt), så baseline bliver på stregerne */
+    html:has(body.about-sketchbook-page.sketchbook-theme) {
+        background-color: #f5f5f0 !important;
+    }
     body.about-sketchbook-page.sketchbook-theme {
         position: relative;
+        background: #f5f5f0;
+        overflow-x: hidden;
+        overflow-y: hidden;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        min-height: var(--sketchPaperMinH, 100dvh);
     }
+    /* Fast papirflade over hele skærmen — ikke kun indholdshøjden */
     body.about-sketchbook-page.sketchbook-theme::before,
     body.about-sketchbook-page.sketchbook-theme::after {
-        position: absolute !important;
+        position: fixed !important;
         top: 0 !important;
         bottom: 0 !important;
-        min-height: 100% !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
     }
     body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
+        position: fixed !important;
+        inset: 0 !important;
         width: 100% !important;
-        min-height: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
     }
     body.about-sketchbook-page.sketchbook-theme .left-margin,
     body.about-sketchbook-page.sketchbook-theme .right-margin {
-        position: absolute !important;
+        position: fixed !important;
         top: 0 !important;
         bottom: 0 !important;
     }
-    /* Samme lodrette gitter som portræt: main let løftet ift. linjelag */
+    /* Løft indholdet så baseline lander på stregerne (streg ~22–24px i hvert 25px-bånd) */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
         margin-top: -7px;
     }
-    /* Ingen vertikal fase — linjer starter ved 0 som gradienten */
     body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer__half--left,
     body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer__half--right {
         background-position-y: 0;
     }
-    /*
-     * Venstre side: samme top mål som tablet-portræt (75px + polaroid 75px + titel 50px + tekst),
-     * så brødtekst får samme fase mod 25px-stregerne som der.
-     */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
         padding-top: 75px;
     }
@@ -7686,18 +7695,15 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         float: none !important;
         margin: 0 !important;
     }
-    /* Fuld bredde på venstre “side” til midten — ikke spredning ind over højre kolonne */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
         max-width: none;
     }
-    /* Mindre “håndskrift” + fast 50px-linje: undgår at line-box og glyfhøjde sprænger gitteret */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
         margin: 0;
         font-size: clamp(1.95rem, 2.55vw, 2.65rem);
         letter-spacing: 0.55px;
         line-height: 50px;
     }
-    /* Ingen float-wrap: ellers hopper linjehøjden ved polaroid og teksten glider fra stregerne */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__clear-after-photo {
         display: none !important;
     }
@@ -7706,8 +7712,8 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         flex-direction: column;
         gap: 25px;
         margin: 0;
-        /* Baseline på stregerne (streg ~22–24px i hvert 25px-bånd) */
-        padding-top: 15px;
+        /* +5px vs portræt: Courier-ink ligger ~5px over stregens top (22px i båndet) på landskab/2x */
+        padding-top: 13px;
         min-width: 0;
         width: 100%;
         font-size: 18px;
@@ -7733,17 +7739,22 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         transform: none;
     }
 
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
+        padding-top: 75px;
+    }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-title {
+        margin: 0;
         line-height: 50px;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {
+        margin-top: 25px;
         line-height: 50px;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards {
         font-size: 18px;
         line-height: 25px;
-        margin-top: 15px;
+        margin-top: 13px;
         -webkit-text-size-adjust: none;
         text-size-adjust: none;
     }
