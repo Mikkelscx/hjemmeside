@@ -7551,7 +7551,8 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__title {
 }
 
 /* iPad landscape (åben notesbog / to sider): mindre overskrift så "MIKKEL" ikke skærer ind over polaroid */
-@media (min-width: 1025px) and (max-width: 1366px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+/* 1420: dækker iPad Pro 13 DevTools (1376) uden at tage rigtig desktop (~1440+) */
+@media (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__title {
         font-size: clamp(1.95rem, 2.55vw, 2.65rem);
         letter-spacing: 0.55px;
@@ -7633,9 +7634,35 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
     transform: translateY(-50%);
 }
 
-/* OM MIG: iPad/tablet landskab — Udmærkelser i flow (efter basis for awards-block) + venstre brødtekst på 25px-gitter som portræt. */
-@media (min-width: 1025px) and (max-width: 1366px) and (orientation: landscape) {
-    /* Samme lodrette gitter som portræt: main let løftet ift. fixed linjelag */
+/* OM MIG: iPad/tablet landskab — Udmærkelser i flow + brødtekst/CV på 25px-gitter (inkl. iPad Pro 13 @ 1376). */
+@media (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+    /* Papir + linjer følger indholdet (som portræt), så baseline bliver på stregerne */
+    body.about-sketchbook-page.sketchbook-theme {
+        position: relative;
+    }
+    body.about-sketchbook-page.sketchbook-theme::before,
+    body.about-sketchbook-page.sketchbook-theme::after {
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        min-height: 100% !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        min-height: 100% !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .left-margin,
+    body.about-sketchbook-page.sketchbook-theme .right-margin {
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
+    }
+    /* Samme lodrette gitter som portræt: main let løftet ift. linjelag */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
         margin-top: -7px;
     }
@@ -7645,8 +7672,8 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         background-position-y: 0;
     }
     /*
-     * Venstre side: samme top mål som tablet-portræt (75px + polaroid 75px + titel 50px + tekst 8px),
-     * så brødtekst får samme fase mod 25px-stregerne som der. Desktop-landskab brugte 50px/62px → gitteret sad skævt.
+     * Venstre side: samme top mål som tablet-portræt (75px + polaroid 75px + titel 50px + tekst),
+     * så brødtekst får samme fase mod 25px-stregerne som der.
      */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
         padding-top: 75px;
@@ -7655,35 +7682,32 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         top: 75px;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
-        margin-top: 75px;
+        display: none !important;
+        float: none !important;
+        margin: 0 !important;
     }
     /* Fuld bredde på venstre “side” til midten — ikke spredning ind over højre kolonne */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
         max-width: none;
     }
-    /* Mindre “håndskrift” + fast 50px-linje: undgår at line-box og glyfhøjde sprænger gitteret (især uden pointer:coarse i DevTools) */
+    /* Mindre “håndskrift” + fast 50px-linje: undgår at line-box og glyfhøjde sprænger gitteret */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
         margin: 0;
         font-size: clamp(1.95rem, 2.55vw, 2.65rem);
         letter-spacing: 0.55px;
         line-height: 50px;
     }
-    /*
-     * clear virker ikke på flex-items — block + clear efter 1. afsnit, så sidste to fylder venstre kolonne (til midterstregen).
-     */
+    /* Ingen float-wrap: ellers hopper linjehøjden ved polaroid og teksten glider fra stregerne */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__clear-after-photo {
-        display: block;
-        clear: both;
-        height: 0;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
+        display: none !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
         margin: 0;
-        /* Matcher portræt-kommentaren: ~8px fra titelbund til første baseline på streg */
-        padding-top: 8px;
+        /* Baseline på stregerne (streg ~22–24px i hvert 25px-bånd) */
+        padding-top: 15px;
         min-width: 0;
         width: 100%;
         font-size: 18px;
@@ -7692,7 +7716,7 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         text-size-adjust: none;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p {
-        margin: 0 0 25px 0 !important;
+        margin: 0 !important;
         padding: 0 !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p:last-of-type {
@@ -7709,6 +7733,20 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         transform: none;
     }
 
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-title {
+        line-height: 50px;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {
+        line-height: 50px;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards {
+        font-size: 18px;
+        line-height: 25px;
+        margin-top: 15px;
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+    }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         position: static;
         transform: none;
