@@ -3186,14 +3186,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				curl.flap.style.opacity = '1';
 				curl.shade.style.display = 'none';
-				// Phone and tablet keep the opening as the next page in place.
-				// On a computer the folded sheet has to stay, or nothing is turning.
+				// The mirrored back paints a second Om mig over the opening, then the
+				// screen snaps. The sheet being held stays; the opening is the next page.
 				if (flipEl.classList.contains('projects-about-turn__flip')) {
-					let desktopFine = false;
-					try {
-						desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-					} catch {}
-					if (!desktopFine) curl.flap.style.setProperty('display', 'none', 'important');
+					curl.flap.style.setProperty('display', 'none', 'important');
 				}
 			}
 		}
@@ -14864,7 +14860,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 01:18';
+		el.textContent = 'update tirsdag 13 okt - klokken 15:17';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
