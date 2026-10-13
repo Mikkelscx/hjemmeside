@@ -3031,18 +3031,24 @@ document.addEventListener('DOMContentLoaded', function() {
 			const underLeft = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--projects');
 			const underAbout = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--about');
 			let desktopFine = false;
+			let tabletFold = false;
 			try {
 				desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+				tabletFold = !!(
+					window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
+					document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
+					document.documentElement.classList.contains('msk-projects-ipad-portrait')
+				);
 			} catch {}
-			// On a computer the opening is Projekter from the first pull.
-			const showProjects = desktopFine ? (p > 0) : (p >= 0.5);
+			// Computer and tablet: the opening is Projekter from the first pull.
+			const showProjects = (desktopFine || tabletFold) ? (p > 0) : (p >= 0.5);
 			if (showProjects) {
 				if (underLeft) {
 					underLeft.style.setProperty('left', '0px', 'important');
 					underLeft.style.setProperty('opacity', '1', 'important');
 				}
 				const ready = !!(underLeft && underLeft.classList.contains('is-loaded'));
-				if (underAbout && (ready || !desktopFine)) underAbout.style.setProperty('opacity', '0', 'important');
+				if (underAbout && (ready || !(desktopFine || tabletFold))) underAbout.style.setProperty('opacity', '0', 'important');
 			} else {
 				if (underLeft) underLeft.style.setProperty('opacity', '0', 'important');
 				if (underAbout) underAbout.style.setProperty('opacity', '1', 'important');
@@ -3268,20 +3274,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			curl.held.style.setProperty('background', '#f5f5f0', 'important');
 		}
 		curl.front.style.background = '#f5f5f0';
-		let desktopFine = false;
+		let desktopFineLand = false;
+		let tabletFoldLand = false;
 		try {
-			desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+			desktopFineLand = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+			tabletFoldLand = !!(
+				window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
+				document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
+				document.documentElement.classList.contains('msk-projects-ipad-portrait')
+			);
 		} catch {}
+		const computerLikeLand = desktopFineLand || tabletFoldLand;
 		// Landing Projekter -> Om mig: the left page is already Om mig. Fading the
 		// sheet here reveals the old Projekter design for a moment.
-		const holdProjectsAbout = desktopFine && flipEl.classList.contains('projects-about-turn__flip') && !!flipEl._mskPaperAnim && p >= 0.5;
+		const holdProjectsAbout = computerLikeLand && flipEl.classList.contains('projects-about-turn__flip') && !!flipEl._mskPaperAnim && p >= 0.5;
 		if (!flat) {
 			if (!holdProjectsAbout) curl.flap.style.display = 'none';
 			curl.shade.style.display = 'none';
 			// Placing the sheet can collapse the fold for a moment. The page
 			// underneath must stay, so the old sheet must not snap back over it.
 			let placing = false;
-			if (p >= 0.5 && desktopFine && flipEl.classList.contains('about-projects-turn__flip')) placing = true;
+			if (p >= 0.5 && computerLikeLand && flipEl.classList.contains('about-projects-turn__flip')) placing = true;
 			curl.front.style.clipPath = (placing || holdProjectsAbout) ? 'polygon(0px 0px, 0px 0px, 0px 0px)' : 'none';
 		} else {
 			curl.front.style.clipPath = poly(flat);
@@ -4530,21 +4543,28 @@ document.addEventListener('DOMContentLoaded', function() {
 						// The turning sheet is Om mig until it crosses the middle.
 						// Waiting for the Udmærkelser link kept the old page on the fold too long.
 						let desktopFine = false;
+						let tabletFold = false;
 						try {
 							desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
+							tabletFold = !!(
+								window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
+								document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
+								document.documentElement.classList.contains('msk-projects-ipad-portrait')
+							);
 						} catch {}
+						const computerLike = desktopFine || tabletFold;
 						const pastMid = hasX ? (x >= seamX) : (progress >= 0.5);
 						const pastUdm = hasX && (x >= udmX) && (progress >= 0.5);
-						if (desktopFine ? pastMid : pastUdm) overlay.classList.add('swap-flip-mid');
+						if (computerLike ? pastMid : pastUdm) overlay.classList.add('swap-flip-mid');
 						else overlay.classList.remove('swap-flip-mid');
 
 						// The sheet being pulled is what becomes the right page.
 						// The page behind it stays until that sheet has landed.
-						if (desktopFine ? progress >= 0.97 : progress >= 0.88) overlay.classList.add('swap-under-right');
+						if (computerLike ? progress >= 0.97 : progress >= 0.88) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 
-						// On a computer the revealed page is Projekter from the first pull.
-						if (desktopFine ? progress > 0 : progress >= 0.5) overlay.classList.add('swap-under-left');
+						// Computer and tablet: the revealed page is Projekter from the first pull.
+						if (computerLike ? progress > 0 : progress >= 0.5) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 					}
 				} catch {}
@@ -14921,7 +14941,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 00:24';
+		el.textContent = 'update onsdag 14 okt - klokken 00:33';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
