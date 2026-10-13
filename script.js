@@ -2937,7 +2937,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			clone.style.setProperty('transform', 'none', 'important');
 			clone.style.setProperty('backface-visibility', 'visible', 'important');
 			clone.style.setProperty('-webkit-backface-visibility', 'visible', 'important');
-			if (flapFrame.className.indexOf('right') !== -1 || flapFrame.className.indexOf('projects-about-turn__flip-back') !== -1) {
+			if (flapFrame.className.indexOf('right') !== -1) {
 				clone.style.setProperty('left', '-50vw', 'important');
 				clone.style.setProperty('width', '100vw', 'important');
 			}
@@ -3052,25 +3052,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			const turn = flipEl.parentElement;
 			const underAbout = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--about');
 			const underProjects = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--projects');
-			let desktopFine = false;
-			try {
-				desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-			} catch {}
-			// On a computer the sheet being held stays Projekter. Om mig is the folded page,
-			// the same way the other turns keep one page and fold the next one on top.
-			if (desktopFine) {
-				if (underAbout) underAbout.style.setProperty('display', 'none', 'important');
-				if (underProjects) underProjects.style.setProperty('display', 'block', 'important');
-			} else {
-				if (underAbout) {
-					underAbout.style.setProperty('left', '-50vw', 'important');
-					underAbout.style.setProperty('width', '100vw', 'important');
-					underAbout.style.setProperty('display', p > 0 ? 'block' : 'none', 'important');
-					underAbout.style.setProperty('opacity', '1', 'important');
-					underAbout.style.setProperty('visibility', 'visible', 'important');
-				}
-				if (underProjects) underProjects.style.setProperty('display', p > 0 ? 'none' : 'block', 'important');
+			// The opening on the right is CV and udmærkelser. The sheet being turned is the left page.
+			if (underAbout) {
+				underAbout.style.setProperty('left', '-50vw', 'important');
+				underAbout.style.setProperty('width', '100vw', 'important');
+				underAbout.style.setProperty('display', p > 0 ? 'block' : 'none', 'important');
+				underAbout.style.setProperty('opacity', '1', 'important');
+				underAbout.style.setProperty('visibility', 'visible', 'important');
 			}
+			if (underProjects) underProjects.style.setProperty('display', p > 0 ? 'none' : 'block', 'important');
 		}
 		flipEl.style.transform = 'none';
 		flipEl.style.transformStyle = 'flat';
@@ -3586,13 +3576,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const angle = -180 * progress;
 				try {
 					if (overlay) {
-						// On a computer the page under the sheet stays Projekter, like the other turns.
-						// Phone and tablet still reveal Om mig's right page under the sheet.
-						let desktopFine = false;
-						try {
-							desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-						} catch {}
-						if (!desktopFine && progress > 0) overlay.classList.add('swap-under-right');
+						// The opening is Om mig's right page (CV and udmærkelser).
+						// Do not swap the turning sheet itself onto Om mig's left page mid-drag.
+						if (progress > 0) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 						overlay.classList.remove('swap-flip-mid');
 					}
@@ -14891,7 +14877,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update tirsdag 13 okt - klokken 16:21';
+		el.textContent = 'update tirsdag 13 okt - klokken 16:52';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
