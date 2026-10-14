@@ -1901,7 +1901,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			flipEl._mskPaperAnim = false;
 			flipEl._mskHoldFx = null;
 			const len = Math.hypot(state.fx - cornerX, state.fy - cornerY);
-			try { mskPaintPaperDrag(flipEl, Math.min(0.22, len / dim.W), state.sign, true); } catch {}
+			// Tablet/finger: lad hover-snap følge længere — 0.22 føltes som “kan ikke trækkes i starten”.
+			const snapMax = mskIsFingerTablet() ? 0.58 : 0.22;
+			try { mskPaintPaperDrag(flipEl, Math.min(snapMax, len / dim.W), state.sign, true); } catch {}
 			const curl = flipEl._mskLiveCurl;
 			if (curl && curl.front) curl.front.style.setProperty('opacity', '0', 'important');
 			if (curl && curl.flap) {
@@ -2050,6 +2052,28 @@ document.addEventListener('DOMContentLoaded', function() {
 				snaps[side] = null;
 			});
 		}
+		// Handoff til rigtig page-drag: stop snap-raf, men behold overlay/curl så peelen ikke nulstilles.
+		function softParkSnapsForDrag() {
+			['left', 'right'].forEach((side) => {
+				const state = snaps[side];
+				if (!state) return;
+				if (state.raf) cancelAnimationFrame(state.raf);
+				state.raf = 0;
+				try {
+					const curl = state.flipEl && state.flipEl._mskLiveCurl;
+					if (curl && curl.front) {
+						curl.front.style.removeProperty('opacity');
+					}
+					if (state.overlay) {
+						state.overlay.classList.remove('msk-snap-hover');
+						state.overlay.style.clipPath = '';
+						state.overlay.style.opacity = '';
+						state.overlay.style.transition = '';
+					}
+				} catch {}
+				snaps[side] = null;
+			});
+		}
 		function cornerUnderPointer(x, y) {
 			let file = '';
 			try { file = ((location.pathname || '').split('/').pop() || '').toLowerCase(); } catch {}
@@ -2068,7 +2092,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				const box = el.getBoundingClientRect();
 				if (box.width < 40 || box.height < 40) return;
 				// Snap starts in the corner, a little before the pointer reaches the very edge.
-				const reach = Math.hypot(box.width, box.height) / 6.5;
+				const reach = mskIsFingerTablet()
+					? Math.max(220, Math.min(400, Math.hypot(box.width, box.height) / 4.2))
+					: Math.hypot(box.width, box.height) / 6.5;
 				const lx = x - box.left;
 				const ly = y - box.top;
 				if (lx < -20 || ly < -20 || lx > box.width + 20 || ly > box.height + 20) return;
@@ -2100,7 +2126,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 		function onHoverMove(e) {
-			if (!e || e.buttons || pageIsTurning()) return;
+			if (!e || pageIsTurning()) return;
+			// Mens knappen er nede: følg stadig snap (ellers fryser den lille fold — IMG_7907).
+			if (e.buttons) {
+				const active = snaps.left || snaps.right;
+				if (active && !active.releasing) {
+					followSnap(active.cornerId, e.clientX, e.clientY);
+				}
+				return;
+			}
 			const id = cornerUnderPointer(e.clientX, e.clientY);
 			if (!id) { releaseSnaps(''); return; }
 			releaseSnaps(id);
@@ -2108,7 +2142,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		document.addEventListener('pointermove', onHoverMove, true);
 		document.addEventListener('mousemove', onHoverMove, true);
-		document.addEventListener('pointerdown', () => { dropForDrag(); }, true);
+		document.addEventListener('pointerdown', (e) => {
+			const onHandle = !!(e && e.target && e.target.closest && e.target.closest('.page-turn-handle'));
+			if (onHandle) softParkSnapsForDrag();
+			else dropForDrag();
+		}, true);
 		document.addEventListener('pointerleave', () => { releaseSnaps(''); }, true);
 	})();
 
@@ -4659,18 +4697,27 @@ document.addEventListener('DOMContentLoaded', function() {
 				e.preventDefault();
 
 				dragging = true;
-				startX = e.clientX;
+				// Lidt slack så første højre-pixel åbner peelen (undgå “død” start på trackpad/iPad).
+				startX = e.clientX - (mskIsFingerTablet() ? 18 : 0);
 
 				const body = document.body;
 				body.classList.add('about-projects-flip-active', 'about-projects-flipping', DRAG_CLASS);
 				body.style.overflow = 'hidden';
 
+				// Genbrug snap/preload-overlay — fjern den ikke (ellers nulstilles folden midt i grebet).
+				let overlay = document.querySelector('.about-projects-transition');
 				try {
-					const old = document.querySelector('.about-projects-transition');
-					if (old) old.remove();
-				} catch {}
-
-				const overlay = ensureOverlay();
+					if (overlay) {
+						overlay.classList.remove('msk-snap-hover', 'is-preloading');
+						overlay.style.clipPath = '';
+						overlay.style.opacity = '';
+						overlay.style.transition = '';
+					} else {
+						overlay = ensureOverlay();
+					}
+				} catch {
+					overlay = ensureOverlay();
+				}
 				try { overlay.classList.remove('swap-flip-mid', 'swap-under-right', 'swap-under-left'); } catch {}
 				overlay.classList.add('is-ready', 'is-turning');
 				// Ensure we mark frames as loaded during drag too (so CSS can fade them in).
@@ -4682,7 +4729,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					});
 				} catch {}
 				const flipEl = overlay.querySelector('.about-projects-turn__flip');
-				if (flipEl) { flipEl._mskPaperCornerY = null; flipEl._mskHoldFx = null; flipEl._mskPaperSideBand = false; }
+				if (flipEl) {
+					flipEl._mskPaperCornerY = null;
+					flipEl._mskHoldFx = null;
+					flipEl._mskPaperSideBand = false;
+					try {
+						const curl = flipEl._mskLiveCurl;
+						if (curl && curl.front) curl.front.style.removeProperty('opacity');
+					} catch {}
+				}
 				try { mskPaperNotePointer(flipEl, e); } catch {}
 
 				function onMove(ev) {
@@ -4712,6 +4767,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						});
 					}
 				}
+
+				// Mal peelen med det samme ved pointerdown (ikke vent på første move).
+				try { onMove(e); } catch {}
 
 				function onUp(ev) {
 					try {
@@ -15024,7 +15082,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 20:25';
+		el.textContent = 'update onsdag 14 okt - klokken 21:00';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
