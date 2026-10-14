@@ -2806,9 +2806,11 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     .about-projects-transition.is-turning .about-projects-turn__flip-backface .about-projects-turn__frame--projects-right-on-flip {
         left: 0 !important;
     }
-    /* Kun én under-side synlig — undgår dobbelt mindmap midt på */
+    /* Kun én under-side synlig — undgår dobbelt design midt på */
     .about-projects-turn__under--right,
-    .projects-about-transition .projects-about-under--right {
+    .projects-about-transition .projects-about-under--right,
+    .contact-about-turn__under--right,
+    .about-contact-turn__under--right {
         opacity: 0 !important;
         pointer-events: none !important;
     }
@@ -2817,7 +2819,7 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
      * 50/50 peel i portræt:
      * - Forside af fold = kildesiden (Om mig / Kontakt) — eksisterende design må ikke forsvinde
      * - Bagside/flig = tomt linjeret papir (ikke destinationens design)
-     * - Under = revealed destination (Projekter/Kontakt) synlig i peel-hullet
+     * - Under = revealed destination (Projekter / Om mig) synlig i peel-hullet
      */
     .about-projects-turn__flip,
     .projects-about-turn__flip,
@@ -2846,8 +2848,43 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     .about-contact-transition.swap-flip-mid .about-contact-turn__flip-front--about,
     .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--contact,
     .projects-about-transition.swap-flip-mid .projects-about-turn__flip-front {
+        display: block !important;
         opacity: 1 !important;
         visibility: visible !important;
+    }
+    /*
+     * Kontakt → Om mig: desktop skifter folden til Om mig ved mid (`display:none` på Kontakt).
+     * I portræt skal Kontakt blive på forsiden; Om mig kun under (revealed).
+     */
+    .contact-about-transition .contact-about-turn__flip-front--contact,
+    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--contact {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        left: 0 !important;
+    }
+    .contact-about-transition .contact-about-turn__flip-front--about,
+    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--about,
+    .contact-about-transition .contact-about-turn__flip-back,
+    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-back {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: none !important;
+    }
+    /* Under: Om mig (CV) synlig fra første træk — fuld one-page */
+    .contact-about-transition.swap-under-left .contact-about-turn__under--left .contact-about-turn__under-frame--about {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        left: 0 !important;
+        width: 100vw !important;
+    }
+    .contact-about-transition.swap-under-left .contact-about-turn__under--left .contact-about-turn__under-frame--contact {
+        display: none !important;
+        opacity: 0 !important;
     }
     /* Bagside-face: tomt linjeret papir (destination-iframes er skjult ovenfor) */
     .about-projects-turn__flip-face--back,

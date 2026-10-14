@@ -3436,12 +3436,19 @@ document.addEventListener('DOMContentLoaded', function() {
 							} catch {}
 						}
 					}
-				} else if (flapFrame && (tabletFold || flipEl.classList.contains('about-projects-turn__flip'))) {
+				} else if (
+					flapFrame &&
+					(tabletFold ||
+						flipEl.classList.contains('about-projects-turn__flip') ||
+						flipEl.classList.contains('contact-about-turn__flip') ||
+						flipEl.classList.contains('about-contact-turn__flip') ||
+						(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()))
+				) {
 					const portraitBlankFlap = !!(
 						typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()
 					);
 					if (portraitBlankFlap) {
-						/* Portræt one-page: foldende flig = tomt linjeret papir (ikke destinationens design). */
+						/* Portræt: flig = tomt linjeret papir (Kontakt→Om mig + øvrige peels). */
 						mskApplyBlankLinedPaper(curl.flap);
 						flapFrame.style.setProperty('opacity', '0', 'important');
 						flapFrame.style.setProperty('visibility', 'hidden', 'important');
@@ -15378,7 +15385,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 00:30';
+		const stampText = 'update torsdag 15 okt - klokken 00:35';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
