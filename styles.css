@@ -7635,8 +7635,10 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
 }
 
 /* OM MIG: iPad/tablet landskab — dagbog: tekst på 25px-streger + udenom polaroid (inkl. iPad Pro 13 @ 1376). */
+/* Coarse = rigtig iPad. max-height:1080 = Chrome DevTools iPad-preview (ofte pointer:fine). */
 @media (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (hover: none) and (pointer: coarse),
-       (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (any-pointer: coarse) {
+       (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (any-pointer: coarse),
+       (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px) {
     html:has(body.about-sketchbook-page.sketchbook-theme) {
         background-color: #f5f5f0 !important;
     }
@@ -7688,6 +7690,7 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
         padding-top: 75px !important;
+        padding-right: 28px !important; /* tættere på midten under/ved polaroid */
         display: flow-root !important;
         position: relative !important;
     }
@@ -7726,7 +7729,9 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         font-size: clamp(1.95rem, 2.55vw, 2.65rem) !important;
         letter-spacing: 0.55px;
         line-height: 50px !important; /* 2 × 25px */
+        height: 50px !important; /* undgå at glyffer gør titlen ~55px og knækker gitteret */
         max-width: calc(100% - 230px);
+        overflow: visible;
     }
     /* Clear efter 1. afsnit → under foto fylder teksten ind mod midten, stadig på gitter */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__clear-after-photo {
@@ -7739,7 +7744,7 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
         display: block !important;
         margin: 0 !important;
-        padding-top: 13px !important; /* Courier-ink på stregen (~22px i hvert 25px-bånd) */
+        padding-top: 32px !important; /* fase: 1. afsnit på stregerne */
         min-width: 0;
         width: auto;
         font-size: 18px !important;
@@ -7756,12 +7761,29 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p:last-of-type {
         margin-bottom: 0 !important;
     }
+    /* Afsnit under polaroid: fuld bredde + nulstil desktop-nudge */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text > p:nth-of-type(2),
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text > p:nth-of-type(3),
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--down-1,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--down-1.about-sketchbook__p--up-2,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--nudge-down {
+        clear: both !important;
+        width: 100% !important;
+        max-width: none !important;
         transform: none !important;
-        padding-top: 0 !important;
         margin-top: 0 !important;
+        margin-bottom: 25px !important;
+        line-height: 25px !important;
+        font-size: 18px !important;
+    }
+    /* 2. afsnit: re-sync efter clear (højere specificity end desktop .p--up-2) */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text > p:nth-of-type(2).about-sketchbook__p--down-1.about-sketchbook__p--up-2 {
+        padding-top: 7px !important;
+    }
+    /* 3. afsnit: ingen ekstra fase — følger 25px-margin fra 2. */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text > p:nth-of-type(3).about-sketchbook__p--down-1.about-sketchbook__p--nudge-down {
+        padding-top: 0 !important;
+        margin-bottom: 0 !important;
     }
 
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
