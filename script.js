@@ -3147,7 +3147,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		const poly = (pts) => 'polygon(' + pts.map((pt) => pt[0].toFixed(1) + 'px ' + pt[1].toFixed(1) + 'px').join(',') + ')';
 		let flat = null;
 		let cuts = null;
-		if (len > 8) {
+		// Om mig→Projekter: start peel-hul lidt tidligere, så Projekter ikke først dukker op midt i trækket.
+		const peelMinLen = flipEl.classList.contains('about-projects-turn__flip') ? 3 : 8;
+		if (len > peelMinLen) {
 			const nx = vx / len;
 			const ny = vy / len;
 			const mx = (cornerX + fx) / 2;
@@ -3206,7 +3208,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					tabletFold = !!(
 						window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
 						document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-						document.documentElement.classList.contains('msk-projects-ipad-portrait')
+						document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+						window.matchMedia('(min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px)').matches
 					);
 				} catch {}
 				// Same fold as computer: the back of the sheet is the page itself.
@@ -3225,16 +3228,15 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						} catch {}
 					}
-				} else if (tabletFold && flapFrame) {
-					// Tablet: keep the turned page opaque so the next page does not shine through.
+				} else if (flapFrame && (tabletFold || flipEl.classList.contains('about-projects-turn__flip'))) {
+					// Tablet / Om mig→Projekter: keep the turned page opaque so the next page does not shine through.
 					curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
-					const aboutToProjects = flipEl.classList.contains('about-projects-turn__flip');
-					if (aboutToProjects) {
-						// Før sømmen: kun creme-papir på flap — Projekter-mindmap midt i peelen
-						// hakker på iPad og ser ud som et “fast” lag ovenpå Om mig.
-						const showFlapDesign = p >= 0.5;
-						flapFrame.style.setProperty('opacity', showFlapDesign ? '1' : '0', 'important');
-						flapFrame.style.setProperty('visibility', showFlapDesign ? 'visible' : 'hidden', 'important');
+					if (flipEl.classList.contains('about-projects-turn__flip')) {
+						// Projekter på flap så snart peelen har geometri — ikke først ved midten
+						// (ellers kommer designet “for sent” i trækket, jf. IMG_7906).
+						flapFrame.style.setProperty('opacity', '1', 'important');
+						flapFrame.style.setProperty('visibility', 'visible', 'important');
+						flapFrame.style.setProperty('display', 'block', 'important');
 					}
 					try {
 						const doc = flapFrame.contentDocument;
@@ -3280,7 +3282,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			tabletFoldLand = !!(
 				window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
 				document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-				document.documentElement.classList.contains('msk-projects-ipad-portrait')
+				document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+				window.matchMedia('(min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px)').matches
 			);
 		} catch {}
 		const computerLikeLand = desktopFineLand || tabletFoldLand;
@@ -4610,12 +4613,14 @@ document.addEventListener('DOMContentLoaded', function() {
 							tabletFold = !!(
 								window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
 								document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-								document.documentElement.classList.contains('msk-projects-ipad-portrait')
+								document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+								window.matchMedia('(min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px)').matches
 							);
 						} catch {}
 						const computerLike = desktopFine || tabletFold;
-						const pastMid = hasX ? (x >= seamX) : (progress >= 0.5);
-						const pastUdm = hasX && (x >= udmX) && (progress >= 0.5);
+						// Lidt før midten, så Projekter-designet ikke først “dukker op” sent i trækket.
+						const pastMid = hasX ? (x >= seamX * 0.72) : (progress >= 0.32);
+						const pastUdm = hasX && (x >= udmX) && (progress >= 0.32);
 						if (computerLike ? pastMid : pastUdm) overlay.classList.add('swap-flip-mid');
 						else overlay.classList.remove('swap-flip-mid');
 
@@ -15019,7 +15024,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 20:12';
+		el.textContent = 'update onsdag 14 okt - klokken 20:25';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
