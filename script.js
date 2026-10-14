@@ -7834,7 +7834,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function mskProjectsIpadLsLockMindmapSpoke(line) {
 		try {
-			if (window.__mskProjectsBypassSpokeFreeze) return;
+			// Altid lås efter én sync — forsinkede re-syncs får stregerne til at “rykke” synligt.
 			if (line) line.dataset.mskIpadLsSpokeLocked = '1';
 		} catch (_) {}
 	}
@@ -7851,45 +7851,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch (_) {}
 	}
 
-	/** Portræt→landskab: Byens + Brainfarts-streger sætter sig først når ring/noder er faldet til ro. */
+	/** Portræt→landskab: ryd låse én gang før rebuild — ingen forsinket re-sync (det hoppede stregerne). */
 	function mskProjectsIpadLsResyncByensBrainfartsAfterOrient() {
-		const run = () => {
-			try {
-				if (!mskIsProjectsTabletLandscapeViewport()) return;
-				mskProjectsIpadLsClearLeftSpokeLocks();
-				try {
-					window.__mskProjectsBypassSpokeFreeze = true;
-				} catch (_) {}
-				try {
-					mskSyncByensBrainLineIpadLandscape();
-				} catch (_) {}
-				try {
-					mskSyncBrainfartsBrainLineIpadLandscape();
-				} catch (_) {}
-				try {
-					window.__mskProjectsBypassSpokeFreeze = false;
-				} catch (_) {}
-				try {
-					const svg = document.querySelector('.connecting-lines');
-					if (svg) {
-						svg.querySelectorAll('.byens-brain-line, .brainfarts-brain-line').forEach((line) => {
-							mskProjectsIpadLsLockMindmapSpoke(line);
-						});
-					}
-				} catch (_) {}
-			} catch (_) {}
-		};
 		try {
-			requestAnimationFrame(() => {
-				requestAnimationFrame(() => {
-					run();
-					window.setTimeout(run, 90);
-					window.setTimeout(run, 220);
-				});
-			});
-		} catch (_) {
-			run();
-		}
+			mskProjectsIpadLsClearLeftSpokeLocks();
+		} catch (_) {}
 	}
 	try {
 		window.mskProjectsIpadLsClearLeftSpokeLocks = mskProjectsIpadLsClearLeftSpokeLocks;
@@ -10723,7 +10689,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 	}
 
-	/** iPad landskab: streg hjernen → Byens — centreret mod hjernen + ring (små gaps). */
+	/** iPad landskab: streg hjernen → Byens. Node-rect først (stabilt efter rotation); forlæng ind i boblen. */
 	function mskByensIpadLandscapeLinePoints(containerRect, brainRect, ring, node, nodeRect) {
 		const brainCx = brainRect.left - containerRect.left + brainRect.width / 2;
 		const brainCy = brainRect.top - containerRect.top + brainRect.height / 2;
@@ -10733,7 +10699,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		let ringCy = brainCy - 140;
 		let ringRx = 80;
 		let ringRy = 50;
-		if (ring) {
+		// Node først: SVG-ring attrs kan være forkerte midt i portræt→landskab.
+		if (node && nodeRect && nodeRect.width > 8) {
+			ringCx = nodeRect.left - containerRect.left + nodeRect.width / 2;
+			ringCy = nodeRect.top - containerRect.top + nodeRect.height / 2;
+			ringRx = nodeRect.width / 2;
+			ringRy = nodeRect.height / 2;
+		} else if (ring) {
 			const rx = parseFloat(ring.getAttribute('x') || '0');
 			const ry = parseFloat(ring.getAttribute('y') || '0');
 			const rw = parseFloat(ring.getAttribute('width') || '0');
@@ -10742,11 +10714,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			ringCy = ry + rh / 2;
 			ringRx = rw / 2;
 			ringRy = rh / 2;
-		} else if (node && nodeRect) {
-			ringCx = nodeRect.left - containerRect.left + nodeRect.width / 2;
-			ringCy = nodeRect.top - containerRect.top + nodeRect.height / 2;
-			ringRx = nodeRect.width / 2;
-			ringRy = nodeRect.height / 2;
 		}
 
 		const dx = ringCx - brainCx;
@@ -10755,29 +10722,32 @@ document.addEventListener('DOMContentLoaded', function() {
 		const ux = dx / dist;
 		const uy = dy / dist;
 
-		const brainStartX = brainCx + ux * (brainR * 0.5);
-		const brainStartY = brainCy + uy * (brainR * 0.5);
-		const ringGap = Math.max(ringRx, ringRy) * 0.06;
-		const lineEndX = ringCx - ux * ringGap;
-		const lineEndY = ringCy - uy * ringGap;
+		const brainStartX = brainCx + ux * (brainR * 0.42);
+		const brainStartY = brainCy + uy * (brainR * 0.42);
+		// Forbi centrum ind i boblen (samme idé som createConnectingLines desktop-wide).
+		const intoBubble = Math.max(ringRx, ringRy) * 0.42;
+		const lineEndX = ringCx + ux * intoBubble;
+		const lineEndY = ringCy + uy * intoBubble;
 
 		return { brainStartX, brainStartY, lineEndX, lineEndY };
 	}
 
-	/** iPad landskab: streg hjernen → BRAINFARTS (efter ring findes). */
+	/** iPad landskab: streg hjernen → BRAINFARTS. Node-rect først; forlæng ind i boblen. */
 	function mskBrainfartsIpadLandscapeLinePoints(containerRect, brainRect, ring, node, nodeRect) {
 		const brainCx = brainRect.left - containerRect.left + brainRect.width / 2;
 		const brainCy = brainRect.top - containerRect.top + brainRect.height / 2;
 		const brainR = Math.min(brainRect.width, brainRect.height) / 2;
-		/* + = højre / ned (kun iPad landskab) */
-		const lineNudgeX = 14;
-		const lineNudgeY = 6;
 
 		let ringCx = brainCx - 140;
 		let ringCy = brainCy + 20;
 		let ringRx = 90;
 		let ringRy = 70;
-		if (ring) {
+		if (node && nodeRect && nodeRect.width > 8) {
+			ringCx = nodeRect.left - containerRect.left + nodeRect.width / 2;
+			ringCy = nodeRect.top - containerRect.top + nodeRect.height / 2;
+			ringRx = nodeRect.width / 2;
+			ringRy = nodeRect.height / 2;
+		} else if (ring) {
 			const rx = parseFloat(ring.getAttribute('x') || '0');
 			const ry = parseFloat(ring.getAttribute('y') || '0');
 			const rw = parseFloat(ring.getAttribute('width') || '0');
@@ -10786,11 +10756,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			ringCy = ry + rh / 2;
 			ringRx = rw / 2;
 			ringRy = rh / 2;
-		} else if (node && nodeRect) {
-			ringCx = nodeRect.left - containerRect.left + nodeRect.width / 2;
-			ringCy = nodeRect.top - containerRect.top + nodeRect.height / 2;
-			ringRx = nodeRect.width / 2;
-			ringRy = nodeRect.height / 2;
 		}
 
 		const dx = ringCx - brainCx;
@@ -10799,11 +10764,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		const ux = dx / dist;
 		const uy = dy / dist;
 
-		const brainStartX = brainCx + ux * (brainR * 0.48) + lineNudgeX;
-		const brainStartY = brainCy + uy * (brainR * 0.48);
-		const ringGap = Math.max(ringRx, ringRy) * 0.14;
-		const lineEndX = ringCx - ux * ringGap + lineNudgeX;
-		const lineEndY = ringCy - uy * ringGap;
+		const brainStartX = brainCx + ux * (brainR * 0.42);
+		const brainStartY = brainCy + uy * (brainR * 0.42);
+		const intoBubble = Math.max(ringRx, ringRy) * 0.48;
+		const lineEndX = ringCx + ux * intoBubble;
+		const lineEndY = ringCy + uy * intoBubble;
 
 		return { brainStartX, brainStartY, lineEndX, lineEndY };
 	}
@@ -10849,7 +10814,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				'transform',
 				`rotate(${angle} ${pts.brainStartX} ${pts.brainStartY})`
 			);
-			if (ring) mskProjectsIpadLsLockMindmapSpoke(line);
+			mskProjectsIpadLsLockMindmapSpoke(line);
 		} catch (_) {}
 	}
 
@@ -15176,7 +15141,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 21:52';
+		el.textContent = 'update onsdag 14 okt - klokken 22:00';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
