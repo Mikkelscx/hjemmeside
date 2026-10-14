@@ -10,7 +10,7 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p271';
+        var v = '20260924p272';
         try {
             var q = new URLSearchParams(location.search || '');
             if (q.get('v') !== v) {
@@ -24,7 +24,7 @@
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
-    <!-- deploy about one-pager: 2026-10-15 00:48 p271 — tablet cache-bust — cache-bust redirect -->
+    <!-- deploy about one-pager: 2026-10-15 01:05 p272 — bio on 25px grid — cache-bust redirect -->
     <style id="msk-about-ipad-portrait-onepager">
     /* Tablet portræt: one-pager — tæt CV under bio, fuld bredde udenom polaroid. */
     @media (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
@@ -53,6 +53,7 @@
             width: 100% !important;
             max-width: none !important;
             min-height: 0 !important;
+            margin-top: 0 !important;
             row-gap: 0 !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page,
@@ -65,9 +66,10 @@
             height: auto !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
-            display: flow-root !important;
-            /* Rød margen ~60px — tekst først efter stregen */
-            padding: 64px 36px 0 96px !important;
+            display: block !important;
+            position: relative !important;
+            /* 3×25px gitter — bio på samme streger som CV */
+            padding: 75px 36px 0 96px !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
             padding: 25px 36px 40px 96px !important;
@@ -78,14 +80,14 @@
             display: none !important;
         }
         body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
-            position: relative !important;
-            float: right !important;
-            top: auto !important;
-            right: auto !important;
+            position: absolute !important;
+            float: none !important;
+            top: 75px !important;
+            right: 36px !important;
             left: auto !important;
-            width: min(240px, 26vw) !important;
-            max-width: min(240px, 26vw) !important;
-            margin: 0 0 12px 28px !important;
+            width: min(220px, 26vw) !important;
+            max-width: min(220px, 26vw) !important;
+            margin: 0 !important;
             z-index: 6 !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
@@ -94,13 +96,32 @@
             max-width: none !important;
             overflow: visible !important;
         }
+        body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
+            margin: 0 !important;
+            line-height: 50px !important;
+            height: 50px !important;
+            max-width: calc(100% - min(220px, 26vw) - 28px) !important;
+            overflow: hidden !important;
+        }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
             display: block !important;
             width: auto !important;
             max-width: none !important;
+            padding-top: 0 !important;
+            padding-right: calc(min(220px, 26vw) + 28px) !important;
+            font-size: 18px !important;
+            line-height: 25px !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p {
             max-width: none !important;
+            margin: 0 0 25px 0 !important;
+            padding: 0 !important;
+            font-size: 18px !important;
+            line-height: 25px !important;
+            transform: none !important;
+        }
+        body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p:last-of-type {
+            margin-bottom: 0 !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
             position: static !important;
@@ -113,7 +134,9 @@
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv,
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards {
-            margin-top: 8px !important;
+            margin-top: 0 !important;
+            font-size: 18px !important;
+            line-height: 25px !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv p,
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards p {
@@ -204,7 +227,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p271') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p272') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>

@@ -8343,9 +8343,9 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .right-margin {
         display: none !important;
     }
-    /* Baseline lige over stregerne: løft hele main en smule (linjelaget er uændret på body) */
+    /* Hold main på 25px-gitter (ingen -7px-fase — ellers glider bio af stregerne) */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
-        margin-top: -7px;
+        margin-top: 0 !important;
         min-height: auto;
         /* iPad Pro 13 er 1032px — max-width:1024 one-column rammer ikke; tving single column her */
         grid-template-columns: 1fr !important;
@@ -8400,18 +8400,18 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         height: auto !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
-        display: flow-root;
+        display: block !important;
         position: relative;
         box-sizing: border-box;
         width: 100%;
         max-width: none;
-        /* Rød margen left:60px — start tekst efter stregen */
-        padding: 64px 36px 0 96px;
+        /* 3×25px — samme gitter som papirlinjer; rød margen left:60px */
+        padding: 75px 36px 0 96px !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
         width: 100%;
         max-width: none;
-        padding: 25px 36px 40px 96px;
+        padding: 25px 36px 40px 96px !important;
         margin-top: 0;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {
@@ -8426,15 +8426,16 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         right: auto;
         top: auto;
     }
+    /* Absolut polaroid — ingen float der knækker 25px-rytmen i bio-teksten */
     body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
-        position: relative;
-        top: auto;
-        right: auto;
-        left: auto;
-        float: right;
-        width: min(220px, 28vw);
-        max-width: min(220px, 28vw);
-        margin: 0 0 0.75rem 1.25rem;
+        position: absolute !important;
+        top: 75px !important;
+        right: 36px !important;
+        left: auto !important;
+        float: none !important;
+        width: min(220px, 26vw) !important;
+        max-width: min(220px, 26vw) !important;
+        margin: 0 !important;
         grid-column: unset;
         grid-row: unset;
         justify-self: unset;
@@ -8464,48 +8465,51 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         display: none !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
-        margin: 0 0 0;
-        font-size: clamp(2.55rem, 3.95vw, 3.95rem);
-        line-height: 50px;
-        max-width: 100%;
+        margin: 0 !important;
+        font-size: clamp(2.2rem, 3.4vw, 3.2rem) !important;
+        line-height: 50px !important;
+        height: 50px !important;
+        max-width: calc(100% - min(220px, 26vw) - 28px);
+        overflow: hidden;
     }
-    /* Ingen float: clear-div giver stadig flex-gap; skjul den for ens 25px mellem afsnit */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__clear-after-photo {
         display: none !important;
     }
-    /* px + flex/gap: samme rytme som 25px-streger; undgår rem-arrundring og margin-collapse */
+    /* Samme 18/25 som CV — ingen desktop-nudge/float der trækker bio af stregerne */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-        margin: 0;
-        /*
-         * Overskrift bund ≈ 75 + 50 (én linje). Courier ~18px/25px: baseline ≈ 14–16px under linjeboks-top.
-         * Streg i gradient ligger i bunden af hvert 25px-bånd → ca. 8px luft fra titelbund gør første baseline ≈ 148px ≡ streg for 125–150-båndet.
-         */
-        padding-top: 8px;
-        min-width: 0;
-        font-size: 18px;
-        line-height: 25px;
-        -webkit-text-size-adjust: none;
-        text-size-adjust: none;
-    }
-    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p {
+        display: block !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding-top: 0 !important;
+        padding-right: calc(min(220px, 26vw) + 28px) !important;
+        min-width: 0;
+        width: auto !important;
+        max-width: none !important;
+        font-size: 18px !important;
+        line-height: 25px !important;
+        -webkit-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
     }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--down-1,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--down-1.about-sketchbook__p--up-2,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--nudge-down {
-        transform: none;
+        margin: 0 0 25px 0 !important;
+        padding: 0 !important;
+        font-size: 18px !important;
+        line-height: 25px !important;
+        transform: none !important;
+        clear: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p:last-of-type {
+        margin-bottom: 0 !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards {
-        font-size: 18px;
-        line-height: 25px;
-        margin-top: 8px;
-        -webkit-text-size-adjust: none;
-        text-size-adjust: none;
+        font-size: 18px !important;
+        line-height: 25px !important;
+        margin-top: 0 !important;
+        -webkit-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-title {
         font-size: clamp(2.55rem, 3.95vw, 3.95rem);
