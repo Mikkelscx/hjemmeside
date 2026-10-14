@@ -2394,12 +2394,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			const h = Math.round(window.innerHeight || 0);
 			const shortSide = Math.min(w, h);
 			const longSide = Math.max(w, h);
-			if (shortSide < 600 || longSide > 1400) return false;
+			// iPad Pro 13 landskab er ~1376 CSS-px; tillad op til ~1512 (ældre/nyere presets).
+			if (shortSide < 600 || longSide > 1520) return false;
 			const touch =
 				window.matchMedia('(any-pointer: coarse)').matches ||
 				window.matchMedia('(pointer: coarse)').matches ||
 				window.matchMedia('(hover: none)').matches;
-			return touch;
+			// DevTools tablet-landskab (Om mig CSS) kan have fine pointer — stadig finger-zoner.
+			const tabletLandscapeDevtools =
+				w >= 1025 && w <= 1420 && h >= 600 && h <= 1080 &&
+				(window.matchMedia('(orientation: landscape)').matches || w > h);
+			return touch || tabletLandscapeDevtools;
 		} catch {
 			return false;
 		}
@@ -2454,7 +2459,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			h.style.bottom = 'auto';
 			h.style.height = 'calc(100% - 64px)';
 			if (finger) {
-				const side = 120;
+				// Bredere sidekant så papirets venstre/højre kant kan trækkes (ikke kun 120px-stribe).
+				const side = Math.max(168, Math.min(240, Math.round(viewW * 0.14)));
 				const foot = 210;
 				const corner = 380;
 				h.style.top = '0px';
@@ -14552,96 +14558,107 @@ window.addEventListener('load', function () {
 	}
 })();
 
-// Global corner page-turn handles (all pages).
-// Uses simple drag-threshold navigation, and triggers existing click-based flip transitions when available.
+// Global corner page-turn handles (fallback only).
+// Must run AFTER DOMContentLoaded so page-specific flip handles (Om mig/Kontakt/Projekter)
+// already exist — otherwise duplicates sit under/over and steal the peel gesture.
 (function initGlobalCornerPageTurnHandles() {
-	try {
-		// Never add handles inside iframes (preview/measure/reveal overlays).
-		if (window.self !== window.top) return;
-	} catch {
-		return;
-	}
-
-	try {
-		const qs = (window.location.search || '').toLowerCase();
-		if (qs.includes('preview=1') || qs.includes('measure=1') || qs.includes('reveal=1')) return;
-	} catch {}
-
-	// If a page already injected its own handles (interactive), don't add duplicates.
-	if (document.querySelector('.page-turn-handle--left') || document.querySelector('.page-turn-handle--right')) return;
-
-	const DRAG_PX = Math.max(220, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.32)));
-	const THRESH = Math.round(DRAG_PX * 0.5); // only commit after passing the middle
-
-	function normalizeFileName() {
-		let p = '';
-		try { p = (window.location.pathname || ''); } catch {}
-		p = (p.split('?')[0] || '').toLowerCase();
-		const parts = p.split('/').filter(Boolean);
-		const last = parts.length ? parts[parts.length - 1] : '';
-		return last || 'index.html';
-	}
-
-	// Linear reading order (no wrap-around):
-	// Projekter is the start page, Kontakt is the end page.
-	const order = ['projects.html', 'about.html', 'contact.html'];
-	const cur = normalizeFileName();
-	const idx = order.indexOf(cur);
-	const prev = (idx > 0) ? order[idx - 1] : null;
-	const next = (idx >= 0 && idx < order.length - 1) ? order[idx + 1] : null;
-
-	function ensureHandle(side) {
-		const el = document.createElement('div');
-		el.className = `page-turn-handle page-turn-handle--${side}`;
-		el.setAttribute('aria-hidden', 'true');
-		el.dataset.target = (side === 'left') ? prev : next;
-		document.body.appendChild(el);
-		return el;
-	}
-
-	function triggerNav(targetFile) {
-		if (!targetFile) return;
+	function boot() {
 		try {
-			const a = document.querySelector(`a[href="${CSS.escape(targetFile)}"]`);
-			if (a) { a.click(); return; } // lets existing flip handlers run
+			// Never add handles inside iframes (preview/measure/reveal overlays).
+			if (window.self !== window.top) return;
+		} catch {
+			return;
+		}
+
+		try {
+			const qs = (window.location.search || '').toLowerCase();
+			if (qs.includes('preview=1') || qs.includes('measure=1') || qs.includes('reveal=1')) return;
 		} catch {}
-		try { window.location.href = targetFile; } catch {}
+
+		// If a page already injected its own handles (interactive), don't add duplicates.
+		if (document.querySelector('.page-turn-handle--left') || document.querySelector('.page-turn-handle--right')) return;
+
+		const DRAG_PX = Math.max(220, Math.min(520, Math.round((mskViewportSize().w || window.innerWidth) * 0.32)));
+		const THRESH = Math.round(DRAG_PX * 0.5); // only commit after passing the middle
+
+		function normalizeFileName() {
+			let p = '';
+			try { p = (window.location.pathname || ''); } catch {}
+			p = (p.split('?')[0] || '').toLowerCase();
+			const parts = p.split('/').filter(Boolean);
+			const last = parts.length ? parts[parts.length - 1] : '';
+			return last || 'index.html';
+		}
+
+		// Linear reading order (no wrap-around):
+		// Projekter is the start page, Kontakt is the end page.
+		const order = ['projects.html', 'about.html', 'contact.html'];
+		const cur = normalizeFileName();
+		const idx = order.indexOf(cur);
+		const prev = (idx > 0) ? order[idx - 1] : null;
+		const next = (idx >= 0 && idx < order.length - 1) ? order[idx + 1] : null;
+
+		function ensureHandle(side) {
+			const el = document.createElement('div');
+			el.className = `page-turn-handle page-turn-handle--${side}`;
+			el.setAttribute('aria-hidden', 'true');
+			el.dataset.target = (side === 'left') ? prev : next;
+			document.body.appendChild(el);
+			return el;
+		}
+
+		function triggerNav(targetFile) {
+			if (!targetFile) return;
+			try {
+				const a = document.querySelector(`a[href="${CSS.escape(targetFile)}"]`);
+				if (a) { a.click(); return; } // lets existing flip handlers run
+			} catch {}
+			try { window.location.href = targetFile; } catch {}
+		}
+
+		const left = prev ? ensureHandle('left') : null;
+		const right = next ? ensureHandle('right') : null;
+		try { mskSizePaperHandles(); } catch {}
+
+		// Bottom-left: pull to the RIGHT to go to prev.
+		if (left) left.addEventListener('pointerdown', (e) => {
+			if (!e || e.button !== 0) return;
+			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			e.preventDefault();
+			const startX = e.clientX;
+			const onUp = (ev) => {
+				window.removeEventListener('pointerup', onUp, true);
+				window.removeEventListener('pointercancel', onUp, true);
+				const dx = (ev && typeof ev.clientX === 'number') ? (ev.clientX - startX) : 0;
+				if (dx >= THRESH) triggerNav(left.dataset.target);
+			};
+			window.addEventListener('pointerup', onUp, true);
+			window.addEventListener('pointercancel', onUp, true);
+		}, { passive: false });
+
+		// Bottom-right: pull to the LEFT to go to next.
+		if (right) right.addEventListener('pointerdown', (e) => {
+			if (!e || e.button !== 0) return;
+			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			e.preventDefault();
+			const startX = e.clientX;
+			const onUp = (ev) => {
+				window.removeEventListener('pointerup', onUp, true);
+				window.removeEventListener('pointercancel', onUp, true);
+				const dx = (ev && typeof ev.clientX === 'number') ? (startX - ev.clientX) : 0;
+				if (dx >= THRESH) triggerNav(right.dataset.target);
+			};
+			window.addEventListener('pointerup', onUp, true);
+			window.addEventListener('pointercancel', onUp, true);
+		}, { passive: false });
 	}
 
-	const left = prev ? ensureHandle('left') : null;
-	const right = next ? ensureHandle('right') : null;
-
-	// Bottom-left: pull to the RIGHT to go to prev.
-	if (left) left.addEventListener('pointerdown', (e) => {
-		if (!e || e.button !== 0) return;
-		if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-		e.preventDefault();
-		const startX = e.clientX;
-		const onUp = (ev) => {
-			window.removeEventListener('pointerup', onUp, true);
-			window.removeEventListener('pointercancel', onUp, true);
-			const dx = (ev && typeof ev.clientX === 'number') ? (ev.clientX - startX) : 0;
-			if (dx >= THRESH) triggerNav(left.dataset.target);
-		};
-		window.addEventListener('pointerup', onUp, true);
-		window.addEventListener('pointercancel', onUp, true);
-	}, { passive: false });
-
-	// Bottom-right: pull to the LEFT to go to next.
-	if (right) right.addEventListener('pointerdown', (e) => {
-		if (!e || e.button !== 0) return;
-		if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-		e.preventDefault();
-		const startX = e.clientX;
-		const onUp = (ev) => {
-			window.removeEventListener('pointerup', onUp, true);
-			window.removeEventListener('pointercancel', onUp, true);
-			const dx = (ev && typeof ev.clientX === 'number') ? (startX - ev.clientX) : 0;
-			if (dx >= THRESH) triggerNav(right.dataset.target);
-		};
-		window.addEventListener('pointerup', onUp, true);
-		window.addEventListener('pointercancel', onUp, true);
-	}, { passive: false });
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', boot, { once: true });
+	} else {
+		// Page-specific inits also listen for DOMContentLoaded — run after them.
+		window.setTimeout(boot, 0);
+	}
 })();
 
 /** Kontakt + iPad/tablet landskab/portræt: lås dokument-scroll (touch/wheel) og fjern ødelagt inline --vh. */
@@ -14940,7 +14957,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 18:15';
+		el.textContent = 'update onsdag 14 okt - klokken 19:05';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
