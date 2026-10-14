@@ -1874,12 +1874,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			const fy = Math.max(-12, Math.min(H + 12, state.my - dim.box.top));
 			const sideGrab = state.cornerId === 'ml' || state.cornerId === 'mr';
 			const cornerY = sideGrab ? sideGrabY(dim, state.my) : edgeGrabY(dim, state.my);
-			let tipX = fx;
-			if (sideGrab) {
-				const limit = sideRedLimit(dim.box, state.sign);
-				tipX = state.sign < 0 ? Math.max(W - limit, fx) : Math.min(limit, fx);
-			}
-			// A side grab lifts the whole edge, and stops just before the red margin.
+			// Hover-fold stopper ved den røde margin (hjørne + kant) — ellers dækker den MENU.
+			// Rigtig page-drag er uændret og kan stadig folde hele vejen.
+			const limit = sideRedLimit(dim.box, state.sign);
+			const tipX = state.sign < 0
+				? Math.max(W - limit, Math.min(W + 12, fx))
+				: Math.min(limit, Math.max(-12, fx));
 			return { fx: tipX, fy: sideGrab ? cornerY : fy, cornerY: cornerY, W: W, H: H, box: dim.box };
 		}
 		function restTarget(state) {
@@ -1901,9 +1901,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			flipEl._mskPaperAnim = false;
 			flipEl._mskHoldFx = null;
 			const len = Math.hypot(state.fx - cornerX, state.fy - cornerY);
-			// Tablet/finger: lad hover-snap følge længere — 0.22 føltes som “kan ikke trækkes i starten”.
-			const snapMax = mskIsFingerTablet() ? 0.58 : 0.22;
-			try { mskPaintPaperDrag(flipEl, Math.min(snapMax, len / dim.W), state.sign, true); } catch {}
+			// Snap er allerede klipset til rød margin i hoverTarget — hold peelen inden for den zone.
+			const snapMax = mskIsFingerTablet() ? 0.34 : 0.22;
+			try { mskPaintPaperDrag(flipEl, Math.min(snapMax, len / Math.max(1, dim.W)), state.sign, true); } catch {}
 			const curl = flipEl._mskLiveCurl;
 			if (curl && curl.front) curl.front.style.setProperty('opacity', '0', 'important');
 			if (curl && curl.flap) {
@@ -15104,7 +15104,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 21:24';
+		el.textContent = 'update onsdag 14 okt - klokken 21:30';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
