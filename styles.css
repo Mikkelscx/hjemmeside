@@ -8136,10 +8136,12 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         min-height: auto;
         /* iPad Pro 13 er 1032px — max-width:1024 one-column rammer ikke; tving single column her */
         grid-template-columns: 1fr !important;
-        grid-template-rows: auto !important;
+        grid-template-rows: auto auto !important;
         align-content: start !important;
         width: 100% !important;
         max-width: none !important;
+        min-height: 0 !important;
+        row-gap: 0 !important;
     }
     /* Papir + linjer scroller med indhold (som mobil OM MIG) — ellers glide tekst og gitter fra hinanden */
     body.about-sketchbook-page.sketchbook-theme::before {
@@ -8177,19 +8179,25 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer__half--right {
         background-position-y: 0;
     }
+    /* Dead space-fix: desktop min-height: calc(var(--vh)-120px) må ikke gøre 1. side viewport-høj */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
+        min-height: 0 !important;
+        height: auto !important;
+    }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
         display: flow-root;
         position: relative;
         box-sizing: border-box;
         width: 100%;
         max-width: none;
-        /* One-pager: normal padding — polaroid float’er i stedet for kæmpe højre-reservat */
-        padding: 72px 28px 20px 52px;
+        padding: 64px 36px 0 52px;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
         width: 100%;
         max-width: none;
-        padding: 12px 28px 48px 52px;
+        padding: 25px 36px 40px 52px;
         margin-top: 0;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {
@@ -8234,9 +8242,12 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
         display: block;
-        width: 100%;
+        width: auto;
         max-width: none;
         overflow: visible;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
+        display: none !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
         margin: 0 0 0;
