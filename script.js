@@ -2173,7 +2173,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	})();
 
-	function closeMobileBurgerMenu() {
+	function closeMobileBurgerMenu(instant) {
 		try { document.body.classList.remove('nav-open'); } catch {}
 		try {
 			const btn = document.querySelector('.nav-toggle');
@@ -2182,7 +2182,29 @@ document.addEventListener('DOMContentLoaded', function() {
 				btn.setAttribute('aria-label', 'Åbn menu');
 			}
 		} catch {}
+		// Ved sidebladning: skjul pop-up med det samme (ingen 200ms fade ovenpå peelen).
+		if (instant) {
+			try {
+				document.body.classList.add('nav-menu-hide-instant');
+				window.setTimeout(() => {
+					try { document.body.classList.remove('nav-menu-hide-instant'); } catch {}
+				}, 80);
+			} catch {}
+		}
 	}
+
+	// Capture: luk burger før page-flip handlers (nogle stopper propagation).
+	document.addEventListener('click', (e) => {
+		try {
+			if (!document.body.classList.contains('nav-open')) return;
+			const a = e.target && e.target.closest ? e.target.closest('.nav-menu a') : null;
+			if (!a) return;
+			const hrefAttr = (a.getAttribute('href') || '').trim();
+			if (!hrefAttr || hrefAttr.startsWith('#')) return;
+			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			closeMobileBurgerMenu(true);
+		} catch {}
+	}, true);
 
 	function isPhoneViewport() {
 		try {
@@ -2288,7 +2310,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (!hrefAttr || hrefAttr.startsWith('#')) return;
 				if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
-				try { setOpen(false); } catch {}
+				try { closeMobileBurgerMenu(true); } catch {}
 
 				if (e.defaultPrevented) {
 					return;
@@ -6826,7 +6848,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			e.preventDefault();
 			try { e.stopImmediatePropagation(); } catch {}
-			try { closeMobileBurgerMenu(); } catch {}
+			try { closeMobileBurgerMenu(true); } catch {}
 			startAiClose(a.href);
 		}, true);
 
@@ -15082,7 +15104,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 21:20';
+		el.textContent = 'update onsdag 14 okt - klokken 21:24';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();

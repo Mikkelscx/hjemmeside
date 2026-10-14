@@ -267,6 +267,16 @@ body.nav-open .nav-scrim {
     pointer-events: auto;
 }
 
+/* Luk pop-up menu øjeblikkeligt ved side-klik, så peelen synes under den. */
+body.nav-menu-hide-instant .nav-menu,
+body.nav-menu-hide-instant .nav-scrim {
+    transition: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: none !important;
+}
+
 /* ---- Navbar theme tokens (desktop top bar + burger button on narrow viewports) ---- */
 body.home-notebook-page {
     --navBarBg: rgba(252, 251, 247, 0.94);
