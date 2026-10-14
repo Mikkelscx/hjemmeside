@@ -15082,7 +15082,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 21:00';
+		el.textContent = 'update onsdag 14 okt - klokken 21:20';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();

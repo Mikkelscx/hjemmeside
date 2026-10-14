@@ -14441,6 +14441,26 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
 }
 
+/*
+ * Tablet landskab (Om mig): MENU lidt til højre, så venstre papirfold ikke dækker knappen.
+ * Samme viewport-gate som Om mig-landskab (rigtig iPad + DevTools).
+ */
+@media (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (hover: none) and (pointer: coarse),
+       (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (any-pointer: coarse),
+       (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px),
+       (min-width: 641px) and (max-width: 1366px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+    html body.about-sketchbook-page .nav-container,
+    html body.about-sketchbook-page.sketchbook-theme .nav-container {
+        padding-left: 58px !important;
+    }
+    /* Under aktiv peel: hold MENU over papiret (overlay er z-index 9999). */
+    html body.about-sketchbook-page.about-projects-flip-active .navbar,
+    html body.about-sketchbook-page.about-projects-flipping .navbar,
+    html body.about-sketchbook-page.about-projects-dragging .navbar {
+        z-index: 10050 !important;
+    }
+}
+
 /* Portræt: iPad / stor mobil med burger (641–1366px, touch) — samme som telefon: ingen hvid bjælke */
 @media (min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) and (orientation: portrait),
     (min-width: 641px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) and (max-aspect-ratio: 1/1) {
