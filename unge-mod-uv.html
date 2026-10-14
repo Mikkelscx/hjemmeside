@@ -9,8 +9,8 @@
     <title>UNGE MOD UV - Mikkel Skrøder-Christensen</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p262';
-        document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
+        window.mskAssetV = '20260924p274';
+        document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css?v=' + window.mskAssetV + '">');
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
@@ -143,8 +143,24 @@
             border: 0;
         }
 
+        /* Tablet: kortere logo-asset (top/bund beskåret) — samme CSS-bredde, mindre negativ margin */
+        @media (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
+               (min-width: 641px) and (max-width: 1366px) and (hover: none),
+               (min-width: 641px) and (max-width: 1366px) and (pointer: coarse) {
+            .uv-headline {
+                margin-top: -48px;
+            }
+            .uv-headline__logo {
+                /* Samme display-bredde — kun billedet er skåret i (top/bund) */
+                width: min(78vw, 560px);
+            }
+            .uv-credit {
+                margin: -28px auto 0.35rem auto;
+            }
+        }
+
         /* Desktop: cropped logo — ingen drop-shadow/lysbox; lidt højre-crop i asset */
-        @media (min-width: 1025px),
+        @media (min-width: 1025px) and (hover: hover) and (pointer: fine),
                (min-width: 1024px) and (hover: hover) and (pointer: fine) {
             .uv-headline {
                 margin-top: -36px;
@@ -165,7 +181,7 @@
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 640px) {
             .uv-headline__logo {
                 width: min(86vw, 520px);
                 height: auto;
@@ -720,7 +736,8 @@
     <div class="unge-mod-uv-content">
         <h1 class="neon-text uv-headline" style="text-align: center; margin-bottom: 0.2rem;">
             <picture>
-                <source media="(min-width: 1025px), (min-width: 1024px) and (hover: hover) and (pointer: fine)" srcset="assets/unge%20mod%20uv%20logo-desktop.png?v=20260926">
+                <source media="(min-width: 1025px) and (hover: hover) and (pointer: fine), (min-width: 1024px) and (hover: hover) and (pointer: fine)" srcset="assets/unge%20mod%20uv%20logo-desktop.png?v=20260926">
+                <source media="(min-width: 641px)" srcset="assets/unge%20mod%20uv%20logo-tablet.png?v=20261015">
                 <img class="uv-headline__logo" src="assets/unge%20mod%20uv%20logo.png?v=20260926" alt="UNGE MOD UV" data-no-lightbox>
             </picture>
             <span class="uv-sr-only">UNGE MOD UV</span>
@@ -880,7 +897,7 @@
     </script>
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p252') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p274') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
