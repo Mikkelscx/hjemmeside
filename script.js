@@ -3339,7 +3339,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		flipEl._mskPaperSign = dir;
 		return true;
 	}
-	function mskPaperDragRelease(flipEl, sign, progress) {
+	function mskPaperDragRelease(flipEl, sign, progress, onDone) {
 		if (!flipEl) return null;
 		if (flipEl._mskPaperPaintRaf) {
 			cancelAnimationFrame(flipEl._mskPaperPaintRaf);
@@ -3362,10 +3362,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		flipEl._mskPaperSettling = true;
 		if (flipEl._mskPaperSettleRaf) cancelAnimationFrame(flipEl._mskPaperSettleRaf);
 		const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+		const finish = () => {
+			flipEl._mskPaperSettleRaf = 0;
+			flipEl._mskPaperSettling = false;
+			try { if (typeof onDone === 'function') onDone({ complete: complete }); } catch {}
+		};
 		const step = (now) => {
 			if (!flipEl.isConnected) {
-				flipEl._mskPaperSettleRaf = 0;
-				flipEl._mskPaperSettling = false;
+				finish();
 				return;
 			}
 			const u = Math.max(0, Math.min(1, ((now || Date.now()) - t0) / ms));
@@ -3376,19 +3380,25 @@ document.addEventListener('DOMContentLoaded', function() {
 			flipEl._mskPaperAnim = false;
 			flipEl._mskPaperSettling = true;
 			if (u < 1) flipEl._mskPaperSettleRaf = requestAnimationFrame(step);
-			else {
-				flipEl._mskPaperSettleRaf = 0;
-				flipEl._mskPaperSettling = false;
-			}
+			else finish();
 		};
 		flipEl._mskPaperSettleRaf = requestAnimationFrame(step);
-		return { complete: complete };
+		return { complete: complete, ms: ms };
 	}
 	// A cancelled click-drag must leave the sheet ready to lift again.
 	// Removing the overlay also removes the edge signal.
 	function mskParkPageTurnOverlay(overlay, flipEl) {
 		try {
 			if (flipEl) {
+				if (flipEl._mskPaperSettleRaf) {
+					cancelAnimationFrame(flipEl._mskPaperSettleRaf);
+					flipEl._mskPaperSettleRaf = 0;
+				}
+				if (flipEl._mskPaperPaintRaf) {
+					cancelAnimationFrame(flipEl._mskPaperPaintRaf);
+					flipEl._mskPaperPaintRaf = 0;
+				}
+				flipEl._mskPaperQueued = null;
 				flipEl._mskPaperCornerY = null;
 				flipEl._mskPaperSideBand = false;
 				flipEl._mskPaperTx = null;
@@ -3407,22 +3417,50 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (curl.front) {
 						curl.front.style.clipPath = '';
 						curl.front.style.opacity = '';
+						curl.front.style.background = '';
+						curl.front.style.removeProperty('background-color');
+						curl.front.querySelectorAll('iframe').forEach((fr) => {
+							fr.style.removeProperty('display');
+							fr.style.removeProperty('visibility');
+							fr.style.removeProperty('opacity');
+							fr.style.removeProperty('background');
+						});
 					}
 					if (curl.flap) {
-						curl.flap.style.display = 'none';
-						curl.flap.style.clipPath = '';
-						curl.flap.style.transform = '';
+						try { curl.flap.remove(); } catch { curl.flap.style.display = 'none'; }
 					}
+					if (curl.shade) {
+						try { curl.shade.remove(); } catch { curl.shade.style.display = 'none'; }
+					}
+					flipEl._mskLiveCurl = null;
 				}
+				try {
+					flipEl.querySelectorAll('[class*="flip-backface"], [class*="flip-face"]').forEach((el) => {
+						el.style.removeProperty('opacity');
+						el.style.removeProperty('visibility');
+						el.style.removeProperty('display');
+					});
+				} catch {}
 			}
 		} catch {}
 		try {
 			if (!overlay) return;
-			overlay.classList.remove('is-ready', 'is-turning', 'swap-under-left', 'swap-under-right', 'swap-flip-mid', 'msk-snap-hover');
+			overlay.classList.remove('is-ready', 'is-turning', 'swap-under-left', 'swap-under-right', 'swap-flip-mid', 'msk-snap-hover', 'swap-under-left-ready');
 			overlay.classList.add('is-preloading');
 			overlay.style.transition = '';
 			overlay.style.opacity = '';
 			overlay.style.clipPath = '';
+			// Fjern inline under-iframe styles fra peel (ellers kan Projekter/Om mig “klæbe”).
+			overlay.querySelectorAll('iframe').forEach((fr) => {
+				try {
+					fr.style.removeProperty('opacity');
+					fr.style.removeProperty('left');
+					fr.style.removeProperty('visibility');
+					fr.style.removeProperty('display');
+					fr.style.removeProperty('background');
+					fr.style.removeProperty('transform');
+				} catch {}
+			});
 		} catch {}
 	}
 
@@ -3830,7 +3868,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						try { catcher.remove(); } catch {}
 					}, 400);
 
-					const paperRel = mskPaperDragRelease(flipEl, -1, progress);
+					const paperRel = mskPaperDragRelease(flipEl, -1, progress, (info) => {
+						if (info && !info.complete) cleanupDragState(overlay, flipEl);
+					});
 					const shouldComplete = paperRel ? paperRel.complete : (progress >= COMPLETE_THRESHOLD);
 					if (!shouldComplete) {
 						// Snap back
@@ -3840,7 +3880,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								flipEl.style.transform = 'rotateY(0deg)';
 							}
 						} catch {}
-						window.setTimeout(() => cleanupDragState(overlay, flipEl), paperRel ? 520 : 280);
+						if (!paperRel) window.setTimeout(() => cleanupDragState(overlay, flipEl), 280);
 						return;
 					}
 
@@ -4679,7 +4719,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
 
-					const paperRel = mskPaperDragRelease(flipEl, 1, progress);
+					const paperRel = mskPaperDragRelease(flipEl, 1, progress, (info) => {
+						// Park først når settle er færdig — ellers kan flap/clip blive hængende (hvidt hul).
+						if (info && !info.complete) cleanup(overlay, flipEl);
+					});
 					const shouldComplete = paperRel ? paperRel.complete : (progress >= COMPLETE_THRESHOLD);
 					if (!shouldComplete) {
 						try {
@@ -4688,7 +4731,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								flipEl.style.transform = 'rotateY(0deg)';
 							}
 						} catch {}
-						window.setTimeout(() => cleanup(overlay, flipEl), paperRel ? 520 : 280);
+						if (!paperRel) window.setTimeout(() => cleanup(overlay, flipEl), 280);
 						return;
 					}
 
@@ -5047,7 +5090,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
 
-					const paperRel = mskPaperDragRelease(flipEl, -1, progress);
+					const paperRel = mskPaperDragRelease(flipEl, -1, progress, (info) => {
+						if (info && !info.complete) cleanup(overlay, flipEl);
+					});
 					const shouldComplete = paperRel ? paperRel.complete : (progress >= COMPLETE_THRESHOLD);
 					if (!shouldComplete) {
 						try {
@@ -5056,7 +5101,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								flipEl.style.transform = 'rotateY(0deg)';
 							}
 						} catch {}
-						window.setTimeout(() => cleanup(overlay, flipEl), paperRel ? 520 : 280);
+						if (!paperRel) window.setTimeout(() => cleanup(overlay, flipEl), 280);
 						return;
 					}
 
@@ -14972,7 +15017,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 19:45';
+		el.textContent = 'update onsdag 14 okt - klokken 20:10';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
