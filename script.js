@@ -3470,19 +3470,24 @@ document.addEventListener('DOMContentLoaded', function() {
 		curl.front.style.zIndex = '2';
 		curl.front.style.transform = 'none';
 		curl.flap.style.zIndex = '6';
-		const portraitBlankFold = !!(
+		const portraitBlankFlapOnly = !!(
 			typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()
 		);
 		if (curl.held) {
 			curl.front.querySelectorAll('iframe').forEach((fr) => {
-				if (portraitBlankFold) {
-					/* Foldende ark: skjules — under-siden beholder revealed design. */
-					fr.style.setProperty('display', 'none', 'important');
-					fr.style.setProperty('visibility', 'hidden', 'important');
-					fr.style.setProperty('opacity', '0', 'important');
-					return;
+				let on = fr === curl.held;
+				if (portraitBlankFlapOnly) {
+					const cn = fr.className || '';
+					/* Behold kun kildesiden på forsiden — destination væk fra folden. */
+					if (flipEl.classList.contains('about-projects-turn__flip') ||
+						flipEl.classList.contains('about-contact-turn__flip')) {
+						on = cn.indexOf('flip-front--about') !== -1;
+					} else if (flipEl.classList.contains('contact-about-turn__flip')) {
+						on = cn.indexOf('flip-front--contact') !== -1;
+					} else if (flipEl.classList.contains('projects-about-turn__flip')) {
+						on = cn.indexOf('projects-about-turn__flip-front') !== -1;
+					}
 				}
-				const on = fr === curl.held;
 				fr.style.setProperty('display', on ? 'block' : 'none', 'important');
 				fr.style.setProperty('visibility', on ? 'visible' : 'hidden', 'important');
 				fr.style.setProperty('opacity', on ? '1' : '0', 'important');
@@ -3490,7 +3495,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		// The face clip does not clip the iframe. An opaque sheet stops the
 		// next page showing through the paper the finger is still holding.
-		if (curl.held && !portraitBlankFold) {
+		if (curl.held) {
 			curl.held.style.setProperty('background', '#f5f5f0', 'important');
 			if (flipEl.classList.contains('about-projects-turn__flip')) {
 				try {
@@ -3502,10 +3507,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 			}
 		}
-		if (portraitBlankFold) {
-			mskApplyBlankLinedPaper(curl.front);
-			if (curl.flap) mskApplyBlankLinedPaper(curl.flap);
+		if (portraitBlankFlapOnly && curl.flap) {
+			/* Kun fligen/bagsiden er tomt papir — forsiden beholder designet. */
+			mskApplyBlankLinedPaper(curl.flap);
 			try { flipEl.style.setProperty('background', 'transparent', 'important'); } catch (_) {}
+			curl.front.style.background = '#f5f5f0';
+			curl.front.style.setProperty('background-color', '#f5f5f0', 'important');
 		} else {
 			curl.front.style.background = '#f5f5f0';
 			curl.front.style.setProperty('background-color', '#f5f5f0', 'important');
@@ -15371,7 +15378,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 00:25';
+		const stampText = 'update torsdag 15 okt - klokken 00:30';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

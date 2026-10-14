@@ -2814,8 +2814,10 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     }
 
     /*
-     * Foldende ark = tomt linjeret papir (kun på flip-faces/flap).
-     * Flip-root skal være transparent, så under-siden (revealed design) ikke dækkes.
+     * 50/50 peel i portræt:
+     * - Forside af fold = kildesiden (Om mig / Kontakt) — eksisterende design må ikke forsvinde
+     * - Bagside/flig = tomt linjeret papir (ikke destinationens design)
+     * - Under = revealed destination (Projekter/Kontakt) synlig i peel-hullet
      */
     .about-projects-turn__flip,
     .projects-about-turn__flip,
@@ -2823,20 +2825,36 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     .contact-about-turn__flip {
         background: transparent !important;
     }
-    .about-projects-transition .about-projects-turn__flip iframe,
+    /* Skjul kun DESTINATION på det foldende ark (ikke kildesiden på forsiden) */
+    .about-projects-transition .about-projects-turn__flip-front--projects,
+    .about-projects-transition .about-projects-turn__flip-face--back iframe,
     .about-projects-transition .about-projects-turn__flip-backface,
-    .projects-about-transition .projects-about-turn__flip iframe,
-    .about-contact-transition .about-contact-turn__flip iframe,
-    .contact-about-transition .contact-about-turn__flip iframe {
+    .about-projects-transition.swap-flip-mid .about-projects-turn__flip-front--projects,
+    .projects-about-transition .projects-about-turn__flip-back,
+    .about-contact-transition .about-contact-turn__flip-front--contact,
+    .about-contact-transition .about-contact-turn__flip-back,
+    .about-contact-transition.swap-flip-mid .about-contact-turn__flip-front--contact,
+    .contact-about-transition .contact-about-turn__flip-front--about,
+    .contact-about-transition .contact-about-turn__flip-back,
+    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--about {
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
     }
-    .about-projects-turn__flip-face,
-    .about-projects-turn__flip-surface,
-    .projects-about-turn__flip-face,
-    .about-contact-turn__flip-face,
-    .contact-about-turn__flip-face {
+    /* Hold kilde-design synligt på forsiden (også efter mid-swap) */
+    .about-projects-transition.swap-flip-mid .about-projects-turn__flip-front--about,
+    .about-contact-transition.swap-flip-mid .about-contact-turn__flip-front--about,
+    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--contact,
+    .projects-about-transition.swap-flip-mid .projects-about-turn__flip-front {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    /* Bagside-face: tomt linjeret papir (destination-iframes er skjult ovenfor) */
+    .about-projects-turn__flip-face--back,
+    .projects-about-turn__flip-face--back,
+    .about-contact-turn__flip-face--back,
+    .contact-about-turn__flip-face--back {
+        opacity: 1 !important;
         background:
             linear-gradient(transparent 0px, transparent 24px, #d5d5d5 24px, #d5d5d5 25px, transparent 25px),
             linear-gradient(transparent 0px, transparent 26px, #e0e0e0 26px, #e0e0e0 27px, transparent 27px),
