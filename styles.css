@@ -7709,7 +7709,8 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         display: block !important;
         width: auto !important;
         max-width: none !important;
-        overflow: hidden !important; /* BFC: hele indholdet bliver ved siden af float */
+        /* Ingen overflow:hidden — ellers forbliver AL tekst smal; under foto skal den fylde ind mod midten */
+        overflow: visible !important;
         position: relative;
         z-index: 8;
     }
@@ -7720,8 +7721,13 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         line-height: 50px !important;
         max-width: none;
     }
+    /* Efter 1. afsnit: clear float → resten fylder hele venstre side ind mod midten */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__clear-after-photo {
-        display: none !important;
+        display: block !important;
+        clear: both !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
         display: block !important;
