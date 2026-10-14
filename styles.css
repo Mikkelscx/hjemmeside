@@ -2812,6 +2812,47 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
         opacity: 0 !important;
         pointer-events: none !important;
     }
+
+    /*
+     * Foldende ark: tomt linjeret papir — ikke samme design som den revealed under-side.
+     * Forsiden beholder kildesiden; bagside/flap/destination-iframes skjules.
+     */
+    .about-projects-transition .about-projects-turn__flip-front--projects,
+    .about-projects-transition .about-projects-turn__flip-face--back iframe,
+    .about-projects-transition .about-projects-turn__flip-backface,
+    .about-projects-transition.swap-flip-mid .about-projects-turn__flip-front--projects,
+    .projects-about-transition .projects-about-turn__flip-back,
+    .about-contact-transition .about-contact-turn__flip-front--contact,
+    .about-contact-transition .about-contact-turn__flip-back,
+    .about-contact-transition.swap-flip-mid .about-contact-turn__flip-front--contact,
+    .contact-about-transition .contact-about-turn__flip-front--about,
+    .contact-about-transition .contact-about-turn__flip-back,
+    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--about {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    .about-projects-transition.swap-flip-mid .about-projects-turn__flip-front--about,
+    .about-contact-transition.swap-flip-mid .about-contact-turn__flip-front--about,
+    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--contact,
+    .projects-about-transition.swap-flip-mid .projects-about-turn__flip-front {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    .about-projects-turn__flip,
+    .projects-about-turn__flip,
+    .about-contact-turn__flip,
+    .contact-about-turn__flip {
+        background:
+            linear-gradient(transparent 0px, transparent 24px, #d5d5d5 24px, #d5d5d5 25px, transparent 25px),
+            linear-gradient(transparent 0px, transparent 26px, #e0e0e0 26px, #e0e0e0 27px, transparent 27px),
+            linear-gradient(#ff6b6b, #ff6b6b),
+            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            #f5f5f0 !important;
+        background-size: 100% 25px, 100% 25px, 2px 100%, 100% 100%, 100% 100% !important;
+        background-position: 0 0, 0 0, 60px 0, 0 0, 0 0 !important;
+        background-repeat: repeat, repeat, no-repeat, no-repeat, repeat !important;
+    }
 }
 
 /* PROJEKTER -> KONTAKT (double flip with "Om mig" hint) */

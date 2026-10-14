@@ -258,6 +258,28 @@ function mskIsTabletPortraitSinglePage() {
 	}
 }
 
+/** Tomt linjeret papir (samme 25px-streger + rød margen som sketchbook). */
+function mskApplyBlankLinedPaper(el) {
+	if (!el) return;
+	try {
+		el.style.setProperty(
+			'background',
+			[
+				'linear-gradient(transparent 0px, transparent 24px, #d5d5d5 24px, #d5d5d5 25px, transparent 25px)',
+				'linear-gradient(transparent 0px, transparent 26px, #e0e0e0 26px, #e0e0e0 27px, transparent 27px)',
+				'linear-gradient(#ff6b6b, #ff6b6b)',
+				'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+				'#f5f5f0'
+			].join(','),
+			'important'
+		);
+		el.style.setProperty('background-size', '100% 25px, 100% 25px, 2px 100%, 100% 100%, 100% 100%', 'important');
+		el.style.setProperty('background-position', '0 0, 0 0, 60px 0, 0 0, 0 0', 'important');
+		el.style.setProperty('background-repeat', 'repeat, repeat, no-repeat, no-repeat, repeat', 'important');
+		el.style.setProperty('background-color', '#f5f5f0', 'important');
+	} catch (_) {}
+}
+
 /** Force sketchbook turn overlays to full viewport on tablet portrait (not 50vw book mid). */
 function mskApplyAboutContactPortraitFullPage(root) {
 	if (!root || !mskIsTabletPortraitSinglePage()) return;
@@ -3394,8 +3416,46 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (!(desktopFine || tabletFold)) {
 						curl.flap.style.setProperty('display', 'none', 'important');
 					} else if (flapFrame) {
+						const portraitBlankFlap = !!(
+							typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()
+						);
+						if (portraitBlankFlap) {
+							mskApplyBlankLinedPaper(curl.flap);
+							flapFrame.style.setProperty('opacity', '0', 'important');
+							flapFrame.style.setProperty('visibility', 'hidden', 'important');
+							flapFrame.style.setProperty('display', 'none', 'important');
+						} else {
+							curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
+							curl.flap.style.setProperty('background-image', 'none', 'important');
+							try {
+								const doc = flapFrame.contentDocument;
+								if (doc) {
+									doc.documentElement.style.setProperty('background', '#f5f5f0', 'important');
+									if (doc.body) doc.body.style.setProperty('background', '#f5f5f0', 'important');
+								}
+							} catch {}
+						}
+					}
+				} else if (flapFrame && (tabletFold || flipEl.classList.contains('about-projects-turn__flip'))) {
+					const portraitBlankFlap = !!(
+						typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()
+					);
+					if (portraitBlankFlap) {
+						/* Portræt one-page: foldende flig = tomt linjeret papir (ikke destinationens design). */
+						mskApplyBlankLinedPaper(curl.flap);
+						flapFrame.style.setProperty('opacity', '0', 'important');
+						flapFrame.style.setProperty('visibility', 'hidden', 'important');
+						flapFrame.style.setProperty('display', 'none', 'important');
+					} else {
+						// Tablet landskab / Om mig→Projekter: keep the turned page opaque.
 						curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
-						curl.flap.style.setProperty('background-image', 'none', 'important');
+						if (flipEl.classList.contains('about-projects-turn__flip')) {
+							// Projekter på flap så snart peelen har geometri — ikke først ved midten
+							// (ellers kommer designet “for sent” i trækket, jf. IMG_7906).
+							flapFrame.style.setProperty('opacity', '1', 'important');
+							flapFrame.style.setProperty('visibility', 'visible', 'important');
+							flapFrame.style.setProperty('display', 'block', 'important');
+						}
 						try {
 							const doc = flapFrame.contentDocument;
 							if (doc) {
@@ -3404,23 +3464,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						} catch {}
 					}
-				} else if (flapFrame && (tabletFold || flipEl.classList.contains('about-projects-turn__flip'))) {
-					// Tablet / Om mig→Projekter: keep the turned page opaque so the next page does not shine through.
-					curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
-					if (flipEl.classList.contains('about-projects-turn__flip')) {
-						// Projekter på flap så snart peelen har geometri — ikke først ved midten
-						// (ellers kommer designet “for sent” i trækket, jf. IMG_7906).
-						flapFrame.style.setProperty('opacity', '1', 'important');
-						flapFrame.style.setProperty('visibility', 'visible', 'important');
-						flapFrame.style.setProperty('display', 'block', 'important');
-					}
-					try {
-						const doc = flapFrame.contentDocument;
-						if (doc) {
-							doc.documentElement.style.setProperty('background', '#f5f5f0', 'important');
-							if (doc.body) doc.body.style.setProperty('background', '#f5f5f0', 'important');
-						}
-					} catch {}
 				}
 			}
 		}
@@ -15312,7 +15355,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 00:15';
+		const stampText = 'update torsdag 15 okt - klokken 00:20';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
