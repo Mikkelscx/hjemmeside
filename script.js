@@ -7824,8 +7824,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function mskProjectsIpadLsMindmapSpokeIsLocked(line) {
 		try {
-			// Under orientation-relayout: lad sync rette Byens/Brainfarts igen (ellers fryser forkert midt-rotation).
-			if (window.__mskProjectsBypassSpokeFreeze) return false;
+			// Respektér lås også under BypassSpokeFreeze — ellers “rykker” Byens/Brainfarts
+			// ved hver mellemliggende redraw mens layout settler efter rotation.
 			return !!(line && line.dataset && line.dataset.mskIpadLsSpokeLocked === '1');
 		} catch (_) {
 			return false;
@@ -7851,11 +7851,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch (_) {}
 	}
 
-	/** Portræt→landskab: ryd låse én gang før rebuild — ingen forsinket re-sync (det hoppede stregerne). */
+	/** Portræt→landskab: låse ryddes allerede FØR rebuild — ikke efter (det hoppede stregerne). */
 	function mskProjectsIpadLsResyncByensBrainfartsAfterOrient() {
-		try {
-			mskProjectsIpadLsClearLeftSpokeLocks();
-		} catch (_) {}
+		/* no-op: ClearLeftSpokeLocks kører før __mskProjectsRelayout */
 	}
 	try {
 		window.mskProjectsIpadLsClearLeftSpokeLocks = mskProjectsIpadLsClearLeftSpokeLocks;
@@ -10814,7 +10812,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				'transform',
 				`rotate(${angle} ${pts.brainStartX} ${pts.brainStartY})`
 			);
-			mskProjectsIpadLsLockMindmapSpoke(line);
+			// Lås kun når noden har reel størrelse — ellers kan en senere pass rette enden.
+			if (nodeRect && nodeRect.width > 8) mskProjectsIpadLsLockMindmapSpoke(line);
 		} catch (_) {}
 	}
 
@@ -10859,7 +10858,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				'transform',
 				`rotate(${angle} ${pts.brainStartX} ${pts.brainStartY})`
 			);
-			if (ring) mskProjectsIpadLsLockMindmapSpoke(line);
+			if (nodeRect && nodeRect.width > 8) mskProjectsIpadLsLockMindmapSpoke(line);
 		} catch (_) {}
 	}
 
@@ -10942,7 +10941,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Remove ONLY dynamic lines/paths we previously created and redraw them.
 		// This preserves any static SVG lines in `projects.html` (e.g. NATURLI) and avoids double-stacking.
-		currentSvg.querySelectorAll('.dynamic-mindmap-line').forEach(el => el.remove());
+		// Byens/Brainfarts der allerede er låst efter portræt→landskab må ikke slettes — ellers “rykker” de.
+		currentSvg.querySelectorAll('.dynamic-mindmap-line').forEach((el) => {
+			try {
+				if (
+					(el.classList.contains('byens-brain-line') ||
+						el.classList.contains('brainfarts-brain-line')) &&
+					mskProjectsIpadLsMindmapSpokeIsLocked(el)
+				) {
+					return;
+				}
+			} catch (_) {}
+			el.remove();
+		});
 		// Note: circles/frames are handled separately by createHandDrawnFrames()
 		
 		// Note: All existing lines are cleared above, so we start with a clean slate
@@ -10967,12 +10978,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		let desktopProjectsWide = false;
 		let ipadLandscapeLines = false;
+		/* Byens/Brainfarts: behold landskab-punkter selv når øvrige eger følger desktop-wide. */
+		let ipadLsLeftSpokePoints = false;
 		try {
 			const iw = mskProjectsLayoutViewportBox().w || 0;
 			desktopProjectsWide = iw >= 1025 && !mskIsProjectsShortLandscapeViewport();
 			ipadLandscapeLines =
 				!!mskIsProjectsTabletLandscapeViewport() &&
 				!container.classList.contains('projects-mindmap--portrait');
+			ipadLsLeftSpokePoints = !!(
+				ipadLandscapeLines || mskProjectsIpadLsDocIsLandscape()
+			);
 			/* Tablet landskab: samme eger som computer (ikke korte/klemme-linjer) */
 			if (ipadLandscapeLines) {
 				desktopProjectsWide = true;
@@ -11689,6 +11705,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeTextBrainfarts = node.textContent.trim();
 			const nodeHrefBrainfarts = node.getAttribute('href') || '';
 			if (nodeTextBrainfarts === 'BRAINFARTS' || nodeHrefBrainfarts.includes('brainfarts') || nodeHrefBrainfarts.includes('project1')) {
+				try {
+					const existingBf = currentSvg.querySelector('image.brainfarts-brain-line');
+					if (existingBf && mskProjectsIpadLsMindmapSpokeIsLocked(existingBf)) return;
+				} catch (_) {}
 				console.log(`✓ BRAINFARTS detected at index ${index} - creating Linje 8.webp asset line`);
 				
 				const bfShortLs = mskIsProjectsShortLandscapeViewport();
@@ -11696,7 +11716,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				let brainStartY;
 				let lineEndX;
 				let lineEndY;
-				if (ipadLandscapeLines) {
+				if (ipadLsLeftSpokePoints) {
 					const pts = mskBrainfartsIpadLandscapeLinePoints(
 						containerRect,
 						brainRect,
@@ -11729,8 +11749,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
-				const bfWidthMul = ipadLandscapeLines ? 1 : bfShortLs ? 1.14 : 1;
+				const lineLength = ipadLsLeftSpokePoints
+					? Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2)
+					: Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
+				const bfWidthMul = ipadLsLeftSpokePoints ? 1 : bfShortLs ? 1.14 : 1;
 				
 				console.log('BRAINFARTS Linje 8 details (from center):', { brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength });
 				
@@ -11740,7 +11762,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'assets/linje 8.webp'); // xlink:href for compatibility
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', String(brainStartY - lineH(390) / 2)); // half of scaled line height
-				lineImage.setAttribute('width', lineLength * mindmapLineLenMul * bfWidthMul);
+				lineImage.setAttribute(
+					'width',
+					ipadLsLeftSpokePoints
+						? lineLength
+						: lineLength * mindmapLineLenMul * bfWidthMul
+				);
 				lineImage.setAttribute('height', String(lineH(390)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none');
@@ -11760,6 +11787,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.style.filter = 'none';
 				
 				currentSvg.appendChild(lineImage);
+				if (ipadLsLeftSpokePoints && nodeRect.width > 8) {
+					mskProjectsIpadLsLockMindmapSpoke(lineImage);
+				}
 				console.log(`✓ BRAINFARTS linje 8.webp asset line created and added to SVG`);
 				return; // Skip the hand-drawn line creation for BRAINFARTS
 			}
@@ -11981,45 +12011,67 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeHrefByens = (node.getAttribute('href') || '').toLowerCase();
 			const nodeVisualKey = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKey === 'byens-landhandel' || nodeTextByens === 'Byens Landhandel' || nodeHrefByens.includes('byens-landhandel')) {
+				try {
+					const existingByens = currentSvg.querySelector('image.byens-brain-line');
+					if (existingByens && mskProjectsIpadLsMindmapSpokeIsLocked(existingByens)) return;
+				} catch (_) {}
 				console.log('Creating line for BYENS LANDHANDEL', {nodeX, nodeY, centerX, centerY});
-				
-				// Anchor the line under a specific letter instead of dead-center.
-				// "Byens Landhandel": the user wants the line connected under the "e" in "Byens",
-				// so we aim a bit left-of-center and slightly lower than the node center.
-				const byensAnchorX = nodeRect.left - containerRect.left + nodeRect.width * 0.44;
-				const byensAnchorY = nodeRect.top - containerRect.top + nodeRect.height * 0.78;
-				
-				// Start from below the top of the brain, then extend slightly toward the brain
-				const initialBrainStartX = centerX;
-				const initialBrainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
-				
-				// End further toward the tab (extend a bit past the tab center)
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				let nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
-				const deltaX = byensAnchorX - initialBrainStartX;
-				const deltaY = byensAnchorY - initialBrainStartY;
-				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-				let lineEndX = byensAnchorX + (deltaX / distance) * nodeExtension;
-				let lineEndY = byensAnchorY + (deltaY / distance) * nodeExtension;
-				
-				// Extend backward from the initial start point to make the line longer toward the brain
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
-				let brainExtension = brainRadius * 0.28;
-				let brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
-				let brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
-				if (ipadLandscapeLines) {
-					nodeExtension = nodeRadius * 0.72;
-					brainExtension = brainRadius * 0.05;
+
+				let brainStartX;
+				let brainStartY;
+				let lineEndX;
+				let lineEndY;
+				let angle;
+				let lineLength;
+
+				if (ipadLsLeftSpokePoints) {
+					const pts = mskByensIpadLandscapeLinePoints(
+						containerRect,
+						brainRect,
+						null,
+						node,
+						nodeRect
+					);
+					brainStartX = pts.brainStartX;
+					brainStartY = pts.brainStartY;
+					lineEndX = pts.lineEndX;
+					lineEndY = pts.lineEndY;
+					angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
+					lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2);
+				} else {
+					// Anchor the line under a specific letter instead of dead-center.
+					// "Byens Landhandel": the user wants the line connected under the "e" in "Byens",
+					// so we aim a bit left-of-center and slightly lower than the node center.
+					const byensAnchorX = nodeRect.left - containerRect.left + nodeRect.width * 0.44;
+					const byensAnchorY = nodeRect.top - containerRect.top + nodeRect.height * 0.78;
+
+					// Start from below the top of the brain, then extend slightly toward the brain
+					const initialBrainStartX = centerX;
+					const initialBrainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
+
+					// End further toward the tab (extend a bit past the tab center)
+					const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+					let nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
+					const deltaX = byensAnchorX - initialBrainStartX;
+					const deltaY = byensAnchorY - initialBrainStartY;
+					const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+					lineEndX = byensAnchorX + (deltaX / distance) * nodeExtension;
+					lineEndY = byensAnchorY + (deltaY / distance) * nodeExtension;
+
+					// Extend backward from the initial start point to make the line longer toward the brain
+					const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+					let brainExtension = brainRadius * 0.28;
+					brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
+					brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
+					/* Kort mobil-landscape: hjernens ende (peger mod hjernen) lidt ned + til venstre */
+					if (mskIsProjectsShortLandscapeViewport()) {
+						brainStartX -= 22;
+						brainStartY += 24;
+					}
+
+					angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
+					lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
 				}
-				/* Kort mobil-landscape: hjernens ende (peger mod hjernen) lidt ned + til venstre */
-				if (mskIsProjectsShortLandscapeViewport()) {
-					brainStartX -= 22;
-					brainStartY += 24;
-				}
-				
-				// Calculate angle for rotation
-				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const lineLength = Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) * spokeLenMul;
 				
 				console.log('Line details:', {brainStartX, brainStartY, lineEndX, lineEndY, angle, lineLength});
 				
@@ -12028,7 +12080,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.setAttribute('href', 'assets/linje 1.webp');
 				lineImage.setAttribute('x', brainStartX);
 				lineImage.setAttribute('y', String(brainStartY - lineH(400) / 2));
-				lineImage.setAttribute('width', lineLength * mindmapLineLenMul);
+				lineImage.setAttribute('width', lineLength * (ipadLsLeftSpokePoints ? 1 : mindmapLineLenMul));
 				lineImage.setAttribute('height', String(lineH(400)));
 				lineImage.setAttribute('opacity', '1');
 				lineImage.setAttribute('preserveAspectRatio', 'none'); // Force stretching
@@ -12043,6 +12095,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineImage.dataset.nodeHref = (node.getAttribute('href') || '').toLowerCase();
 				
 				currentSvg.appendChild(lineImage);
+				if (ipadLsLeftSpokePoints && nodeRect.width > 8) {
+					mskProjectsIpadLsLockMindmapSpoke(lineImage);
+				}
 				console.log(`Line image created for BYENS LANDHANDEL`);
 				return; // Skip the hand-drawn line creation for BYENS LANDHANDEL
 			}
@@ -15141,7 +15196,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 22:00';
+		el.textContent = 'update onsdag 14 okt - klokken 22:05';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
