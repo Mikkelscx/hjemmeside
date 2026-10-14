@@ -2808,11 +2808,14 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     }
     /*
      * Skjul den under-side der IKKE er reveal-hullet (ellers dobbelt design).
-     * Projekter→Om mig afslører på under--right — den må IKKE skjules.
+     * Reveal-huller der må IKKE skjules:
+     * - Projekter→Om mig: under--right
+     * - Om mig→Kontakt: under--right
+     * - Kontakt→Om mig / Om mig→Projekter: under--left
      */
     .about-projects-turn__under--right,
     .contact-about-turn__under--right,
-    .about-contact-turn__under--right,
+    .about-contact-turn__under--left,
     .projects-about-transition .projects-about-under--left {
         opacity: 0 !important;
         pointer-events: none !important;
@@ -2922,6 +2925,40 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
         display: none !important;
         opacity: 0 !important;
         visibility: hidden !important;
+    }
+    /*
+     * Om mig → Kontakt: under--right er reveal (Kontakt).
+     * Hold Kontakt synlig fra første peel — ikke Om mig igen i hullet.
+     */
+    .about-contact-transition .about-contact-turn__under--right {
+        opacity: 1 !important;
+        pointer-events: none !important;
+        left: 0 !important;
+        width: 100vw !important;
+        z-index: 2 !important;
+    }
+    .about-contact-transition.is-turning .about-contact-turn__under--right .about-contact-turn__under-frame--contact,
+    .about-contact-transition.swap-under-right .about-contact-turn__under--right .about-contact-turn__under-frame--contact {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        left: 0 !important;
+        width: 100vw !important;
+    }
+    .about-contact-transition.is-turning .about-contact-turn__under--right .about-contact-turn__under-frame--about,
+    .about-contact-transition.swap-under-right .about-contact-turn__under--right .about-contact-turn__under-frame--about {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    .about-contact-transition .about-contact-turn__flip-front--about,
+    .about-contact-transition.swap-flip-mid .about-contact-turn__flip-front--about {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        left: 0 !important;
+        width: 100vw !important;
+        transform: none !important;
     }
     /* Bagside-face: tomt linjeret papir (destination-iframes er skjult ovenfor) */
     .about-projects-turn__flip-face--back,

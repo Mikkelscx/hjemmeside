@@ -5279,21 +5279,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				try {
 					if (overlay) {
-						// Next page stays covered until the sheet has turned past the middle.
-						if (progress >= 0.5) overlay.classList.add('swap-under-right');
-						else overlay.classList.remove('swap-under-right');
+						const portraitOne = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+						if (portraitOne) {
+							/* Portræt one-page: Kontakt under fra første træk (reveal-hul = under--right). */
+							if (progress > 0) overlay.classList.add('swap-under-right');
+							else overlay.classList.remove('swap-under-right');
+							overlay.classList.remove('swap-flip-mid', 'swap-under-left');
+						} else {
+							// Next page stays covered until the sheet has turned past the middle.
+							if (progress >= 0.5) overlay.classList.add('swap-under-right');
+							else overlay.classList.remove('swap-under-right');
 
-						// Flipping sheet: swap exactly at the middle seam while dragging.
-						// For a RIGHT->LEFT drag, "past middle" means cursor has crossed to the left side of the seam.
-						const cursorPastMiddle = (typeof x === 'number' && typeof seamX === 'number') ? (x <= seamX) : (progress >= 0.5);
-						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
-						else overlay.classList.remove('swap-flip-mid');
+							// Flipping sheet: swap exactly at the middle seam while dragging.
+							// For a RIGHT->LEFT drag, "past middle" means cursor has crossed to the left side of the seam.
+							const cursorPastMiddle = (typeof x === 'number' && typeof seamX === 'number') ? (x <= seamX) : (progress >= 0.5);
+							if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
+							else overlay.classList.remove('swap-flip-mid');
 
-						// Venstre under først når den trukne side næsten er landet —
-						// ellers skifter bagsiden til Kontakt for tidligt midt i trækket.
-						if (progress >= 0.97) overlay.classList.add('swap-under-left');
-						else overlay.classList.remove('swap-under-left');
-
+							// Venstre under først når den trukne side næsten er landet —
+							// ellers skifter bagsiden til Kontakt for tidligt midt i trækket.
+							if (progress >= 0.97) overlay.classList.add('swap-under-left');
+							else overlay.classList.remove('swap-under-left');
+						}
 					}
 				} catch {}
 			}
@@ -15394,7 +15401,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 00:40';
+		const stampText = 'update torsdag 15 okt - klokken 00:45';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
