@@ -564,6 +564,10 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 		document.documentElement.classList.toggle('msk-projects-ipad-landscape', tabletLandscape);
 		document.documentElement.classList.toggle('msk-projects-ipad-landscape-no-scroll', tabletLandscape);
 		document.documentElement.classList.toggle('msk-projects-ipad-portrait', tabletPortrait);
+		document.documentElement.classList.toggle(
+			'msk-projects-ipad-portrait-no-scroll',
+			tabletPortrait
+		);
 		document.documentElement.classList.toggle('msk-projects-phone-portrait', phonePortrait);
 		document.documentElement.classList.toggle('msk-projects-phone-landscape', phoneLandscape);
 		document.documentElement.classList.toggle(
@@ -763,7 +767,11 @@ function mskProjectsMindmapRelayoutAfterTabletOrientation(force) {
 		const enteringPortrait = !enteringLandscape && !!mskIsProjectsTabletPortraitViewport();
 		mskApplyProjectsIpadLandscapeDocumentMode();
 		if (enteringLandscape) {
-			root.classList.remove('msk-mindmap-booting', 'msk-projects-ipad-portrait');
+			root.classList.remove(
+				'msk-mindmap-booting',
+				'msk-projects-ipad-portrait',
+				'msk-projects-ipad-portrait-no-scroll'
+			);
 			root.classList.add('msk-projects-mindmap-painted');
 			const c = document.querySelector('.brainstorm-container');
 			if (c) {
@@ -781,6 +789,7 @@ function mskProjectsMindmapRelayoutAfterTabletOrientation(force) {
 				'msk-projects-ipad-landscape-no-scroll',
 				'msk-mindmap-booting'
 			);
+			root.classList.add('msk-projects-ipad-portrait-no-scroll');
 			mskClearTwisterIpadLandscapeTitleNudge();
 			/* Landskab-låste Byens/Brainfarts-eger må ikke overleve i portræt (tynd reststreg). */
 			try {
@@ -15059,11 +15068,13 @@ window.addEventListener('load', function () {
 	function applyLock() {
 		if (!isProjectsPage()) return;
 		const wasOn = document.documentElement.classList.contains('msk-projects-ipad-landscape');
+		const wasPortrait = document.documentElement.classList.contains('msk-projects-ipad-portrait');
 		const on = mskApplyProjectsIpadLandscapeDocumentMode();
-		if (on) {
+		const portraitOn = document.documentElement.classList.contains('msk-projects-ipad-portrait');
+		if (on || portraitOn) {
 			document.documentElement.style.removeProperty('--vh');
 			document.documentElement.style.removeProperty('--vw');
-			if (!wasOn) scheduleMindmapRelayoutAfterLock();
+			if ((on && !wasOn) || (portraitOn && !wasPortrait)) scheduleMindmapRelayoutAfterLock();
 		}
 	}
 	function blockScroll(e) {
@@ -15073,12 +15084,15 @@ window.addEventListener('load', function () {
 			const html = document.documentElement;
 			const locked =
 				html.classList.contains('msk-projects-ipad-landscape-no-scroll') ||
+				html.classList.contains('msk-projects-ipad-portrait-no-scroll') ||
 				html.classList.contains('msk-projects-phone-portrait-no-scroll') ||
 				html.classList.contains('msk-projects-ipad-landscape') ||
+				html.classList.contains('msk-projects-ipad-portrait') ||
 				html.classList.contains('msk-projects-phone-portrait');
 			if (!locked) return;
 			if (
 				mskIsProjectsTabletLandscapeViewport() ||
+				mskIsProjectsTabletPortraitViewport() ||
 				mskIsProjectsPhonePortraitViewport()
 			) {
 				if (mskAllowBrowserZoomGesture(e)) return;
@@ -15189,8 +15203,10 @@ window.addEventListener('load', function () {
 			body.style.removeProperty('width');
 			html.classList.remove(
 				'msk-projects-ipad-landscape-no-scroll',
+				'msk-projects-ipad-portrait-no-scroll',
 				'msk-projects-phone-portrait-no-scroll',
 				'msk-projects-ipad-landscape',
+				'msk-projects-ipad-portrait',
 				'msk-projects-phone-portrait',
 				'msk-mindmap-booting'
 			);
@@ -15218,7 +15234,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 22:35';
+		el.textContent = 'update onsdag 14 okt - klokken 22:55';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();

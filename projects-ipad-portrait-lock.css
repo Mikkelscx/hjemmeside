@@ -1,8 +1,58 @@
 /**
- * L�ST: iPad/tablet portr�t � projects.html mindmap (godkendt 20260525-lock2).
- * �ndr KUN denne fil for tablet-portr�t visuelle overrides og klik-lag.
- * Loades EFTER styles.css s� html.msk-projects-ipad-portrait vinder.
+ * LÅST scope: iPad/tablet portræt — projects.html mindmap.
+ * Ændr KUN denne fil for tablet-portræt visuelle overrides og klik-lag.
+ * Loades EFTER styles.css så html.msk-projects-ipad-portrait vinder.
  */
+
+/*
+ * Single page i portræt: ingen dokument-scroll (modstykke til landskab-no-scroll).
+ * Rører IKKE landscape.
+ */
+html.msk-projects-ipad-portrait-no-scroll,
+html.msk-projects-ipad-portrait {
+	overflow: hidden !important;
+	overscroll-behavior: none !important;
+	touch-action: pan-x pan-y pinch-zoom;
+	height: 100%;
+	max-height: 100dvh;
+}
+
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme {
+	overflow: hidden !important;
+	overscroll-behavior: none !important;
+	touch-action: pan-x pan-y pinch-zoom;
+	position: relative;
+	min-height: 100dvh;
+	height: 100dvh;
+	max-height: 100dvh;
+}
+
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .msk-paper-lines-layer,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme::before,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme::before,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme::after,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme::after {
+	height: 100% !important;
+	max-height: 100% !important;
+	min-height: 0 !important;
+	top: 0 !important;
+	bottom: 0 !important;
+}
+
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+	position: fixed !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100dvh !important;
+	max-height: 100dvh !important;
+	min-height: 0 !important;
+	overflow: visible !important;
+}
 
 /* Streger m� ikke fange tap (fuldsk�rms-SVG l�  over noderne) */
 html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
