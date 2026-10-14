@@ -2806,11 +2806,14 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     .about-projects-transition.is-turning .about-projects-turn__flip-backface .about-projects-turn__frame--projects-right-on-flip {
         left: 0 !important;
     }
-    /* Kun én under-side synlig — undgår dobbelt design midt på */
+    /*
+     * Skjul den under-side der IKKE er reveal-hullet (ellers dobbelt design).
+     * Projekter→Om mig afslører på under--right — den må IKKE skjules.
+     */
     .about-projects-turn__under--right,
-    .projects-about-transition .projects-about-under--right,
     .contact-about-turn__under--right,
-    .about-contact-turn__under--right {
+    .about-contact-turn__under--right,
+    .projects-about-transition .projects-about-under--left {
         opacity: 0 !important;
         pointer-events: none !important;
     }
@@ -2885,6 +2888,40 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     .contact-about-transition.swap-under-left .contact-about-turn__under--left .contact-about-turn__under-frame--contact {
         display: none !important;
         opacity: 0 !important;
+    }
+    /*
+     * Projekter → Om mig: under--right er reveal (CV/Om mig).
+     * Hold den synlig og fuld bredde; fold-forside forbliver Projekter.
+     */
+    .projects-about-transition .projects-about-under--right {
+        opacity: 1 !important;
+        pointer-events: none !important;
+        left: 0 !important;
+        width: 100vw !important;
+        z-index: 2 !important;
+    }
+    .projects-about-transition.swap-under-right .projects-about-under--right .projects-about-under-frame--about {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        left: 0 !important;
+        width: 100vw !important;
+    }
+    .projects-about-transition.swap-under-right .projects-about-under--right .projects-about-under-frame--projects {
+        display: none !important;
+        opacity: 0 !important;
+    }
+    .projects-about-transition .projects-about-turn__flip-front {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        left: 0 !important;
+        width: 100vw !important;
+    }
+    .projects-about-transition .projects-about-turn__flip-back {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
     }
     /* Bagside-face: tomt linjeret papir (destination-iframes er skjult ovenfor) */
     .about-projects-turn__flip-face--back,

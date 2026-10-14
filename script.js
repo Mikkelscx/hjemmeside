@@ -3229,6 +3229,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		if (flipEl.classList.contains('projects-about-turn__flip')) {
 			const turn = flipEl.parentElement;
+			const underRight = turn && turn.querySelector('.projects-about-under--right');
 			const underAbout = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--about');
 			const underProjects = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--projects');
 			// The opening on the right is CV and udmærkelser. The sheet being turned is the left page.
@@ -3238,6 +3239,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				portraitSinglePage = !!(typeof mskIsTabletPortraitSinglePage === 'function' &&
 					mskIsTabletPortraitSinglePage());
 			} catch (_) {}
+			if (portraitSinglePage && underRight) {
+				/* Reveal-hullet er under--right — må ikke være skjult (50/50). */
+				underRight.style.setProperty('opacity', '1', 'important');
+				underRight.style.setProperty('pointer-events', 'none', 'important');
+				underRight.style.setProperty('left', '0px', 'important');
+				underRight.style.setProperty('width', '100vw', 'important');
+				underRight.style.setProperty('z-index', '2', 'important');
+			}
 			if (underAbout) {
 				underAbout.style.setProperty('left', portraitSinglePage ? '0px' : '-50vw', 'important');
 				underAbout.style.setProperty('width', '100vw', 'important');
@@ -15385,7 +15394,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 00:35';
+		const stampText = 'update torsdag 15 okt - klokken 00:40';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
