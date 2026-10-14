@@ -240,6 +240,44 @@ function mskIsProjectsTabletPortraitViewport() {
 	}
 }
 
+/** Tablet portræt one-page (Om mig/Kontakt/Projekter) — inkl. Chrome DevTools iPad uden coarse pointer. */
+function mskIsTabletPortraitSinglePage() {
+	try {
+		if (document.documentElement.classList.contains('msk-projects-ipad-portrait')) return true;
+		if (mskIsProjectsTabletPortraitViewport()) return true;
+		if (!window.matchMedia) return false;
+		const portrait = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1366px) and (orientation: portrait)'
+		);
+		const squareish = window.matchMedia(
+			'(min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1)'
+		);
+		return !!(portrait && portrait.matches) || !!(squareish && squareish.matches);
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Force Om mig ↔ Kontakt overlay to full viewport on tablet portrait (not 50vw book mid). */
+function mskApplyAboutContactPortraitFullPage(root) {
+	if (!root || !mskIsTabletPortraitSinglePage()) return;
+	try {
+		root.querySelectorAll(
+			'.about-contact-turn__under, .contact-about-turn__under, .about-contact-turn__flip, .contact-about-turn__flip'
+		).forEach((el) => {
+			el.style.setProperty('left', '0px', 'important');
+			el.style.setProperty('right', 'auto', 'important');
+			el.style.setProperty('width', '100vw', 'important');
+		});
+		root.querySelectorAll(
+			'.about-contact-turn__frame, .contact-about-turn__frame'
+		).forEach((fr) => {
+			fr.style.setProperty('left', '0px', 'important');
+			fr.style.setProperty('width', '100vw', 'important');
+		});
+	} catch (_) {}
+}
+
 /** Låst iPad portræt mindmap — værdier i projects-ipad-portrait-lock.js */
 function mskGetProjectsIpadPortraitLock() {
 	try {
@@ -3047,11 +3085,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (flapFrame.className.indexOf('right') !== -1) {
 				let portraitSinglePage = false;
 				try {
-					portraitSinglePage = !!(
-						document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
-						(typeof mskIsProjectsTabletPortraitViewport === 'function' &&
-							mskIsProjectsTabletPortraitViewport())
-					);
+					portraitSinglePage = !!(typeof mskIsTabletPortraitSinglePage === 'function' &&
+						mskIsTabletPortraitSinglePage());
 				} catch (_) {}
 				clone.style.setProperty('left', portraitSinglePage ? '0px' : '-50vw', 'important');
 				clone.style.setProperty('width', '100vw', 'important');
@@ -3144,6 +3179,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			flipEl.classList.add('msk-paper-curl');
 			// Under-left (Projekter) sættes efter peel-geometri er kendt — se nedenfor.
 		}
+		if (
+			flipEl.classList.contains('about-contact-turn__flip') ||
+			flipEl.classList.contains('contact-about-turn__flip')
+		) {
+			try { mskApplyAboutContactPortraitFullPage(flipEl.parentElement || flipEl); } catch (_) {}
+		}
 		if (flipEl.classList.contains('projects-about-turn__flip')) {
 			const turn = flipEl.parentElement;
 			const underAbout = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--about');
@@ -3152,10 +3193,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Tablet portræt = single page: fuld bredde (ikke højre halvdel / -50vw).
 			let portraitSinglePage = false;
 			try {
-				portraitSinglePage = !!(
-					document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
-					mskIsProjectsTabletPortraitViewport()
-				);
+				portraitSinglePage = !!(typeof mskIsTabletPortraitSinglePage === 'function' &&
+					mskIsTabletPortraitSinglePage());
 			} catch (_) {}
 			if (underAbout) {
 				underAbout.style.setProperty('left', portraitSinglePage ? '0px' : '-50vw', 'important');
@@ -4952,6 +4991,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				`;
 				document.body.appendChild(overlay);
 			}
+			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 			return overlay;
 		}
 
@@ -4970,6 +5010,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const overlay = ensureOverlay();
 			overlay.classList.remove('swap-under-right', 'swap-under-left', 'swap-flip-mid');
 			try { overlay.classList.remove('is-preloading'); } catch {}
+			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 
 			// Make overlay visible BEFORE hiding the current page (prevents a 1-frame blank flash).
 			try { overlay.classList.add('is-ready'); } catch {}
@@ -5339,6 +5380,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				`;
 				document.body.appendChild(overlay);
 			}
+			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 			return overlay;
 		}
 
@@ -5357,6 +5399,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const overlay = ensureOverlay();
 			overlay.classList.remove('swap-under-left', 'swap-under-right', 'swap-flip-mid');
 			try { overlay.classList.remove('is-preloading'); } catch {}
+			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 
 			// Make overlay visible BEFORE hiding the current page (prevents a 1-frame blank flash).
 			try { overlay.classList.add('is-ready'); } catch {}
@@ -15247,7 +15290,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 14 okt - klokken 23:55';
+		const stampText = 'update onsdag 14 okt - klokken 00:12';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
