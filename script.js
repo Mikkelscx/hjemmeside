@@ -3033,23 +3033,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		} catch {}
 		if (flipEl.classList.contains('about-projects-turn__flip')) {
 			flipEl.classList.add('msk-paper-curl');
-			const turn = flipEl.parentElement;
-			const underLeft = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--projects');
-			const underAbout = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--about');
-			// Om mig → Projekter: det der afsløres under peelen til venstre er Projekter
-			// fra første træk. Den trukne side (Om mig) skifter først ved sømmen (swap-flip-mid).
-			const showProjects = p > 0;
-			if (showProjects) {
-				if (underLeft) {
-					underLeft.style.setProperty('left', '0px', 'important');
-					underLeft.style.setProperty('opacity', '1', 'important');
-				}
-				// Skjul Om mig-under med det samme — ellers ses HVEM ER + projekter-bobler oven i hinanden.
-				if (underAbout) underAbout.style.setProperty('opacity', '0', 'important');
-			} else {
-				if (underLeft) underLeft.style.setProperty('opacity', '0', 'important');
-				if (underAbout) underAbout.style.setProperty('opacity', '1', 'important');
-			}
+			// Under-left (Projekter) sættes efter peel-geometri er kendt — se nedenfor.
 		}
 		if (flipEl.classList.contains('projects-about-turn__flip')) {
 			const turn = flipEl.parentElement;
@@ -3244,6 +3228,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				} else if (tabletFold && flapFrame) {
 					// Tablet: keep the turned page opaque so the next page does not shine through.
 					curl.flap.style.setProperty('background-color', '#f5f5f0', 'important');
+					const aboutToProjects = flipEl.classList.contains('about-projects-turn__flip');
+					if (aboutToProjects) {
+						// Før sømmen: kun creme-papir på flap — Projekter-mindmap midt i peelen
+						// hakker på iPad og ser ud som et “fast” lag ovenpå Om mig.
+						const showFlapDesign = p >= 0.5;
+						flapFrame.style.setProperty('opacity', showFlapDesign ? '1' : '0', 'important');
+						flapFrame.style.setProperty('visibility', showFlapDesign ? 'visible' : 'hidden', 'important');
+					}
 					try {
 						const doc = flapFrame.contentDocument;
 						if (doc) {
@@ -3269,8 +3261,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		// next page showing through the paper the finger is still holding.
 		if (curl.held) {
 			curl.held.style.setProperty('background', '#f5f5f0', 'important');
+			if (flipEl.classList.contains('about-projects-turn__flip')) {
+				try {
+					const doc = curl.held.contentDocument;
+					if (doc) {
+						doc.documentElement.style.setProperty('background', '#f5f5f0', 'important');
+						if (doc.body) doc.body.style.setProperty('background', '#f5f5f0', 'important');
+					}
+				} catch {}
+			}
 		}
 		curl.front.style.background = '#f5f5f0';
+		curl.front.style.setProperty('background-color', '#f5f5f0', 'important');
 		let desktopFineLand = false;
 		let tabletFoldLand = false;
 		try {
@@ -3282,6 +3284,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			);
 		} catch {}
 		const computerLikeLand = desktopFineLand || tabletFoldLand;
+		const aboutToProjectsFold = flipEl.classList.contains('about-projects-turn__flip');
 		// Landing Projekter -> Om mig: the left page is already Om mig. Fading the
 		// sheet here reveals the old Projekter design for a moment.
 		const holdProjectsAbout = computerLikeLand && flipEl.classList.contains('projects-about-turn__flip') && !!flipEl._mskPaperAnim && p >= 0.5;
@@ -3290,13 +3293,34 @@ document.addEventListener('DOMContentLoaded', function() {
 			curl.shade.style.display = 'none';
 			// Placing the sheet can collapse the fold for a moment. The page
 			// underneath must stay, so the old sheet must not snap back over it.
+			// Om mig→Projekter: først sent — ellers forsvinder arket midt i peelen (hak).
 			let placing = false;
-			if (p >= 0.5 && computerLikeLand && flipEl.classList.contains('about-projects-turn__flip')) placing = true;
+			if (aboutToProjectsFold && computerLikeLand && p >= 0.88) placing = true;
 			curl.front.style.clipPath = (placing || holdProjectsAbout) ? 'polygon(0px 0px, 0px 0px, 0px 0px)' : 'none';
 		} else {
 			curl.front.style.clipPath = poly(flat);
 		}
-		const land = (flipEl._mskPaperAnim && p > 0.9) ? Math.max(0, 1 - (p - 0.9) / 0.1) : 1;
+		if (aboutToProjectsFold) {
+			const turn = flipEl.parentElement;
+			const underLeft = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--projects');
+			const underAbout = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--about');
+			// Kun reveal Projekter når der er et faktisk peel-hul — ellers skinner mindmap
+			// igennem hele Om mig-arket (u-flydende / “dobbelt” design).
+			const showProjects = p > 0 && !!flat;
+			if (showProjects) {
+				if (underLeft) {
+					underLeft.style.setProperty('left', '0px', 'important');
+					underLeft.style.setProperty('opacity', '1', 'important');
+				}
+				if (underAbout) underAbout.style.setProperty('opacity', '0', 'important');
+				try { flipEl.closest('.about-projects-transition')?.classList.add('swap-under-left'); } catch {}
+			} else {
+				if (underLeft) underLeft.style.setProperty('opacity', '0', 'important');
+				if (underAbout) underAbout.style.setProperty('opacity', '1', 'important');
+			}
+		}
+		// Hold front uigennemsigtig under træk — fade kun i den sidste landingsfase.
+		const land = (flipEl._mskPaperAnim && p > 0.92) ? Math.max(0, 1 - (p - 0.92) / 0.08) : 1;
 		curl.front.style.setProperty('opacity', String(land), 'important');
 		curl.flap.style.opacity = holdProjectsAbout ? '1' : (flat ? String(land) : '0');
 		curl.shade.style.opacity = String(land);
@@ -14948,7 +14972,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 19:25';
+		el.textContent = 'update onsdag 14 okt - klokken 19:45';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
