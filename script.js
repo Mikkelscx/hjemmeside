@@ -4831,12 +4831,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				requestAnimationFrame(tick);
 			})();
 
-			// Swap the LEFT under-page very late (only after it's fully covered).
+			// Venstre under først når arket næsten er landet (den trukne side definerer indtil da).
 			(function watchLateUnderLeftOnce() {
 				let done = false;
 				let turningStartedAt = null;
-				// Near the end of the turn. This is intentionally late to avoid showing Kontakt underneath too early.
-				const fallbackMs = Math.round(FLIP_MS * 0.90);
+				const fallbackMs = Math.round(FLIP_MS * 0.96);
 				function tick() {
 					if (done) return;
 					if (!overlay.classList.contains('is-turning')) {
@@ -4850,8 +4849,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						const flipEl = overlay.querySelector('.about-contact-turn__flip');
 						if (flipEl && window.getComputedStyle) {
 							const ang = angleDegFromMatrix3d(window.getComputedStyle(flipEl).transform);
-							// Close to fully turned (covered).
-							if (typeof ang === 'number' && ang <= -165) {
+							// Næsten færdigvendt (-175°) — ikke tidligere, så bagsiden ikke skifter midt i trækket.
+							if (typeof ang === 'number' && ang <= -175) {
 								overlay.classList.add('swap-under-left');
 								done = true;
 								return;
@@ -4939,9 +4938,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (progress >= 0.5 && cursorPastMiddle) overlay.classList.add('swap-flip-mid');
 						else overlay.classList.remove('swap-flip-mid');
 
-						// Left under-page should stay "Om mig" until it's covered by the turning sheet.
-						// So swap very late.
-						if (progress >= 0.92) overlay.classList.add('swap-under-left');
+						// Venstre under først når den trukne side næsten er landet —
+						// ellers skifter bagsiden til Kontakt for tidligt midt i trækket.
+						if (progress >= 0.97) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 
 					}
@@ -5067,10 +5066,10 @@ document.addEventListener('DOMContentLoaded', function() {
 							}, delayMs);
 						}
 
-						// Keep the left under-page as Om mig until the sheet has covered it (swap very late).
+						// Venstre under først helt til sidst i finish — den trukne side definerer indtil da.
 						window.setTimeout(() => {
 							try { overlay.classList.add('swap-under-left'); } catch {}
-						}, Math.round(Math.max(0, finishMs - 40)));
+						}, Math.round(Math.max(0, finishMs * 0.96)));
 					} catch {}
 					window.setTimeout(() => { window.location.href = 'contact.html'; }, Math.round(Math.max(520, Math.min(FLIP_MS + 140, (FLIP_MS * (1 - progress)) + 260))));
 				}
@@ -14941,7 +14940,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 17:55';
+		el.textContent = 'update onsdag 14 okt - klokken 18:15';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
