@@ -3040,8 +3040,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					document.documentElement.classList.contains('msk-projects-ipad-portrait')
 				);
 			} catch {}
-			// Computer and tablet: the opening is Projekter from the first pull.
-			const showProjects = (desktopFine || tabletFold) ? (p > 0) : (p >= 0.5);
+			// Den side der trækkes skal definere designet til sidst — ikke skift venstre under ved første træk.
+			const showProjects = (desktopFine || tabletFold) ? (p >= 0.88) : (p >= 0.5);
 			if (showProjects) {
 				if (underLeft) {
 					underLeft.style.setProperty('left', '0px', 'important');
@@ -4563,8 +4563,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (computerLike ? progress >= 0.97 : progress >= 0.88) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 
-						// Computer and tablet: the revealed page is Projekter from the first pull.
-						if (computerLike ? progress > 0 : progress >= 0.5) overlay.classList.add('swap-under-left');
+						// Venstre under (Projekter) først sent — indtil da er det den side man trækker i, der gælder.
+						if (computerLike ? progress >= 0.88 : progress >= 0.5) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 					}
 				} catch {}
@@ -14941,7 +14941,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 17:40';
+		el.textContent = 'update onsdag 14 okt - klokken 17:55';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
