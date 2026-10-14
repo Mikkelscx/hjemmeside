@@ -8193,12 +8193,12 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         width: 100%;
         max-width: none;
         /* Rød margen left:60px — start tekst efter stregen */
-        padding: 64px 36px 0 84px;
+        padding: 64px 36px 0 96px;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
         width: 100%;
         max-width: none;
-        padding: 25px 36px 40px 84px;
+        padding: 25px 36px 40px 96px;
         margin-top: 0;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {

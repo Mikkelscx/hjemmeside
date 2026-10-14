@@ -8,13 +8,23 @@
     <meta http-equiv="Expires" content="0">
     <title>About Me - Mikkel's Portfolio</title>
     <script>
+    /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        window.mskAssetV = '20260924p261';
-        document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css?v=' + window.mskAssetV + '">');
+        var v = '20260924p262';
+        try {
+            var q = new URLSearchParams(location.search || '');
+            if (q.get('v') !== v) {
+                q.set('v', v);
+                location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
+                return;
+            }
+        } catch (e) {}
+        window.mskAssetV = v;
+        document.write('<link rel="stylesheet" href="styles-' + v + '.css?v=' + v + '">');
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
-    <!-- deploy about one-pager: 2026-10-14 23:50 p261 -->
+    <!-- deploy about one-pager: 2026-10-14 23:55 p262 — cache-bust redirect -->
     <style id="msk-about-ipad-portrait-onepager">
     /* Tablet portræt: one-pager — tæt CV under bio, fuld bredde udenom polaroid. */
     @media (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
@@ -57,10 +67,10 @@
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
             display: flow-root !important;
             /* Rød margen ~60px — tekst først efter stregen */
-            padding: 64px 36px 0 84px !important;
+            padding: 64px 36px 0 96px !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
-            padding: 25px 36px 40px 84px !important;
+            padding: 25px 36px 40px 96px !important;
             margin-top: 0 !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer,
@@ -148,7 +158,7 @@
 
     <!-- Page Content -->
     <main class="about-sketchbook">
-        <section class="about-sketchbook__page about-sketchbook__page--left">
+        <section class="about-sketchbook__page about-sketchbook__page--left" style="padding-left:96px!important;box-sizing:border-box">
             <figure class="polaroid polaroid--about polaroid--about-main" aria-hidden="true">
                 <div class="polaroid__clip" aria-hidden="true">
                     <img class="polaroid__clip-img" src="assets/papirclips-bla.webp" alt="">
@@ -172,7 +182,7 @@
             </div>
         </section>
 
-        <section class="about-sketchbook__page about-sketchbook__page--right">
+        <section class="about-sketchbook__page about-sketchbook__page--right" style="padding-left:96px!important;box-sizing:border-box">
             <h2 class="about-sketchbook__right-title" id="cv">CV</h2>
             <div class="about-sketchbook__cv">
                 <p>2014-2015: KBH Film &amp; Fotoskole</p>
@@ -194,7 +204,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p261') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p262') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
