@@ -3036,25 +3036,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			const turn = flipEl.parentElement;
 			const underLeft = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--projects');
 			const underAbout = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--about');
-			let desktopFine = false;
-			let tabletFold = false;
-			try {
-				desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-				tabletFold = !!(
-					window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
-					document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-					document.documentElement.classList.contains('msk-projects-ipad-portrait')
-				);
-			} catch {}
-			// Den side der trækkes skal definere designet til sidst — ikke skift venstre under ved første træk.
-			const showProjects = (desktopFine || tabletFold) ? (p >= 0.88) : (p >= 0.5);
+			// Om mig → Projekter: det der afsløres under peelen til venstre er Projekter
+			// fra første træk. Den trukne side (Om mig) skifter først ved sømmen (swap-flip-mid).
+			const showProjects = p > 0;
 			if (showProjects) {
 				if (underLeft) {
 					underLeft.style.setProperty('left', '0px', 'important');
 					underLeft.style.setProperty('opacity', '1', 'important');
 				}
-				const ready = !!(underLeft && underLeft.classList.contains('is-loaded'));
-				if (underAbout && (ready || !(desktopFine || tabletFold))) underAbout.style.setProperty('opacity', '0', 'important');
+				// Skjul Om mig-under med det samme — ellers ses HVEM ER + projekter-bobler oven i hinanden.
+				if (underAbout) underAbout.style.setProperty('opacity', '0', 'important');
 			} else {
 				if (underLeft) underLeft.style.setProperty('opacity', '0', 'important');
 				if (underAbout) underAbout.style.setProperty('opacity', '1', 'important');
@@ -4410,17 +4401,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					body.style.overflow = 'hidden';
 
 					overlay.classList.add('is-turning');
-					// Timing tune (menu click): swap a bit AFTER the visual seam,
-					// but once it appears it must stay on for the rest of the flip.
+					// Venstre under = Projekter med det samme (det der afsløres).
+					try { overlay.classList.add('swap-under-left'); } catch {}
+					// Timing tune (menu click): swap flipping sheet AFTER the visual seam.
 					const SWAP_FRAC = 0.58;
 					const SWAP_DEG = 105; // seam=90deg, slightly after
 					// Swap the FLIPPING page design at the visual seam (middle),
 					// so the 2nd half of the turning sheet shows Projekter RIGHT.
-					// Venstre under-side (Projekter) skal først vises her — ikke ved flip-start.
 					(function scheduleMidSwap() {
 						let done = false;
 						function applySeamSwap() {
-							overlay.classList.add('swap-flip-mid', 'swap-under-left');
+							overlay.classList.add('swap-flip-mid');
 						}
 						const flipEl = overlay.querySelector('.about-projects-turn__flip');
 						if (!flipEl) {
@@ -4569,8 +4560,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (computerLike ? progress >= 0.97 : progress >= 0.88) overlay.classList.add('swap-under-right');
 						else overlay.classList.remove('swap-under-right');
 
-						// Venstre under (Projekter) først sent — indtil da er det den side man trækker i, der gælder.
-						if (computerLike ? progress >= 0.88 : progress >= 0.5) overlay.classList.add('swap-under-left');
+						// Venstre under = Projekter så snart peelen åbner (det der revealed).
+						if (progress > 0) overlay.classList.add('swap-under-left');
 						else overlay.classList.remove('swap-under-left');
 					}
 				} catch {}
@@ -14957,7 +14948,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 19:05';
+		el.textContent = 'update onsdag 14 okt - klokken 19:25';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
