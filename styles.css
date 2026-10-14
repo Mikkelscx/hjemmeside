@@ -7686,57 +7686,80 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
         padding-top: 75px;
+        /* Float-spacer + absolut polaroid: tekst går udenom billedet som i en dagbog */
+        display: flow-root;
+        position: relative;
     }
+    /*
+     * !important: base-polaroid/spacer-regler længere nede i styles.css har samme specificity
+     * og ville ellers vinde (top:62px / height:150px) — så teksten gik hen over fotoet.
+     */
     body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
-        top: 75px;
-    }
-    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
-        display: none !important;
-        float: none !important;
+        position: absolute !important;
+        top: 75px !important;
+        right: 28px !important;
+        left: auto !important;
+        width: 190px !important;
+        max-width: 190px !important;
         margin: 0 !important;
+        float: none !important;
+        z-index: 9 !important; /* over tekst hvis wrap glipper */
+    }
+    /* Usynlig float = samme “hul” som polaroid, så linjerne går udenom billedet */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
+        display: block !important;
+        float: right !important;
+        width: 210px !important; /* 190 + luft til venstre for foto */
+        /* Træk op ved siden af titel (50px), så wrap dækker hele polaroid-højden (~265px) */
+        height: 275px !important; /* 11 × 25px */
+        margin: -50px 0 0 0 !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
         max-width: none;
+        display: flow-root;
+        position: relative;
+        z-index: 8;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
-        margin: 0;
+        margin: 0 !important;
         font-size: clamp(1.95rem, 2.55vw, 2.65rem);
         letter-spacing: 0.55px;
         line-height: 50px;
+        /* Kort titel — hold til venstre for polaroidet */
+        max-width: calc(100% - 220px);
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__clear-after-photo {
-        display: none !important;
+        display: block !important;
+        clear: both !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
+    /* Block-flow (ikke flex): ellers ignorerer teksten float-spaceren rundt om fotoet */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
+        display: block !important;
         margin: 0;
-        /* +5px vs portræt: Courier-ink ligger ~5px over stregens top (22px i båndet) på landskab/2x */
         padding-top: 13px;
         min-width: 0;
-        width: 100%;
+        width: auto;
         font-size: 18px;
         line-height: 25px;
         -webkit-text-size-adjust: none;
         text-size-adjust: none;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p {
-        margin: 0 !important;
+        margin: 0 0 25px 0 !important;
         padding: 0 !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p:last-of-type {
         margin-bottom: 0 !important;
     }
-    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text > p:nth-of-type(2),
-    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text > p:nth-of-type(3) {
-        width: 100%;
-        max-width: 100%;
-    }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--down-1,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--down-1.about-sketchbook__p--up-2,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--nudge-down {
-        transform: none;
+        transform: none !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
     }
 
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
