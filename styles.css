@@ -2766,30 +2766,51 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
 }
 
 /*
- * Tablet portræt: Om mig ↔ Kontakt = fuld one-page (ikke 50vw notesbog midt på).
- * Desktop/laptop-peel forbliver 50vw — denne blok matcher about one-pager media.
+ * Tablet portræt: Om mig ↔ Kontakt / Om mig ↔ Projekter = fuld one-page
+ * (ikke 50vw notesbog midt på). Desktop/laptop-peel forbliver 50vw.
  */
 @media (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
        (min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) {
     .about-contact-turn__under,
-    .contact-about-turn__under {
+    .contact-about-turn__under,
+    .about-projects-turn__under,
+    .projects-about-transition .projects-about-under {
         width: 100vw !important;
         left: 0 !important;
         right: auto !important;
     }
     .about-contact-turn__flip,
-    .contact-about-turn__flip {
+    .contact-about-turn__flip,
+    .about-projects-turn__flip,
+    .projects-about-transition .projects-about-turn__flip {
         left: 0 !important;
         width: 100vw !important;
     }
     .about-contact-turn__frame,
-    .contact-about-turn__frame {
+    .contact-about-turn__frame,
+    .about-projects-turn__frame,
+    .projects-about-transition .projects-about-frame {
         width: 100vw !important;
         left: 0 !important;
     }
     .about-contact-turn__frame--right,
-    .contact-about-turn__frame--right {
+    .contact-about-turn__frame--right,
+    .about-projects-turn__frame--right,
+    .about-projects-turn__frame--projects-right-on-flip,
+    .projects-about-transition .projects-about-frame--right {
         left: 0 !important;
+    }
+    /* Om mig→Projekter: under mid-turn må Projekter ikke crops til højre halvdel */
+    .about-projects-transition.is-turning .about-projects-turn__flip-front--projects,
+    .about-projects-transition.is-turning .about-projects-turn__flip-face--back .about-projects-turn__frame--projects-right-on-flip,
+    .about-projects-transition.is-turning .about-projects-turn__flip-backface .about-projects-turn__frame--projects-right-on-flip {
+        left: 0 !important;
+    }
+    /* Kun én under-side synlig — undgår dobbelt mindmap midt på */
+    .about-projects-turn__under--right,
+    .projects-about-transition .projects-about-under--right {
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
 }
 

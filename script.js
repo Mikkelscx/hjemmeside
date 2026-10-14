@@ -258,22 +258,31 @@ function mskIsTabletPortraitSinglePage() {
 	}
 }
 
-/** Force Om mig ↔ Kontakt overlay to full viewport on tablet portrait (not 50vw book mid). */
+/** Force sketchbook turn overlays to full viewport on tablet portrait (not 50vw book mid). */
 function mskApplyAboutContactPortraitFullPage(root) {
 	if (!root || !mskIsTabletPortraitSinglePage()) return;
 	try {
 		root.querySelectorAll(
-			'.about-contact-turn__under, .contact-about-turn__under, .about-contact-turn__flip, .contact-about-turn__flip'
+			'.about-contact-turn__under, .contact-about-turn__under, .about-contact-turn__flip, .contact-about-turn__flip, ' +
+			'.about-projects-turn__under, .about-projects-turn__flip, ' +
+			'.projects-about-under, .projects-about-turn__flip'
 		).forEach((el) => {
 			el.style.setProperty('left', '0px', 'important');
 			el.style.setProperty('right', 'auto', 'important');
 			el.style.setProperty('width', '100vw', 'important');
 		});
 		root.querySelectorAll(
-			'.about-contact-turn__frame, .contact-about-turn__frame'
+			'.about-contact-turn__frame, .contact-about-turn__frame, ' +
+			'.about-projects-turn__frame, .projects-about-frame'
 		).forEach((fr) => {
 			fr.style.setProperty('left', '0px', 'important');
 			fr.style.setProperty('width', '100vw', 'important');
+		});
+		root.querySelectorAll(
+			'.about-projects-turn__under--right, .projects-about-under--right'
+		).forEach((el) => {
+			el.style.setProperty('opacity', '0', 'important');
+			el.style.setProperty('pointer-events', 'none', 'important');
 		});
 	} catch (_) {}
 }
@@ -3181,9 +3190,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		if (
 			flipEl.classList.contains('about-contact-turn__flip') ||
-			flipEl.classList.contains('contact-about-turn__flip')
+			flipEl.classList.contains('contact-about-turn__flip') ||
+			flipEl.classList.contains('about-projects-turn__flip') ||
+			flipEl.classList.contains('projects-about-turn__flip')
 		) {
-			try { mskApplyAboutContactPortraitFullPage(flipEl.parentElement || flipEl); } catch (_) {}
+			try {
+				mskApplyAboutContactPortraitFullPage(
+					(flipEl.closest && (flipEl.closest('.about-projects-transition') ||
+						flipEl.closest('.projects-about-transition') ||
+						flipEl.closest('.about-contact-transition') ||
+						flipEl.closest('.contact-about-transition'))) ||
+					flipEl.parentElement ||
+					flipEl
+				);
+			} catch (_) {}
 		}
 		if (flipEl.classList.contains('projects-about-turn__flip')) {
 			const turn = flipEl.parentElement;
@@ -3664,6 +3684,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				`;
 				document.body.appendChild(overlay);
 			}
+			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 			return overlay;
 		}
 
@@ -4521,6 +4542,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				`;
 				document.body.appendChild(overlay);
 			}
+			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 			return overlay;
 		}
 
@@ -15290,7 +15312,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 14 okt - klokken 00:12';
+		const stampText = 'update torsdag 15 okt - klokken 00:15';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
