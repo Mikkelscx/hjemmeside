@@ -2814,35 +2814,29 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     }
 
     /*
-     * Foldende ark: tomt linjeret papir — ikke samme design som den revealed under-side.
-     * Forsiden beholder kildesiden; bagside/flap/destination-iframes skjules.
+     * Foldende ark = tomt linjeret papir (kun på flip-faces/flap).
+     * Flip-root skal være transparent, så under-siden (revealed design) ikke dækkes.
      */
-    .about-projects-transition .about-projects-turn__flip-front--projects,
-    .about-projects-transition .about-projects-turn__flip-face--back iframe,
-    .about-projects-transition .about-projects-turn__flip-backface,
-    .about-projects-transition.swap-flip-mid .about-projects-turn__flip-front--projects,
-    .projects-about-transition .projects-about-turn__flip-back,
-    .about-contact-transition .about-contact-turn__flip-front--contact,
-    .about-contact-transition .about-contact-turn__flip-back,
-    .about-contact-transition.swap-flip-mid .about-contact-turn__flip-front--contact,
-    .contact-about-transition .contact-about-turn__flip-front--about,
-    .contact-about-transition .contact-about-turn__flip-back,
-    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--about {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-    .about-projects-transition.swap-flip-mid .about-projects-turn__flip-front--about,
-    .about-contact-transition.swap-flip-mid .about-contact-turn__flip-front--about,
-    .contact-about-transition.swap-flip-mid .contact-about-turn__flip-front--contact,
-    .projects-about-transition.swap-flip-mid .projects-about-turn__flip-front {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
     .about-projects-turn__flip,
     .projects-about-turn__flip,
     .about-contact-turn__flip,
     .contact-about-turn__flip {
+        background: transparent !important;
+    }
+    .about-projects-transition .about-projects-turn__flip iframe,
+    .about-projects-transition .about-projects-turn__flip-backface,
+    .projects-about-transition .projects-about-turn__flip iframe,
+    .about-contact-transition .about-contact-turn__flip iframe,
+    .contact-about-transition .contact-about-turn__flip iframe {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    .about-projects-turn__flip-face,
+    .about-projects-turn__flip-surface,
+    .projects-about-turn__flip-face,
+    .about-contact-turn__flip-face,
+    .contact-about-turn__flip-face {
         background:
             linear-gradient(transparent 0px, transparent 24px, #d5d5d5 24px, #d5d5d5 25px, transparent 25px),
             linear-gradient(transparent 0px, transparent 26px, #e0e0e0 26px, #e0e0e0 27px, transparent 27px),

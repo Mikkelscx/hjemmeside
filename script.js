@@ -3470,8 +3470,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		curl.front.style.zIndex = '2';
 		curl.front.style.transform = 'none';
 		curl.flap.style.zIndex = '6';
+		const portraitBlankFold = !!(
+			typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()
+		);
 		if (curl.held) {
 			curl.front.querySelectorAll('iframe').forEach((fr) => {
+				if (portraitBlankFold) {
+					/* Foldende ark: skjules — under-siden beholder revealed design. */
+					fr.style.setProperty('display', 'none', 'important');
+					fr.style.setProperty('visibility', 'hidden', 'important');
+					fr.style.setProperty('opacity', '0', 'important');
+					return;
+				}
 				const on = fr === curl.held;
 				fr.style.setProperty('display', on ? 'block' : 'none', 'important');
 				fr.style.setProperty('visibility', on ? 'visible' : 'hidden', 'important');
@@ -3480,7 +3490,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		// The face clip does not clip the iframe. An opaque sheet stops the
 		// next page showing through the paper the finger is still holding.
-		if (curl.held) {
+		if (curl.held && !portraitBlankFold) {
 			curl.held.style.setProperty('background', '#f5f5f0', 'important');
 			if (flipEl.classList.contains('about-projects-turn__flip')) {
 				try {
@@ -3492,8 +3502,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 			}
 		}
-		curl.front.style.background = '#f5f5f0';
-		curl.front.style.setProperty('background-color', '#f5f5f0', 'important');
+		if (portraitBlankFold) {
+			mskApplyBlankLinedPaper(curl.front);
+			if (curl.flap) mskApplyBlankLinedPaper(curl.flap);
+			try { flipEl.style.setProperty('background', 'transparent', 'important'); } catch (_) {}
+		} else {
+			curl.front.style.background = '#f5f5f0';
+			curl.front.style.setProperty('background-color', '#f5f5f0', 'important');
+		}
 		let desktopFineLand = false;
 		let tabletFoldLand = false;
 		try {
@@ -15355,7 +15371,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 00:20';
+		const stampText = 'update torsdag 15 okt - klokken 00:25';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
