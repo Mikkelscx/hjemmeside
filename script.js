@@ -782,6 +782,26 @@ function mskProjectsMindmapRelayoutAfterTabletOrientation(force) {
 				'msk-mindmap-booting'
 			);
 			mskClearTwisterIpadLandscapeTitleNudge();
+			/* Landskab-låste Byens/Brainfarts-eger må ikke overleve i portræt (tynd reststreg). */
+			try {
+				if (typeof window.mskProjectsIpadLsClearLeftSpokeLocks === 'function') {
+					window.mskProjectsIpadLsClearLeftSpokeLocks();
+				}
+			} catch (_) {}
+			try {
+				const svg = document.querySelector('.connecting-lines');
+				if (svg) {
+					svg
+						.querySelectorAll(
+							'image.byens-brain-line, image.brainfarts-brain-line, .byens-brain-line, .brainfarts-brain-line'
+						)
+						.forEach((el) => {
+							try {
+								el.remove();
+							} catch (_) {}
+						});
+				}
+			} catch (_) {}
 		}
 		try {
 			window.__mskProjectsBypassSpokeFreeze = true;
@@ -10941,10 +10961,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Remove ONLY dynamic lines/paths we previously created and redraw them.
 		// This preserves any static SVG lines in `projects.html` (e.g. NATURLI) and avoids double-stacking.
-		// Byens/Brainfarts der allerede er låst efter portræt→landskab må ikke slettes — ellers “rykker” de.
+		// Byens/Brainfarts-lås gælder KUN mens vi stadig er i tablet-landskab — ellers reststreger i portræt.
+		const keepLockedLeftSpokes = !!mskProjectsIpadLsDocIsLandscape();
 		currentSvg.querySelectorAll('.dynamic-mindmap-line').forEach((el) => {
 			try {
 				if (
+					keepLockedLeftSpokes &&
 					(el.classList.contains('byens-brain-line') ||
 						el.classList.contains('brainfarts-brain-line')) &&
 					mskProjectsIpadLsMindmapSpokeIsLocked(el)
@@ -15196,7 +15218,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 22:05';
+		el.textContent = 'update onsdag 14 okt - klokken 22:35';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
