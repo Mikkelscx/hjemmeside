@@ -7408,7 +7408,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			{ href: 'about.html#cv', text: 'CV' },
 			{ href: 'about.html#udmaerkelser', text: 'UDMÆRKELSER' },
 			{ href: 'contact.html', text: 'KONTAKT' },
-			{ href: 'ai-universe.html', text: 'MIN AI UNIVERS' },
+			{ href: 'ai-universe.html', text: 'MIT AI UNIVERS' },
 		];
 
 		panel.appendChild(title);
