@@ -3045,7 +3045,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			clone.style.setProperty('backface-visibility', 'visible', 'important');
 			clone.style.setProperty('-webkit-backface-visibility', 'visible', 'important');
 			if (flapFrame.className.indexOf('right') !== -1) {
-				clone.style.setProperty('left', '-50vw', 'important');
+				let portraitSinglePage = false;
+				try {
+					portraitSinglePage = !!(
+						document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+						(typeof mskIsProjectsTabletPortraitViewport === 'function' &&
+							mskIsProjectsTabletPortraitViewport())
+					);
+				} catch (_) {}
+				clone.style.setProperty('left', portraitSinglePage ? '0px' : '-50vw', 'important');
 				clone.style.setProperty('width', '100vw', 'important');
 			}
 			clone.src = flapFrame.getAttribute('src') || flapFrame.src;
@@ -3141,8 +3149,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			const underAbout = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--about');
 			const underProjects = turn && turn.querySelector('.projects-about-under--right .projects-about-under-frame--projects');
 			// The opening on the right is CV and udmærkelser. The sheet being turned is the left page.
+			// Tablet portræt = single page: fuld bredde (ikke højre halvdel / -50vw).
+			let portraitSinglePage = false;
+			try {
+				portraitSinglePage = !!(
+					document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
+					mskIsProjectsTabletPortraitViewport()
+				);
+			} catch (_) {}
 			if (underAbout) {
-				underAbout.style.setProperty('left', '-50vw', 'important');
+				underAbout.style.setProperty('left', portraitSinglePage ? '0px' : '-50vw', 'important');
 				underAbout.style.setProperty('width', '100vw', 'important');
 				underAbout.style.setProperty('display', p > 0 ? 'block' : 'none', 'important');
 				underAbout.style.setProperty('opacity', '1', 'important');
@@ -15234,7 +15250,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 22:55';
+		el.textContent = 'update onsdag 14 okt - klokken 23:15';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();

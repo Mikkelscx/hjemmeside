@@ -28,17 +28,84 @@ html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme {
 	max-height: 100dvh;
 }
 
-html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .msk-paper-lines-layer,
-html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer,
-html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme::before,
+/*
+ * Ét papirark (ikke åben notesbog med midter-søm).
+ * Media-query single-page rammer ikke altid iPad Pro 13 + DevTools-mus.
+ */
 html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme::before,
-html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme::after,
-html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme::after {
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme::before {
+	display: block !important;
+	width: 100% !important;
+	left: 0 !important;
+	right: 0 !important;
+	top: 0 !important;
+	bottom: 0 !important;
+	height: 100% !important;
+	max-height: 100% !important;
+	min-height: 0 !important;
+	box-shadow: none !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme::after,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme::after {
+	display: none !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .right-margin,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .left-margin {
+	display: none !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+	display: flex !important;
 	height: 100% !important;
 	max-height: 100% !important;
 	min-height: 0 !important;
 	top: 0 !important;
 	bottom: 0 !important;
+}
+
+/* Ens linjer — ingen synlig midt-søm mellem halvdelene */
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half--left,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half--right {
+	background-image: repeating-linear-gradient(
+		to bottom,
+		transparent 0 22px,
+		rgba(210, 210, 210, 0.88) 22px 24px,
+		rgba(224, 224, 224, 0.62) 23px 25px
+	) !important;
+}
+
+/*
+ * Projekter → Om mig i portræt: fuld side (ikke 50vw højre blad).
+ * Landskab beholder åben-notesbog-layout.
+ */
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-under--left {
+	display: none !important;
+}
+
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-under--right {
+	left: 0 !important;
+	right: 0 !important;
+	width: 100vw !important;
+	height: 100% !important;
+	height: 100dvh !important;
+}
+
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-frame,
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-frame--left,
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-frame--right {
+	left: 0 !important;
+	width: 100vw !important;
+}
+
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-turn__flip {
+	left: 0 !important;
+	width: 100vw !important;
+	height: 100% !important;
+	height: 100dvh !important;
+	transform-origin: 0% 50%;
 }
 
 html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container,
