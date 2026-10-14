@@ -770,6 +770,11 @@ function mskProjectsMindmapRelayoutAfterTabletOrientation(force) {
 				c.classList.remove('projects-mindmap--portrait');
 				c.dataset.mskRevealed = '1';
 			}
+			try {
+				if (typeof window.mskProjectsIpadLsClearLeftSpokeLocks === 'function') {
+					window.mskProjectsIpadLsClearLeftSpokeLocks();
+				}
+			} catch (_) {}
 		} else if (enteringPortrait) {
 			root.classList.remove(
 				'msk-projects-ipad-landscape',
@@ -791,6 +796,13 @@ function mskProjectsMindmapRelayoutAfterTabletOrientation(force) {
 		try {
 			root.dispatchEvent(new CustomEvent('msk-relayout-projects-mindmap'));
 		} catch (_) {}
+		if (enteringLandscape) {
+			try {
+				if (typeof window.mskProjectsIpadLsResyncByensBrainfartsAfterOrient === 'function') {
+					window.mskProjectsIpadLsResyncByensBrainfartsAfterOrient();
+				}
+			} catch (_) {}
+		}
 	} catch (_) {}
 }
 
@@ -7812,6 +7824,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function mskProjectsIpadLsMindmapSpokeIsLocked(line) {
 		try {
+			// Under orientation-relayout: lad sync rette Byens/Brainfarts igen (ellers fryser forkert midt-rotation).
+			if (window.__mskProjectsBypassSpokeFreeze) return false;
 			return !!(line && line.dataset && line.dataset.mskIpadLsSpokeLocked === '1');
 		} catch (_) {
 			return false;
@@ -7820,9 +7834,67 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function mskProjectsIpadLsLockMindmapSpoke(line) {
 		try {
+			if (window.__mskProjectsBypassSpokeFreeze) return;
 			if (line) line.dataset.mskIpadLsSpokeLocked = '1';
 		} catch (_) {}
 	}
+
+	function mskProjectsIpadLsClearLeftSpokeLocks() {
+		try {
+			const svg = document.querySelector('.connecting-lines');
+			if (!svg) return;
+			svg.querySelectorAll('.byens-brain-line, .brainfarts-brain-line').forEach((line) => {
+				try {
+					delete line.dataset.mskIpadLsSpokeLocked;
+				} catch (_) {}
+			});
+		} catch (_) {}
+	}
+
+	/** Portræt→landskab: Byens + Brainfarts-streger sætter sig først når ring/noder er faldet til ro. */
+	function mskProjectsIpadLsResyncByensBrainfartsAfterOrient() {
+		const run = () => {
+			try {
+				if (!mskIsProjectsTabletLandscapeViewport()) return;
+				mskProjectsIpadLsClearLeftSpokeLocks();
+				try {
+					window.__mskProjectsBypassSpokeFreeze = true;
+				} catch (_) {}
+				try {
+					mskSyncByensBrainLineIpadLandscape();
+				} catch (_) {}
+				try {
+					mskSyncBrainfartsBrainLineIpadLandscape();
+				} catch (_) {}
+				try {
+					window.__mskProjectsBypassSpokeFreeze = false;
+				} catch (_) {}
+				try {
+					const svg = document.querySelector('.connecting-lines');
+					if (svg) {
+						svg.querySelectorAll('.byens-brain-line, .brainfarts-brain-line').forEach((line) => {
+							mskProjectsIpadLsLockMindmapSpoke(line);
+						});
+					}
+				} catch (_) {}
+			} catch (_) {}
+		};
+		try {
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					run();
+					window.setTimeout(run, 90);
+					window.setTimeout(run, 220);
+				});
+			});
+		} catch (_) {
+			run();
+		}
+	}
+	try {
+		window.mskProjectsIpadLsClearLeftSpokeLocks = mskProjectsIpadLsClearLeftSpokeLocks;
+		window.mskProjectsIpadLsResyncByensBrainfartsAfterOrient = mskProjectsIpadLsResyncByensBrainfartsAfterOrient;
+	} catch (_) {}
 
 	function mskProjectsIpadLsDocIsLandscape() {
 		try {
@@ -15104,7 +15176,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 21:30';
+		el.textContent = 'update onsdag 14 okt - klokken 21:48';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
