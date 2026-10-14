@@ -5426,7 +5426,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
 
-					const paperRel = mskPaperDragRelease(flipEl, 1, progress);
+					const paperRel = mskPaperDragRelease(flipEl, 1, progress, (info) => {
+						if (info && !info.complete) cleanup(overlay, flipEl);
+					});
 					const shouldComplete = paperRel ? paperRel.complete : (progress >= COMPLETE_THRESHOLD);
 					if (!shouldComplete) {
 						try {
@@ -5435,7 +5437,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								flipEl.style.transform = 'rotateY(0deg)';
 							}
 						} catch {}
-						window.setTimeout(() => cleanup(overlay, flipEl), paperRel ? 520 : 280);
+						if (!paperRel) window.setTimeout(() => cleanup(overlay, flipEl), 280);
 						return;
 					}
 
@@ -15017,7 +15019,7 @@ window.addEventListener('load', function () {
 		if (document.querySelector('.msk-build-stamp')) return;
 		const el = document.createElement('p');
 		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 20:10';
+		el.textContent = 'update onsdag 14 okt - klokken 20:12';
 		(document.body || document.documentElement).appendChild(el);
 	}
 	if (document.body) place();
