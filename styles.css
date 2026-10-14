@@ -7635,7 +7635,8 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
 }
 
 /* OM MIG: iPad/tablet landskab — dagbog: tekst på 25px-streger + udenom polaroid (inkl. iPad Pro 13 @ 1376). */
-@media (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+@media (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (hover: none) and (pointer: coarse),
+       (min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (any-pointer: coarse) {
     html:has(body.about-sketchbook-page.sketchbook-theme) {
         background-color: #f5f5f0 !important;
     }
@@ -7690,26 +7691,32 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         display: flow-root !important;
         position: relative !important;
     }
-    /* Polaroid i flow (float) — tekst bliver i kolonnen til venstre, aldrig under/over fotoet */
+    /*
+     * Absolut polaroid + float-spacer på 25px-gitter.
+     * (Relativ float-højde ~265px knækkede fasen ved clear — teksten under gled fra stregerne.)
+     */
     body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
-        position: relative !important;
-        top: auto !important;
-        right: auto !important;
+        position: absolute !important;
+        top: 75px !important;
+        right: 28px !important;
         left: auto !important;
-        float: right !important;
+        float: none !important;
         width: 190px !important;
         max-width: 190px !important;
-        margin: 0 0 25px 18px !important;
+        margin: 0 !important;
         z-index: 9 !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
-        display: none !important;
+        display: block !important;
+        float: right !important;
+        width: 220px !important;
+        height: 275px !important; /* 11 × 25px — clear lander på gitteret */
+        margin: 0 !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
         display: block !important;
         width: auto !important;
         max-width: none !important;
-        /* Ingen overflow:hidden — ellers forbliver AL tekst smal; under foto skal den fylde ind mod midten */
         overflow: visible !important;
         position: relative;
         z-index: 8;
@@ -7718,10 +7725,10 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
         margin: 0 !important;
         font-size: clamp(1.95rem, 2.55vw, 2.65rem) !important;
         letter-spacing: 0.55px;
-        line-height: 50px !important;
-        max-width: none;
+        line-height: 50px !important; /* 2 × 25px */
+        max-width: calc(100% - 230px);
     }
-    /* Efter 1. afsnit: clear float → resten fylder hele venstre side ind mod midten */
+    /* Clear efter 1. afsnit → under foto fylder teksten ind mod midten, stadig på gitter */
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__clear-after-photo {
         display: block !important;
         clear: both !important;
@@ -7732,8 +7739,7 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
         display: block !important;
         margin: 0 !important;
-        /* Samme fase som portræt: første baseline på stregen i 25px-båndet */
-        padding-top: 8px !important;
+        padding-top: 13px !important; /* Courier-ink på stregen (~22px i hvert 25px-bånd) */
         min-width: 0;
         width: auto;
         font-size: 18px !important;
@@ -7773,7 +7779,7 @@ body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards {
         font-size: 18px !important;
         line-height: 25px !important;
-        margin-top: 8px !important;
+        margin-top: 13px !important;
         -webkit-text-size-adjust: 100% !important;
         text-size-adjust: 100% !important;
     }
