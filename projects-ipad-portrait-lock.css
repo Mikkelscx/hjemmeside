@@ -108,6 +108,18 @@ html.msk-projects-ipad-portrait .projects-about-transition .projects-about-turn_
 	transform-origin: 0% 50%;
 }
 
+/* Update-stempel skal altid kunne ses i portræt (ikke klippet af no-scroll). */
+html.msk-projects-ipad-portrait .msk-build-stamp,
+html.msk-projects-ipad-portrait-no-scroll .msk-build-stamp {
+	position: fixed !important;
+	right: max(14px, env(safe-area-inset-right, 0px)) !important;
+	bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+	z-index: 500000 !important;
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
 html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container,
 html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait,
 html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container,

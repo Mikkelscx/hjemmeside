@@ -634,7 +634,7 @@ body.projects-about-flip-active .projects-about-transition {
 }
 
 /* While flipping, hide the real page (menu-click + drag) */
-body.projects-about-flip-active > :not(.projects-about-transition):not(.navbar) {
+body.projects-about-flip-active > :not(.projects-about-transition):not(.navbar):not(.msk-build-stamp) {
     opacity: 0;
     pointer-events: none;
 }

@@ -15247,11 +15247,14 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		if (document.querySelector('.msk-build-stamp')) return;
-		const el = document.createElement('p');
-		el.className = 'msk-build-stamp';
-		el.textContent = 'update onsdag 14 okt - klokken 23:15';
-		(document.body || document.documentElement).appendChild(el);
+		const stampText = 'update onsdag 14 okt - klokken 23:20';
+		let el = document.querySelector('.msk-build-stamp');
+		if (!el) {
+			el = document.createElement('p');
+			el.className = 'msk-build-stamp';
+			(document.body || document.documentElement).appendChild(el);
+		}
+		el.textContent = stampText;
 	}
 	if (document.body) place();
 	else document.addEventListener('DOMContentLoaded', place);
