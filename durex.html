@@ -10,8 +10,8 @@
     <title>Durex X Guess Who - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p262';
-        document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
+        window.mskAssetV = '20260924p273';
+        document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css?v=' + window.mskAssetV + '">');
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
@@ -131,7 +131,7 @@
             margin: 0 0 0.45rem 0;
         }
 
-        /* Kampagnevideo: brand-thumbnail; play-logo på computer */
+        /* Kampagnevideo: brand-thumbnail + play-logo */
         .durex-kampagnevideo-wrap {
             position: relative;
             width: 100%;
@@ -226,43 +226,39 @@
             outline: 2px solid #1976D2;
             outline-offset: 3px;
         }
-        .durex-kampagnevideo-play {
-            display: none;
+        /* Play-logo på thumbnail (alle viewports — også tablet/touch) */
+        .durex-kampagnevideo-wrap,
+        .durex-kampagnevideo-wrap * {
+            cursor: pointer !important;
         }
-        @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
-            .durex-kampagnevideo-wrap,
-            .durex-kampagnevideo-wrap * {
-                cursor: pointer !important;
-            }
-            .durex-kampagnevideo-thumb-panel {
-                position: relative;
-            }
-            .durex-kampagnevideo-play {
-                display: block;
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                width: 5.1rem;
-                height: 5.1rem;
-                transform: translate(-50%, -50%);
-                border-radius: 50%;
-                background: rgba(255, 255, 255, 0.52);
-                box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
-                pointer-events: none;
-            }
-            .durex-kampagnevideo-play::after {
-                content: '';
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                width: 2.35rem;
-                height: 2.75rem;
-                margin-left: 0.19rem;
-                transform: translate(-50%, -50%);
-                background-color: rgba(21, 42, 68, 0.72);
-                -webkit-clip-path: polygon(0 0, 100% 50%, 0 100%);
-                clip-path: polygon(0 0, 100% 50%, 0 100%);
-            }
+        .durex-kampagnevideo-thumb-panel {
+            position: relative;
+        }
+        .durex-kampagnevideo-play {
+            display: block;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 5.1rem;
+            height: 5.1rem;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.52);
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+            pointer-events: none;
+        }
+        .durex-kampagnevideo-play::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 2.35rem;
+            height: 2.75rem;
+            margin-left: 0.19rem;
+            transform: translate(-50%, -50%);
+            background-color: rgba(21, 42, 68, 0.72);
+            -webkit-clip-path: polygon(0 0, 100% 50%, 0 100%);
+            clip-path: polygon(0 0, 100% 50%, 0 100%);
         }
     </style>
 </head>
@@ -399,7 +395,7 @@
     </script>
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p252') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p273') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
