@@ -497,13 +497,16 @@ function mskApplyProjectsPortraitPhoneCanvasStyles() {
 		container.style.setProperty('display', 'block', 'important');
 		container.style.setProperty('visibility', 'visible', 'important');
 		container.style.setProperty('opacity', '1', 'important');
-		container.style.setProperty('overflow', 'visible', 'important');
+		/* clip X: ringe må ikke skubbe siden; Y synlig så bløde kanter ikke hard-cuttes unødigt */
+		container.style.setProperty('overflow-x', 'clip', 'important');
+		container.style.setProperty('overflow-y', 'visible', 'important');
 		container.style.setProperty('z-index', '3', 'important');
 		container.style.setProperty('transform', 'none', 'important');
 		container.style.removeProperty('left');
 		container.style.removeProperty('top');
 		container.style.removeProperty('max-width');
 		container.style.removeProperty('max-height');
+		container.style.removeProperty('overflow');
 	} catch (_) {}
 }
 
@@ -8515,6 +8518,23 @@ document.addEventListener('DOMContentLoaded', function() {
 			w = Math.round(w * 0.84);
 			h = Math.round(h * 0.84);
 		}
+		/* Sidste sikkerhed: hold ring inde i viewport uanset per-ring multipliers */
+		if (phonePortraitRing && node && node.getBoundingClientRect) {
+			try {
+				const iw = Math.max(1, window.innerWidth || 390);
+				const inset = Math.max(8, Math.round(iw * 0.02));
+				const nr = node.getBoundingClientRect();
+				const cx = nr.left + nr.width * 0.5 + (dx || 0);
+				const allowW = Math.max(48, Math.min(cx - inset, iw - inset - cx) * 2);
+				if (w > allowW && allowW > 40) {
+					const s = allowW / w;
+					w = Math.round(w * s);
+					h = Math.round(h * s);
+					dx = Math.round(dx * s);
+					dy = Math.round(dy * s);
+				}
+			} catch (_) {}
+		}
 		mskAppendPortraitHtmlRing(container, node, {
 			src: spec.src,
 			w,
@@ -9138,6 +9158,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			let phoneProfile = null;
 			if (phonePortraitGrid) {
 				try {
+					/* iPad-lock kan lande efter tidlig profile-boot — invalidate så ringFitMul genberegnes */
+					if (typeof mskInvalidatePhonePortraitProfileCache === 'function') {
+						mskInvalidatePhonePortraitProfileCache();
+					}
 					if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
 						phoneProfile = mskApplyPhonePortraitProfileDocument(layoutW, layoutH);
 					} else if (typeof mskGetPhonePortraitProfileFactors === 'function') {
@@ -15421,7 +15445,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 14:30';
+		const stampText = 'update torsdag 15 okt - klokken 14:45';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

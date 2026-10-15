@@ -109,32 +109,47 @@
 
 		/*
 		 * Fit iPad-lock ringe ind i viewport: kolonner ~26%/74%, ≥10px margin.
-		 * Største lock-ring × portraitScale × ringAdj må ikke klippe kanterne.
+		 * Største lock-ring × portraitScale × ringAdj × phone-extra (script.js) må ikke klippe.
+		 * Phone-extra matcher mskAppendPortraitRingFromIpadLockSpec (efter ringFitMul).
 		 */
+		const PHONE_RING_W_EXTRA = {
+			byens: 0.91,
+			repop: 0.9,
+			durex: 1.36 * 0.84,
+			ungeModUv: 1.16 * 0.92,
+			naturli: 1.14,
+			twister: 1.16,
+			kobajer: 1.12,
+			brainfarts: 1,
+		};
 		let ringFitMul = 1;
+		let hadLock = false;
 		try {
 			const lock =
 				(global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK && global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK.rings) ||
 				null;
-			let maxRingW = 0;
+			let maxEffW = 0;
 			if (lock) {
+				hadLock = true;
 				Object.keys(lock).forEach((k) => {
 					const spec = lock[k];
 					if (!spec) return;
 					let rw = Number(spec.w || spec.wBase || 0) || 0;
 					if (spec.rightWMul) rw *= Number(spec.rightWMul) || 1;
-					if (rw > maxRingW) maxRingW = rw;
+					const extra = PHONE_RING_W_EXTRA[k] != null ? PHONE_RING_W_EXTRA[k] : 1;
+					const eff = rw * extra;
+					if (eff > maxEffW) maxEffW = eff;
 				});
 			}
-			const scaledW = maxRingW * portraitScale * ringAdj;
-			const inset = Math.max(10, Math.round(iw * 0.03));
+			const scaledW = maxEffW * portraitScale * ringAdj;
+			const inset = Math.max(10, Math.round(iw * 0.028));
 			const colLeft = iw * 0.26;
 			const colRight = iw * 0.74;
 			const allowHalf = Math.min(colLeft - inset, iw - inset - colRight);
 			if (scaledW > 0 && allowHalf > 24) {
 				const needHalf = scaledW * 0.5;
 				if (needHalf > allowHalf) {
-					ringFitMul = mskClamp(allowHalf / needHalf, 0.42, 1);
+					ringFitMul = mskClamp(allowHalf / needHalf, 0.38, 1);
 				}
 			}
 		} catch (_) {
@@ -161,6 +176,7 @@
 			scaleAdj: fitRatio,
 			ringAdj,
 			ringFitMul,
+			hadLock,
 			rowVertMul: rowVertFinal,
 			safeMarginAdj,
 			lineAdj,
@@ -173,10 +189,31 @@
 
 	let _cachedFactors = null;
 
+	function mskPhonePortraitLockReady() {
+		try {
+			return !!(
+				global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK && global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK.rings
+			);
+		} catch (_) {
+			return false;
+		}
+	}
+
+	function mskInvalidatePhonePortraitProfileCache() {
+		_cachedFactors = null;
+	}
+
 	function mskGetPhonePortraitProfileFactors(w, h) {
 		try {
 			const px = mskPhonePortraitLayoutPx(w, h);
-			if (_cachedFactors && _cachedFactors.w === px.w && _cachedFactors.h === px.h) {
+			const lockNow = mskPhonePortraitLockReady();
+			/* Genberegn når iPad-lock først bliver klar (ellers ringFitMul=1 fra tidlig boot) */
+			if (
+				_cachedFactors &&
+				_cachedFactors.w === px.w &&
+				_cachedFactors.h === px.h &&
+				!(!_cachedFactors.hadLock && lockNow)
+			) {
 				return _cachedFactors;
 			}
 		} catch (_) {}
@@ -277,6 +314,7 @@
 	global.mskPhonePortraitLayoutPx = mskPhonePortraitLayoutPx;
 	global.mskComputePhonePortraitProfileFactors = mskComputePhonePortraitProfileFactors;
 	global.mskGetPhonePortraitProfileFactors = mskGetPhonePortraitProfileFactors;
+	global.mskInvalidatePhonePortraitProfileCache = mskInvalidatePhonePortraitProfileCache;
 	global.mskApplyPhonePortraitProfileDocument = mskApplyPhonePortraitProfileDocument;
 	global.mskBootPhonePortraitProfileVars = mskBootPhonePortraitProfileVars;
 	global.mskPhoneRefPx = mskPhoneRefPx;
