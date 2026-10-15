@@ -8537,6 +8537,10 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
             width: min(132px, 34vw) !important;
             max-width: min(132px, 34vw) !important;
         }
+        body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip {
+            width: clamp(28px, 18vw, 44px) !important;
+            top: -10px !important;
+        }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
             font-size: clamp(1.55rem, 7.2vw, 2.1rem) !important;
             line-height: 50px !important;

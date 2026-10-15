@@ -8544,13 +8544,16 @@ document.addEventListener('DOMContentLoaded', function() {
 		) {
 			return false;
 		}
-		/* Telefon = iPad-lock × phone-profile (skærmbredde/højde) — ingen ekstra “boost” væk fra tablet */
+		/* Telefon = iPad-lock × phone-profile × viewport-fit (må ikke klippe skærmkanter) */
 		let ringBoost = 1;
 		try {
 			const pf = typeof mskGetPhonePortraitProfileFactors === 'function'
 				? mskGetPhonePortraitProfileFactors()
 				: null;
-			if (pf && pf.ringAdj) ringBoost *= pf.ringAdj;
+			if (pf) {
+				if (pf.ringAdj) ringBoost *= pf.ringAdj;
+				if (pf.ringFitMul) ringBoost *= pf.ringFitMul;
+			}
 		} catch (_) {}
 		return mskAppendPortraitRingFromIpadLockSpec(container, node, href, shrink, prs, ringBoost);
 	}
@@ -9188,8 +9191,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					);
 					const minX = edgePad;
 					const maxX = layoutW - edgePad;
-					const colLeftMul = phonePortraitGrid ? 0.22 + (1 - phoneColInsetAdj) * 0.04 : 0.22;
-					const colRightMul = phonePortraitGrid ? 0.78 - (1 - phoneColInsetAdj) * 0.04 : 0.78;
+					/* Telefon: lidt mere indryk end tablet (0.22/0.78), så ringe ikke klipper kanter */
+					const colLeftMul = phonePortraitGrid ? 0.26 + (1 - phoneColInsetAdj) * 0.03 : 0.22;
+					const colRightMul = phonePortraitGrid ? 0.74 - (1 - phoneColInsetAdj) * 0.03 : 0.78;
 					const baseLeft = Math.max(
 						minX,
 						Math.min(maxX, layoutW * colLeftMul)
@@ -15417,7 +15421,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 04:15';
+		const stampText = 'update torsdag 15 okt - klokken 14:30';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

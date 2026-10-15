@@ -83,26 +83,18 @@
 			MSK_PHONE_REF_BASE_SCALE * 1.62
 		);
 
+		/* Reference 390×844 → alle adj ≈ 1.0; mindre/større telefoner skalerer blødt omkring det */
 		const labelMul = mskClamp(MSK_PHONE_REF_LABEL_MUL * wRatio, 0.16, 0.58);
 		const brainPx = mskClamp(MSK_PHONE_REF_BRAIN_PX * fitRatio, 68, 178);
 
-		/* Lodret: glat kurve over hele hoejde-spektret */
-		const rowSpanAdj = mskClamp(mskLerp(0.54, 1.03, hRatio), 0.54, 1.03);
-
-		const ringAdj = mskClamp(mskLerp(0.68, 1.18, wRatio), 0.68, 1.18);
-
-		const rowVertMul = mskClamp(mskLerp(0.52, 1.02, hRatio), 0.52, 1.02);
-
-		const safeMarginAdj = mskClamp(mskLerp(0.64, 1, hRatio), 0.64, 1);
-
-		const lineAdj = mskClamp(0.72 + 0.14 * wRatio + 0.14 * hRatio, 0.72, 1.22);
-
-		const colInsetAdj =
-			wRatio < 1 ? mskClamp(mskLerp(0.62, 1, wRatio), 0.62, 1) : mskClamp(1 - (wRatio - 1) * 0.12, 0.88, 1);
-
-		const nodeMaxVw = mskClamp(mskLerp(30, 50, wRatio), 30, 50);
-
-		const nudgeMul = mskClamp(mskLerp(0.72, 1.18, wRatio), 0.72, 1.18);
+		const rowSpanAdj = mskClamp(1 + (hRatio - 1) * 0.28, 0.72, 1.1);
+		const ringAdj = mskClamp(1 + (wRatio - 1) * 0.18, 0.78, 1.12);
+		const rowVertMul = mskClamp(1 + (hRatio - 1) * 0.3, 0.7, 1.1);
+		const safeMarginAdj = mskClamp(1 + (hRatio - 1) * 0.2, 0.72, 1.08);
+		const lineAdj = mskClamp(1 + (fitRatio - 1) * 0.22, 0.78, 1.16);
+		const colInsetAdj = mskClamp(1 + (wRatio - 1) * 0.12, 0.78, 1.08);
+		const nodeMaxVw = mskClamp(38 + (wRatio - 1) * 14, 28, 48);
+		const nudgeMul = mskClamp(1 + (wRatio - 1) * 0.2, 0.75, 1.14);
 
 		/* Meget smalle/hoeje eller brede/lave sk�rme: ekstra lodret komprimering */
 		const aspectCompress =
@@ -112,8 +104,42 @@
 					? mskClamp(1.04 - (aspectDelta - 1.08) * 0.2, 0.92, 1.04)
 					: 1;
 
-		const rowSpanFinal = mskClamp(rowSpanAdj * aspectCompress, 0.5, 1.03);
-		const rowVertFinal = mskClamp(rowVertMul * aspectCompress, 0.48, 1.02);
+		const rowSpanFinal = mskClamp(rowSpanAdj * aspectCompress, 0.5, 1.08);
+		const rowVertFinal = mskClamp(rowVertMul * aspectCompress, 0.48, 1.08);
+
+		/*
+		 * Fit iPad-lock ringe ind i viewport: kolonner ~26%/74%, ≥10px margin.
+		 * Største lock-ring × portraitScale × ringAdj må ikke klippe kanterne.
+		 */
+		let ringFitMul = 1;
+		try {
+			const lock =
+				(global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK && global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK.rings) ||
+				null;
+			let maxRingW = 0;
+			if (lock) {
+				Object.keys(lock).forEach((k) => {
+					const spec = lock[k];
+					if (!spec) return;
+					let rw = Number(spec.w || spec.wBase || 0) || 0;
+					if (spec.rightWMul) rw *= Number(spec.rightWMul) || 1;
+					if (rw > maxRingW) maxRingW = rw;
+				});
+			}
+			const scaledW = maxRingW * portraitScale * ringAdj;
+			const inset = Math.max(10, Math.round(iw * 0.03));
+			const colLeft = iw * 0.26;
+			const colRight = iw * 0.74;
+			const allowHalf = Math.min(colLeft - inset, iw - inset - colRight);
+			if (scaledW > 0 && allowHalf > 24) {
+				const needHalf = scaledW * 0.5;
+				if (needHalf > allowHalf) {
+					ringFitMul = mskClamp(allowHalf / needHalf, 0.42, 1);
+				}
+			}
+		} catch (_) {
+			ringFitMul = 1;
+		}
 
 		return {
 			refW,
@@ -134,6 +160,7 @@
 			rowSpanAdj: rowSpanFinal,
 			scaleAdj: fitRatio,
 			ringAdj,
+			ringFitMul,
 			rowVertMul: rowVertFinal,
 			safeMarginAdj,
 			lineAdj,
@@ -174,12 +201,16 @@
 		html.style.setProperty('--phone-row-span-adj', String(f.rowSpanAdj));
 		html.style.setProperty('--phone-scale-adj', String(f.scaleAdj));
 		html.style.setProperty('--phone-ring-adj', String(f.ringAdj));
+		html.style.setProperty('--phone-ring-fit', String(f.ringFitMul != null ? f.ringFitMul : 1));
 		html.style.setProperty('--phone-row-vert-mul', String(f.rowVertMul));
 		html.style.setProperty('--phone-safe-margin-adj', String(f.safeMarginAdj));
 		html.style.setProperty('--phone-line-adj', String(f.lineAdj));
 		html.style.setProperty('--phone-col-inset-adj', String(f.colInsetAdj));
 		html.style.setProperty('--phone-node-max-vw', String(f.nodeMaxVw));
 		html.style.setProperty('--phone-nudge-mul', String(f.nudgeMul));
+		/* Labels i ring: samme relative scale som tablet (pLabelMul), ikke ekstra TitleInRing-boost */
+		html.style.setProperty('--pTitleInRing', String(f.labelMul));
+		html.style.setProperty('--pRepopFill', String(f.labelMul));
 		html.dataset.phoneW = String(f.w);
 		html.dataset.phoneH = String(f.h);
 		html.dataset.phoneWRatio = String(Math.round(f.wRatio * 1000) / 1000);

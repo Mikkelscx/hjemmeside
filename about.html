@@ -10,7 +10,7 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p279';
+        var v = '20260924p280';
         try {
             var q = new URLSearchParams(location.search || '');
             if (q.get('v') !== v) {
@@ -24,7 +24,7 @@
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
-    <!-- deploy about one-pager: 2026-10-15 04:15 p279 — phone inherits tablet one-pager — cache-bust redirect
+    <!-- deploy about one-pager: 2026-10-15 04:15 p280 — phone portrait fit-scale mindmap — cache-bust redirect
     <style id="msk-about-ipad-portrait-onepager">
     /* Tablet + telefon portræt: one-pager (telefon skalerer padding/polaroid). */
     @media (max-width: 640px) and (orientation: portrait),
@@ -157,6 +157,10 @@
                 width: min(132px, 34vw) !important;
                 max-width: min(132px, 34vw) !important;
             }
+            body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip {
+                width: clamp(28px, 18vw, 44px) !important;
+                top: -10px !important;
+            }
             body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
                 max-width: calc(100% - min(132px, 34vw) - 16px) !important;
                 font-size: clamp(1.55rem, 7.2vw, 2.1rem) !important;
@@ -261,7 +265,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p279') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p280') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
