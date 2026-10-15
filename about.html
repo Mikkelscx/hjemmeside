@@ -10,13 +10,17 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p303';
+        var v = '20260924p304';
         try {
             var q = new URLSearchParams(location.search || '');
             var phonePage = q.get('phonePage');
-            if (phonePage === 'cv') document.documentElement.classList.add('msk-about-phone-page-cv');
+            if (q.has('preview')) document.documentElement.classList.add('transition-preview');
+            if (phonePage === 'cv') {
+                document.documentElement.classList.add('msk-about-phone-page-cv', 'msk-about-phone-cv');
+            }
             if (phonePage === 'bio') document.documentElement.classList.add('msk-about-phone-page-bio');
-            if (q.get('v') !== v) {
+            /* Preview-iframes: ALDRIG location.replace — det crasher Safari/Chrome i loops. */
+            if (!q.has('preview') && q.get('v') !== v) {
                 q.set('v', v);
                 location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
                 return;
@@ -312,7 +316,12 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p303') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        /* Peel-iframes: kun HTML+CSS — ingen 600KB script (Safari/Chrome OOM / "gentagne problemer"). */
+        try {
+            var q = new URLSearchParams(location.search || '');
+            if (q.has('preview') || q.has('phonePage')) return;
+        } catch (e) {}
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p304') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>

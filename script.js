@@ -5,6 +5,31 @@ try {
 	}
 } catch (_) {}
 
+/* Preview-iframes må aldrig køre page-turn / peels (crash-sikring Safari + Chrome). */
+try {
+	const __mskQs = new URLSearchParams(window.location.search || '');
+	if (__mskQs.has('preview') || __mskQs.has('phonePage')) {
+		document.documentElement.classList.add('transition-preview');
+	}
+} catch (_) {}
+
+/** Befri iframe-hukommelse før remove — ellers kan Mobile Safari/Chrome crashe ved gentagne peels. */
+function mskNukeIframe(fr) {
+	if (!fr) return;
+	try { fr.onload = null; } catch (_) {}
+	try { fr.onerror = null; } catch (_) {}
+	try { fr.removeAttribute('srcdoc'); } catch (_) {}
+	try { fr.src = 'about:blank'; } catch (_) {}
+	try { fr.remove(); } catch (_) {}
+}
+function mskNukeTransitionTree(root) {
+	if (!root) return;
+	try {
+		root.querySelectorAll('iframe').forEach(mskNukeIframe);
+	} catch (_) {}
+	try { root.remove(); } catch (_) {}
+}
+
 // Visual Viewport API: match JS layout to the visible area (mobile Safari toolbar, pinch-zoom, etc.).
 function mskViewportSize() {
 	try {
@@ -1704,6 +1729,9 @@ function mskRecoverAfterHistoryRestore() {
 		}
 	} catch (_) {}
 	try {
+		document.body && document.body.classList.remove('about-biocv-dragging');
+	} catch (_) {}
+	try {
 		document
 			.querySelectorAll(
 				[
@@ -1715,12 +1743,15 @@ function mskRecoverAfterHistoryRestore() {
 					'.contact-about-transition',
 					'.contact-projects-transition',
 					'.projects-transition',
+					'.about-biocv-transition',
 				].join(',')
 			)
 			.forEach((el) => {
 				try {
-					el.remove();
-				} catch (_) {}
+					mskNukeTransitionTree(el);
+				} catch (_) {
+					try { el.remove(); } catch (_) {}
+				}
 			});
 	} catch (_) {}
 	try {
@@ -5644,9 +5675,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					flipEl._mskHoldFx = null;
 				}
 			} catch {}
-			try { if (overlay) overlay.remove(); } catch {}
+			try { mskNukeTransitionTree(overlay); } catch {}
 			try {
-				document.querySelectorAll('.about-biocv-transition').forEach((n) => n.remove());
+				document.querySelectorAll('.about-biocv-transition').forEach((n) => {
+					try { mskNukeTransitionTree(n); } catch (_) { try { n.remove(); } catch (_) {} }
+				});
 			} catch {}
 		}
 
