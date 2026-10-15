@@ -5070,6 +5070,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			const h = ensureHandle();
 			try {
 				h.addEventListener('pointerdown', (e) => {
+					/* Telefon CV-side: venstre kant bladrer tilbage til bio, ikke til Projekter. */
+					try {
+						if (typeof mskIsAboutPhonePortraitBioCv === 'function' && mskIsAboutPhonePortraitBioCv()) {
+							if (document.documentElement.classList.contains('msk-about-phone-cv')) return;
+						}
+					} catch (_) {}
 					try { h.setPointerCapture && h.setPointerCapture(e.pointerId); } catch {}
 					startDrag(e);
 				});
@@ -5467,11 +5473,271 @@ document.addEventListener('DOMContentLoaded', function() {
 			const h = ensureHandle();
 			try {
 				h.addEventListener('pointerdown', (e) => {
+					/* Telefon: fra bio bladrer højre kant først til CV — Kontakt først når CV er aktiv. */
+					try {
+						if (typeof mskIsAboutPhonePortraitBioCv === 'function' && mskIsAboutPhonePortraitBioCv()) {
+							if (!document.documentElement.classList.contains('msk-about-phone-cv')) return;
+						}
+					} catch (_) {}
 					try { h.setPointerCapture && h.setPointerCapture(e.pointerId); } catch {}
 					startDrag(e);
 				});
 			} catch {}
 		})();
+	})();
+
+	/** Telefon portræt Om mig: bio ↔ CV som selvstændige sider med paper peel. */
+	function mskIsAboutPhonePortraitBioCv() {
+		try {
+			if (!document.body || !document.body.classList.contains('about-sketchbook-page')) return false;
+			if (window.matchMedia && (
+				window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches ||
+				window.matchMedia('(max-width: 640px) and (max-aspect-ratio: 1/1)').matches
+			)) return true;
+			if (document.documentElement.classList.contains('phone-portrait-zoom-stable')) return true;
+			return !!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport());
+		} catch (_) {
+			return false;
+		}
+	}
+
+	(function initAboutBioCvPhoneTurn() {
+		try {
+			const path = (window.location.pathname || '').toLowerCase();
+			if (!path.endsWith('/about.html') && !path.endsWith('about.html')) return;
+		} catch {
+			return;
+		}
+		try {
+			const qs = (window.location.search || '').toLowerCase();
+			if (qs.includes('preview=1') || qs.includes('phonepage=')) return;
+		} catch {}
+
+		const FLIP_MS = getPageFlipMs(4200);
+		const COMPLETE_THRESHOLD = 0.48;
+		let dragging = false;
+		let rafId = 0;
+
+		function onPhone() {
+			return !!(typeof mskIsAboutPhonePortraitBioCv === 'function' && mskIsAboutPhonePortraitBioCv());
+		}
+		function isCv() {
+			return document.documentElement.classList.contains('msk-about-phone-cv');
+		}
+		function setCv(on) {
+			document.documentElement.classList.toggle('msk-about-phone-cv', !!on);
+			try {
+				if (on) {
+					const hash = (location.hash || '').toLowerCase();
+					if (hash !== '#cv' && hash !== '#udmaerkelser') {
+						history.replaceState(null, '', location.pathname + location.search + '#cv');
+					}
+				} else if ((location.hash || '').toLowerCase() === '#cv' || (location.hash || '').toLowerCase() === '#udmaerkelser') {
+					history.replaceState(null, '', location.pathname + location.search);
+				}
+			} catch {}
+		}
+		function v() { return window.mskAssetV || ''; }
+		function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+
+		function ensureOverlay(toCv) {
+			let overlay = document.querySelector('.about-biocv-transition');
+			if (overlay) overlay.remove();
+			overlay = document.createElement('div');
+			overlay.className = 'about-biocv-transition';
+			const frontSrc = toCv
+				? `about.html?preview=1&phonePage=bio&v=${v()}`
+				: `about.html?preview=1&phonePage=cv&v=${v()}`;
+			const underSrc = toCv
+				? `about.html?preview=1&phonePage=cv&v=${v()}`
+				: `about.html?preview=1&phonePage=bio&v=${v()}`;
+			overlay.innerHTML = `
+				<div class="about-biocv-turn" aria-hidden="true">
+					<div class="about-biocv-under">
+						<iframe src="${underSrc}" title="Om mig under" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+					</div>
+					<div class="about-biocv-turn__flip projects-about-turn__flip">
+						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front projects-about-turn__flip-face projects-about-turn__flip-face--front">
+							<iframe class="projects-about-frame projects-about-turn__flip-front" src="${frontSrc}" title="Om mig flipping" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+						</div>
+						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back projects-about-turn__flip-face projects-about-turn__flip-face--back">
+							<iframe class="projects-about-frame projects-about-turn__flip-back" src="${underSrc}" title="Om mig back" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+						</div>
+					</div>
+				</div>`;
+			document.body.appendChild(overlay);
+			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+			return overlay;
+		}
+
+		function cleanup(overlay, flipEl) {
+			dragging = false;
+			if (rafId) cancelAnimationFrame(rafId);
+			rafId = 0;
+			try { document.body.classList.remove('about-biocv-dragging'); } catch {}
+			try {
+				if (flipEl) {
+					flipEl.style.transition = '';
+					flipEl.style.animation = '';
+					flipEl.style.transform = '';
+					const curl = flipEl._mskLiveCurl;
+					if (curl && curl.front) curl.front.style.clipPath = '';
+					if (curl && curl.flap) curl.flap.style.display = 'none';
+					flipEl._mskLiveCurl = null;
+				}
+			} catch {}
+			try { if (overlay) overlay.remove(); } catch {}
+		}
+
+		function runPeel(toCv, e) {
+			if (!onPhone() || dragging) return;
+			if (!e || e.button !== 0) return;
+			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			if (toCv && isCv()) return;
+			if (!toCv && !isCv()) return;
+			e.preventDefault();
+			e.stopPropagation();
+
+			dragging = true;
+			const startX = e.clientX;
+			let progress = 0;
+			const sign = toCv ? -1 : 1;
+			document.body.classList.add('about-biocv-dragging');
+			document.body.style.overflow = 'hidden';
+
+			const overlay = ensureOverlay(toCv);
+			overlay.classList.add('is-ready', 'is-turning');
+			const flipEl = overlay.querySelector('.about-biocv-turn__flip');
+			if (flipEl) {
+				flipEl._mskPaperCornerY = null;
+				flipEl._mskHoldFx = null;
+				flipEl._mskPaperSideBand = false;
+			}
+			try { mskPaperNotePointer(flipEl, e); } catch {}
+
+			function setProgress(p) {
+				progress = clamp01(p);
+				try {
+					if (flipEl && !mskPaintPaperDrag(flipEl, progress, sign)) {
+						flipEl.style.animation = 'none';
+						flipEl.style.transition = 'none';
+						flipEl.style.transform = `rotateY(${sign * 180 * progress}deg)`;
+					}
+				} catch {}
+			}
+
+			function onMove(ev) {
+				if (!dragging) return;
+				const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
+				const vw = mskViewportSize().w || window.innerWidth || 1;
+				let p = 0;
+				if (toCv) {
+					const seamX = vw * 0.5;
+					if (x >= startX) p = 0;
+					else if (x >= seamX) p = ((startX - x) / Math.max(1, startX - seamX)) * 0.5;
+					else p = 0.5 + ((seamX - x) / Math.max(1, seamX)) * 0.5;
+				} else {
+					const seamX = vw * 0.5;
+					if (x <= startX) p = 0;
+					else if (x <= seamX) p = ((x - startX) / Math.max(1, seamX - startX)) * 0.5;
+					else p = 0.5 + ((x - seamX) / Math.max(1, vw - seamX)) * 0.5;
+				}
+				if (mskIsTabletPaperDrag()) {
+					mskPaperNotePointer(flipEl, ev);
+					setProgress(p);
+				} else if (!rafId) {
+					rafId = requestAnimationFrame(() => { rafId = 0; setProgress(p); });
+				}
+			}
+
+			function onUp(ev) {
+				try { if (ev) { ev.preventDefault(); ev.stopPropagation(); } } catch {}
+				window.removeEventListener('pointermove', onMove, true);
+				window.removeEventListener('pointerup', onUp, true);
+				window.removeEventListener('pointercancel', onUp, true);
+
+				const paperRel = mskPaperDragRelease(flipEl, sign, progress, (info) => {
+					if (info && !info.complete) cleanup(overlay, flipEl);
+				});
+				const shouldComplete = paperRel ? paperRel.complete : (progress >= COMPLETE_THRESHOLD);
+				if (!shouldComplete) {
+					if (!paperRel) {
+						try {
+							if (flipEl) {
+								flipEl.style.transition = 'transform 260ms cubic-bezier(.2,.9,.2,1)';
+								flipEl.style.transform = 'rotateY(0deg)';
+							}
+						} catch {}
+						window.setTimeout(() => cleanup(overlay, flipEl), 280);
+					}
+					return;
+				}
+				mskArmPageTurnGhostClickGuard(520);
+				let finishMs = 520;
+				try {
+					if (flipEl && !paperRel) {
+						const remaining = Math.max(0, 1 - progress);
+						finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
+						flipEl.style.transition = `transform ${finishMs}ms cubic-bezier(.42,0,.58,1)`;
+						flipEl.style.transform = `rotateY(${sign * 180}deg)`;
+					}
+				} catch {}
+				window.setTimeout(() => {
+					setCv(toCv);
+					cleanup(overlay, flipEl);
+					try { document.body.style.overflow = 'hidden'; } catch {}
+				}, Math.round(Math.max(380, Math.min(FLIP_MS + 80, (FLIP_MS * (1 - progress)) + 200))));
+			}
+
+			window.addEventListener('pointermove', onMove, true);
+			window.addEventListener('pointerup', onUp, true);
+			window.addEventListener('pointercancel', onUp, true);
+		}
+
+		function bind() {
+			if (!onPhone()) return;
+			const right = document.querySelector('.page-turn-handle--right');
+			const left = document.querySelector('.page-turn-handle--left');
+			if (right && !right._mskBioCvBound) {
+				right._mskBioCvBound = true;
+				right.addEventListener('pointerdown', (e) => {
+					if (!onPhone() || isCv()) return;
+					try { right.setPointerCapture && right.setPointerCapture(e.pointerId); } catch {}
+					runPeel(true, e);
+				}, true);
+			}
+			if (left && !left._mskBioCvBound) {
+				left._mskBioCvBound = true;
+				left.addEventListener('pointerdown', (e) => {
+					if (!onPhone() || !isCv()) return;
+					e.stopPropagation();
+					try { left.setPointerCapture && left.setPointerCapture(e.pointerId); } catch {}
+					runPeel(false, e);
+				}, true);
+			}
+			try {
+				const hash = (location.hash || '').toLowerCase();
+				if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
+			} catch {}
+			window.addEventListener('hashchange', () => {
+				try {
+					const hash = (location.hash || '').toLowerCase();
+					if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
+					else if (!hash) setCv(false);
+				} catch {}
+			});
+		}
+
+		function boot() {
+			if (!onPhone()) return;
+			document.documentElement.classList.add('msk-about-phone-biocv');
+			try { document.body.style.overflow = 'hidden'; } catch {}
+			/* Vent til about-contact/projects har lavet handles */
+			window.setTimeout(bind, 0);
+			window.setTimeout(bind, 120);
+		}
+		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+		else boot();
 	})();
 
 	// Kontakt -> Om mig: flip the LEFT page to the RIGHT side (reverse direction).
@@ -15356,7 +15622,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 23:17';
+		const stampText = 'update torsdag 15 okt - klokken 23:22';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

@@ -10,9 +10,12 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p298';
+        var v = '20260924p299';
         try {
             var q = new URLSearchParams(location.search || '');
+            var phonePage = q.get('phonePage');
+            if (phonePage === 'cv') document.documentElement.classList.add('msk-about-phone-page-cv');
+            if (phonePage === 'bio') document.documentElement.classList.add('msk-about-phone-page-bio');
             if (q.get('v') !== v) {
                 q.set('v', v);
                 location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
@@ -145,26 +148,47 @@
             white-space: normal !important;
         }
         @media (max-width: 640px) {
-            /* Mobil one-pager: bio = side 1, CV+udmærkelser = egen side 2 */
+            /* Mobil one-pager: bio/CV = to sider man bladrer imellem */
             body.about-sketchbook-page.sketchbook-theme {
-                scroll-snap-type: y proximity;
+                overflow: hidden !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                scroll-snap-type: none !important;
+            }
+            body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
+                position: relative !important;
+                height: 100% !important;
+                overflow: hidden !important;
+            }
+            body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left,
+            body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
+                position: absolute !important;
+                inset: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 0 !important;
+                overflow-y: auto !important;
+                box-sizing: border-box !important;
+                margin-top: 0 !important;
             }
             body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
                 padding: calc(50px + env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px)) max(48px, env(safe-area-inset-left, 0px) + 36px) !important;
-                min-height: 100vh !important;
-                min-height: 100dvh !important;
-                min-height: var(--vh, 100dvh) !important;
-                box-sizing: border-box !important;
-                scroll-snap-align: start;
+                z-index: 3 !important;
             }
             body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
                 padding: calc(50px + env(safe-area-inset-top, 0px)) 16px calc(32px + env(safe-area-inset-bottom, 0px)) max(48px, env(safe-area-inset-left, 0px) + 36px) !important;
-                min-height: 100vh !important;
-                min-height: 100dvh !important;
-                min-height: var(--vh, 100dvh) !important;
-                box-sizing: border-box !important;
-                margin-top: 0 !important;
-                scroll-snap-align: start;
+                z-index: 2 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+            html.msk-about-phone-cv body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+            html.msk-about-phone-cv body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
+                visibility: visible !important;
+                pointer-events: auto !important;
+                z-index: 3 !important;
             }
             body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
                 position: relative !important;
@@ -288,7 +312,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p298') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p299') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
