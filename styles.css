@@ -8525,7 +8525,7 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         line-height: 48px;
     }
 
-    /* Telefon: samme layout som tablet, skaleret til smal skærm + safe-area */
+    /* Telefon: samme layout som tablet, skaleret — float så tekst fylder under polaroid */
     @media (max-width: 640px) {
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
             padding: calc(50px + env(safe-area-inset-top, 0px)) 16px 0 max(48px, env(safe-area-inset-left, 0px) + 36px) !important;
@@ -8534,23 +8534,29 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
             padding: 25px 16px calc(32px + env(safe-area-inset-bottom, 0px)) max(48px, env(safe-area-inset-left, 0px) + 36px) !important;
         }
         body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
-            top: calc(50px + env(safe-area-inset-top, 0px)) !important;
-            right: 16px !important;
+            position: relative !important;
+            float: right !important;
+            top: auto !important;
+            right: auto !important;
+            left: auto !important;
             width: min(132px, 34vw) !important;
             max-width: min(132px, 34vw) !important;
+            margin: 0 0 8px 14px !important;
         }
         body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip {
             width: clamp(28px, 18vw, 44px) !important;
             top: -10px !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
-            font-size: clamp(1.55rem, 7.2vw, 2.1rem) !important;
-            line-height: 50px !important;
-            height: 50px !important;
-            max-width: calc(100% - min(132px, 34vw) - 16px);
+            font-size: clamp(1.2rem, 5.6vw, 1.7rem) !important;
+            line-height: 25px !important;
+            height: auto !important;
+            max-height: 50px !important;
+            max-width: none !important;
+            overflow: visible !important;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
-            padding-right: calc(min(132px, 34vw) + 16px) !important;
+            padding-right: 0 !important;
             font-size: 16px !important;
             line-height: 25px !important;
         }
