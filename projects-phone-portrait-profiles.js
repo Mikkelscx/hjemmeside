@@ -90,8 +90,8 @@
 		let brainPx = mskClamp(MSK_PHONE_REF_BRAIN_PX * fitRatio * 0.9, 64, 168);
 
 		const rowSpanAdj = mskClamp(1 + (hRatio - 1) * 0.28, 0.72, 1.1);
-		/* Ringe lidt generøsere end labels → luft i ovalerne */
-		const ringAdj = mskClamp(1.06 + (wRatio - 1) * 0.18, 0.86, 1.18);
+		/* Ringe generøsere end labels → luft i ovalerne */
+		const ringAdj = mskClamp(1.1 + (wRatio - 1) * 0.2, 0.9, 1.22);
 		const rowVertMul = mskClamp(1 + (hRatio - 1) * 0.3, 0.7, 1.1);
 		const safeMarginAdj = mskClamp(1 + (hRatio - 1) * 0.2, 0.72, 1.08);
 		const lineAdj = mskClamp(1 + (fitRatio - 1) * 0.22, 0.78, 1.16);
