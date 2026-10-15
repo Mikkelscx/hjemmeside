@@ -2583,6 +2583,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			return false;
 		}
 	}
+	/** Tablet + telefon: samme fold-flap (portræt = blankt linjeret papir). Telefon må ikke skjule flappen. */
+	function mskIsComputerLikeFoldViewport() {
+		try {
+			const html = document.documentElement;
+			if (html.classList.contains('msk-projects-ipad-landscape')) return true;
+			if (html.classList.contains('msk-projects-ipad-portrait')) return true;
+			if (html.classList.contains('msk-projects-phone-portrait')) return true;
+			if (html.classList.contains('phone-portrait-zoom-stable')) return true;
+			if (window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches) return true;
+			if (window.matchMedia('(min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px)').matches) return true;
+			if (typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) return true;
+			return false;
+		} catch (_) {
+			return false;
+		}
+	}
 	function mskIsFingerTablet() {
 		try {
 			const w = Math.round(window.innerWidth || 0);
@@ -3437,15 +3453,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				let desktopFine = false;
 				try {
 					desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-					tabletFold = !!(
-						window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
-						document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-						document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
-						window.matchMedia('(min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px)').matches
-					);
+					tabletFold = !!(typeof mskIsComputerLikeFoldViewport === 'function' && mskIsComputerLikeFoldViewport());
 				} catch {}
-				// Same fold as computer: the back of the sheet is the page itself.
-				// Phone still hides this flap. Tablet matches computer.
+				// Same fold as tablet/computer: blank lined flap on portrait (incl. phone).
 				if (flipEl.classList.contains('projects-about-turn__flip')) {
 					if (!(desktopFine || tabletFold)) {
 						curl.flap.style.setProperty('display', 'none', 'important');
@@ -3562,12 +3572,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		let tabletFoldLand = false;
 		try {
 			desktopFineLand = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-			tabletFoldLand = !!(
-				window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
-				document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-				document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
-				window.matchMedia('(min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px)').matches
-			);
+			tabletFoldLand = !!(typeof mskIsComputerLikeFoldViewport === 'function' && mskIsComputerLikeFoldViewport());
 		} catch {}
 		const computerLikeLand = desktopFineLand || tabletFoldLand;
 		const aboutToProjectsFold = flipEl.classList.contains('about-projects-turn__flip');
@@ -4895,12 +4900,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						let tabletFold = false;
 						try {
 							desktopFine = !!(window.matchMedia && window.matchMedia('(min-width: 1025px) and (hover: hover) and (pointer: fine)').matches);
-							tabletFold = !!(
-								window.matchMedia('(min-width: 641px) and (pointer: coarse)').matches ||
-								document.documentElement.classList.contains('msk-projects-ipad-landscape') ||
-								document.documentElement.classList.contains('msk-projects-ipad-portrait') ||
-								window.matchMedia('(min-width: 1025px) and (max-width: 1420px) and (orientation: landscape) and (max-height: 1080px)').matches
-							);
+							tabletFold = !!(typeof mskIsComputerLikeFoldViewport === 'function' && mskIsComputerLikeFoldViewport());
 						} catch {}
 						const computerLike = desktopFine || tabletFold;
 						// Lidt før midten, så Projekter-designet ikke først “dukker op” sent i trækket.
@@ -15356,7 +15356,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 22:10';
+		const stampText = 'update torsdag 15 okt - klokken 22:56';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
