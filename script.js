@@ -8477,37 +8477,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			!mskIsProjectsTabletPortraitViewport() &&
 			!document.documentElement.classList.contains('msk-projects-ipad-portrait');
 		let rotate = spec.rotate;
-		/* Telefon: ekstra ring-størrelse pr. node (labels må ikke sprænge ovalen) */
-		if (phonePortraitRing) {
-			const sizeMul = {
-				repop: [1.12, 1.18],
-				naturli: [1.08, 1.1],
-				durex: [1.36, 1.3],
-				ungeModUv: [1.18, 1.14],
-				twister: [1.28, 1.48],
-				kobajer: [1.14, 1.16],
-				brainfarts: [1.14, 1.12],
-				byens: [1.22, 1.28],
-			};
-			const m = sizeMul[key];
-			if (m) {
-				w = Math.round(w * m[0]);
-				h = Math.round(h * m[1]);
-			}
-			if (key === 'twister') dy = Math.round(dy - Math.round(prs(10)));
-			if (key === 'byens') dy = Math.round(dy + Math.round(prs(6)));
-			if (key === 'durex') dy = Math.round(dy + Math.round(prs(4)));
-		}
-		/* Blød kant-clamp: tillad lidt overflow (overflow-x: clip) — undgå at knuse ringene */
+		/* Blød kant-clamp (clip håndterer soft edge) — ingen per-node distort */
 		if (phonePortraitRing && node && node.getBoundingClientRect) {
 			try {
 				const iw = Math.max(1, window.innerWidth || 390);
-				const inset = Math.max(4, Math.round(iw * 0.012));
+				const inset = Math.max(4, Math.round(iw * 0.01));
 				const nr = node.getBoundingClientRect();
 				const cx = nr.left + nr.width * 0.5 + (dx || 0);
 				const allowW = Math.max(48, Math.min(cx - inset, iw - inset - cx) * 2);
-				if (w > allowW * 1.14 && allowW > 40) {
-					const s = (allowW * 1.08) / w;
+				if (w > allowW * 1.16 && allowW > 40) {
+					const s = (allowW * 1.1) / w;
 					w = Math.round(w * s);
 					h = Math.round(h * s);
 					dx = Math.round(dx * s);
@@ -8544,8 +8523,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		) {
 			return false;
 		}
-		/* Telefon: ringe større end labels, så tekst sidder inde i ovalerne */
-		let ringBoost = 1.32;
+		/* Telefon = iPad-lock × portraitScale; let boost så labels (× pLabelMul) har luft */
+		let ringBoost = 1.14;
 		try {
 			const pf = typeof mskGetPhonePortraitProfileFactors === 'function'
 				? mskGetPhonePortraitProfileFactors()
@@ -15356,7 +15335,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 21:40';
+		const stampText = 'update torsdag 15 okt - klokken 21:45';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

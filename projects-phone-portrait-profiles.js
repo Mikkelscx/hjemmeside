@@ -85,19 +85,21 @@
 		);
 
 		/* Reference 390×844 → alle adj ≈ 1.0; mindre/større telefoner skalerer blødt omkring det */
-		/* Labels lidt under “fuld tablet-fill” så de ikke sprænger ringene på smal skærm */
-		let labelMul = mskClamp(MSK_PHONE_REF_LABEL_MUL * wRatio * 0.92, 0.16, 0.56);
-		let brainPx = mskClamp(MSK_PHONE_REF_BRAIN_PX * fitRatio * 0.9, 64, 168);
+		/*
+		 * pLabelMul = samme skala som ringe (portraitScale).
+		 * CSS bruger tablet-formler: scale(FACTOR * pLabelMul) → labels tracker ringene.
+		 */
+		let labelMul = portraitScale;
+		let brainPx = mskClamp(318 * portraitScale, 64, 160);
 
 		const rowSpanAdj = mskClamp(1 + (hRatio - 1) * 0.28, 0.72, 1.1);
-		/* Ringe generøsere end labels → luft i ovalerne */
-		const ringAdj = mskClamp(1.1 + (wRatio - 1) * 0.2, 0.9, 1.22);
+		const ringAdj = mskClamp(1 + (wRatio - 1) * 0.12, 0.88, 1.1);
 		const rowVertMul = mskClamp(1 + (hRatio - 1) * 0.3, 0.7, 1.1);
 		const safeMarginAdj = mskClamp(1 + (hRatio - 1) * 0.2, 0.72, 1.08);
 		const lineAdj = mskClamp(1 + (fitRatio - 1) * 0.22, 0.78, 1.16);
 		const colInsetAdj = mskClamp(1 + (wRatio - 1) * 0.12, 0.78, 1.08);
-		/* Node-bredde matcher ring-luft (ikke max-fill der presser teksten ud af ovalen) */
-		const nodeMaxVw = mskClamp(38 + (wRatio - 1) * 12, 30, 46);
+		/* Node-bredde under ringene — tablet-fill-scale (1.9+) må ikke sprænge ovalen */
+		const nodeMaxVw = mskClamp(34 + (wRatio - 1) * 10, 28, 40);
 		const nudgeMul = mskClamp(1 + (wRatio - 1) * 0.2, 0.75, 1.14);
 
 		/* Meget smalle/hoeje eller brede/lave skærme: ekstra lodret komprimering */
@@ -200,9 +202,9 @@
 		html.style.setProperty('--phone-portrait-scale', String(f.portraitScale));
 		html.style.setProperty('--pLabelMul', String(f.labelMul));
 		html.style.setProperty('--pNodeMul', String(f.labelMul));
-		/* Title/badge fill: lidt under tablet-max så tekst + ring passer sammen */
-		html.style.setProperty('--pTitleInRing', String(f.labelMul * 1.42));
-		html.style.setProperty('--pRepopFill', String(f.labelMul * 1.42 * 1.18));
+		/* Samme relative fill-tal som tablet-portræt (FACTOR × pLabelMul i CSS) */
+		html.style.setProperty('--pTitleInRing', String(f.labelMul));
+		html.style.setProperty('--pRepopFill', String(f.labelMul));
 		html.style.setProperty('--pRingMul', String(f.ringAdj));
 		html.style.setProperty('--projectsBrainSize', f.brainPx + 'px');
 		html.style.setProperty('--phone-row-span-adj', String(f.rowSpanAdj));
