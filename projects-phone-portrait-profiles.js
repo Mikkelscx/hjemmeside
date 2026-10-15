@@ -108,27 +108,17 @@
 		const rowVertFinal = mskClamp(rowVertMul * aspectCompress, 0.48, 1.08);
 
 		/*
-		 * Fit iPad-lock ringe ind i viewport: kolonner ~26%/74%, ≥10px margin.
-		 * Største lock-ring × portraitScale × ringAdj × phone-extra (script.js) må ikke klippe.
-		 * Phone-extra matcher mskAppendPortraitRingFromIpadLockSpec (efter ringFitMul).
+		 * Fit hele tablet-kompositionen ind i viewport (ikke kun ringe).
+		 * Ellers bliver ringe små mens hjerne/labels/streger forbliver store = “fucked”.
+		 * Kolonner ~26%/74%, ≥10px margin — samme relative lock-proportioner som iPad.
 		 */
-		const PHONE_RING_W_EXTRA = {
-			byens: 0.91,
-			repop: 0.9,
-			durex: 1.36 * 0.84,
-			ungeModUv: 1.16 * 0.92,
-			naturli: 1.14,
-			twister: 1.16,
-			kobajer: 1.12,
-			brainfarts: 1,
-		};
 		let ringFitMul = 1;
 		let hadLock = false;
 		try {
 			const lock =
 				(global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK && global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK.rings) ||
 				null;
-			let maxEffW = 0;
+			let maxRingW = 0;
 			if (lock) {
 				hadLock = true;
 				Object.keys(lock).forEach((k) => {
@@ -136,12 +126,10 @@
 					if (!spec) return;
 					let rw = Number(spec.w || spec.wBase || 0) || 0;
 					if (spec.rightWMul) rw *= Number(spec.rightWMul) || 1;
-					const extra = PHONE_RING_W_EXTRA[k] != null ? PHONE_RING_W_EXTRA[k] : 1;
-					const eff = rw * extra;
-					if (eff > maxEffW) maxEffW = eff;
+					if (rw > maxRingW) maxRingW = rw;
 				});
 			}
-			const scaledW = maxEffW * portraitScale * ringAdj;
+			const scaledW = maxRingW * portraitScale * ringAdj;
 			const inset = Math.max(10, Math.round(iw * 0.028));
 			const colLeft = iw * 0.26;
 			const colRight = iw * 0.74;
@@ -149,11 +137,18 @@
 			if (scaledW > 0 && allowHalf > 24) {
 				const needHalf = scaledW * 0.5;
 				if (needHalf > allowHalf) {
-					ringFitMul = mskClamp(allowHalf / needHalf, 0.38, 1);
+					ringFitMul = mskClamp(allowHalf / needHalf, 0.42, 1);
 				}
 			}
 		} catch (_) {
 			ringFitMul = 1;
+		}
+
+		/* Én fælles fit: scale + labels + brain — tablet-look, bare mindre */
+		if (ringFitMul < 0.999) {
+			portraitScale = portraitScale * ringFitMul;
+			labelMul = mskClamp(labelMul * ringFitMul, 0.14, 0.58);
+			brainPx = mskClamp(brainPx * ringFitMul, 56, 178);
 		}
 
 		return {
@@ -175,7 +170,9 @@
 			rowSpanAdj: rowSpanFinal,
 			scaleAdj: fitRatio,
 			ringAdj,
-			ringFitMul,
+			/* Allerede bagt ind i portraitScale/labelMul/brainPx — undgå dobbelt-krymp i ringBoost */
+			ringFitMul: 1,
+			compFitMul: ringFitMul,
 			hadLock,
 			rowVertMul: rowVertFinal,
 			safeMarginAdj,
@@ -238,7 +235,10 @@
 		html.style.setProperty('--phone-row-span-adj', String(f.rowSpanAdj));
 		html.style.setProperty('--phone-scale-adj', String(f.scaleAdj));
 		html.style.setProperty('--phone-ring-adj', String(f.ringAdj));
-		html.style.setProperty('--phone-ring-fit', String(f.ringFitMul != null ? f.ringFitMul : 1));
+		html.style.setProperty(
+			'--phone-ring-fit',
+			String(f.compFitMul != null ? f.compFitMul : f.ringFitMul != null ? f.ringFitMul : 1)
+		);
 		html.style.setProperty('--phone-row-vert-mul', String(f.rowVertMul));
 		html.style.setProperty('--phone-safe-margin-adj', String(f.safeMarginAdj));
 		html.style.setProperty('--phone-line-adj', String(f.lineAdj));

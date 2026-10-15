@@ -8476,49 +8476,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			) &&
 			!mskIsProjectsTabletPortraitViewport() &&
 			!document.documentElement.classList.contains('msk-projects-ipad-portrait');
-		if (phonePortraitRing && key === 'byens') {
-			w = Math.round(w * 0.91);
-		}
 		let rotate = spec.rotate;
-		if (phonePortraitRing && key === 'durex') {
-			w = Math.round(w * 1.36);
-			h = Math.round(h * 1.4);
-			rotate = (rotate || 0) - 8;
-			dy += Math.round(prs(34));
-		}
-		if (phonePortraitRing && key === 'ungeModUv') {
-			w = Math.round(w * 1.16);
-			h = Math.round(h * 0.92);
-			dy += Math.round(prs(18));
-		}
-		if (phonePortraitRing && key === 'naturli') {
-			w = Math.round(w * 1.14);
-			h = Math.round(h * 0.90);
-		}
-		if (phonePortraitRing && key === 'twister') {
-			w = Math.round(w * 1.16);
-			h = Math.round(h * 1.68);
-			dy += Math.round(prs(14));
-		}
-		if (phonePortraitRing && key === 'kobajer') {
-			w = Math.round(w * 1.12);
-			h = Math.round(h * 1.06);
-			dy += Math.round(prs(22));
-		}
-		if (phonePortraitRing && key === 'repop') {
-			w = Math.round(w * 0.90);
-			h = Math.round(h * 0.90);
-		}
-		/* Række under Repop/Naturli: Durex + Unge Mod UV lidt mindre */
-		if (phonePortraitRing && key === 'ungeModUv') {
-			w = Math.round(w * 0.92);
-			h = Math.round(h * 0.92);
-		}
-		if (phonePortraitRing && key === 'durex') {
-			w = Math.round(w * 0.84);
-			h = Math.round(h * 0.84);
-		}
-		/* Sidste sikkerhed: hold ring inde i viewport uanset per-ring multipliers */
+		/* Telefon = tablet-lock proportioner (ingen per-ring distort) — kun viewport-clamp */
 		if (phonePortraitRing && node && node.getBoundingClientRect) {
 			try {
 				const iw = Math.max(1, window.innerWidth || 390);
@@ -9359,7 +9318,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						// Wide charcoal circle + translate(-50%): keep center inset so the left edge stays on-screen.
 						if (p.key === 'durex') x += Math.round(38 * scale * nudgeMul);
 						if (phonePortraitGrid && p.key === 'durex') {
-							x += Math.round(20 * scale);
+							x += Math.round(8 * scale);
 						}
 						// Right column: pull toward center so the circle fits (smaller asset + translate -50%).
 						if (p.key === 'unge') x -= Math.round(28 * scale * nudgeMul);
@@ -9369,23 +9328,18 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.row === 1) y += Math.round(4 * scale);
 						/* Repop: ekstra i portrait-grid (kun denne node, ikke Naturlig) */
 						if (p.key === 'repop' && !phonePortraitGrid) y += Math.round(10 * scale);
-						/* Telefon portræt: Repop/Kravling op i række-1-cirklen (tekst sad under ringen) */
+						/* Telefon portræt: let nudge så tekst sidder i ovalen — undgå den gamle “krymp alt mod hjernen”-look */
 						if (phonePortraitGrid && p.key === 'repop') {
-							y -= Math.round(10 * scale);
+							y -= Math.round(6 * scale);
 						}
-						/* Telefon portræt: øverste række (Repop + Naturli) + streger ned */
+						/* Telefon: øverste/nederste række lidt ind — men langt mindre end før (tablet-proportioner) */
 						if (phonePortraitGrid && p.row === 1) {
-							y += Math.round(52 * scale * phoneRowVertMul);
+							if (p.key === 'repop') x += Math.round(10 * scale);
+							if (p.key === 'naturli') x -= Math.round(10 * scale);
 						}
-						/* Telefon portræt: øverste cirkler tættere mod midten vandret */
-						if (phonePortraitGrid && p.row === 1) {
-							if (p.key === 'repop') x += Math.round(20 * scale);
-							if (p.key === 'naturli') x -= Math.round(20 * scale);
-						}
-						/* Telefon portræt: nederste cirkler tættere mod midten vandret */
 						if (phonePortraitGrid && p.row === 5) {
-							if (p.key === 'brainfarts') x += Math.round(20 * scale);
-							if (p.key === 'byens') x -= Math.round(20 * scale);
+							if (p.key === 'brainfarts') x += Math.round(10 * scale);
+							if (p.key === 'byens') x -= Math.round(10 * scale);
 						}
 						/* Nederste række (Brainfarts, Byens): lidt ned — cirkler + indhold; streger følger i createConnectingLines */
 						if (p.key === 'brainfarts' || p.key === 'byens') {
@@ -9402,9 +9356,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							const kobExtraY = mskGetProjectsIpadPortraitLock()?.grid?.kobajerNodeExtraY || 16;
 							y += Math.round(kobExtraY * scale);
 						}
-						/* Telefon portræt: Kø-Bajer cirkel + tekst lidt mod højre */
+						/* Telefon portræt: Kø-Bajer let mod højre (tablet-lock + fit) */
 						if (phonePortraitGrid && p.key === 'kobajer') {
-							x += Math.round(28 * scale);
+							x += Math.round(12 * scale);
 						}
 						x = Math.max(minX, Math.min(maxX, x));
 						node.style.setProperty('left', `${x}px`, 'important');
@@ -11363,12 +11317,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					phonePortraitProjectsChain && !tabletPortraitProjectsChain
 						? 0.88 * phoneLineAdj
 						: 0.88;
-				const phoneBrainStrokeMul =
-					phonePortraitProjectsChain &&
-					!tabletPortraitProjectsChain &&
-					portraitGridLines
-						? 1.78
-						: 1;
+				/* Telefon = samme stregtykkelse som tablet (skaleret) — ikke oppustede “klatter” */
+				const phoneBrainStrokeMul = 1;
 				try {
 					currentSvg.querySelectorAll('.mindmap-line:not(.dynamic-mindmap-line)').forEach((el) => {
 						el.dataset.mobileHidden = '1';
@@ -11497,21 +11447,6 @@ document.addEventListener('DOMContentLoaded', function() {
 						x: durTop.x,
 						y: durTop.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy,
 					};
-					/* Telefon portræt: Repop→Durex (Linje 2) længere + tykkere */
-					if (
-						phonePortraitProjectsChain &&
-						!tabletPortraitProjectsChain &&
-						portraitGridLines
-					) {
-						repDurexLenMul *= 1.82;
-						repDurexLineH *= 1.42;
-						repDurexGapA = -svgScale(8);
-						repDurexGapB = -svgScale(16);
-						const phoneRepDurLen = svgScale(34);
-						repDurexA.y += phoneRepDurLen;
-						repDurexB.y -= phoneRepDurLen * 0.95;
-						repDurexA.y -= svgScale(6);
-					}
 					lineImg(
 						'assets/Linje 2.webp',
 						repDurexA,
@@ -11653,19 +11588,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon portræt: Twister→Brainfarts (linje 3) længere */
-					if (
-						phonePortraitProjectsChain &&
-						!tabletPortraitProjectsChain &&
-						portraitGridLines
-					) {
-						twBrfLenMul *= 1.28;
-						const phoneTwBrfLen = svgScale(16);
-						a.y += phoneTwBrfLen;
-						b.y -= phoneTwBrfLen * 0.9;
-						twBrfGapA = -svgScale(8);
-						twBrfGapB = -svgScale(6);
-					}
 					lineImg(
 						'assets/linje 3.webp',
 						a,
@@ -11723,17 +11645,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon portræt: Naturli'→Unge Mod UV (linje 7) længere ned mod Unge */
-					if (
-						phonePortraitProjectsChain &&
-						!tabletPortraitProjectsChain &&
-						portraitGridLines
-					) {
-						natUngLenMul *= 1.22;
-						const phoneNatUngExtend = svgScale(18);
-						natUngB.y += phoneNatUngExtend;
-						natUngGapB = -svgScale(8);
-					}
 					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
 						gapA: natUngGapA,
 						gapB: natUngGapB,
@@ -11796,14 +11707,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainGapA = -svgScale(14);
 					let kobBrainGapB = svgScale(2);
 					let kobBrainLenMul = underBrainLineLenMul * 1.38;
-					if (
-						phonePortraitProjectsChain &&
-						!tabletPortraitProjectsChain &&
-						portraitGridLines
-					) {
-						/* Forkort kun nedefra (Kø-Bajer-cirkel) — ikke fra hjernen */
-						kobBrainGapB = svgScale(62);
-					}
 					lineImg('assets/Linje 4.webp', a, b, kobBrainLineH, {
 						gapA: kobBrainGapA,
 						gapB: kobBrainGapB,
@@ -11880,19 +11783,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					if (
-						phonePortraitProjectsChain &&
-						!tabletPortraitProjectsChain &&
-						portraitGridLines
-					) {
-						/* Kø-Bajer → Byens: forkort nedefra (Byens-cirkel) */
-						kobByeLenMul *= 0.84;
-						kobByeLineGapB = svgScale(36);
-						b.y -= svgScale(22);
-						const phoneKobByeLift = svgScale(14);
-						a.y -= phoneKobByeLift;
-						b.y -= phoneKobByeLift;
-					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
 					lineImg('assets/linje 1.webp', a, b, kobByeLineH, {
 						gapA: kobByeLineGapA,
@@ -15445,7 +15335,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 14:45';
+		const stampText = 'update torsdag 15 okt - klokken 15:40';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
