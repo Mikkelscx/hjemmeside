@@ -5097,24 +5097,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		function ensureOverlay() {
 			let overlay = document.querySelector('.about-contact-transition');
+			/* Telefon: bladre fra CV-siden — about-iframes skal vise CV, ikke bio */
+			let aboutSrc = `about.html?preview=1&v=${window.mskAssetV || ''}`;
+			try {
+				if (document.documentElement.classList.contains('msk-about-phone-cv')) {
+					aboutSrc = `about.html?preview=1&phonePage=cv&v=${window.mskAssetV || ''}`;
+				}
+			} catch (_) {}
 			if (!overlay) {
 				overlay = document.createElement('div');
 				overlay.className = 'about-contact-transition';
 				overlay.innerHTML = `
 					<div class="about-contact-turn" aria-hidden="true">
 						<div class="about-contact-turn__under about-contact-turn__under--left">
-							<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__under-frame about-contact-turn__under-frame--about" src="about.html?preview=1&v=${window.mskAssetV || ''}" title="Om mig (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__under-frame about-contact-turn__under-frame--about" src="${aboutSrc}" title="Om mig (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__under-frame about-contact-turn__under-frame--contact" src="contact.html?preview=1&v=${window.mskAssetV || ''}" title="Kontakt (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="about-contact-turn__under about-contact-turn__under--right">
-							<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__under-frame about-contact-turn__under-frame--about" src="about.html?preview=1&v=${window.mskAssetV || ''}" title="Om mig (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__under-frame about-contact-turn__under-frame--about" src="${aboutSrc}" title="Om mig (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__under-frame about-contact-turn__under-frame--contact" src="contact.html?preview=1&v=${window.mskAssetV || ''}" title="Kontakt (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<div class="about-contact-turn__flip">
 							<div class="about-contact-turn__flip-face about-contact-turn__flip-face--front">
 								<!-- Front of turning sheet: Om mig RIGHT page -->
-								<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__flip-front about-contact-turn__flip-front--about" src="about.html?preview=1&v=${window.mskAssetV || ''}" title="Om mig (right on turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="about-contact-turn__frame about-contact-turn__frame--right about-contact-turn__flip-front about-contact-turn__flip-front--about" src="${aboutSrc}" title="Om mig (right on turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 								<!-- Safety swap: after mid, force Kontakt LEFT design on the turning sheet (matches Projekter -> Kontakt pattern) -->
 								<iframe class="about-contact-turn__frame about-contact-turn__frame--left about-contact-turn__flip-front about-contact-turn__flip-front--contact" src="contact.html?preview=1&v=${window.mskAssetV || ''}" title="Kontakt (left on turning page after seam)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
@@ -5125,6 +5132,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					</div>
 				`;
 				document.body.appendChild(overlay);
+			} else {
+				try {
+					overlay.querySelectorAll('iframe.about-contact-turn__under-frame--about, iframe.about-contact-turn__flip-front--about').forEach((fr) => {
+						if (fr.getAttribute('src') !== aboutSrc) fr.setAttribute('src', aboutSrc);
+					});
+				} catch (_) {}
 			}
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 			return overlay;
@@ -5532,8 +5545,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (hash !== '#cv' && hash !== '#udmaerkelser') {
 						history.replaceState(null, '', location.pathname + location.search + '#cv');
 					}
+					const right = document.querySelector('.about-sketchbook__page--right');
+					if (right) right.scrollTop = 0;
 				} else if ((location.hash || '').toLowerCase() === '#cv' || (location.hash || '').toLowerCase() === '#udmaerkelser') {
 					history.replaceState(null, '', location.pathname + location.search);
+					const left = document.querySelector('.about-sketchbook__page--left');
+					if (left) left.scrollTop = 0;
 				}
 			} catch {}
 		}
@@ -5694,14 +5711,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			window.addEventListener('pointercancel', onUp, true);
 		}
 
+		function ensureSideHandle(side) {
+			let h = document.querySelector('.page-turn-handle--' + side);
+			if (h) return h;
+			h = document.createElement('div');
+			h.className = 'page-turn-handle page-turn-handle--' + side;
+			h.setAttribute('aria-hidden', 'true');
+			document.body.appendChild(h);
+			try { mskSizePaperHandles(); } catch {}
+			return h;
+		}
+
 		function bind() {
 			if (!onPhone()) return;
-			const right = document.querySelector('.page-turn-handle--right');
-			const left = document.querySelector('.page-turn-handle--left');
+			const right = ensureSideHandle('right');
+			const left = ensureSideHandle('left');
 			if (right && !right._mskBioCvBound) {
 				right._mskBioCvBound = true;
 				right.addEventListener('pointerdown', (e) => {
 					if (!onPhone() || isCv()) return;
+					e.preventDefault();
+					e.stopPropagation();
 					try { right.setPointerCapture && right.setPointerCapture(e.pointerId); } catch {}
 					runPeel(true, e);
 				}, true);
@@ -5710,6 +5740,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				left._mskBioCvBound = true;
 				left.addEventListener('pointerdown', (e) => {
 					if (!onPhone() || !isCv()) return;
+					e.preventDefault();
 					e.stopPropagation();
 					try { left.setPointerCapture && left.setPointerCapture(e.pointerId); } catch {}
 					runPeel(false, e);
@@ -5718,6 +5749,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				const hash = (location.hash || '').toLowerCase();
 				if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
+				else setCv(false);
 			} catch {}
 			window.addEventListener('hashchange', () => {
 				try {
@@ -5732,9 +5764,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!onPhone()) return;
 			document.documentElement.classList.add('msk-about-phone-biocv');
 			try { document.body.style.overflow = 'hidden'; } catch {}
-			/* Vent til about-contact/projects har lavet handles */
+			/* Vent til about-contact/projects har lavet handles — så bind igen */
 			window.setTimeout(bind, 0);
 			window.setTimeout(bind, 120);
+			window.setTimeout(bind, 400);
 		}
 		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
 		else boot();
@@ -5754,6 +5787,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		function ensureOverlay() {
 			let overlay = document.querySelector('.contact-about-transition');
+			/* Telefon løbende rækkefølge: Kontakt ← CV — about-preview er CV-siden */
+			let aboutSrc = `about.html?preview=1&v=${window.mskAssetV || ''}`;
+			try {
+				if (window.matchMedia && (
+					window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches ||
+					window.matchMedia('(max-width: 640px) and (max-aspect-ratio: 1/1)').matches
+				) || document.documentElement.classList.contains('phone-portrait-zoom-stable')) {
+					aboutSrc = `about.html?preview=1&phonePage=cv&v=${window.mskAssetV || ''}`;
+				}
+			} catch (_) {}
 			if (!overlay) {
 				overlay = document.createElement('div');
 				overlay.className = 'contact-about-transition';
@@ -5761,21 +5804,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					<div class="contact-about-turn" aria-hidden="true">
 						<div class="contact-about-turn__under contact-about-turn__under--left">
 							<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__under-frame contact-about-turn__under-frame--contact" src="contact.html?preview=1&v=${window.mskAssetV || ''}" title="Kontakt (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__under-frame contact-about-turn__under-frame--about" src="about.html?preview=1&v=${window.mskAssetV || ''}" title="Om mig (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__under-frame contact-about-turn__under-frame--about" src="${aboutSrc}" title="Om mig (left under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 						<div class="contact-about-turn__under contact-about-turn__under--right">
 							<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__under-frame contact-about-turn__under-frame--contact" src="contact.html?preview=1&v=${window.mskAssetV || ''}" title="Kontakt (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-							<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__under-frame contact-about-turn__under-frame--about" src="about.html?preview=1&v=${window.mskAssetV || ''}" title="Om mig (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+							<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__under-frame contact-about-turn__under-frame--about" src="${aboutSrc}" title="Om mig (right under)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 
 						<div class="contact-about-turn__flip">
 							<div class="contact-about-turn__flip-face contact-about-turn__flip-face--front">
 								<!-- Swap DESIGN on the FLIPPING page at mid (50%) -->
 								<iframe class="contact-about-turn__frame contact-about-turn__frame--left contact-about-turn__flip-front contact-about-turn__flip-front--contact" src="contact.html?preview=1&v=${window.mskAssetV || ''}" title="Kontakt (left turning page)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-								<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__flip-front contact-about-turn__flip-front--about" src="about.html?preview=1&v=${window.mskAssetV || ''}" title="Om mig (right turning page after mid)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__flip-front contact-about-turn__flip-front--about" src="${aboutSrc}" title="Om mig (right turning page after mid)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 							<div class="contact-about-turn__flip-face contact-about-turn__flip-face--back">
-								<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__flip-back" src="about.html?preview=1&v=${window.mskAssetV || ''}" title="Om mig (right on backface)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+								<iframe class="contact-about-turn__frame contact-about-turn__frame--right contact-about-turn__flip-back" src="${aboutSrc}" title="Om mig (right on backface)" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 							</div>
 						</div>
 					</div>
@@ -6045,7 +6088,17 @@ document.addEventListener('DOMContentLoaded', function() {
 							try { overlay.classList.add('swap-under-right'); } catch {}
 						}, Math.round(Math.max(0, finishMs - 40)));
 					} catch {}
-					window.setTimeout(() => { window.location.href = 'about.html'; }, Math.round(Math.max(520, Math.min(FLIP_MS + 140, (FLIP_MS * (1 - progress)) + 260))));
+					/* Telefon: Kontakt ← CV ← bio ← Projekter — land på CV-siden */
+					let aboutHref = 'about.html';
+					try {
+						if (window.matchMedia && (
+							window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches ||
+							window.matchMedia('(max-width: 640px) and (max-aspect-ratio: 1/1)').matches
+						) || document.documentElement.classList.contains('phone-portrait-zoom-stable')) {
+							aboutHref = 'about.html#cv';
+						}
+					} catch (_) {}
+					window.setTimeout(() => { window.location.href = aboutHref; }, Math.round(Math.max(520, Math.min(FLIP_MS + 140, (FLIP_MS * (1 - progress)) + 260))));
 				}
 
 				window.addEventListener('pointermove', onMove, true);
@@ -15622,7 +15675,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 23:22';
+		const stampText = 'update torsdag 15 okt - klokken 23:42';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
