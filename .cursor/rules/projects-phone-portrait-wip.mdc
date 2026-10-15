@@ -1,0 +1,27 @@
+---
+description: Mobil portræt mindmap — aktivt (arver tablet/iPad lock)
+globs:
+  - "**/script.js"
+  - "**/styles.css"
+  - "**/projects.html"
+  - "**/projects-phone-portrait-lock.*"
+  - "**/projects-phone-portrait-profiles.js"
+alwaysApply: true
+---
+
+# Mobil portræt mindmap (projects.html) — AKTIVT
+
+**Status (15. okt. 2026):** Telefon arver **tablet/iPad-portræt**-designet (lock-ringe/streger), skaleret via `projects-phone-portrait-profiles.js` til den enkelte telefons bredde/højde.
+
+## Må IKKE røres uden helt klare ord
+
+| Område | Regel |
+|--------|--------|
+| **Computer/desktop** | LÅST — se `desktop-work.mdc` |
+| **Repop desktop** | LÅST — se `repop-desktop-locked.mdc` |
+
+## Aktivt arbejde
+
+- Telefon portræt: `msk-projects-phone-portrait` + iPad-lock × phone profile factors
+- Hold telefon visuelt på linje med tablet; tune via profiles/skalering, ikke et separat “gammelt” phone-layout
+- Tablet-portræt lock (`projects-ipad-portrait-lock.*`) er kanonisk kilde — ændr den kun ved eksplicit tablet-besked, og synk telefon-adfærd

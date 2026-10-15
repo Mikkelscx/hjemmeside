@@ -1,0 +1,14 @@
+---
+description: Aktivt arbejde er telefon (arver tablet) — computer må ikke ændres
+alwaysApply: true
+---
+
+# Telefon arver tablet — computer er låst
+
+**Bruger-beslutning (15. okt. 2026):** Kopiér tablet-designet over på **telefon**, skaleret til den enkelte telefons viewport (`projects-phone-portrait-profiles.js`, safe-area, clamp/vw).
+
+- **Aktivt arbejdsområde:** telefon/mobil (portræt først) — layout skal matche den godkendte **tablet**-udgave, tilpasset skærmbredde/højde.
+- **Tablet** er reference — ændr kun tablet hvis brugeren eksplicit beder om tablet-tuning (og hold telefon i sync).
+- **Du må IKKE ændre computer/desktop-designet** — desktop-grene (`min-width: 1025px` / `1401px` + `hover: hover` + `pointer: fine`, ellipse-mindmap m.m.) — før brugeren med **helt klare ord** skifter scope tilbage til computer.
+- **LÅST:** Repop laptop/desktop — se `repop-desktop-locked.mdc`.
+- Telefon-ændringer skal bruge **viewport-skalering** (ikke hardcodede px til én iPhone), og må **ikke** utilsigtet trække desktop med.

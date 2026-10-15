@@ -10,7 +10,7 @@
     <script>
     /* GitHub Pages cacher HTML — tving frisk URL så logo-fix ikke hænger. */
     (function () {
-        var v = '20260924p278';
+        var v = '20260924p279';
         try {
             var q = new URLSearchParams(location.search || '');
             if (q.get('v') !== v) {
@@ -24,7 +24,7 @@
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
-    <!-- deploy unge-mod-uv logo: 2026-10-15 01:48 p278 — remove logo neon box shadow — cache-bust redirect -->
+    <!-- deploy unge-mod-uv logo: 2026-10-15 04:15 p279 — phone inherits tablet logo scale — cache-bust redirect
     <style>
 
         /* Desktop Safari: tving dokument-scroll (html scroller; body overflow-y visible) */
@@ -155,10 +155,9 @@
         }
 
         /*
-         * Tablet + iPad Pro 13 (også når Chrome DevTools fejlagtigt melder hover/fine):
-         * tæt beskåret logo, mindre display — må ikke dække neon-rammer.
+         * Tablet + telefon (+ iPad Pro 13): tæt beskåret logo, skaleret til viewport.
          */
-        @media (min-width: 641px) and (max-width: 1400px) {
+        @media (max-width: 1400px) {
             .uv-headline {
                 margin-top: 0;
             }
@@ -171,6 +170,12 @@
             }
             .uv-credit {
                 margin: 0.25rem auto 0.5rem auto;
+            }
+        }
+        @media (max-width: 640px) {
+            .uv-headline__logo {
+                width: min(42vw, 200px);
+                max-width: 200px;
             }
         }
 
@@ -911,7 +916,7 @@
     </script>
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p278') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p279') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>

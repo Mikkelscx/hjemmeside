@@ -240,12 +240,29 @@ function mskIsProjectsTabletPortraitViewport() {
 	}
 }
 
-/** Tablet portræt one-page (Om mig/Kontakt/Projekter) — inkl. Chrome DevTools iPad uden coarse pointer. */
+/**
+ * Portræt one-page (Om mig/Kontakt/Projekter): tablet + telefon.
+ * Telefon arver samme peels/fuld-side som tablet; layout skalerer via viewport.
+ */
 function mskIsTabletPortraitSinglePage() {
 	try {
 		if (document.documentElement.classList.contains('msk-projects-ipad-portrait')) return true;
+		if (document.documentElement.classList.contains('msk-projects-phone-portrait')) return true;
+		if (document.documentElement.classList.contains('phone-portrait-zoom-stable')) return true;
 		if (mskIsProjectsTabletPortraitViewport()) return true;
+		if (typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) {
+			return true;
+		}
 		if (!window.matchMedia) return false;
+		const phonePortrait = window.matchMedia(
+			'(max-width: 640px) and (orientation: portrait)'
+		);
+		const phoneSquare = window.matchMedia(
+			'(max-width: 640px) and (max-aspect-ratio: 1/1)'
+		);
+		if ((phonePortrait && phonePortrait.matches) || (phoneSquare && phoneSquare.matches)) {
+			return true;
+		}
 		const portrait = window.matchMedia(
 			'(min-width: 641px) and (max-width: 1366px) and (orientation: portrait)'
 		);
@@ -8527,9 +8544,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		) {
 			return false;
 		}
-		/* Telefon: større ringe så titel/badges kan sidde inde i cirklen */
-		const repopRingBoost = href.includes('repop') ? 1.12 : 1;
-		let ringBoost = 1.16 * repopRingBoost;
+		/* Telefon = iPad-lock × phone-profile (skærmbredde/højde) — ingen ekstra “boost” væk fra tablet */
+		let ringBoost = 1;
 		try {
 			const pf = typeof mskGetPhonePortraitProfileFactors === 'function'
 				? mskGetPhonePortraitProfileFactors()
@@ -15401,7 +15417,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 01:10';
+		const stampText = 'update torsdag 15 okt - klokken 04:15';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
