@@ -5557,6 +5557,28 @@ document.addEventListener('DOMContentLoaded', function() {
 		function v() { return window.mskAssetV || ''; }
 		function clamp01(x) { return Math.max(0, Math.min(1, x)); }
 
+		function prepBioCvFrame(fr) {
+			if (!fr || fr._mskBioCvPrep) return;
+			fr._mskBioCvPrep = true;
+			const scrub = () => {
+				try {
+					const doc = fr.contentDocument;
+					if (!doc || !doc.documentElement) return;
+					doc.documentElement.classList.add('transition-preview');
+					doc.documentElement.classList.add('msk-about-phone-biocv');
+					try { mskStripBuildStamp(fr); } catch (_) {}
+					try {
+						if (doc.body) {
+							doc.body.style.setProperty('overflow', 'hidden', 'important');
+							doc.body.style.setProperty('background', '#f5f5f0', 'important');
+						}
+					} catch (_) {}
+				} catch (_) {}
+			};
+			fr.addEventListener('load', scrub);
+			scrub();
+		}
+
 		function ensureOverlay(toCv) {
 			let overlay = document.querySelector('.about-biocv-transition');
 			if (overlay) overlay.remove();
@@ -5568,21 +5590,25 @@ document.addEventListener('DOMContentLoaded', function() {
 			const underSrc = toCv
 				? `about.html?preview=1&phonePage=cv&v=${v()}`
 				: `about.html?preview=1&phonePage=bio&v=${v()}`;
+			/* Brug about-contact-turn__flip så portrait blank-flap virker — ikke projects-about (forkert under-DOM). */
 			overlay.innerHTML = `
 				<div class="about-biocv-turn" aria-hidden="true">
 					<div class="about-biocv-under">
 						<iframe src="${underSrc}" title="Om mig under" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 					</div>
-					<div class="about-biocv-turn__flip projects-about-turn__flip">
-						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front projects-about-turn__flip-face projects-about-turn__flip-face--front">
-							<iframe class="projects-about-frame projects-about-turn__flip-front" src="${frontSrc}" title="Om mig flipping" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+					<div class="about-biocv-turn__flip about-contact-turn__flip">
+						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front about-contact-turn__flip-face about-contact-turn__flip-face--front">
+							<iframe class="about-contact-turn__frame about-contact-turn__flip-front about-contact-turn__flip-front--about" src="${frontSrc}" title="Om mig flipping" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
-						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back projects-about-turn__flip-face projects-about-turn__flip-face--back">
-							<iframe class="projects-about-frame projects-about-turn__flip-back" src="${underSrc}" title="Om mig back" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back about-contact-turn__flip-face about-contact-turn__flip-face--back" aria-hidden="true">
+							<iframe class="about-contact-turn__frame about-contact-turn__flip-back" src="${underSrc}" title="" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 					</div>
 				</div>`;
 			document.body.appendChild(overlay);
+			try {
+				overlay.querySelectorAll('iframe').forEach(prepBioCvFrame);
+			} catch (_) {}
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 			return overlay;
 		}
@@ -5597,10 +5623,20 @@ document.addEventListener('DOMContentLoaded', function() {
 					flipEl.style.transition = '';
 					flipEl.style.animation = '';
 					flipEl.style.transform = '';
+					flipEl.style.clipPath = '';
 					const curl = flipEl._mskLiveCurl;
-					if (curl && curl.front) curl.front.style.clipPath = '';
-					if (curl && curl.flap) curl.flap.style.display = 'none';
+					if (curl && curl.front) {
+						curl.front.style.clipPath = '';
+						curl.front.style.opacity = '';
+					}
+					if (curl && curl.flap) {
+						curl.flap.style.display = 'none';
+						curl.flap.style.clipPath = '';
+						curl.flap.remove();
+					}
 					flipEl._mskLiveCurl = null;
+					flipEl._mskPaperCornerY = null;
+					flipEl._mskHoldFx = null;
 				}
 			} catch {}
 			try { if (overlay) overlay.remove(); } catch {}
@@ -15675,7 +15711,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 15 okt - klokken 23:42';
+		const stampText = 'update torsdag 15 okt - klokken 23:52';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

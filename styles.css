@@ -8584,7 +8584,29 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
             pointer-events: auto !important;
             z-index: 3 !important;
         }
-        /* Preview-iframes til bio↔CV peel */
+        /* Preview-iframes til bio↔CV peel — fuld bredde, samme telefon-design */
+        html.msk-about-phone-page-bio,
+        html.msk-about-phone-page-cv,
+        html.transition-preview.msk-about-phone-page-bio,
+        html.transition-preview.msk-about-phone-page-cv {
+            background: #f5f5f0 !important;
+        }
+        html.msk-about-phone-page-bio body.about-sketchbook-page,
+        html.msk-about-phone-page-cv body.about-sketchbook-page,
+        html.transition-preview.msk-about-phone-page-bio body.about-sketchbook-page,
+        html.transition-preview.msk-about-phone-page-cv body.about-sketchbook-page {
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            background: #f5f5f0 !important;
+        }
+        html.msk-about-phone-page-bio body.about-sketchbook-page .about-sketchbook,
+        html.msk-about-phone-page-cv body.about-sketchbook-page .about-sketchbook,
+        html.transition-preview.msk-about-phone-page-bio body.about-sketchbook-page .about-sketchbook,
+        html.transition-preview.msk-about-phone-page-cv body.about-sketchbook-page .about-sketchbook {
+            width: 100% !important;
+            max-width: none !important;
+        }
         html.msk-about-phone-page-bio body.about-sketchbook-page .about-sketchbook__page--right,
         html.transition-preview.msk-about-phone-page-bio body.about-sketchbook-page .about-sketchbook__page--right {
             display: none !important;
@@ -8593,15 +8615,19 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         html.transition-preview.msk-about-phone-page-cv body.about-sketchbook-page .about-sketchbook__page--left {
             display: none !important;
         }
+        html.msk-about-phone-page-bio body.about-sketchbook-page .about-sketchbook__page--left,
+        html.transition-preview.msk-about-phone-page-bio body.about-sketchbook-page .about-sketchbook__page--left,
         html.msk-about-phone-page-cv body.about-sketchbook-page .about-sketchbook__page--right,
         html.transition-preview.msk-about-phone-page-cv body.about-sketchbook-page .about-sketchbook__page--right {
             display: block !important;
             visibility: visible !important;
-            position: relative !important;
-            inset: auto !important;
-            height: auto !important;
+            position: absolute !important;
+            inset: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
             min-height: 100% !important;
             pointer-events: none !important;
+            overflow: hidden !important;
         }
         .about-biocv-transition {
             position: fixed;
@@ -8610,6 +8636,7 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
             pointer-events: none;
             opacity: 0;
             visibility: hidden;
+            background: #f5f5f0;
         }
         .about-biocv-transition.is-ready,
         .about-biocv-transition.is-turning {
@@ -8617,11 +8644,20 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
             visibility: visible;
             pointer-events: none;
         }
+        /* Skjul live-side under peel — undgår dobbelt/smear-design */
+        body.about-biocv-dragging .about-sketchbook,
+        body.about-biocv-dragging .navbar,
+        body.about-biocv-dragging .msk-build-stamp {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
         .about-biocv-turn,
         .about-biocv-under,
         .about-biocv-turn__flip {
             position: absolute;
             inset: 0;
+            width: 100%;
             width: 100vw;
             height: 100%;
             height: 100dvh;
@@ -8629,31 +8665,43 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         .about-biocv-under {
             z-index: 1;
             overflow: hidden;
+            background: #f5f5f0;
         }
         .about-biocv-under iframe {
             position: absolute;
             inset: 0;
+            width: 100%;
             width: 100vw;
             height: 100%;
+            height: 100dvh;
             border: 0;
             pointer-events: none;
+            background: #f5f5f0;
         }
         .about-biocv-turn__flip {
             z-index: 3;
             transform-origin: 0% 50%;
             background: #f5f5f0;
+            overflow: hidden;
         }
         .about-biocv-turn__flip-face {
             position: absolute;
             inset: 0;
+            background: #f5f5f0;
         }
         .about-biocv-turn__flip-face iframe {
             position: absolute;
             inset: 0;
+            width: 100%;
             width: 100vw;
             height: 100%;
+            height: 100dvh;
             border: 0;
             pointer-events: none;
+            background: #f5f5f0;
+        }
+        .about-biocv-turn__flip-face--back {
+            display: none !important;
         }
         body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
             position: relative !important;
