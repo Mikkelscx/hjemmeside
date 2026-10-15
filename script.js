@@ -5560,29 +5560,41 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			} catch {}
 		}
-		function v() { return window.mskAssetV || ''; }
 		function clamp01(x) { return Math.max(0, Math.min(1, x)); }
 
-		function prepBioCvFrame(fr) {
-			if (!fr || fr._mskBioCvPrep) return;
-			fr._mskBioCvPrep = true;
-			const scrub = () => {
-				try {
-					const doc = fr.contentDocument;
-					if (!doc || !doc.documentElement) return;
-					doc.documentElement.classList.add('transition-preview');
-					doc.documentElement.classList.add('msk-about-phone-biocv');
-					try { mskStripBuildStamp(fr); } catch (_) {}
-					try {
-						if (doc.body) {
-							doc.body.style.setProperty('overflow', 'hidden', 'important');
-							doc.body.style.setProperty('background', '#f5f5f0', 'important');
-						}
-					} catch (_) {}
-				} catch (_) {}
-			};
-			fr.addEventListener('load', scrub);
-			scrub();
+		/* NO iframes — nested about.html crashes Mobile Safari ("gentagne problemer"). */
+		function cloneAboutPage(side) {
+			const sel = side === 'cv'
+				? '.about-sketchbook__page--right'
+				: '.about-sketchbook__page--left';
+			const src = document.querySelector(sel);
+			const host = document.createElement('div');
+			host.className = 'about-biocv-page-clone about-biocv-page-clone--' + side;
+			try { mskApplyBlankLinedPaper(host); } catch (_) {
+				host.style.background = '#f5f5f0';
+			}
+			if (!src) return host;
+			const clone = src.cloneNode(true);
+			clone.classList.add('about-biocv-page-clone__sheet');
+			clone.removeAttribute('id');
+			clone.setAttribute('aria-hidden', 'true');
+			clone.style.setProperty('position', 'absolute', 'important');
+			clone.style.setProperty('inset', '0', 'important');
+			clone.style.setProperty('width', '100%', 'important');
+			clone.style.setProperty('height', '100%', 'important');
+			clone.style.setProperty('visibility', 'visible', 'important');
+			clone.style.setProperty('opacity', '1', 'important');
+			clone.style.setProperty('pointer-events', 'none', 'important');
+			clone.style.setProperty('display', 'block', 'important');
+			clone.style.setProperty('z-index', '1', 'important');
+			clone.style.setProperty('overflow', 'hidden', 'important');
+			try {
+				clone.querySelectorAll('a, button, iframe, script, video, .page-turn-handle').forEach((n) => {
+					try { n.remove(); } catch (_) {}
+				});
+			} catch (_) {}
+			host.appendChild(clone);
+			return host;
 		}
 
 		function ensureOverlay(toCv) {
@@ -5590,32 +5602,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (overlay) overlay.remove();
 			overlay = document.createElement('div');
 			overlay.className = 'about-biocv-transition';
-			const frontSrc = toCv
-				? `about.html?preview=1&phonePage=bio&v=${v()}`
-				: `about.html?preview=1&phonePage=cv&v=${v()}`;
-			const underSrc = toCv
-				? `about.html?preview=1&phonePage=cv&v=${v()}`
-				: `about.html?preview=1&phonePage=bio&v=${v()}`;
-			/* Egne klasser — ikke about-contact-turn__flip (den har opacity:0 + 50vw uden parent-transition). */
 			overlay.innerHTML = `
 				<div class="about-biocv-turn" aria-hidden="true">
-					<div class="about-biocv-under">
-						<iframe src="${underSrc}" title="Om mig under" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-					</div>
+					<div class="about-biocv-under"></div>
 					<div class="about-biocv-turn__flip">
-						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front">
-							<iframe class="about-biocv-frame about-biocv-flip-front" src="${frontSrc}" title="Om mig flipping" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-						</div>
-						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back" aria-hidden="true">
-							<iframe class="about-biocv-frame about-biocv-flip-back" src="${underSrc}" title="" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
-						</div>
+						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front about-biocv-flip-front"></div>
+						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back" aria-hidden="true"></div>
 					</div>
 				</div>`;
+			const under = overlay.querySelector('.about-biocv-under');
+			const front = overlay.querySelector('.about-biocv-turn__flip-face--front');
+			if (under) under.appendChild(cloneAboutPage(toCv ? 'cv' : 'bio'));
+			if (front) front.appendChild(cloneAboutPage(toCv ? 'bio' : 'cv'));
 			document.body.appendChild(overlay);
-			try {
-				overlay.querySelectorAll('iframe').forEach(prepBioCvFrame);
-			} catch (_) {}
-			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 			return overlay;
 		}
 
@@ -5646,6 +5645,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			} catch {}
 			try { if (overlay) overlay.remove(); } catch {}
+			try {
+				document.querySelectorAll('.about-biocv-transition').forEach((n) => n.remove());
+			} catch {}
 		}
 
 		function runPeel(toCv, e) {
@@ -5760,6 +5762,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			window.addEventListener('pointermove', onMove, true);
 			window.addEventListener('pointerup', onUp, true);
 			window.addEventListener('pointercancel', onUp, true);
+			/* Hvis Safari/tab mister fokusus under peel — gendan live-side, ingen stuck overlay */
+			const abort = () => {
+				try {
+					window.removeEventListener('pointermove', onMove, true);
+					window.removeEventListener('pointerup', onUp, true);
+					window.removeEventListener('pointercancel', onUp, true);
+				} catch {}
+				cleanup(overlay, flipEl);
+			};
+			window.addEventListener('pagehide', abort, { once: true });
+			window.addEventListener('visibilitychange', () => {
+				if (document.visibilityState === 'hidden') abort();
+			}, { once: true });
 		}
 
 		function ensureSideHandle(side) {
@@ -5798,13 +5813,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
 				else setCv(false);
 			} catch {}
-			window.addEventListener('hashchange', () => {
-				try {
-					const hash = (location.hash || '').toLowerCase();
-					if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
-					else if (!hash) setCv(false);
-				} catch {}
-			});
+			if (!window._mskBioCvHashBound) {
+				window._mskBioCvHashBound = true;
+				window.addEventListener('hashchange', () => {
+					try {
+						const hash = (location.hash || '').toLowerCase();
+						if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
+						else if (!hash) setCv(false);
+					} catch {}
+				});
+			}
 		}
 
 		function boot() {
