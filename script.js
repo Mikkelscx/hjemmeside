@@ -4645,6 +4645,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -4655,6 +4656,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the double overlay (and its iframes) so the 2nd-half backface isn't blank.
 		(function preloadDoubleOnce() {
 			try {
+				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureDoubleOverlay();
 				ov.classList.add('is-preloading');
