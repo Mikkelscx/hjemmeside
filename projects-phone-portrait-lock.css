@@ -671,6 +671,37 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	transform-origin: center center !important;
 }
 
+/*
+ * Projekter → Om mig i telefon-portræt: fuld side (ikke 50vw højre blad).
+ * Spejler tablet-regler fra projects-ipad-portrait-lock.css — retune ikke tablet.
+ */
+html.msk-projects-phone-portrait .projects-about-transition .projects-about-under--left {
+	display: none !important;
+}
+
+html.msk-projects-phone-portrait .projects-about-transition .projects-about-under--right {
+	left: 0 !important;
+	right: 0 !important;
+	width: 100vw !important;
+	height: 100% !important;
+	height: 100dvh !important;
+}
+
+html.msk-projects-phone-portrait .projects-about-transition .projects-about-frame,
+html.msk-projects-phone-portrait .projects-about-transition .projects-about-frame--left,
+html.msk-projects-phone-portrait .projects-about-transition .projects-about-frame--right {
+	left: 0 !important;
+	width: 100vw !important;
+}
+
+html.msk-projects-phone-portrait .projects-about-transition .projects-about-turn__flip {
+	left: 0 !important;
+	width: 100vw !important;
+	height: 100% !important;
+	height: 100dvh !important;
+	transform-origin: 0% 50%;
+}
+
 /* Kontinuerlig skalering (reference iPhone 12 Pro 390x844) — JS saetter praecise vars ved resize */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain {
 	width: var(--projectsBrainSize, clamp(68px, calc(121px * var(--phone-fit-ratio, var(--phone-w-ratio, 1))), 178px)) !important;

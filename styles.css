@@ -2766,11 +2766,13 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
 }
 
 /*
- * Tablet portræt: Om mig ↔ Kontakt / Om mig ↔ Projekter = fuld one-page
+ * Tablet + telefon portræt: Om mig ↔ Kontakt / Om mig ↔ Projekter = fuld one-page
  * (ikke 50vw notesbog midt på). Desktop/laptop-peel forbliver 50vw.
  */
 @media (min-width: 641px) and (max-width: 1366px) and (orientation: portrait),
-       (min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1) {
+       (min-width: 641px) and (max-width: 1366px) and (max-aspect-ratio: 1/1),
+       (max-width: 640px) and (orientation: portrait),
+       (max-width: 640px) and (max-aspect-ratio: 1/1) {
     .about-contact-turn__under,
     .contact-about-turn__under,
     .about-projects-turn__under,

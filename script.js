@@ -317,8 +317,13 @@ function mskApplyAboutContactPortraitFullPage(root) {
 			fr.style.setProperty('left', '0px', 'important');
 			fr.style.setProperty('width', '100vw', 'important');
 		});
+		/* Skjul non-reveal halves (match CSS one-page peel). Reveal stays visible:
+		 * Projekter→Om mig / Om mig→Kontakt: under--right
+		 * Kontakt→Om mig / Om mig→Projekter: under--left
+		 */
 		root.querySelectorAll(
-			'.about-projects-turn__under--right, .projects-about-under--right'
+			'.about-projects-turn__under--right, .contact-about-turn__under--right, ' +
+			'.about-contact-turn__under--left, .projects-about-under--left'
 		).forEach((el) => {
 			el.style.setProperty('opacity', '0', 'important');
 			el.style.setProperty('pointer-events', 'none', 'important');
