@@ -576,6 +576,18 @@ img {
     }
 }
 
+/* Telefon: ingen page-peel — navigation kun via MENU (stabilt, ingen crash). */
+@media (max-width: 640px) {
+    .page-turn-handle,
+    .corner-fold-hints {
+        display: none !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+    }
+}
+
 /* iOS: avoid auto-zoom on focus for small inputs (keeps layout = design) */
 @media (max-width: 640px) {
     html {

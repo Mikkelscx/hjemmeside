@@ -2607,8 +2607,22 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	// Paper curl on computer, tablet and phone.
+	/** Telefon: ingen page-peel — kun menu-navigation (stabilt, ingen crash/design-smear). */
+	function mskIsPhoneMenuNavOnly() {
+		try {
+			const html = document.documentElement;
+			if (html.classList.contains('phone-portrait-zoom-stable')) return true;
+			if (html.classList.contains('msk-projects-phone-portrait')) return true;
+			if (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) return true;
+			const w = Math.round(window.innerWidth || 0);
+			return w > 0 && w <= 640;
+		} catch (_) {
+			return false;
+		}
+	}
 	function mskIsTabletPaperDrag() {
 		try {
+			if (mskIsPhoneMenuNavOnly()) return false;
 			const w = Math.round(window.innerWidth || 0);
 			const h = Math.round(window.innerHeight || 0);
 			return w >= 280 && h >= 280;
@@ -2654,9 +2668,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 	function mskSizePaperHandles() {
+		const phoneNoPeel = mskIsPhoneMenuNavOnly();
 		const tablet = mskIsTabletPaperDrag();
 		const finger = mskIsFingerTablet();
 		document.querySelectorAll('.page-turn-handle').forEach((h) => {
+			if (phoneNoPeel) {
+				h.style.display = 'none';
+				h.style.pointerEvents = 'none';
+				h.style.width = '0';
+				h.style.height = '0';
+				h.setAttribute('aria-hidden', 'true');
+				h.classList.remove('msk-paper-edge');
+				return;
+			}
+			h.style.display = '';
+			h.style.pointerEvents = '';
 			if (!h._mskLinkGuard) {
 				h._mskLinkGuard = true;
 				h.addEventListener('pointerdown', (e) => {
@@ -3982,6 +4008,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			const hrefLower = hrefAttr.toLowerCase();
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
@@ -4079,6 +4106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			function startDrag(e) {
 				if (dragging) return;
+				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 				if (!e || e.button !== 0) return;
 				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 				e.preventDefault();
@@ -4862,6 +4890,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'projects.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -4872,6 +4901,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -4976,6 +5006,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			function startDrag(e) {
 				if (dragging) return;
+				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 				if (!e || e.button !== 0) return;
 				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 				e.preventDefault();
@@ -5308,6 +5339,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -5318,6 +5350,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -5404,6 +5437,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			function startDrag(e) {
 				if (dragging) return;
+				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 				if (!e || e.button !== 0) return;
 				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 				e.preventDefault();
@@ -5536,10 +5570,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		})();
 	})();
 
-	/** Telefon portræt Om mig: bio ↔ CV som selvstændige sider med paper peel. */
+	/** Telefon Om mig: bio/CV som to sider — kun via menu/#cv (ingen peel). */
 	function mskIsAboutPhonePortraitBioCv() {
 		try {
 			if (!document.body || !document.body.classList.contains('about-sketchbook-page')) return false;
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return true;
 			if (window.matchMedia && (
 				window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches ||
 				window.matchMedia('(max-width: 640px) and (max-aspect-ratio: 1/1)').matches
@@ -5551,7 +5586,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 
-	(function initAboutBioCvPhoneTurn() {
+	(function initAboutBioCvPhonePages() {
 		try {
 			const path = (window.location.pathname || '').toLowerCase();
 			if (!path.endsWith('/about.html') && !path.endsWith('about.html')) return;
@@ -5563,16 +5598,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (qs.includes('preview=1') || qs.includes('phonepage=')) return;
 		} catch {}
 
-		const FLIP_MS = getPageFlipMs(4200);
-		const COMPLETE_THRESHOLD = 0.48;
-		let dragging = false;
-		let rafId = 0;
-
 		function onPhone() {
 			return !!(typeof mskIsAboutPhonePortraitBioCv === 'function' && mskIsAboutPhonePortraitBioCv());
-		}
-		function isCv() {
-			return document.documentElement.classList.contains('msk-about-phone-cv');
 		}
 		function setCv(on) {
 			document.documentElement.classList.toggle('msk-about-phone-cv', !!on);
@@ -5591,281 +5618,26 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			} catch {}
 		}
-		function clamp01(x) { return Math.max(0, Math.min(1, x)); }
 
-		/* NO iframes — nested about.html crashes Mobile Safari ("gentagne problemer"). */
-		function cloneAboutPage(side) {
-			const sel = side === 'cv'
-				? '.about-sketchbook__page--right'
-				: '.about-sketchbook__page--left';
-			const src = document.querySelector(sel);
-			const host = document.createElement('div');
-			host.className = 'about-biocv-page-clone about-biocv-page-clone--' + side;
-			try { mskApplyBlankLinedPaper(host); } catch (_) {
-				host.style.background = '#f5f5f0';
-			}
-			if (!src) return host;
-			const clone = src.cloneNode(true);
-			clone.classList.add('about-biocv-page-clone__sheet');
-			clone.removeAttribute('id');
-			clone.setAttribute('aria-hidden', 'true');
-			clone.style.setProperty('position', 'absolute', 'important');
-			clone.style.setProperty('inset', '0', 'important');
-			clone.style.setProperty('width', '100%', 'important');
-			clone.style.setProperty('height', '100%', 'important');
-			clone.style.setProperty('visibility', 'visible', 'important');
-			clone.style.setProperty('opacity', '1', 'important');
-			clone.style.setProperty('pointer-events', 'none', 'important');
-			clone.style.setProperty('display', 'block', 'important');
-			clone.style.setProperty('z-index', '1', 'important');
-			clone.style.setProperty('overflow', 'hidden', 'important');
-			try {
-				clone.querySelectorAll('a, button, iframe, script, video, .page-turn-handle').forEach((n) => {
-					try { n.remove(); } catch (_) {}
-				});
-			} catch (_) {}
-			host.appendChild(clone);
-			return host;
-		}
-
-		function ensureOverlay(toCv) {
-			let overlay = document.querySelector('.about-biocv-transition');
-			if (overlay) overlay.remove();
-			overlay = document.createElement('div');
-			overlay.className = 'about-biocv-transition';
-			overlay.innerHTML = `
-				<div class="about-biocv-turn" aria-hidden="true">
-					<div class="about-biocv-under"></div>
-					<div class="about-biocv-turn__flip">
-						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front about-biocv-flip-front"></div>
-						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back" aria-hidden="true"></div>
-					</div>
-				</div>`;
-			const under = overlay.querySelector('.about-biocv-under');
-			const front = overlay.querySelector('.about-biocv-turn__flip-face--front');
-			if (under) under.appendChild(cloneAboutPage(toCv ? 'cv' : 'bio'));
-			if (front) front.appendChild(cloneAboutPage(toCv ? 'bio' : 'cv'));
-			document.body.appendChild(overlay);
-			return overlay;
-		}
-
-		function cleanup(overlay, flipEl) {
-			dragging = false;
-			if (rafId) cancelAnimationFrame(rafId);
-			rafId = 0;
-			try { document.body.classList.remove('about-biocv-dragging'); } catch {}
-			try {
-				if (flipEl) {
-					flipEl.style.transition = '';
-					flipEl.style.animation = '';
-					flipEl.style.transform = '';
-					flipEl.style.clipPath = '';
-					const curl = flipEl._mskLiveCurl;
-					if (curl && curl.front) {
-						curl.front.style.clipPath = '';
-						curl.front.style.opacity = '';
-					}
-					if (curl && curl.flap) {
-						curl.flap.style.display = 'none';
-						curl.flap.style.clipPath = '';
-						curl.flap.remove();
-					}
-					flipEl._mskLiveCurl = null;
-					flipEl._mskPaperCornerY = null;
-					flipEl._mskHoldFx = null;
-				}
-			} catch {}
-			try { mskNukeTransitionTree(overlay); } catch {}
-			try {
-				document.querySelectorAll('.about-biocv-transition').forEach((n) => {
-					try { mskNukeTransitionTree(n); } catch (_) { try { n.remove(); } catch (_) {} }
-				});
-			} catch {}
-		}
-
-		function runPeel(toCv, e) {
-			if (!onPhone() || dragging) return;
-			if (!e || (typeof e.button === 'number' && e.button !== 0)) return;
-			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			if (toCv && isCv()) return;
-			if (!toCv && !isCv()) return;
-			e.preventDefault();
-			e.stopPropagation();
-
-			dragging = true;
-			const startX = e.clientX;
-			let progress = 0;
-			let liveHidden = false;
-			const sign = toCv ? -1 : 1;
-			try { document.body.style.overflow = 'hidden'; } catch {}
-
-			const overlay = ensureOverlay(toCv);
-			overlay.classList.add('is-ready', 'is-turning');
-			const flipEl = overlay.querySelector('.about-biocv-turn__flip');
-			if (flipEl) {
-				flipEl._mskPaperCornerY = null;
-				flipEl._mskHoldFx = null;
-				flipEl._mskPaperSideBand = false;
-			}
-			try { mskPaperNotePointer(flipEl, e); } catch {}
-
-			function hideLive() {
-				if (liveHidden) return;
-				liveHidden = true;
-				try { document.body.classList.add('about-biocv-dragging'); } catch {}
-			}
-
-			function setProgress(p) {
-				progress = clamp01(p);
-				if (progress > 0.02) hideLive();
-				try {
-					if (flipEl && !mskPaintPaperDrag(flipEl, progress, sign)) {
-						flipEl.style.animation = 'none';
-						flipEl.style.transition = 'none';
-						flipEl.style.transform = `rotateY(${sign * 180 * progress}deg)`;
-					}
-				} catch {}
-			}
-			/* Init curl so first finger-move peels immediately */
-			try { setProgress(0); } catch {}
-
-			function onMove(ev) {
-				if (!dragging) return;
-				const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
-				const vw = mskViewportSize().w || window.innerWidth || 1;
-				let p = 0;
-				if (toCv) {
-					const seamX = vw * 0.5;
-					if (x >= startX) p = 0;
-					else if (x >= seamX) p = ((startX - x) / Math.max(1, startX - seamX)) * 0.5;
-					else p = 0.5 + ((seamX - x) / Math.max(1, seamX)) * 0.5;
-				} else {
-					const seamX = vw * 0.5;
-					if (x <= startX) p = 0;
-					else if (x <= seamX) p = ((x - startX) / Math.max(1, seamX - startX)) * 0.5;
-					else p = 0.5 + ((x - seamX) / Math.max(1, vw - seamX)) * 0.5;
-				}
-				if (mskIsTabletPaperDrag()) {
-					mskPaperNotePointer(flipEl, ev);
-					setProgress(p);
-				} else if (!rafId) {
-					rafId = requestAnimationFrame(() => { rafId = 0; setProgress(p); });
-				}
-			}
-
-			function onUp(ev) {
-				try { if (ev) { ev.preventDefault(); ev.stopPropagation(); } } catch {}
-				window.removeEventListener('pointermove', onMove, true);
-				window.removeEventListener('pointerup', onUp, true);
-				window.removeEventListener('pointercancel', onUp, true);
-
-				const paperRel = mskPaperDragRelease(flipEl, sign, progress, (info) => {
-					if (info && !info.complete) cleanup(overlay, flipEl);
-				});
-				const shouldComplete = paperRel ? paperRel.complete : (progress >= COMPLETE_THRESHOLD);
-				if (!shouldComplete) {
-					if (!paperRel) {
-						try {
-							if (flipEl) {
-								flipEl.style.transition = 'transform 260ms cubic-bezier(.2,.9,.2,1)';
-								flipEl.style.transform = 'rotateY(0deg)';
-							}
-						} catch {}
-						window.setTimeout(() => cleanup(overlay, flipEl), 280);
-					}
-					return;
-				}
-				mskArmPageTurnGhostClickGuard(520);
-				let finishMs = 520;
-				try {
-					if (flipEl && !paperRel) {
-						const remaining = Math.max(0, 1 - progress);
-						finishMs = Math.round(Math.max(420, Math.min(FLIP_MS, FLIP_MS * remaining)));
-						flipEl.style.transition = `transform ${finishMs}ms cubic-bezier(.42,0,.58,1)`;
-						flipEl.style.transform = `rotateY(${sign * 180}deg)`;
-					}
-				} catch {}
-				window.setTimeout(() => {
-					setCv(toCv);
-					cleanup(overlay, flipEl);
-					try { document.body.style.overflow = 'hidden'; } catch {}
-				}, Math.round(Math.max(380, Math.min(FLIP_MS + 80, (FLIP_MS * (1 - progress)) + 200))));
-			}
-
-			window.addEventListener('pointermove', onMove, true);
-			window.addEventListener('pointerup', onUp, true);
-			window.addEventListener('pointercancel', onUp, true);
-			/* Hvis Safari/tab mister fokusus under peel — gendan live-side, ingen stuck overlay */
-			const abort = () => {
-				try {
-					window.removeEventListener('pointermove', onMove, true);
-					window.removeEventListener('pointerup', onUp, true);
-					window.removeEventListener('pointercancel', onUp, true);
-				} catch {}
-				cleanup(overlay, flipEl);
-			};
-			window.addEventListener('pagehide', abort, { once: true });
-			window.addEventListener('visibilitychange', () => {
-				if (document.visibilityState === 'hidden') abort();
-			}, { once: true });
-		}
-
-		function ensureSideHandle(side) {
-			let h = document.querySelector('.page-turn-handle--' + side);
-			if (h) return h;
-			h = document.createElement('div');
-			h.className = 'page-turn-handle page-turn-handle--' + side;
-			h.setAttribute('aria-hidden', 'true');
-			document.body.appendChild(h);
-			try { mskSizePaperHandles(); } catch {}
-			return h;
-		}
-
-		function bind() {
+		function syncFromHash() {
 			if (!onPhone()) return;
-			const right = ensureSideHandle('right');
-			const left = ensureSideHandle('left');
-			if (right && !right._mskBioCvBound) {
-				right._mskBioCvBound = true;
-				right.addEventListener('pointerdown', (e) => {
-					if (!onPhone() || isCv()) return;
-					try { right.setPointerCapture && right.setPointerCapture(e.pointerId); } catch {}
-					runPeel(true, e);
-				}, true);
-			}
-			if (left && !left._mskBioCvBound) {
-				left._mskBioCvBound = true;
-				left.addEventListener('pointerdown', (e) => {
-					if (!onPhone() || !isCv()) return;
-					try { left.setPointerCapture && left.setPointerCapture(e.pointerId); } catch {}
-					runPeel(false, e);
-				}, true);
-			}
 			try {
 				const hash = (location.hash || '').toLowerCase();
 				if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
 				else setCv(false);
 			} catch {}
-			if (!window._mskBioCvHashBound) {
-				window._mskBioCvHashBound = true;
-				window.addEventListener('hashchange', () => {
-					try {
-						const hash = (location.hash || '').toLowerCase();
-						if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
-						else if (!hash) setCv(false);
-					} catch {}
-				});
-			}
 		}
 
 		function boot() {
 			if (!onPhone()) return;
 			document.documentElement.classList.add('msk-about-phone-biocv');
 			try { document.body.style.overflow = 'hidden'; } catch {}
-			/* Vent til about-contact/projects har lavet handles — så bind igen */
-			window.setTimeout(bind, 0);
-			window.setTimeout(bind, 120);
-			window.setTimeout(bind, 400);
+			try { mskSizePaperHandles(); } catch {}
+			syncFromHash();
+			if (!window._mskBioCvHashBound) {
+				window._mskBioCvHashBound = true;
+				window.addEventListener('hashchange', syncFromHash);
+			}
 		}
 		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
 		else boot();
@@ -6007,6 +5779,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			const hrefLower = hrefAttr.toLowerCase();
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
@@ -6018,6 +5791,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Preload the overlay (and its iframes) to avoid a brief "no design" flash.
 		(function preloadOnce() {
 			try {
+				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 				if (document.documentElement.classList.contains('transition-preview')) return;
 				const ov = ensureOverlay();
 				ov.classList.add('is-preloading');
@@ -6093,6 +5867,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			function startDrag(e) {
 				if (dragging) return;
+				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 				if (!e || e.button !== 0) return;
 				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 				e.preventDefault();
@@ -15773,7 +15548,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 16 okt - klokken 00:40';
+		const stampText = 'update fredag 16 okt - klokken 00:56';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
