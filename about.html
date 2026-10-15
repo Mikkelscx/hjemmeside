@@ -10,7 +10,7 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p305';
+        var v = '20260924p306';
         try {
             var q = new URLSearchParams(location.search || '');
             var phonePage = q.get('phonePage');
@@ -24,6 +24,10 @@
                 q.set('v', v);
                 location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
                 return;
+            }
+            /* Tiny: korrekt højde uden fuld script.js i peel-iframes */
+            if (q.has('preview') || q.has('phonePage')) {
+                document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
             }
         } catch (e) {}
         window.mskAssetV = v;
@@ -321,7 +325,7 @@
             var q = new URLSearchParams(location.search || '');
             if (q.has('preview') || q.has('phonePage')) return;
         } catch (e) {}
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p305') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p306') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>

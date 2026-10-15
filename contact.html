@@ -9,10 +9,13 @@
     <title>Contact - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p305';
+        window.mskAssetV = '20260924p306';
         try {
             var q = new URLSearchParams(location.search || '');
-            if (q.has('preview')) document.documentElement.classList.add('transition-preview');
+            if (q.has('preview')) {
+                document.documentElement.classList.add('transition-preview');
+                document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+            }
         } catch (e) {}
         document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
     })();
@@ -381,7 +384,7 @@
             var q = new URLSearchParams(location.search || '');
             if (q.has('preview')) return;
         } catch (e) {}
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p305') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p306') + '.js"><\/script>');
     })();
     </script>
 </body>
