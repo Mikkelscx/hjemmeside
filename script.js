@@ -304,7 +304,8 @@ function mskApplyAboutContactPortraitFullPage(root) {
 		root.querySelectorAll(
 			'.about-contact-turn__under, .contact-about-turn__under, .about-contact-turn__flip, .contact-about-turn__flip, ' +
 			'.about-projects-turn__under, .about-projects-turn__flip, ' +
-			'.projects-about-under, .projects-about-turn__flip'
+			'.projects-about-under, .projects-about-turn__flip, ' +
+			'.about-biocv-under, .about-biocv-turn__flip'
 		).forEach((el) => {
 			el.style.setProperty('left', '0px', 'important');
 			el.style.setProperty('right', 'auto', 'important');
@@ -312,7 +313,8 @@ function mskApplyAboutContactPortraitFullPage(root) {
 		});
 		root.querySelectorAll(
 			'.about-contact-turn__frame, .contact-about-turn__frame, ' +
-			'.about-projects-turn__frame, .projects-about-frame'
+			'.about-projects-turn__frame, .projects-about-frame, ' +
+			'.about-biocv-frame'
 		).forEach((fr) => {
 			fr.style.setProperty('left', '0px', 'important');
 			fr.style.setProperty('width', '100vw', 'important');
@@ -3255,7 +3257,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			flipEl.classList.contains('about-contact-turn__flip') ||
 			flipEl.classList.contains('contact-about-turn__flip') ||
 			flipEl.classList.contains('about-projects-turn__flip') ||
-			flipEl.classList.contains('projects-about-turn__flip')
+			flipEl.classList.contains('projects-about-turn__flip') ||
+			flipEl.classList.contains('about-biocv-turn__flip')
 		) {
 			try {
 				mskApplyAboutContactPortraitFullPage(
@@ -3486,6 +3489,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						flipEl.classList.contains('about-projects-turn__flip') ||
 						flipEl.classList.contains('contact-about-turn__flip') ||
 						flipEl.classList.contains('about-contact-turn__flip') ||
+						flipEl.classList.contains('about-biocv-turn__flip') ||
 						(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()))
 				) {
 					const portraitBlankFlap = !!(
@@ -3537,6 +3541,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						on = cn.indexOf('flip-front--contact') !== -1;
 					} else if (flipEl.classList.contains('projects-about-turn__flip')) {
 						on = cn.indexOf('projects-about-turn__flip-front') !== -1;
+					} else if (flipEl.classList.contains('about-biocv-turn__flip')) {
+						on = cn.indexOf('about-biocv-flip-front') !== -1 || fr === curl.held;
 					}
 				}
 				fr.style.setProperty('display', on ? 'block' : 'none', 'important');
@@ -5590,18 +5596,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			const underSrc = toCv
 				? `about.html?preview=1&phonePage=cv&v=${v()}`
 				: `about.html?preview=1&phonePage=bio&v=${v()}`;
-			/* Brug about-contact-turn__flip så portrait blank-flap virker — ikke projects-about (forkert under-DOM). */
+			/* Egne klasser — ikke about-contact-turn__flip (den har opacity:0 + 50vw uden parent-transition). */
 			overlay.innerHTML = `
 				<div class="about-biocv-turn" aria-hidden="true">
 					<div class="about-biocv-under">
 						<iframe src="${underSrc}" title="Om mig under" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 					</div>
-					<div class="about-biocv-turn__flip about-contact-turn__flip">
-						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front about-contact-turn__flip-face about-contact-turn__flip-face--front">
-							<iframe class="about-contact-turn__frame about-contact-turn__flip-front about-contact-turn__flip-front--about" src="${frontSrc}" title="Om mig flipping" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+					<div class="about-biocv-turn__flip">
+						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front">
+							<iframe class="about-biocv-frame about-biocv-flip-front" src="${frontSrc}" title="Om mig flipping" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
-						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back about-contact-turn__flip-face about-contact-turn__flip-face--back" aria-hidden="true">
-							<iframe class="about-contact-turn__frame about-contact-turn__flip-back" src="${underSrc}" title="" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
+						<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back" aria-hidden="true">
+							<iframe class="about-biocv-frame about-biocv-flip-back" src="${underSrc}" title="" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>
 						</div>
 					</div>
 				</div>`;
@@ -5644,7 +5650,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		function runPeel(toCv, e) {
 			if (!onPhone() || dragging) return;
-			if (!e || e.button !== 0) return;
+			if (!e || (typeof e.button === 'number' && e.button !== 0)) return;
 			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			if (toCv && isCv()) return;
 			if (!toCv && !isCv()) return;
@@ -5654,9 +5660,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			dragging = true;
 			const startX = e.clientX;
 			let progress = 0;
+			let liveHidden = false;
 			const sign = toCv ? -1 : 1;
-			document.body.classList.add('about-biocv-dragging');
-			document.body.style.overflow = 'hidden';
+			try { document.body.style.overflow = 'hidden'; } catch {}
 
 			const overlay = ensureOverlay(toCv);
 			overlay.classList.add('is-ready', 'is-turning');
@@ -5668,8 +5674,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			try { mskPaperNotePointer(flipEl, e); } catch {}
 
+			function hideLive() {
+				if (liveHidden) return;
+				liveHidden = true;
+				try { document.body.classList.add('about-biocv-dragging'); } catch {}
+			}
+
 			function setProgress(p) {
 				progress = clamp01(p);
+				if (progress > 0.02) hideLive();
 				try {
 					if (flipEl && !mskPaintPaperDrag(flipEl, progress, sign)) {
 						flipEl.style.animation = 'none';
@@ -5678,6 +5691,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				} catch {}
 			}
+			/* Init curl so first finger-move peels immediately */
+			try { setProgress(0); } catch {}
 
 			function onMove(ev) {
 				if (!dragging) return;
@@ -5766,8 +5781,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				right._mskBioCvBound = true;
 				right.addEventListener('pointerdown', (e) => {
 					if (!onPhone() || isCv()) return;
-					e.preventDefault();
-					e.stopPropagation();
 					try { right.setPointerCapture && right.setPointerCapture(e.pointerId); } catch {}
 					runPeel(true, e);
 				}, true);
@@ -5776,8 +5789,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				left._mskBioCvBound = true;
 				left.addEventListener('pointerdown', (e) => {
 					if (!onPhone() || !isCv()) return;
-					e.preventDefault();
-					e.stopPropagation();
 					try { left.setPointerCapture && left.setPointerCapture(e.pointerId); } catch {}
 					runPeel(false, e);
 				}, true);

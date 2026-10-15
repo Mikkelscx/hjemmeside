@@ -8636,17 +8636,17 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
             pointer-events: none;
             opacity: 0;
             visibility: hidden;
-            background: #f5f5f0;
+            background: transparent;
         }
         .about-biocv-transition.is-ready,
         .about-biocv-transition.is-turning {
             opacity: 1;
             visibility: visible;
             pointer-events: none;
+            background: transparent;
         }
-        /* Skjul live-side under peel — undgår dobbelt/smear-design */
+        /* Skjul live-side først når peelen er i gang — undgår blank skærm + smear */
         body.about-biocv-dragging .about-sketchbook,
-        body.about-biocv-dragging .navbar,
         body.about-biocv-dragging .msk-build-stamp {
             visibility: hidden !important;
             opacity: 0 !important;
@@ -8680,6 +8680,13 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
         }
         .about-biocv-turn__flip {
             z-index: 3;
+            left: 0 !important;
+            width: 100% !important;
+            width: 100vw !important;
+            height: 100% !important;
+            height: 100dvh !important;
+            opacity: 1 !important;
+            visibility: visible !important;
             transform-origin: 0% 50%;
             background: #f5f5f0;
             overflow: hidden;
