@@ -422,10 +422,11 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	flex-wrap: nowrap !important;
 	align-items: center !important;
 	justify-content: center !important;
-	margin-top: calc(-8px * var(--phone-portrait-scale, 0.37)) !important;
+	/* D&AD lidt højere op i Twister-ovalen */
+	margin-top: calc(-22px * var(--phone-portrait-scale, 0.37)) !important;
 	min-width: 0 !important;
 	min-height: 0 !important;
-	transform: translateY(calc(-2px * var(--phone-portrait-scale, 0.37))) scale(1) !important;
+	transform: translateY(calc(-14px * var(--phone-portrait-scale, 0.37))) scale(1) !important;
 	transform-origin: center center !important;
 	gap: 0 !important;
 }
@@ -478,7 +479,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
 	width: 92% !important;
 	max-width: 92% !important;
-	transform: translateY(calc(8px * var(--phone-portrait-scale, 0.37))) scale(1.28) !important;
+	/* Kø-Bajer-ordet længere op i ovalen */
+	transform: translateY(calc(-22px * var(--phone-portrait-scale, 0.37))) scale(1.28) !important;
 	transform-origin: center center !important;
 }
 
@@ -493,12 +495,12 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	gap: 0 !important;
 	line-height: 1 !important;
-	margin-top: calc(-12px * var(--phone-portrait-scale, 0.37)) !important;
+	margin-top: calc(-28px * var(--phone-portrait-scale, 0.37)) !important;
 	margin-bottom: 0 !important;
 	max-width: 88% !important;
 	padding: 0 4px 0 !important;
 	background: none !important;
-	transform: translateY(calc(-10px * var(--phone-portrait-scale, 0.37))) scale(0.92) !important;
+	transform: translateY(calc(-24px * var(--phone-portrait-scale, 0.37))) scale(0.92) !important;
 	transform-origin: center top !important;
 }
 
@@ -610,17 +612,17 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	background-image: none !important;
 }
 
-/* BRAINFARTS + BYENS */
+/* BRAINFARTS + BYENS — større (var for små ift. resten) */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="brainfarts"] {
-	max-width: min(calc(260px * var(--phone-portrait-scale, 0.37)), 34vw) !important;
+	max-width: min(calc(340px * var(--phone-portrait-scale, 0.37)), 44vw) !important;
 	overflow: visible !important;
 	isolation: isolate !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="byens-landhandel"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] {
-	max-width: min(calc(300px * var(--phone-portrait-scale, 0.37)), 38vw) !important;
+	max-width: min(calc(380px * var(--phone-portrait-scale, 0.37)), 48vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"] .project-node__title,
@@ -637,7 +639,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	z-index: 2 !important;
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(9px * var(--phone-portrait-scale, 0.37))) scale(1.0) !important;
+	transform: translateY(calc(9px * var(--phone-portrait-scale, 0.37))) scale(1.48) !important;
 	transform-origin: center center !important;
 }
 
@@ -645,7 +647,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] .project-node__title-img--byens {
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.15) !important;
+	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.55) !important;
 	transform-origin: center center !important;
 }
 
