@@ -247,7 +247,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	justify-content: center !important;
 	gap: 0 !important;
-	max-width: min(calc(340 * 100vw / 1024), 48vw) !important;
+	max-width: min(calc(320 * 100vw / 1024), 44vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title--image,
@@ -264,7 +264,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(28px * var(--pLabelMul, 1))) scale(1.22) !important;
+	transform: translateY(calc(24px * var(--pLabelMul, 1))) scale(1.08) !important;
 	transform-origin: center center !important;
 	filter: none !important;
 	-webkit-filter: none !important;
@@ -281,7 +281,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	gap: 0 !important;
 	line-height: 0.92 !important;
 	margin-top: calc(-8px * var(--pLabelMul, 1)) !important;
-	transform: translateY(calc(-40px * var(--pLabelMul, 1))) scale(1.14) !important;
+	transform: translateY(calc(-36px * var(--pLabelMul, 1))) scale(1.02) !important;
 	transform-origin: center center !important;
 	flex-shrink: 0 !important;
 }
@@ -331,9 +331,9 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="naturli"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="naturli"] {
-	width: min(calc(320 * 100vw / 1024), 46vw) !important;
-	min-width: min(calc(320 * 100vw / 1024), 46vw) !important;
-	max-width: min(calc(320 * 100vw / 1024), 46vw) !important;
+	width: min(calc(300 * 100vw / 1024), 42vw) !important;
+	min-width: min(calc(300 * 100vw / 1024), 42vw) !important;
+	max-width: min(calc(300 * 100vw / 1024), 42vw) !important;
 	padding: 6px 10px !important;
 }
 
@@ -350,25 +350,25 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	width: 100% !important;
 	max-width: none !important;
 	height: auto !important;
-	transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(1.95) !important;
+	transform: translateY(calc(8px * var(--pLabelMul, 1))) scale(1.58) !important;
 	transform-origin: center center !important;
 }
 
-/* DUREX — tablet fill-scale */
+/* DUREX — fill med luft i ovalen */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="durex"] .project-node__title-img--durex,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="durex"] .project-node__title-img--durex {
-	width: 88% !important;
+	width: 86% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(2.02) !important;
+	transform: translateY(calc(8px * var(--pLabelMul, 1))) scale(1.62) !important;
 	transform-origin: center center !important;
 }
 
 /* UNGE MOD UV */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
-	width: 88% !important;
+	width: 86% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(12px * var(--pLabelMul, 1))) scale(1.58) !important;
+	transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(1.32) !important;
 	transform-origin: center center !important;
 }
 
@@ -383,9 +383,9 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	justify-content: center !important;
 	gap: 0 !important;
 	overflow: visible !important;
-	width: min(calc(320 * 100vw / 1024), 46vw) !important;
-	min-width: min(calc(320 * 100vw / 1024), 46vw) !important;
-	max-width: min(calc(320 * 100vw / 1024), 46vw) !important;
+	width: min(calc(300 * 100vw / 1024), 42vw) !important;
+	min-width: min(calc(300 * 100vw / 1024), 42vw) !important;
+	max-width: min(calc(300 * 100vw / 1024), 42vw) !important;
 	padding: 2px 10px 2px !important;
 }
 
@@ -406,7 +406,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	width: 100% !important;
 	max-width: 100% !important;
 	height: auto !important;
-	transform: translateY(calc(52px * var(--pLabelMul, 1))) scale(1.92, 1.72) !important;
+	transform: translateY(calc(44px * var(--pLabelMul, 1))) scale(1.58, 1.42) !important;
 	transform-origin: center center !important;
 }
 
@@ -424,7 +424,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	margin-top: calc(-36px * var(--pLabelMul, 1)) !important;
 	min-width: 0 !important;
 	min-height: 0 !important;
-	transform: translateY(calc(-8px * var(--pLabelMul, 1))) scale(1.28) !important;
+	transform: translateY(calc(-6px * var(--pLabelMul, 1))) scale(1.12) !important;
 	transform-origin: center center !important;
 	gap: 0 !important;
 }
@@ -455,7 +455,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	justify-content: center !important;
 	gap: 0 !important;
-	max-width: min(calc(352 * 100vw / 1024), 44vw) !important;
+	max-width: min(calc(320 * 100vw / 1024), 40vw) !important;
 	overflow: hidden !important;
 	padding: 4px 10px 0 !important;
 }
@@ -477,7 +477,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
 	width: 88% !important;
 	max-width: 88% !important;
-	transform: translate(calc(-6px * var(--pLabelMul, 1)), calc(-4px * var(--pLabelMul, 1))) scale(1.30, 1.42) !important;
+	transform: translate(calc(-4px * var(--pLabelMul, 1)), calc(-2px * var(--pLabelMul, 1))) scale(1.12, 1.22) !important;
 	transform-origin: center center !important;
 }
 
@@ -497,7 +497,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	max-width: 90% !important;
 	padding: 0 6px 0 !important;
 	background: none !important;
-	transform: translate(calc(-6px * var(--pLabelMul, 1)), calc(-14px * var(--pLabelMul, 1))) scale(0.92) !important;
+	transform: translate(calc(-4px * var(--pLabelMul, 1)), calc(-12px * var(--pLabelMul, 1))) scale(0.84) !important;
 	transform-origin: center center !important;
 }
 
@@ -612,14 +612,14 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 /* BRAINFARTS + BYENS */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="brainfarts"] {
-	max-width: min(calc(348 * 100vw / 1024), 46vw) !important;
+	max-width: min(calc(320 * 100vw / 1024), 42vw) !important;
 	overflow: visible !important;
 	isolation: isolate !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="byens-landhandel"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] {
-	max-width: min(calc(384 * 100vw / 1024), 50vw) !important;
+	max-width: min(calc(340 * 100vw / 1024), 44vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"] .project-node__title,
@@ -636,7 +636,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	z-index: 2 !important;
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(4px * var(--pLabelMul, 1))) scale(1.42) !important;
+	transform: translateY(calc(4px * var(--pLabelMul, 1))) scale(1.22) !important;
 	transform-origin: center center !important;
 }
 
@@ -644,7 +644,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] .project-node__title-img--byens {
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(4px * var(--pLabelMul, 1))) scale(2.08) !important;
+	transform: translateY(calc(4px * var(--pLabelMul, 1))) scale(1.68) !important;
 	transform-origin: center center !important;
 }
 

@@ -85,17 +85,19 @@
 		);
 
 		/* Reference 390×844 → alle adj ≈ 1.0; mindre/større telefoner skalerer blødt omkring det */
-		let labelMul = mskClamp(MSK_PHONE_REF_LABEL_MUL * wRatio, 0.18, 0.62);
-		let brainPx = mskClamp(MSK_PHONE_REF_BRAIN_PX * fitRatio, 72, 188);
+		/* Labels lidt under “fuld tablet-fill” så de ikke sprænger ringene på smal skærm */
+		let labelMul = mskClamp(MSK_PHONE_REF_LABEL_MUL * wRatio * 0.92, 0.16, 0.56);
+		let brainPx = mskClamp(MSK_PHONE_REF_BRAIN_PX * fitRatio * 0.9, 64, 168);
 
 		const rowSpanAdj = mskClamp(1 + (hRatio - 1) * 0.28, 0.72, 1.1);
-		const ringAdj = mskClamp(1 + (wRatio - 1) * 0.18, 0.78, 1.12);
+		/* Ringe lidt generøsere end labels → luft i ovalerne */
+		const ringAdj = mskClamp(1.06 + (wRatio - 1) * 0.18, 0.86, 1.18);
 		const rowVertMul = mskClamp(1 + (hRatio - 1) * 0.3, 0.7, 1.1);
 		const safeMarginAdj = mskClamp(1 + (hRatio - 1) * 0.2, 0.72, 1.08);
 		const lineAdj = mskClamp(1 + (fitRatio - 1) * 0.22, 0.78, 1.16);
 		const colInsetAdj = mskClamp(1 + (wRatio - 1) * 0.12, 0.78, 1.08);
-		/* Lidt bredere noder så labels fylder ringene som på tablet */
-		const nodeMaxVw = mskClamp(42 + (wRatio - 1) * 14, 32, 52);
+		/* Node-bredde matcher ring-luft (ikke max-fill der presser teksten ud af ovalen) */
+		const nodeMaxVw = mskClamp(38 + (wRatio - 1) * 12, 30, 46);
 		const nudgeMul = mskClamp(1 + (wRatio - 1) * 0.2, 0.75, 1.14);
 
 		/* Meget smalle/hoeje eller brede/lave skærme: ekstra lodret komprimering */
@@ -198,9 +200,9 @@
 		html.style.setProperty('--phone-portrait-scale', String(f.portraitScale));
 		html.style.setProperty('--pLabelMul', String(f.labelMul));
 		html.style.setProperty('--pNodeMul', String(f.labelMul));
-		/* Title/badge fill: tablet-lignende fill inde i ringene (node er allerede viewport-skaleret) */
-		html.style.setProperty('--pTitleInRing', String(f.labelMul * 1.58));
-		html.style.setProperty('--pRepopFill', String(f.labelMul * 1.58 * 1.32));
+		/* Title/badge fill: lidt under tablet-max så tekst + ring passer sammen */
+		html.style.setProperty('--pTitleInRing', String(f.labelMul * 1.42));
+		html.style.setProperty('--pRepopFill', String(f.labelMul * 1.42 * 1.18));
 		html.style.setProperty('--pRingMul', String(f.ringAdj));
 		html.style.setProperty('--projectsBrainSize', f.brainPx + 'px');
 		html.style.setProperty('--phone-row-span-adj', String(f.rowSpanAdj));
