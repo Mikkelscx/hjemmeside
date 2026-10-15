@@ -77,15 +77,16 @@
 		 */
 		const fitRatio = mskClamp(wRatio * 0.52 + hRatio * 0.48, 0.48, 1.62);
 
-		const portraitScale = mskClamp(
+		/* let: ringFitMul kan justere efter lock er klar (const throw'ede i p282) */
+		let portraitScale = mskClamp(
 			MSK_PHONE_REF_BASE_SCALE * fitRatio,
 			MSK_PHONE_REF_BASE_SCALE * 0.48,
 			MSK_PHONE_REF_BASE_SCALE * 1.62
 		);
 
 		/* Reference 390×844 → alle adj ≈ 1.0; mindre/større telefoner skalerer blødt omkring det */
-		const labelMul = mskClamp(MSK_PHONE_REF_LABEL_MUL * wRatio, 0.16, 0.58);
-		const brainPx = mskClamp(MSK_PHONE_REF_BRAIN_PX * fitRatio, 68, 178);
+		let labelMul = mskClamp(MSK_PHONE_REF_LABEL_MUL * wRatio, 0.18, 0.62);
+		let brainPx = mskClamp(MSK_PHONE_REF_BRAIN_PX * fitRatio, 72, 188);
 
 		const rowSpanAdj = mskClamp(1 + (hRatio - 1) * 0.28, 0.72, 1.1);
 		const ringAdj = mskClamp(1 + (wRatio - 1) * 0.18, 0.78, 1.12);
@@ -93,10 +94,11 @@
 		const safeMarginAdj = mskClamp(1 + (hRatio - 1) * 0.2, 0.72, 1.08);
 		const lineAdj = mskClamp(1 + (fitRatio - 1) * 0.22, 0.78, 1.16);
 		const colInsetAdj = mskClamp(1 + (wRatio - 1) * 0.12, 0.78, 1.08);
-		const nodeMaxVw = mskClamp(38 + (wRatio - 1) * 14, 28, 48);
+		/* Lidt bredere noder så labels fylder ringene som på tablet */
+		const nodeMaxVw = mskClamp(42 + (wRatio - 1) * 14, 32, 52);
 		const nudgeMul = mskClamp(1 + (wRatio - 1) * 0.2, 0.75, 1.14);
 
-		/* Meget smalle/hoeje eller brede/lave sk�rme: ekstra lodret komprimering */
+		/* Meget smalle/hoeje eller brede/lave skærme: ekstra lodret komprimering */
 		const aspectCompress =
 			aspectDelta < 0.92
 				? mskClamp(0.88 + 0.12 * aspectDelta, 0.8, 1)
@@ -108,47 +110,16 @@
 		const rowVertFinal = mskClamp(rowVertMul * aspectCompress, 0.48, 1.08);
 
 		/*
-		 * Fit hele tablet-kompositionen ind i viewport (ikke kun ringe).
-		 * Ellers bliver ringe små mens hjerne/labels/streger forbliver store = “fucked”.
-		 * Kolonner ~26%/74%, ≥10px margin — samme relative lock-proportioner som iPad.
+		 * Ingen global composition-krymp: tablet→phone scale (portraitScale/labelMul) skal fylde
+		 * skærmen. Per-ring edge-clamp i script.js klarer kanter uden at gøre labels små.
 		 */
-		let ringFitMul = 1;
 		let hadLock = false;
 		try {
-			const lock =
-				(global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK && global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK.rings) ||
-				null;
-			let maxRingW = 0;
-			if (lock) {
-				hadLock = true;
-				Object.keys(lock).forEach((k) => {
-					const spec = lock[k];
-					if (!spec) return;
-					let rw = Number(spec.w || spec.wBase || 0) || 0;
-					if (spec.rightWMul) rw *= Number(spec.rightWMul) || 1;
-					if (rw > maxRingW) maxRingW = rw;
-				});
-			}
-			const scaledW = maxRingW * portraitScale * ringAdj;
-			const inset = Math.max(10, Math.round(iw * 0.028));
-			const colLeft = iw * 0.26;
-			const colRight = iw * 0.74;
-			const allowHalf = Math.min(colLeft - inset, iw - inset - colRight);
-			if (scaledW > 0 && allowHalf > 24) {
-				const needHalf = scaledW * 0.5;
-				if (needHalf > allowHalf) {
-					ringFitMul = mskClamp(allowHalf / needHalf, 0.42, 1);
-				}
-			}
+			hadLock = !!(
+				global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK && global.MSK_PROJECTS_IPAD_PORTRAIT_LOCK.rings
+			);
 		} catch (_) {
-			ringFitMul = 1;
-		}
-
-		/* Én fælles fit: scale + labels + brain — tablet-look, bare mindre */
-		if (ringFitMul < 0.999) {
-			portraitScale = portraitScale * ringFitMul;
-			labelMul = mskClamp(labelMul * ringFitMul, 0.14, 0.58);
-			brainPx = mskClamp(brainPx * ringFitMul, 56, 178);
+			hadLock = false;
 		}
 
 		return {
@@ -170,9 +141,8 @@
 			rowSpanAdj: rowSpanFinal,
 			scaleAdj: fitRatio,
 			ringAdj,
-			/* Allerede bagt ind i portraitScale/labelMul/brainPx — undgå dobbelt-krymp i ringBoost */
 			ringFitMul: 1,
-			compFitMul: ringFitMul,
+			compFitMul: 1,
 			hadLock,
 			rowVertMul: rowVertFinal,
 			safeMarginAdj,
@@ -228,6 +198,7 @@
 		html.style.setProperty('--phone-portrait-scale', String(f.portraitScale));
 		html.style.setProperty('--pLabelMul', String(f.labelMul));
 		html.style.setProperty('--pNodeMul', String(f.labelMul));
+		/* Title/badge fill: tablet-lignende fill inde i ringene (node er allerede viewport-skaleret) */
 		html.style.setProperty('--pTitleInRing', String(f.labelMul * 1.58));
 		html.style.setProperty('--pRepopFill', String(f.labelMul * 1.58 * 1.32));
 		html.style.setProperty('--pRingMul', String(f.ringAdj));
@@ -245,9 +216,6 @@
 		html.style.setProperty('--phone-col-inset-adj', String(f.colInsetAdj));
 		html.style.setProperty('--phone-node-max-vw', String(f.nodeMaxVw));
 		html.style.setProperty('--phone-nudge-mul', String(f.nudgeMul));
-		/* Labels i ring: samme relative scale som tablet (pLabelMul), ikke ekstra TitleInRing-boost */
-		html.style.setProperty('--pTitleInRing', String(f.labelMul));
-		html.style.setProperty('--pRepopFill', String(f.labelMul));
 		html.dataset.phoneW = String(f.w);
 		html.dataset.phoneH = String(f.h);
 		html.dataset.phoneWRatio = String(Math.round(f.wRatio * 1000) / 1000);
