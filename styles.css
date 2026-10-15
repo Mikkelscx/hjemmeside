@@ -8527,11 +8527,28 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
 
     /* Telefon: samme layout som tablet, skaleret — float så tekst fylder under polaroid */
     @media (max-width: 640px) {
+        /* Mobil one-pager: bio = side 1, CV+udmærkelser = egen side 2 (ikke tablet) */
+        body.about-sketchbook-page.sketchbook-theme {
+            scroll-snap-type: y proximity;
+        }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
-            padding: calc(50px + env(safe-area-inset-top, 0px)) 16px 0 max(48px, env(safe-area-inset-left, 0px) + 36px) !important;
+            padding: calc(50px + env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px)) max(48px, env(safe-area-inset-left, 0px) + 36px) !important;
+            min-height: 100vh !important;
+            min-height: 100dvh !important;
+            min-height: var(--vh, 100dvh) !important;
+            box-sizing: border-box !important;
+            scroll-snap-align: start;
+            scroll-snap-stop: normal;
         }
         body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
-            padding: 25px 16px calc(32px + env(safe-area-inset-bottom, 0px)) max(48px, env(safe-area-inset-left, 0px) + 36px) !important;
+            padding: calc(50px + env(safe-area-inset-top, 0px)) 16px calc(32px + env(safe-area-inset-bottom, 0px)) max(48px, env(safe-area-inset-left, 0px) + 36px) !important;
+            min-height: 100vh !important;
+            min-height: 100dvh !important;
+            min-height: var(--vh, 100dvh) !important;
+            box-sizing: border-box !important;
+            margin-top: 0 !important;
+            scroll-snap-align: start;
+            scroll-snap-stop: normal;
         }
         body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
             position: relative !important;
