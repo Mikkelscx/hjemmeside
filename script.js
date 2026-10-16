@@ -4008,7 +4008,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
-			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
+			/* Telefon: kant-træk er slået fra, men MENU skal stadig bladre. */
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			const hrefLower = hrefAttr.toLowerCase();
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
@@ -4645,7 +4645,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
-			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -4892,7 +4891,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
-			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'projects.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -5341,7 +5339,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
-			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			if (hrefAttr !== 'contact.html') return;
 			if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -5781,7 +5778,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.addEventListener('click', (e) => {
 			const a = e.target && e.target.closest ? e.target.closest('a') : null;
 			if (!a) return;
-			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
 			const hrefAttr = (a.getAttribute('href') || '').trim();
 			const hrefLower = hrefAttr.toLowerCase();
 			if (!(hrefLower === 'about.html' || hrefLower.startsWith('about.html#') || hrefLower.startsWith('about.html?'))) return;
@@ -15550,7 +15546,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 16 okt - klokken 00:56';
+		const stampText = 'update fredag 16 okt - klokken 13:00';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
