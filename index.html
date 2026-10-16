@@ -9,8 +9,17 @@
     <title>MSC - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p308';
-        document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
+        var v = '20260924p309';
+        try {
+            var q = new URLSearchParams(location.search || '');
+            if (!q.has('preview') && q.get('v') !== v) {
+                q.set('v', v);
+                location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
+                return;
+            }
+        } catch (e) {}
+        window.mskAssetV = v;
+        document.write('<link rel="stylesheet" href="styles-' + v + '.css?v=' + v + '">');
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
@@ -153,7 +162,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p308') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p309') + '.js"><\/script>');
     })();
     </script>
 </body>
