@@ -576,7 +576,7 @@ img {
     }
 }
 
-/* Telefon: ingen kant-træk — MENU bruger samme CSS is-turning som tablet portræt. */
+/* Telefon: ingen kant-træk — MENU Om mig→Projekter = flad slide (rotateY skævvinkler, IMG_7934). */
 @media (max-width: 640px) {
     .page-turn-handle,
     .corner-fold-hints {
@@ -586,7 +586,6 @@ img {
         height: 0 !important;
         opacity: 0 !important;
     }
-    /* MENU-bladre: fuld viewport under + flip (CSS pageRightToLeft / pageLeftToRight som tablet) */
     .projects-about-transition.is-turning,
     .about-projects-transition.is-turning,
     .about-contact-transition.is-turning,
@@ -608,6 +607,30 @@ img {
         width: 100vw !important;
         height: 100% !important;
         max-width: none !important;
+    }
+    /* Flad MENU-slide: slå rotateY keyframes fra — JS styrer translateX */
+    .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__flip {
+        animation: none !important;
+        transform-style: flat !important;
+        perspective: none !important;
+        backface-visibility: visible !important;
+        -webkit-backface-visibility: visible !important;
+        z-index: 6 !important;
+    }
+    .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip-front--about {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip-front--projects,
+    .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip-face--back,
+    .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip-backface {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
     /* Om mig / papir: full-bleed (ingen smal papirsøjle) */
     body.about-sketchbook-page .about-sketchbook,
