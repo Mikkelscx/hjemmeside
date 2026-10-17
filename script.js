@@ -4054,8 +4054,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const flipEl = overlay && overlay.querySelector ? overlay.querySelector('.projects-about-turn__flip') : null;
 
-			/* Telefon + tablet MENU: samme CSS is-turning (ingen telefon-flat-slide; kant-peel stadig off). */
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+
+			/* Telefon MENU: flad slide — CSS rotateY + blank preview skjuler Projekter (IMG_7935). */
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
+				try {
+					overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip');
+				} catch {}
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+				mskAnimatePhoneMenuFlatFlip(flipEl, -1, Math.min(FLIP_MS, 900), () => {
+					try { window.location.href = targetHref; } catch {}
+				});
+				return;
+			}
 
 			// Show overlay first (avoid a 1-frame blink), then start the flip.
 			requestAnimationFrame(() => {
@@ -15638,7 +15649,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 17 okt - klokken 19:41';
+		const stampText = 'update lørdag 17 okt - klokken 19:46';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

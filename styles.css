@@ -632,6 +632,19 @@ img {
         visibility: hidden !important;
         pointer-events: none !important;
     }
+    /* Projekter→Om mig: behold Projekter på flipping sheet (ingen mid-swap blank) */
+    .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip-face--front,
+    .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip-front {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip-face--back,
+    .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip-back {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
     /* Om mig / papir: full-bleed (ingen smal papirsøjle) */
     body.about-sketchbook-page .about-sketchbook,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook,
@@ -4084,12 +4097,14 @@ html.transition-preview body {
     overflow: hidden !important;
 }
 
-/* Projekter preview stability: don't show nodes until positioned (prevents top-left "glitch") */
-html.transition-preview body.sketchbook-theme .brainstorm-container .project-node {
-    opacity: 0 !important;
-}
-html.transition-preview body.sketchbook-theme .brainstorm-container.preview-ready .project-node {
-    opacity: 1 !important;
+/* Projekter preview: tablet/desktop kan vente på preview-ready; telefon sættes synlig i max-width:640 nedenfor */
+@media (min-width: 641px) {
+    html.transition-preview body.sketchbook-theme .brainstorm-container .project-node {
+        opacity: 0 !important;
+    }
+    html.transition-preview body.sketchbook-theme .brainstorm-container.preview-ready .project-node {
+        opacity: 1 !important;
+    }
 }
 
 /*
@@ -4317,21 +4332,25 @@ html.transition-preview body.sketchbook-theme .brainstorm-container.preview-read
         opacity: 1 !important;
     }
     /*
-     * Telefon MENU-bladre: behold mindmap-design (samme som tablet portræt).
-     * Tidligere display:none her gjorde papir/noder usynlige midt i vendingen (IMG_7931).
-     * script.js loader i preview igen — preview-ready styrer fade-in.
+     * Telefon MENU-bladre: mindmap SKAL være synligt med det samme (IMG_7935).
+     * Global opacity:0 indtil preview-ready gjorde Projekter blank midt i vendingen.
      */
     html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .project-node,
     html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
     html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
-    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay {
+    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay,
+    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .brain {
         display: block !important;
         visibility: visible !important;
+        opacity: 1 !important;
         pointer-events: none !important;
     }
-    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container.preview-ready .project-node,
-    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container.preview-ready a.project-node {
+    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image,
+    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path,
+    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .project-node__title,
+    html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img {
         opacity: 1 !important;
+        visibility: visible !important;
     }
 }
 
