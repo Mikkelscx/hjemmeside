@@ -2622,53 +2622,75 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	function mskIsTabletPaperDrag() {
 		try {
-			/* Telefon skal kunne paper-painte MENU-bladre — ellers bliver CSS rotateY skævt papir. */
+			/* Tablet/desktop peel only — phone MENU uses flat translateX (no paint/curl). */
 			const w = Math.round(window.innerWidth || 0);
 			const h = Math.round(window.innerHeight || 0);
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return false;
 			return w >= 280 && h >= 280;
 		} catch {
 			return false;
 		}
 	}
-	/** Telefon MENU: kør paper-curl 0→1 (samme fold som tablet), ikke keyframe rotateY. */
+	/** Telefon MENU: flad upright slide (translateX only) — ingen curl/rotateY/matrix. */
 	function mskAnimatePhoneMenuPaperFlip(flipEl, sign, ms, onDone) {
 		if (!flipEl) {
 			try { if (typeof onDone === 'function') onDone(); } catch (_) {}
 			return;
 		}
-		const dur = Math.max(520, Math.min(2200, Number(ms) || 900));
+		const dur = Math.max(420, Math.min(1400, Number(ms) || 720));
 		const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 		const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
 		const dir = sign < 0 ? -1 : 1;
 		try {
+			const overlay = flipEl.closest(
+				'.projects-about-transition, .about-projects-transition, .about-contact-transition, .contact-about-transition, .projects-contact-transition, .projects-contact-double-transition'
+			);
+			if (overlay) {
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+				try {
+					overlay.querySelectorAll(
+						'.projects-about-turn__flip, .about-projects-turn__flip, .about-contact-turn__flip, .contact-about-turn__flip, .projects-contact-turn__flip, .pcd-flip, ' +
+						'.projects-about-under, .about-projects-turn__under, .about-contact-turn__under, .contact-about-turn__under, .projects-contact-turn__under, .pcd-under'
+					).forEach((el) => {
+						el.style.setProperty('left', '0px', 'important');
+						el.style.setProperty('right', 'auto', 'important');
+						el.style.setProperty('width', '100vw', 'important');
+						el.style.setProperty('height', '100%', 'important');
+					});
+				} catch (_) {}
+			}
 			flipEl.style.animation = 'none';
 			flipEl.style.transition = 'none';
+			flipEl.style.willChange = 'transform';
+			flipEl.style.transformOrigin = '50% 50%';
+			flipEl.style.transformStyle = 'flat';
+			flipEl.style.backfaceVisibility = 'visible';
+			flipEl.style.perspective = 'none';
+			flipEl.style.clipPath = 'none';
+			flipEl.style.webkitClipPath = 'none';
+			flipEl.style.boxShadow = dir < 0
+				? '-8px 0 28px rgba(0,0,0,0.18)'
+				: '8px 0 28px rgba(0,0,0,0.18)';
 			flipEl._mskPaperCornerY = null;
 			flipEl._mskHoldFx = null;
 			flipEl._mskPaperSideBand = false;
-			flipEl._mskPaperEdgeDrag = true;
+			flipEl._mskPaperEdgeDrag = false;
+			flipEl.style.setProperty('left', '0px', 'important');
+			flipEl.style.setProperty('width', '100vw', 'important');
+			flipEl.style.setProperty('height', '100%', 'important');
+			flipEl.style.transform = 'translateX(0px)';
 		} catch (_) {}
 		const step = (now) => {
 			const u = Math.max(0, Math.min(1, ((now || Date.now()) - t0) / dur));
 			const p = ease(u);
 			try {
-				const box = flipEl.getBoundingClientRect();
-				const w = Math.max(1, box.width || flipEl.offsetWidth || 1);
-				const h = Math.max(1, box.height || flipEl.offsetHeight || 1);
-				if (dir < 0) {
-					flipEl._mskPaperTx = box.left + w - p * w * 1.2;
-					flipEl._mskPaperGrabX = box.left + w - 6;
-				} else {
-					flipEl._mskPaperTx = box.left + p * w * 1.2;
-					flipEl._mskPaperGrabX = box.left + 6;
-				}
-				flipEl._mskPaperTy = box.top + h * 0.88;
-				flipEl._mskPaperGrabY = flipEl._mskPaperTy;
-			} catch (_) {}
-			try {
-				if (!mskPaintPaperDrag(flipEl, Math.max(0.03, p), dir, true)) {
-					flipEl.style.transform = 'rotateY(' + (dir * 180 * p).toFixed(2) + 'deg)';
-				}
+				const w = Math.max(
+					1,
+					window.innerWidth || 0,
+					(flipEl.getBoundingClientRect && flipEl.getBoundingClientRect().width) || 0,
+					flipEl.offsetWidth || 0
+				);
+				flipEl.style.transform = 'translateX(' + (dir * p * w).toFixed(2) + 'px)';
 			} catch (_) {}
 			if (u < 1) requestAnimationFrame(step);
 			else {
@@ -4033,9 +4055,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const flipEl = overlay && overlay.querySelector ? overlay.querySelector('.projects-about-turn__flip') : null;
 
-			/* Telefon MENU: paper-curl (ikke CSS rotateY — det skævvinkler papiret). */
+			/* Telefon MENU: flad upright slide (ingen curl/rotateY). */
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
 				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip'); } catch {}
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.48));
 				mskAnimatePhoneMenuPaperFlip(flipEl, -1, Math.min(FLIP_MS, 1100), () => {
 					try { window.location.href = targetHref; } catch {}
@@ -4873,7 +4896,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			body.classList.remove('about-projects-flip-half');
 			overlay.classList.remove('is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip');
 
-			/* Telefon MENU: paper-curl i stedet for CSS rotateY. */
+			/* Telefon MENU: flad upright slide (ingen curl/rotateY). */
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
 				body.classList.add('about-projects-flip-active', 'about-projects-flipping');
 				body.style.overflow = 'hidden';
@@ -5305,9 +5328,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			body.classList.add('about-contact-flipping');
 			body.style.overflow = 'hidden';
 
-			/* Telefon MENU: paper-curl i stedet for CSS rotateY. */
+			/* Telefon MENU: flad upright slide (ingen curl/rotateY). */
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
 				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip'); } catch {}
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				const flipPhone = overlay.querySelector('.about-contact-turn__flip');
 				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.48));
 				mskAnimatePhoneMenuPaperFlip(flipPhone, -1, Math.min(FLIP_MS, 1100), () => {
@@ -5805,9 +5829,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const flipEl = overlay && overlay.querySelector ? overlay.querySelector('.contact-about-turn__flip') : null;
 
-			/* Telefon MENU: paper-curl i stedet for CSS rotateY. */
+			/* Telefon MENU: flad upright slide (ingen curl/rotateY). */
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
 				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-left', 'msk-phone-menu-paper-flip'); } catch {}
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.55));
 				window.setTimeout(() => { try { overlay.classList.add('swap-under-right'); } catch {} }, Math.round(FLIP_MS * 0.92));
 				mskAnimatePhoneMenuPaperFlip(flipEl, 1, Math.min(FLIP_MS, 1100), () => {
@@ -15642,7 +15667,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 17 okt - klokken 18:55';
+		const stampText = 'update lørdag 17 okt - klokken 19:00';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

@@ -576,7 +576,7 @@ img {
     }
 }
 
-/* Telefon: ingen kant-træk — navigation via MENU (paper-curl, ikke CSS rotateY). */
+/* Telefon: ingen kant-træk — navigation via MENU (flad translateX-slide, ingen curl/rotateY). */
 @media (max-width: 640px) {
     .page-turn-handle,
     .corner-fold-hints {
@@ -586,7 +586,16 @@ img {
         height: 0 !important;
         opacity: 0 !important;
     }
-    /* MENU-bladre: slå keyframe rotateY fra — ellers skævvinkles papiret midt i vendingen */
+    /* MENU-bladre: fuld viewport under + flip; animation:none — JS styrer translateX */
+    .msk-phone-menu-paper-flip.is-turning {
+        background: #f5f5f0 !important;
+    }
+    .msk-phone-menu-paper-flip.is-turning .projects-about-under,
+    .msk-phone-menu-paper-flip.is-turning .about-projects-turn__under,
+    .msk-phone-menu-paper-flip.is-turning .about-contact-turn__under,
+    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__under,
+    .msk-phone-menu-paper-flip.is-turning .projects-contact-turn__under,
+    .msk-phone-menu-paper-flip.is-turning .pcd-under,
     .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip,
     .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip,
     .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip,
@@ -594,8 +603,53 @@ img {
     .msk-phone-menu-paper-flip.is-turning .projects-contact-turn__flip,
     .msk-phone-menu-paper-flip.is-turning .pcd-flip {
         animation: none !important;
+        transition: none !important;
         opacity: 1 !important;
         visibility: visible !important;
+        left: 0 !important;
+        right: auto !important;
+        width: 100vw !important;
+        height: 100% !important;
+        max-width: none !important;
+        transform-origin: 50% 50% !important;
+        transform-style: flat !important;
+        perspective: none !important;
+        clip-path: none !important;
+        -webkit-clip-path: none !important;
+    }
+    .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .projects-contact-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .pcd-flip {
+        z-index: 5 !important;
+        box-shadow: 0 0 28px rgba(0, 0, 0, 0.18);
+    }
+    /* Om mig phone: force full-bleed (ingen smal papirsøjle / grå gutters) */
+    body.about-sketchbook-page .about-sketchbook,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
+        width: 100% !important;
+        max-width: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    body.about-sketchbook-page .about-sketchbook__page,
+    body.about-sketchbook-page .about-sketchbook__page--left,
+    body.about-sketchbook-page .about-sketchbook__page--right,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
+        width: 100% !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme::before {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        box-shadow: none !important;
     }
 }
 
