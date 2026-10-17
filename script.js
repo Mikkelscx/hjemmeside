@@ -4059,7 +4059,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
 				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip'); } catch {}
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
-				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.48));
 				mskAnimatePhoneMenuPaperFlip(flipEl, -1, Math.min(FLIP_MS, 1100), () => {
 					try { window.location.href = targetHref; } catch {}
 				});
@@ -4903,7 +4902,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-left', 'msk-phone-menu-paper-flip'); } catch {}
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				const flipPhone = overlay.querySelector('.about-projects-turn__flip');
-				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.48));
 				mskAnimatePhoneMenuPaperFlip(flipPhone, 1, Math.min(FLIP_MS, 1100), () => {
 					try { window.location.href = targetHref; } catch {}
 				});
@@ -5333,7 +5331,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip'); } catch {}
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				const flipPhone = overlay.querySelector('.about-contact-turn__flip');
-				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.48));
 				mskAnimatePhoneMenuPaperFlip(flipPhone, -1, Math.min(FLIP_MS, 1100), () => {
 					try { window.location.href = targetHref; } catch {}
 				});
@@ -5833,8 +5830,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
 				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-left', 'msk-phone-menu-paper-flip'); } catch {}
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
-				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.55));
-				window.setTimeout(() => { try { overlay.classList.add('swap-under-right'); } catch {} }, Math.round(FLIP_MS * 0.92));
 				mskAnimatePhoneMenuPaperFlip(flipEl, 1, Math.min(FLIP_MS, 1100), () => {
 					try { window.location.href = targetHref; } catch {}
 				});
@@ -15667,7 +15662,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 17 okt - klokken 19:00';
+		const stampText = 'update lørdag 17 okt - klokken 19:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
