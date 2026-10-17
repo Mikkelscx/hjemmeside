@@ -2646,14 +2646,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
 		try {
 			const overlay = flipEl.closest(
-				'.projects-about-transition, .about-projects-transition, .about-contact-transition, .contact-about-transition'
+				'.projects-about-transition, .about-projects-transition, .about-contact-transition, .contact-about-transition, .about-biocv-transition'
 			);
 			if (overlay) {
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				try {
 					overlay.querySelectorAll(
-						'.projects-about-turn__flip, .about-projects-turn__flip, .about-contact-turn__flip, .contact-about-turn__flip, ' +
-						'.projects-about-under, .about-projects-turn__under, .about-contact-turn__under, .contact-about-turn__under'
+						'.projects-about-turn__flip, .about-projects-turn__flip, .about-contact-turn__flip, .contact-about-turn__flip, .about-biocv-turn__flip, ' +
+						'.projects-about-under, .about-projects-turn__under, .about-contact-turn__under, .contact-about-turn__under, .about-biocv-under'
 					).forEach((el) => {
 						el.style.setProperty('left', '0px', 'important');
 						el.style.setProperty('right', 'auto', 'important');
@@ -5355,6 +5355,20 @@ document.addEventListener('DOMContentLoaded', function() {
 			body.style.overflow = 'hidden';
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 
+			const flipPhone = overlay && overlay.querySelector ? overlay.querySelector('.about-contact-turn__flip') : null;
+
+			/* Telefon MENU CV→Kontakt: papir-peel (ikke gammel CSS rotateY). */
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
+				try {
+					overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip');
+				} catch {}
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+				mskAnimatePhoneMenuPaperFlip(flipPhone, -1, Math.min(FLIP_MS, 900), () => {
+					try { window.location.href = targetHref; } catch {}
+				});
+				return;
+			}
+
 			// Make overlay visible BEFORE hiding the current page (prevents a 1-frame blank flash).
 			try { overlay.classList.add('is-ready'); } catch {}
 
@@ -5692,7 +5706,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		})();
 	})();
 
-	/** Telefon Om mig: bio/CV som to sider — kun via menu/#cv (ingen peel). */
+	/** Telefon Om mig: bio/CV som to sider — MENU bladrer med paper-peel (ingen kant-træk). */
 	function mskIsAboutPhonePortraitBioCv() {
 		try {
 			if (!document.body || !document.body.classList.contains('about-sketchbook-page')) return false;
@@ -5720,8 +5734,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (qs.includes('preview=1') || qs.includes('phonepage=')) return;
 		} catch {}
 
+		let animating = false;
+
 		function onPhone() {
 			return !!(typeof mskIsAboutPhonePortraitBioCv === 'function' && mskIsAboutPhonePortraitBioCv());
+		}
+		function isCv() {
+			return document.documentElement.classList.contains('msk-about-phone-cv');
 		}
 		function setCv(on) {
 			document.documentElement.classList.toggle('msk-about-phone-cv', !!on);
@@ -5741,8 +5760,123 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 		}
 
+		/* NO iframes — nested about.html crashes Mobile Safari. */
+		function cloneAboutPage(side) {
+			const sel = side === 'cv'
+				? '.about-sketchbook__page--right'
+				: '.about-sketchbook__page--left';
+			const src = document.querySelector(sel);
+			const host = document.createElement('div');
+			host.className = 'about-biocv-page-clone about-biocv-page-clone--' + side;
+			try { mskApplyBlankLinedPaper(host); } catch (_) {
+				host.style.background = '#f5f5f0';
+			}
+			if (!src) return host;
+			const clone = src.cloneNode(true);
+			clone.classList.add('about-biocv-page-clone__sheet');
+			clone.removeAttribute('id');
+			clone.setAttribute('aria-hidden', 'true');
+			clone.style.setProperty('position', 'absolute', 'important');
+			clone.style.setProperty('inset', '0', 'important');
+			clone.style.setProperty('width', '100%', 'important');
+			clone.style.setProperty('height', '100%', 'important');
+			clone.style.setProperty('visibility', 'visible', 'important');
+			clone.style.setProperty('opacity', '1', 'important');
+			clone.style.setProperty('pointer-events', 'none', 'important');
+			clone.style.setProperty('display', 'block', 'important');
+			clone.style.setProperty('z-index', '1', 'important');
+			clone.style.setProperty('overflow', 'hidden', 'important');
+			try {
+				clone.querySelectorAll('a, button, iframe, script, video, .page-turn-handle').forEach((n) => {
+					try { n.remove(); } catch (_) {}
+				});
+			} catch (_) {}
+			host.appendChild(clone);
+			return host;
+		}
+
+		function ensureOverlay(toCv) {
+			let overlay = document.querySelector('.about-biocv-transition');
+			if (overlay) {
+				try { overlay.remove(); } catch (_) {}
+			}
+			overlay = document.createElement('div');
+			overlay.className = 'about-biocv-transition';
+			overlay.innerHTML =
+				'<div class="about-biocv-turn" aria-hidden="true">' +
+					'<div class="about-biocv-under"></div>' +
+					'<div class="about-biocv-turn__flip">' +
+						'<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--front about-biocv-flip-front"></div>' +
+						'<div class="about-biocv-turn__flip-face about-biocv-turn__flip-face--back" aria-hidden="true"></div>' +
+					'</div>' +
+				'</div>';
+			const under = overlay.querySelector('.about-biocv-under');
+			const front = overlay.querySelector('.about-biocv-turn__flip-face--front');
+			if (under) under.appendChild(cloneAboutPage(toCv ? 'cv' : 'bio'));
+			if (front) front.appendChild(cloneAboutPage(toCv ? 'bio' : 'cv'));
+			document.body.appendChild(overlay);
+			return overlay;
+		}
+
+		function cleanup(overlay, flipEl) {
+			animating = false;
+			try { document.body.classList.remove('about-biocv-dragging'); } catch {}
+			try {
+				if (flipEl) {
+					flipEl._mskPhoneMenuPaper = false;
+					flipEl.style.transition = '';
+					flipEl.style.animation = '';
+					flipEl.style.transform = '';
+					flipEl.style.clipPath = '';
+					const curl = flipEl._mskLiveCurl;
+					if (curl && curl.front) {
+						curl.front.style.clipPath = '';
+						curl.front.style.opacity = '';
+					}
+					if (curl && curl.flap) {
+						try { curl.flap.remove(); } catch (_) { curl.flap.style.display = 'none'; }
+					}
+					if (curl && curl.shade) {
+						try { curl.shade.remove(); } catch (_) {}
+					}
+					flipEl._mskLiveCurl = null;
+					flipEl._mskPaperCornerY = null;
+					flipEl._mskHoldFx = null;
+				}
+			} catch {}
+			try {
+				document.querySelectorAll('.about-biocv-transition').forEach((n) => {
+					try { n.remove(); } catch (_) {}
+				});
+			} catch {}
+			try { if (overlay && overlay.parentNode) overlay.remove(); } catch {}
+		}
+
+		function runMenuPeel(toCv) {
+			if (!onPhone() || animating) return;
+			if (toCv && isCv()) return;
+			if (!toCv && !isCv()) return;
+			animating = true;
+			const sign = toCv ? -1 : 1;
+			try { document.body.style.overflow = 'hidden'; } catch {}
+			const overlay = ensureOverlay(toCv);
+			overlay.classList.add('is-ready', 'is-turning', 'msk-phone-menu-paper-flip');
+			try { document.body.classList.add('about-biocv-dragging'); } catch {}
+			const flipEl = overlay.querySelector('.about-biocv-turn__flip');
+			if (flipEl) {
+				flipEl._mskPaperCornerY = null;
+				flipEl._mskHoldFx = null;
+				flipEl._mskPaperSideBand = false;
+			}
+			mskAnimatePhoneMenuPaperFlip(flipEl, sign, 820, () => {
+				setCv(toCv);
+				cleanup(overlay, flipEl);
+				try { document.body.style.overflow = 'hidden'; } catch {}
+			});
+		}
+
 		function syncFromHash() {
-			if (!onPhone()) return;
+			if (!onPhone() || animating) return;
 			try {
 				const hash = (location.hash || '').toLowerCase();
 				if (hash === '#cv' || hash === '#udmaerkelser') setCv(true);
@@ -5759,6 +5893,40 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!window._mskBioCvHashBound) {
 				window._mskBioCvHashBound = true;
 				window.addEventListener('hashchange', syncFromHash);
+			}
+			if (!window._mskBioCvMenuBound) {
+				window._mskBioCvMenuBound = true;
+				document.addEventListener('click', (e) => {
+					if (!onPhone() || animating) return;
+					const a = e.target && e.target.closest ? e.target.closest('a') : null;
+					if (!a) return;
+					if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+					const hrefAttr = (a.getAttribute('href') || '').trim();
+					const hrefLower = hrefAttr.toLowerCase();
+					const toCv =
+						hrefLower === 'about.html#cv' ||
+						hrefLower === 'about.html#udmaerkelser' ||
+						hrefLower === '#cv' ||
+						hrefLower === '#udmaerkelser';
+					const toBio =
+						hrefLower === 'about.html' ||
+						hrefLower === './about.html' ||
+						hrefLower === 'about.html#' ||
+						hrefLower === 'about.html#top';
+					if (toCv && !isCv()) {
+						try { e.preventDefault(); } catch {}
+						try { e.stopImmediatePropagation(); } catch {}
+						try { closeMobileBurgerMenu(true); } catch {}
+						runMenuPeel(true);
+						return;
+					}
+					if (toBio && isCv()) {
+						try { e.preventDefault(); } catch {}
+						try { e.stopImmediatePropagation(); } catch {}
+						try { closeMobileBurgerMenu(true); } catch {}
+						runMenuPeel(false);
+					}
+				}, true);
 			}
 		}
 		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
@@ -5844,6 +6012,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const flipEl = overlay && overlay.querySelector ? overlay.querySelector('.contact-about-turn__flip') : null;
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+
+			/* Telefon MENU Kontakt→CV: papir-peel (ikke gammel CSS rotateY). */
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
+				let aboutHref = targetHref;
+				try {
+					const u = String(targetHref || '');
+					if (u.indexOf('#') === -1) aboutHref = (u.split('?')[0] || 'about.html') + '#cv';
+				} catch (_) {
+					aboutHref = 'about.html#cv';
+				}
+				try {
+					overlay.classList.add('is-ready', 'is-turning', 'swap-under-left', 'msk-phone-menu-paper-flip');
+				} catch {}
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+				mskAnimatePhoneMenuPaperFlip(flipEl, 1, Math.min(FLIP_MS, 900), () => {
+					try { window.location.href = aboutHref; } catch {}
+				});
+				return;
+			}
 
 			// Make overlay visible BEFORE hiding the current page (prevents a 1-frame blank flash).
 			try { overlay.classList.add('is-ready'); } catch {}
@@ -15671,7 +15858,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 17 okt - klokken 19:53';
+		const stampText = 'update lørdag 17 okt - klokken 20:01';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

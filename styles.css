@@ -612,7 +612,8 @@ img {
     .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip,
     .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip,
     .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip,
-    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__flip {
+    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .about-biocv-turn__flip {
         animation: none !important;
         transform-style: flat !important;
         perspective: none !important;
@@ -620,6 +621,22 @@ img {
         -webkit-backface-visibility: visible !important;
         z-index: 6 !important;
         overflow: visible !important;
+    }
+    .msk-phone-menu-paper-flip.is-turning .about-biocv-turn__flip-face--front,
+    .msk-phone-menu-paper-flip.is-turning .about-biocv-flip-front,
+    .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip-front--about,
+    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__flip-front--contact {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip-front--contact,
+    .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip-back,
+    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__flip-front--about,
+    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__flip-back {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
     .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip-front--about {
         display: block !important;
