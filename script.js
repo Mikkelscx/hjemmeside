@@ -2607,7 +2607,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	// Paper curl on computer, tablet and phone.
-	/** Telefon: ingen page-peel — kun menu-navigation (stabilt, ingen crash/design-smear). */
+	/** Telefon: ingen kant-træk — MENU må stadig bladre (paper-paint, ikke rå rotateY). */
 	function mskIsPhoneMenuNavOnly() {
 		try {
 			const html = document.documentElement;
@@ -2622,13 +2622,60 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	function mskIsTabletPaperDrag() {
 		try {
-			if (mskIsPhoneMenuNavOnly()) return false;
+			/* Telefon skal kunne paper-painte MENU-bladre — ellers bliver CSS rotateY skævt papir. */
 			const w = Math.round(window.innerWidth || 0);
 			const h = Math.round(window.innerHeight || 0);
 			return w >= 280 && h >= 280;
 		} catch {
 			return false;
 		}
+	}
+	/** Telefon MENU: kør paper-curl 0→1 (samme fold som tablet), ikke keyframe rotateY. */
+	function mskAnimatePhoneMenuPaperFlip(flipEl, sign, ms, onDone) {
+		if (!flipEl) {
+			try { if (typeof onDone === 'function') onDone(); } catch (_) {}
+			return;
+		}
+		const dur = Math.max(520, Math.min(2200, Number(ms) || 900));
+		const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+		const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+		const dir = sign < 0 ? -1 : 1;
+		try {
+			flipEl.style.animation = 'none';
+			flipEl.style.transition = 'none';
+			flipEl._mskPaperCornerY = null;
+			flipEl._mskHoldFx = null;
+			flipEl._mskPaperSideBand = false;
+			flipEl._mskPaperEdgeDrag = true;
+		} catch (_) {}
+		const step = (now) => {
+			const u = Math.max(0, Math.min(1, ((now || Date.now()) - t0) / dur));
+			const p = ease(u);
+			try {
+				const box = flipEl.getBoundingClientRect();
+				const w = Math.max(1, box.width || flipEl.offsetWidth || 1);
+				const h = Math.max(1, box.height || flipEl.offsetHeight || 1);
+				if (dir < 0) {
+					flipEl._mskPaperTx = box.left + w - p * w * 1.2;
+					flipEl._mskPaperGrabX = box.left + w - 6;
+				} else {
+					flipEl._mskPaperTx = box.left + p * w * 1.2;
+					flipEl._mskPaperGrabX = box.left + 6;
+				}
+				flipEl._mskPaperTy = box.top + h * 0.88;
+				flipEl._mskPaperGrabY = flipEl._mskPaperTy;
+			} catch (_) {}
+			try {
+				if (!mskPaintPaperDrag(flipEl, Math.max(0.03, p), dir, true)) {
+					flipEl.style.transform = 'rotateY(' + (dir * 180 * p).toFixed(2) + 'deg)';
+				}
+			} catch (_) {}
+			if (u < 1) requestAnimationFrame(step);
+			else {
+				try { if (typeof onDone === 'function') onDone(); } catch (_) {}
+			}
+		};
+		requestAnimationFrame(step);
 	}
 	/** Tablet + telefon: samme fold-flap (portræt = blankt linjeret papir). Telefon må ikke skjule flappen. */
 	function mskIsComputerLikeFoldViewport() {
@@ -3981,7 +4028,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const overlay = ensureOverlay();
 			wireFramesOnce(overlay);
-			try { overlay.classList.remove('is-ready', 'is-turning', 'swap-under-right', 'swap-flip-mid'); } catch {}
+			try { overlay.classList.remove('is-ready', 'is-turning', 'swap-under-right', 'swap-flip-mid', 'msk-phone-menu-paper-flip'); } catch {}
+			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+
+			const flipEl = overlay && overlay.querySelector ? overlay.querySelector('.projects-about-turn__flip') : null;
+
+			/* Telefon MENU: paper-curl (ikke CSS rotateY — det skævvinkler papiret). */
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
+				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip'); } catch {}
+				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.48));
+				mskAnimatePhoneMenuPaperFlip(flipEl, -1, Math.min(FLIP_MS, 1100), () => {
+					try { window.location.href = targetHref; } catch {}
+				});
+				return;
+			}
 
 			// Show overlay first (avoid a 1-frame blink), then start the flip.
 			requestAnimationFrame(() => {
@@ -4001,7 +4061,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				});
 			});
 
-			const flipEl = overlay && overlay.querySelector ? overlay.querySelector('.projects-about-turn__flip') : null;
 			navigateAfterFlip({ element: flipEl, fallbackMs: FLIP_MS + NAV_MS, href: targetHref });
 		}
 
@@ -4812,7 +4871,21 @@ document.addEventListener('DOMContentLoaded', function() {
 			// IMPORTANT: avoid a 1-frame "blank" by showing overlay first,
 			// then hiding the real page.
 			body.classList.remove('about-projects-flip-half');
-			overlay.classList.remove('is-turning', 'swap-under-right');
+			overlay.classList.remove('is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip');
+
+			/* Telefon MENU: paper-curl i stedet for CSS rotateY. */
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
+				body.classList.add('about-projects-flip-active', 'about-projects-flipping');
+				body.style.overflow = 'hidden';
+				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-left', 'msk-phone-menu-paper-flip'); } catch {}
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+				const flipPhone = overlay.querySelector('.about-projects-turn__flip');
+				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.48));
+				mskAnimatePhoneMenuPaperFlip(flipPhone, 1, Math.min(FLIP_MS, 1100), () => {
+					try { window.location.href = targetHref; } catch {}
+				});
+				return;
+			}
 
 			requestAnimationFrame(() => {
 				// Show overlay first (avoid any "nothing visible" frame), then hide the real page.
@@ -5224,16 +5297,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 
 			const overlay = ensureOverlay();
-			overlay.classList.remove('swap-under-right', 'swap-under-left', 'swap-flip-mid');
+			overlay.classList.remove('swap-under-right', 'swap-under-left', 'swap-flip-mid', 'msk-phone-menu-paper-flip');
 			try { overlay.classList.remove('is-preloading'); } catch {}
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
-
-			// Make overlay visible BEFORE hiding the current page (prevents a 1-frame blank flash).
-			try { overlay.classList.add('is-ready'); } catch {}
 
 			body.classList.add('about-contact-flip-active');
 			body.classList.add('about-contact-flipping');
 			body.style.overflow = 'hidden';
+
+			/* Telefon MENU: paper-curl i stedet for CSS rotateY. */
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
+				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip'); } catch {}
+				const flipPhone = overlay.querySelector('.about-contact-turn__flip');
+				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.48));
+				mskAnimatePhoneMenuPaperFlip(flipPhone, -1, Math.min(FLIP_MS, 1100), () => {
+					try { window.location.href = targetHref; } catch {}
+				});
+				return;
+			}
+
+			// Make overlay visible BEFORE hiding the current page (prevents a 1-frame blank flash).
+			try { overlay.classList.add('is-ready'); } catch {}
 
 			// Show overlay before hiding the page to avoid a blink.
 			requestAnimationFrame(() => {
@@ -5711,22 +5795,34 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch {}
 
 			const overlay = ensureOverlay();
-			overlay.classList.remove('swap-under-left', 'swap-under-right', 'swap-flip-mid');
+			overlay.classList.remove('swap-under-left', 'swap-under-right', 'swap-flip-mid', 'msk-phone-menu-paper-flip');
 			try { overlay.classList.remove('is-preloading'); } catch {}
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
-
-			// Make overlay visible BEFORE hiding the current page (prevents a 1-frame blank flash).
-			try { overlay.classList.add('is-ready'); } catch {}
 
 			body.classList.add('contact-about-flip-active');
 			body.classList.add('contact-about-flipping');
 			body.style.overflow = 'hidden';
 
+			const flipEl = overlay && overlay.querySelector ? overlay.querySelector('.contact-about-turn__flip') : null;
+
+			/* Telefon MENU: paper-curl i stedet for CSS rotateY. */
+			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
+				try { overlay.classList.add('is-ready', 'is-turning', 'swap-under-left', 'msk-phone-menu-paper-flip'); } catch {}
+				window.setTimeout(() => { try { overlay.classList.add('swap-flip-mid'); } catch {} }, Math.round(FLIP_MS * 0.55));
+				window.setTimeout(() => { try { overlay.classList.add('swap-under-right'); } catch {} }, Math.round(FLIP_MS * 0.92));
+				mskAnimatePhoneMenuPaperFlip(flipEl, 1, Math.min(FLIP_MS, 1100), () => {
+					try { window.location.href = targetHref; } catch {}
+				});
+				return;
+			}
+
+			// Make overlay visible BEFORE hiding the current page (prevents a 1-frame blank flash).
+			try { overlay.classList.add('is-ready'); } catch {}
+
 			// Delay the turning-sheet design swap slightly AFTER the visual midpoint,
 			// so it changes when the page moves past the center into the right side.
 			const FLIP_SHEET_SWAP_T = 0.60;
 
-			const flipEl = overlay && overlay.querySelector ? overlay.querySelector('.contact-about-turn__flip') : null;
 			let midSwapScheduled = false;
 			let underSwapScheduled = false;
 			function scheduleMidSwapFromNow() {
@@ -15546,7 +15642,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 17 okt - klokken 18:48';
+		const stampText = 'update lørdag 17 okt - klokken 18:55';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

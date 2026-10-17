@@ -576,7 +576,7 @@ img {
     }
 }
 
-/* Telefon: ingen page-peel — navigation kun via MENU (stabilt, ingen crash). */
+/* Telefon: ingen kant-træk — navigation via MENU (paper-curl, ikke CSS rotateY). */
 @media (max-width: 640px) {
     .page-turn-handle,
     .corner-fold-hints {
@@ -585,6 +585,17 @@ img {
         width: 0 !important;
         height: 0 !important;
         opacity: 0 !important;
+    }
+    /* MENU-bladre: slå keyframe rotateY fra — ellers skævvinkles papiret midt i vendingen */
+    .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .contact-about-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .projects-contact-turn__flip,
+    .msk-phone-menu-paper-flip.is-turning .pcd-flip {
+        animation: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 }
 
