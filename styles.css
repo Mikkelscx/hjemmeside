@@ -4090,11 +4090,33 @@ html.transition-preview body.sketchbook-theme .brainstorm-container.preview-read
         left: 0 !important;
         right: 0 !important;
         box-shadow: none !important;
+        /* CSS-linjer i preview (IMG_7932/7933: striber forsvandt når JS-lag var dækket/blank) */
         background-color: #f5f5f0 !important;
+        background-image:
+            repeating-linear-gradient(
+                to bottom,
+                transparent 0 22px,
+                rgba(208, 208, 208, 0.88) 22px 24px,
+                rgba(224, 224, 224, 0.62) 23px 25px
+            ) !important;
+        background-size: 100% 25px !important;
+        background-repeat: repeat !important;
     }
     html.transition-preview body.about-sketchbook-page.sketchbook-theme::after,
     html.transition-preview body.about-sketchbook-page.sketchbook-theme .right-margin {
         display: none !important;
+    }
+    /* Linjer ligger på ::before — skjul JS-lag så vi ikke får dobbelte streger */
+    html.transition-preview body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    html.transition-preview body.about-sketchbook-page.sketchbook-theme .left-margin {
+        display: block !important;
+        left: 36px !important;
+        opacity: 0.7 !important;
+        z-index: 2 !important;
     }
     html.transition-preview body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
         display: block !important;
@@ -4106,6 +4128,7 @@ html.transition-preview body.sketchbook-theme .brainstorm-container.preview-read
         overflow: hidden !important;
         grid-template-columns: none !important;
         grid-template-rows: none !important;
+        background: transparent !important;
     }
     html.transition-preview body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left,
     html.transition-preview body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
@@ -4119,7 +4142,8 @@ html.transition-preview body.sketchbook-theme .brainstorm-container.preview-read
         margin: 0 !important;
         overflow-x: hidden !important;
         overflow-y: auto !important;
-        background: #f5f5f0 !important;
+        /* Transparent — ellers dækker fladen papirstriberne (IMG_7932/7933) */
+        background: transparent !important;
     }
     /* Default / bio: kun bio — skjul CV hårdt (ingen dobbelt-stack) */
     html.transition-preview body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
@@ -4162,10 +4186,29 @@ html.transition-preview body.sketchbook-theme .brainstorm-container.preview-read
         right: 0 !important;
         box-shadow: none !important;
         background-color: #f5f5f0 !important;
+        background-image:
+            repeating-linear-gradient(
+                to bottom,
+                transparent 0 22px,
+                rgba(208, 208, 208, 0.88) 22px 24px,
+                rgba(224, 224, 224, 0.62) 23px 25px
+            ) !important;
+        background-size: 100% 25px !important;
+        background-repeat: repeat !important;
     }
     html.transition-preview body.contact-sketchbook-page.sketchbook-theme::after,
     html.transition-preview body.contact-sketchbook-page.sketchbook-theme .right-margin {
         display: none !important;
+    }
+    html.transition-preview body.contact-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    html.transition-preview body.contact-sketchbook-page.sketchbook-theme .left-margin {
+        display: block !important;
+        left: 36px !important;
+        z-index: 2 !important;
     }
     html.transition-preview body.contact-sketchbook-page.sketchbook-theme main.contact-sketchbook,
     html.transition-preview body.contact-sketchbook-page.sketchbook-theme .contact-sketchbook {
@@ -4187,7 +4230,7 @@ html.transition-preview body.sketchbook-theme .brainstorm-container.preview-read
         align-items: center !important;
         text-align: center !important;
         overflow: hidden !important;
-        background: #f5f5f0 !important;
+        background: transparent !important;
     }
     html.transition-preview body.contact-sketchbook-page.sketchbook-theme .contact-info {
         width: 100% !important;
@@ -4214,10 +4257,29 @@ html.transition-preview body.sketchbook-theme .brainstorm-container.preview-read
         right: 0 !important;
         box-shadow: none !important;
         background-color: #f5f5f0 !important;
+        background-image:
+            repeating-linear-gradient(
+                to bottom,
+                transparent 0 22px,
+                rgba(208, 208, 208, 0.88) 22px 24px,
+                rgba(224, 224, 224, 0.62) 23px 25px
+            ) !important;
+        background-size: 100% 25px !important;
+        background-repeat: repeat !important;
     }
     html.transition-preview body.projects-page.sketchbook-theme::after,
     html.transition-preview body.projects-page.sketchbook-theme .right-margin {
         display: none !important;
+    }
+    html.transition-preview body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    html.transition-preview body.projects-page.sketchbook-theme .left-margin {
+        display: block !important;
+        left: 36px !important;
+        z-index: 2 !important;
     }
     html.transition-preview body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;

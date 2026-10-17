@@ -10,7 +10,7 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p315';
+        var v = '20260924p316';
         try {
             var q = new URLSearchParams(location.search || '');
             var phonePage = q.get('phonePage');
@@ -236,6 +236,26 @@
             }
         }
     }
+    /* Telefon: striber på ::before under MENU-bladre (IMG_7932/7933) — undgå dobbelt JS-lag */
+    @media (max-width: 640px) and (orientation: portrait),
+           (max-width: 640px) and (max-aspect-ratio: 1/1) {
+        body.about-sketchbook-page.sketchbook-theme::before {
+            background-color: #f5f5f0 !important;
+            background-image: repeating-linear-gradient(
+                to bottom,
+                transparent 0 22px,
+                rgba(208, 208, 208, 0.88) 22px 24px,
+                rgba(224, 224, 224, 0.62) 23px 25px
+            ) !important;
+            background-size: 100% 25px !important;
+            background-repeat: repeat !important;
+        }
+        body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+    }
     </style>
 </head>
 <body class="sketchbook-theme about-sketchbook-page">
@@ -322,7 +342,7 @@
     (function () {
         /* Preview-iframes SKAL loade script (navbar-bladre skal vise rigtigt design).
            transition-preview i script.js blokerer nestede peels — kant-peel er stadig slået fra på telefon. */
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p315') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p316') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
