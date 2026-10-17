@@ -9,13 +9,30 @@
     <title>MSC - Mikkel's Portfolio</title>
     <script>
     (function () {
-        var v = '20260924p318';
+        var v = '20260924p319';
         try {
             var q = new URLSearchParams(location.search || '');
             if (!q.has('preview') && q.get('v') !== v) {
                 q.set('v', v);
+                q.set('_t', String(Date.now()));
                 location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
                 return;
+            }
+            /* Stuck cache: HTML siger allerede ?v=… men er gammel — revalidate mod netværk */
+            if (!q.has('preview') && !sessionStorage.getItem('mskHtmlFresh_' + v)) {
+                fetch(location.pathname + '?msknet=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' })
+                    .then(function (r) { return r.text(); })
+                    .then(function (html) {
+                        var m = html.match(/var v = '(20260924p[0-9]+)'/);
+                        if (m && m[1] !== v) {
+                            q.set('v', m[1]);
+                            q.set('_t', String(Date.now()));
+                            location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
+                        } else {
+                            sessionStorage.setItem('mskHtmlFresh_' + v, '1');
+                        }
+                    })
+                    .catch(function () {});
             }
         } catch (e) {}
         window.mskAssetV = v;
@@ -162,7 +179,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p318') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p319') + '.js"><\/script>');
     })();
     </script>
 </body>

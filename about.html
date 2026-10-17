@@ -10,7 +10,7 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p318';
+        var v = '20260924p319';
         try {
             var q = new URLSearchParams(location.search || '');
             var phonePage = q.get('phonePage');
@@ -22,8 +22,24 @@
             /* Preview-iframes: ALDRIG location.replace — det crasher Safari/Chrome i loops. */
             if (!q.has('preview') && q.get('v') !== v) {
                 q.set('v', v);
+                q.set('_t', String(Date.now()));
                 location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
                 return;
+            }
+            if (!q.has('preview') && !sessionStorage.getItem('mskHtmlFresh_' + v)) {
+                fetch(location.pathname + '?msknet=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' })
+                    .then(function (r) { return r.text(); })
+                    .then(function (html) {
+                        var m = html.match(/var v = '(20260924p[0-9]+)'/);
+                        if (m && m[1] !== v) {
+                            q.set('v', m[1]);
+                            q.set('_t', String(Date.now()));
+                            location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
+                        } else {
+                            sessionStorage.setItem('mskHtmlFresh_' + v, '1');
+                        }
+                    })
+                    .catch(function () {});
             }
             /* Tiny: korrekt højde uden fuld script.js i peel-iframes */
             if (q.has('preview') || q.has('phonePage')) {
@@ -342,7 +358,7 @@
     (function () {
         /* Preview-iframes SKAL loade script (navbar-bladre skal vise rigtigt design).
            transition-preview i script.js blokerer nestede peels — kant-peel er stadig slået fra på telefon. */
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p318') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p319') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
