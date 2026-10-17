@@ -10,7 +10,7 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p309';
+        var v = '20260924p310';
         try {
             var q = new URLSearchParams(location.search || '');
             var phonePage = q.get('phonePage');
@@ -320,12 +320,9 @@
 
     <script>
     (function () {
-        /* Peel-iframes: kun HTML+CSS — ingen 600KB script (Safari/Chrome OOM / "gentagne problemer"). */
-        try {
-            var q = new URLSearchParams(location.search || '');
-            if (q.has('preview') || q.has('phonePage')) return;
-        } catch (e) {}
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p309') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        /* Preview-iframes SKAL loade script (navbar-bladre skal vise rigtigt design).
+           transition-preview i script.js blokerer nestede peels — kant-peel er stadig slået fra på telefon. */
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p310') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
