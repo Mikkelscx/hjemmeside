@@ -576,7 +576,7 @@ img {
     }
 }
 
-/* Telefon: ingen kant-træk — MENU Om mig→Projekter = flad slide (rotateY skævvinkler, IMG_7934). */
+/* Telefon: ingen kant-træk — MENU bladre = paper-paint (JS), CSS rotateY slås fra. */
 @media (max-width: 640px) {
     .page-turn-handle,
     .corner-fold-hints {
@@ -608,7 +608,7 @@ img {
         height: 100% !important;
         max-width: none !important;
     }
-    /* Flad MENU-slide: slå rotateY keyframes fra — JS styrer translateX */
+    /* MENU paper-paint: slå CSS rotateY keyframes fra — JS styrer peel/clip */
     .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip,
     .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip,
     .msk-phone-menu-paper-flip.is-turning .about-contact-turn__flip,
@@ -619,6 +619,7 @@ img {
         backface-visibility: visible !important;
         -webkit-backface-visibility: visible !important;
         z-index: 6 !important;
+        overflow: visible !important;
     }
     .msk-phone-menu-paper-flip.is-turning .about-projects-turn__flip-front--about {
         display: block !important;

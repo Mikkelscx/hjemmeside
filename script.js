@@ -2622,7 +2622,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	function mskIsTabletPaperDrag() {
 		try {
-			/* Kant-peel kun tablet/desktop — telefon MENU bruger flad slide (rotateY skævvinkler på 100vw). */
+			/* Kant-peel kun tablet/desktop — telefon MENU bruger paper-paint (ikke kant-træk). */
 			const w = Math.round(window.innerWidth || 0);
 			const h = Math.round(window.innerHeight || 0);
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return false;
@@ -2632,15 +2632,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 	/**
-	 * Telefon MENU: flad opretstående translateX (ingen rotateY/curl).
-	 * sign -1 = slide left (Projekter→Om mig), +1 = slide right (Om mig→Projekter).
+	 * Telefon MENU: samme papir-peel som tablet-drag (bladre), ikke flad translateX.
+	 * sign -1 = Projekter→Om mig (højre hjørne), +1 = Om mig→Projekter (venstre hjørne).
 	 */
-	function mskAnimatePhoneMenuFlatFlip(flipEl, sign, ms, onDone) {
+	function mskAnimatePhoneMenuPaperFlip(flipEl, sign, ms, onDone) {
 		if (!flipEl) {
 			try { if (typeof onDone === 'function') onDone(); } catch (_) {}
 			return;
 		}
-		const dur = Math.max(420, Math.min(1200, Number(ms) || 720));
+		const dur = Math.max(560, Math.min(1100, Number(ms) || 820));
 		const dir = sign < 0 ? -1 : 1;
 		const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 		const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
@@ -2662,37 +2662,58 @@ document.addEventListener('DOMContentLoaded', function() {
 					});
 				} catch (_) {}
 			}
+			flipEl._mskPhoneMenuPaper = true;
 			flipEl.style.animation = 'none';
 			flipEl.style.transition = 'none';
-			flipEl.style.willChange = 'transform';
-			flipEl.style.transformOrigin = '50% 50%';
-			flipEl.style.transformStyle = 'flat';
-			flipEl.style.backfaceVisibility = 'visible';
-			flipEl.style.perspective = 'none';
-			flipEl.style.clipPath = 'none';
-			flipEl.style.webkitClipPath = 'none';
-			flipEl.style.boxShadow = dir < 0
-				? '-10px 0 28px rgba(0,0,0,0.16)'
-				: '10px 0 28px rgba(0,0,0,0.16)';
 			flipEl.style.setProperty('left', '0px', 'important');
 			flipEl.style.setProperty('width', '100vw', 'important');
 			flipEl.style.setProperty('height', '100%', 'important');
-			flipEl.style.transform = 'translate3d(0,0,0)';
+			const box = flipEl.getBoundingClientRect();
+			const W = Math.max(1, box.width || window.innerWidth || 1);
+			const H = Math.max(1, box.height || window.innerHeight || 1);
+			/* Start i ydre nederste hjørne — klassisk bladre-greb */
+			const grabX = dir < 0 ? box.left + W * 0.94 : box.left + W * 0.06;
+			const grabY = box.top + H * 0.9;
+			flipEl._mskPaperGrabX = grabX;
+			flipEl._mskPaperGrabY = grabY;
+			flipEl._mskPaperTx = grabX;
+			flipEl._mskPaperTy = grabY;
+			flipEl._mskPaperCornerY = null;
+			flipEl._mskPaperEdgeDrag = false;
+			flipEl._mskPaperAnim = false;
+			flipEl._mskPaperSettling = false;
+			flipEl._mskHoldFx = null;
+			flipEl._mskHoldFy = null;
+			flipEl._mskHoldP = null;
+			/* Finger-mål: hen over siden til modsatt kant */
+			flipEl._mskPhoneMenuEndX = dir < 0 ? box.left - W * 0.12 : box.left + W * 1.12;
+			flipEl._mskPhoneMenuEndY = box.top + H * 0.42;
+			flipEl._mskPhoneMenuGrabX = grabX;
+			flipEl._mskPhoneMenuGrabY = grabY;
 		} catch (_) {}
+		const paint = (p) => {
+			try {
+				const gx = flipEl._mskPhoneMenuGrabX;
+				const gy = flipEl._mskPhoneMenuGrabY;
+				const ex = flipEl._mskPhoneMenuEndX;
+				const ey = flipEl._mskPhoneMenuEndY;
+				if (typeof gx === 'number' && typeof ex === 'number') {
+					flipEl._mskPaperTx = gx + (ex - gx) * p;
+					flipEl._mskPaperTy = gy + (ey - gy) * p;
+				}
+				flipEl._mskPaperSettling = false;
+				flipEl._mskPaperAnim = true;
+				mskPaintPaperDrag(flipEl, p, dir, true);
+				flipEl._mskPaperAnim = false;
+			} catch (_) {}
+		};
+		try { paint(0.02); } catch (_) {}
 		const step = (now) => {
 			const u = Math.max(0, Math.min(1, ((now || Date.now()) - t0) / dur));
-			const p = ease(u);
-			try {
-				const w = Math.max(
-					1,
-					window.innerWidth || 0,
-					(flipEl.getBoundingClientRect && flipEl.getBoundingClientRect().width) || 0,
-					flipEl.offsetWidth || 0
-				);
-				flipEl.style.transform = 'translate3d(' + (dir * p * w).toFixed(2) + 'px,0,0)';
-			} catch (_) {}
+			paint(ease(u));
 			if (u < 1) requestAnimationFrame(step);
 			else {
+				try { flipEl._mskPhoneMenuPaper = false; } catch (_) {}
 				try { if (typeof onDone === 'function') onDone(); } catch (_) {}
 			}
 		};
@@ -3351,7 +3372,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 	}
 	function mskPaintPaperDrag(flipEl, progress, sign, sync) {
-		if (!mskIsTabletPaperDrag() || !flipEl || flipEl._mskPaperSettling) return false;
+		/* Telefon MENU auto-bladre: tillad paper-paint selvom kant-træk er slået fra. */
+		if ((!mskIsTabletPaperDrag() && !(flipEl && flipEl._mskPhoneMenuPaper)) || !flipEl || flipEl._mskPaperSettling) return false;
 		flipEl.style.animation = 'none';
 		flipEl.style.transition = 'none';
 		if (!sync) {
@@ -4056,13 +4078,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 
-			/* Telefon MENU: flad slide — CSS rotateY + blank preview skjuler Projekter (IMG_7935). */
+			/* Telefon MENU: papir-peel (bladre) — ikke flad side-slide. */
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
 				try {
 					overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip');
 				} catch {}
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
-				mskAnimatePhoneMenuFlatFlip(flipEl, -1, Math.min(FLIP_MS, 900), () => {
+				mskAnimatePhoneMenuPaperFlip(flipEl, -1, Math.min(FLIP_MS, 900), () => {
 					try { window.location.href = targetHref; } catch {}
 				});
 				return;
@@ -4899,7 +4921,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			overlay.classList.remove('is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip');
 			try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 
-			/* Telefon MENU: flad slide — CSS rotateY skævvinkler Om mig→Projekter (IMG_7934). */
+			/* Telefon MENU: papir-peel (bladre) — ikke flad side-slide / rotateY-skæv. */
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
 				body.classList.add('about-projects-flip-active', 'about-projects-flipping');
 				body.style.overflow = 'hidden';
@@ -4908,7 +4930,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				const flipPhone = overlay.querySelector('.about-projects-turn__flip');
-				mskAnimatePhoneMenuFlatFlip(flipPhone, 1, Math.min(FLIP_MS, 900), () => {
+				mskAnimatePhoneMenuPaperFlip(flipPhone, 1, Math.min(FLIP_MS, 900), () => {
 					try { window.location.href = targetHref; } catch {}
 				});
 				return;
@@ -15649,7 +15671,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 17 okt - klokken 19:46';
+		const stampText = 'update lørdag 17 okt - klokken 19:53';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
