@@ -2365,10 +2365,26 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				document.body.classList.add('nav-menu-hide-instant');
 				window.setTimeout(() => {
-					try { document.body.classList.remove('nav-menu-hide-instant'); } catch {}
+					try {
+						/* Hold skjult mens telefon-peel kører — ellers kan MENU komme tilbage over LinkedIn. */
+						if (document.body.classList.contains('msk-phone-peel-nav-lock')) return;
+						document.body.classList.remove('nav-menu-hide-instant');
+					} catch {}
 				}, 80);
 			} catch {}
 		}
+	}
+
+	/** Telefon MENU-peel: menu z-index 450000 > peel 9999 — skjul navbar hele peelen. */
+	function mskPhonePeelNavLock(on) {
+		try {
+			if (on) {
+				closeMobileBurgerMenu(true);
+				document.body.classList.add('msk-phone-peel-nav-lock', 'nav-menu-hide-instant');
+			} else {
+				document.body.classList.remove('msk-phone-peel-nav-lock', 'nav-menu-hide-instant');
+			}
+		} catch {}
 	}
 
 	// Capture: luk burger før page-flip handlers (nogle stopper propagation).
@@ -2650,6 +2666,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			try { if (typeof onDone === 'function') onDone(); } catch (_) {}
 			return;
 		}
+		try { mskPhonePeelNavLock(true); } catch (_) {}
 		const fast = !!(flipEl && flipEl._mskPhoneMenuChainFast);
 		const dur = Math.max(fast ? 300 : 560, Math.min(1100, Number(ms) || (fast ? 380 : 820)));
 		const dir = sign < 0 ? -1 : 1;
@@ -2896,6 +2913,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		function cleanupOverlay(ov) {
 			try { document.body.classList.remove('msk-phone-leaf-chain-active'); } catch (_) {}
+			try { mskPhonePeelNavLock(false); } catch (_) {}
 			try {
 				if (ov) ov.remove();
 				else document.querySelectorAll('.msk-phone-leaf-chain').forEach((n) => n.remove());
@@ -2911,7 +2929,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			busy = true;
 			try { window._mskPhoneLeafChainBusy = true; } catch (_) {}
-			try { closeMobileBurgerMenu(true); } catch (_) {}
+			try { mskPhonePeelNavLock(true); } catch (_) {}
 			try { document.body.style.overflow = 'hidden'; } catch (_) {}
 			document.body.classList.add('msk-phone-leaf-chain-active');
 			const ov = ensureOverlay();
@@ -5665,6 +5683,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			/* Telefon MENU CV→Kontakt: papir-peel (ikke gammel CSS rotateY). */
 			if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) {
+				try { mskPhonePeelNavLock(true); } catch (_) {}
 				try {
 					overlay.classList.add('is-ready', 'is-turning', 'swap-under-right', 'msk-phone-menu-paper-flip');
 				} catch {}
@@ -16164,7 +16183,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 18 okt - klokken 17:19';
+		const stampText = 'update søndag 18 okt - klokken 17:33';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

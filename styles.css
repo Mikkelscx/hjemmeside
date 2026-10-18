@@ -277,6 +277,39 @@ body.nav-menu-hide-instant .nav-scrim {
     transform: none !important;
 }
 
+/*
+ * Telefon MENU-peel: åben burger har z-index 450000 > peel (9999/200500).
+ * IMG_7944: MENU-tekst (HJEM/PROJEKTER/…/MIT AI UNIVERS) lå ovenpå Kontakt → LinkedIn “hoppede”.
+ */
+body.msk-phone-peel-nav-lock .navbar,
+body.msk-phone-peel-nav-lock .nav-menu,
+body.msk-phone-peel-nav-lock .nav-scrim,
+body.msk-phone-peel-nav-lock .nav-toggle {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+    transition: none !important;
+}
+body.msk-phone-peel-nav-lock .about-contact-transition,
+body.msk-phone-peel-nav-lock .contact-about-transition,
+body.msk-phone-peel-nav-lock .about-projects-transition,
+body.msk-phone-peel-nav-lock .projects-about-transition,
+body.msk-phone-peel-nav-lock .about-biocv-transition,
+body.msk-phone-peel-nav-lock .msk-phone-leaf-chain {
+    z-index: 500000 !important;
+}
+/* Flip-active beholder ellers .navbar synlig — under peel-lock skal den også væk */
+body.msk-phone-peel-nav-lock.about-contact-flip-active > :not(.about-contact-transition):not(.msk-build-stamp),
+body.msk-phone-peel-nav-lock.contact-about-flip-active > :not(.contact-about-transition):not(.msk-build-stamp),
+body.msk-phone-peel-nav-lock.about-projects-flip-active > :not(.about-projects-transition):not(.msk-build-stamp),
+body.msk-phone-peel-nav-lock.projects-about-flip-active > :not(.projects-about-transition):not(.msk-build-stamp),
+body.msk-phone-peel-nav-lock.msk-phone-leaf-chain-active > :not(.msk-phone-leaf-chain):not(.msk-build-stamp) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 /* ---- Navbar theme tokens (desktop top bar + burger button on narrow viewports) ---- */
 body.home-notebook-page {
     --navBarBg: rgba(252, 251, 247, 0.94);
@@ -4401,6 +4434,7 @@ html.transition-preview body {
         margin-left: 0 !important;
         margin-right: 0 !important;
         display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
         justify-content: flex-start !important;
         gap: 12px !important;
