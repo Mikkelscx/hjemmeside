@@ -709,6 +709,19 @@ img {
         visibility: hidden !important;
         pointer-events: none !important;
     }
+    /* Om mig→Projekter MENU: Projekter under peel-hullet skal altid være synligt */
+    .about-projects-transition.msk-phone-menu-paper-flip.is-turning .about-projects-turn__under--left,
+    .about-projects-transition.msk-phone-menu-paper-flip.is-turning .about-projects-turn__under--left .about-projects-turn__under-frame--projects {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: none !important;
+        z-index: 2 !important;
+    }
+    .about-projects-transition.msk-phone-menu-paper-flip.is-turning .about-projects-turn__under--left .about-projects-turn__under-frame--about {
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
     /* Projekter→Om mig: behold Projekter på flipping sheet (ingen mid-swap blank) */
     .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip-face--front,
     .msk-phone-menu-paper-flip.is-turning .projects-about-turn__flip-front {

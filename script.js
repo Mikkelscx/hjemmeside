@@ -3990,17 +3990,30 @@ document.addEventListener('DOMContentLoaded', function() {
 			const turn = flipEl.parentElement;
 			const underLeft = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--projects');
 			const underAbout = turn && turn.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--about');
-			// Kun reveal Projekter når der er et faktisk peel-hul — ellers skinner mindmap
-			// igennem hele Om mig-arket (u-flydende / “dobbelt” design).
-			const showProjects = p > 0 && !!flat;
+			/*
+			 * Tablet-drag: vent på peel-hul (flat), ellers skinner mindmap igennem Om mig.
+			 * Telefon MENU: clip styrer hullet — Projekter under SKAL være synlig fra start
+			 * (ellers forsvinder “revealed” Projekter midt i peelen når flat flicker).
+			 */
+			const phoneMenu = !!(flipEl._mskPhoneMenuPaper);
+			const showProjects = phoneMenu ? (p > 0.01) : (p > 0 && !!flat);
 			if (showProjects) {
 				if (underLeft) {
 					underLeft.style.setProperty('left', '0px', 'important');
 					underLeft.style.setProperty('opacity', '1', 'important');
+					underLeft.style.setProperty('visibility', 'visible', 'important');
+					underLeft.style.setProperty('display', 'block', 'important');
+					try { underLeft.classList.add('is-loaded'); } catch (_) {}
 				}
 				if (underAbout) underAbout.style.setProperty('opacity', '0', 'important');
-				try { flipEl.closest('.about-projects-transition')?.classList.add('swap-under-left'); } catch {}
-			} else {
+				try {
+					const ov = flipEl.closest('.about-projects-transition');
+					if (ov) {
+						ov.classList.add('swap-under-left');
+						ov.classList.add('swap-under-left-ready');
+					}
+				} catch {}
+			} else if (!phoneMenu) {
 				if (underLeft) underLeft.style.setProperty('opacity', '0', 'important');
 				if (underAbout) underAbout.style.setProperty('opacity', '1', 'important');
 			}
@@ -5168,13 +5181,54 @@ document.addEventListener('DOMContentLoaded', function() {
 				body.classList.add('about-projects-flip-active', 'about-projects-flipping');
 				body.style.overflow = 'hidden';
 				try {
-					overlay.classList.add('is-ready', 'is-turning', 'swap-under-left', 'msk-phone-menu-paper-flip');
+					overlay.classList.add('is-ready', 'is-turning', 'swap-under-left', 'swap-under-left-ready', 'msk-phone-menu-paper-flip');
 				} catch {}
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
+				/* Force reveal-lag: Projekter under Om mig-peelen (ellers blank/“mangler” midt i vendingen). */
+				try {
+					const underProj = overlay.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--projects');
+					const underAbout = overlay.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--about');
+					const underHost = overlay.querySelector('.about-projects-turn__under--left');
+					if (underHost) {
+						underHost.style.setProperty('opacity', '1', 'important');
+						underHost.style.setProperty('visibility', 'visible', 'important');
+						underHost.style.setProperty('z-index', '2', 'important');
+					}
+					if (underProj) {
+						underProj.classList.add('is-loaded');
+						underProj.style.setProperty('opacity', '1', 'important');
+						underProj.style.setProperty('visibility', 'visible', 'important');
+						underProj.style.setProperty('display', 'block', 'important');
+						underProj.style.setProperty('left', '0px', 'important');
+						underProj.style.setProperty('width', '100vw', 'important');
+					}
+					if (underAbout) underAbout.style.setProperty('opacity', '0', 'important');
+				} catch (_) {}
 				const flipPhone = overlay.querySelector('.about-projects-turn__flip');
-				mskAnimatePhoneMenuPaperFlip(flipPhone, 1, Math.min(FLIP_MS, 900), () => {
-					try { window.location.href = targetHref; } catch {}
-				});
+				const beginPeel = () => {
+					mskAnimatePhoneMenuPaperFlip(flipPhone, 1, Math.min(FLIP_MS, 900), () => {
+						try { window.location.href = targetHref; } catch {}
+					});
+				};
+				/* Kort vent hvis Projekter-iframe stadig loader — max ~280ms så peelen ikke føles træg. */
+				try {
+					const underProj = overlay.querySelector('.about-projects-turn__under--left .about-projects-turn__under-frame--projects');
+					if (underProj && !underProj.classList.contains('is-loaded')) {
+						let started = false;
+						const go = () => {
+							if (started) return;
+							started = true;
+							beginPeel();
+						};
+						underProj.addEventListener('load', () => {
+							try { underProj.classList.add('is-loaded'); } catch (_) {}
+							go();
+						}, { once: true });
+						window.setTimeout(go, 280);
+						return;
+					}
+				} catch (_) {}
+				beginPeel();
 				return;
 			}
 
@@ -16100,7 +16154,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 18 okt - klokken 16:31';
+		const stampText = 'update søndag 18 okt - klokken 16:42';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
