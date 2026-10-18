@@ -301,9 +301,18 @@ function mskIsTabletPortraitSinglePage() {
 }
 
 /** Tomt linjeret papir (samme 25px-streger + rød margen som sketchbook). */
+/** Rød margen: telefon 36px (matcher .left-margin), desktop/tablet 60px. */
+function mskPaperRedMarginPx() {
+	try {
+		if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return 36;
+		if (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) return 36;
+	} catch (_) {}
+	return 60;
+}
 function mskApplyBlankLinedPaper(el) {
 	if (!el) return;
 	try {
+		const mx = mskPaperRedMarginPx();
 		el.style.setProperty(
 			'background',
 			[
@@ -316,7 +325,8 @@ function mskApplyBlankLinedPaper(el) {
 			'important'
 		);
 		el.style.setProperty('background-size', '100% 25px, 100% 25px, 2px 100%, 100% 100%, 100% 100%', 'important');
-		el.style.setProperty('background-position', '0 0, 0 0, 60px 0, 0 0, 0 0', 'important');
+		/* SKAL matche .left-margin — ellers hopper den røde streg midt i peelen (IMG_7941). */
+		el.style.setProperty('background-position', '0 0, 0 0, ' + mx + 'px 0, 0 0, 0 0', 'important');
 		el.style.setProperty('background-repeat', 'repeat, repeat, no-repeat, no-repeat, repeat', 'important');
 		el.style.setProperty('background-color', '#f5f5f0', 'important');
 	} catch (_) {}
@@ -16154,7 +16164,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 18 okt - klokken 16:42';
+		const stampText = 'update søndag 18 okt - klokken 17:00';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

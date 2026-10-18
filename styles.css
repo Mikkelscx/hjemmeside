@@ -3173,6 +3173,32 @@ body.contact-about-flip-active > :not(.contact-about-transition):not(.navbar) {
     }
 }
 
+/* Telefon: rød margen på peel-papir = 36px (samme som .left-margin) — undgå hop i animation (IMG_7941) */
+@media (max-width: 640px) {
+    html {
+        --paperBgLeftPos: 0 0, 0 0, 36px 0, 0 0, 0 0;
+        --paperBgPos: 0 0, 0 0, 36px 0, calc(100% - 36px) 0, 0 0, 0 0;
+    }
+    .about-projects-turn__flip-face--back,
+    .projects-about-turn__flip-face--back,
+    .about-contact-turn__flip-face--back,
+    .contact-about-turn__flip-face--back,
+    .about-biocv-turn__flip-face--back,
+    .msk-phone-leaf-chain__flip-face--back {
+        background-position: 0 0, 0 0, 36px 0, 0 0, 0 0 !important;
+    }
+    .about-projects-turn__flip::before,
+    .about-projects-turn__flip::after,
+    .projects-about-turn__flip::before,
+    .projects-about-turn__flip::after,
+    .about-contact-turn__flip::before,
+    .about-contact-turn__flip::after,
+    .contact-about-turn__flip::before,
+    .contact-about-turn__flip::after {
+        background-position: 0 0, 0 0, 36px 0, 0 0, 0 0 !important;
+    }
+}
+
 /* PROJEKTER -> KONTAKT (double flip with "Om mig" hint) */
 .projects-contact-transition {
     position: fixed;
