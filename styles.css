@@ -4390,12 +4390,51 @@ html.transition-preview body {
         width: 100% !important;
         max-width: min(520px, 92vw) !important;
         margin: 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 0 !important;
     }
     html.transition-preview body.contact-sketchbook-page.sketchbook-theme .contact-item {
         width: 100% !important;
         max-width: none !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
+        padding: 14px !important;
+        min-height: 0 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+    /* Peel-preview skal matche live telefon-ikoner (ellers LinkedIn “rykker” ved land) */
+    html.transition-preview body.contact-sketchbook-page.sketchbook-theme .contact-item__icon {
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
+        width: 64px !important;
+        height: 64px !important;
+        max-width: 64px !important;
+        max-height: 64px !important;
+        flex: 0 0 64px !important;
+        margin: 0 !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        transform: rotate(-2deg) !important;
+        transition: none !important;
+    }
+    html.transition-preview body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--phone {
+        transform: rotate(1.5deg) !important;
+    }
+    html.transition-preview body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--linkedin {
+        transform: rotate(-1deg) !important;
+    }
+    html.transition-preview body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
+        text-align: left !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
     }
 
     /* --- Projekter preview: rent linjeret papir + hjerne; skjul JS-afhængig mindmap --- */
@@ -12872,16 +12911,38 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         padding: 14px 14px 14px 14px;
         margin: 0;
         min-height: 0;
+        /* Undgå at hele kortet (og LinkedIn-logo) “hopper” via hover-translate */
+        transition: none !important;
+        transform: none !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item:hover,
+    body.contact-sketchbook-page.sketchbook-theme .contact-item:active {
+        transform: none !important;
+        box-shadow: none !important;
     }
     body.contact-sketchbook-page.sketchbook-theme .contact-item__icon {
-        position: static;
-        width: 64px;
-        height: 64px;
-        flex: 0 0 auto;
-        transform: rotate(-2deg);
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
+        width: 64px !important;
+        height: 64px !important;
+        max-width: 64px !important;
+        max-height: 64px !important;
+        flex: 0 0 64px !important;
+        margin: 0 !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        transform: rotate(-2deg) !important;
+        transition: none !important;
+        will-change: auto !important;
     }
-    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--phone { transform: rotate(1.5deg); }
-    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--linkedin { transform: rotate(-1deg); }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--phone {
+        transform: rotate(1.5deg) !important;
+    }
+    body.contact-sketchbook-page.sketchbook-theme .contact-item__icon--linkedin {
+        /* Fast transform — ingen translateY(-50%) der kan skifte midt i peel/load */
+        transform: rotate(-1deg) !important;
+    }
 
     body.contact-sketchbook-page.sketchbook-theme .contact-item__text {
         text-align: left;

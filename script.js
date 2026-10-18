@@ -16164,7 +16164,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 18 okt - klokken 17:00';
+		const stampText = 'update søndag 18 okt - klokken 17:19';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
