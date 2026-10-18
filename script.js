@@ -2640,20 +2640,21 @@ document.addEventListener('DOMContentLoaded', function() {
 			try { if (typeof onDone === 'function') onDone(); } catch (_) {}
 			return;
 		}
-		const dur = Math.max(560, Math.min(1100, Number(ms) || 820));
+		const fast = !!(flipEl && flipEl._mskPhoneMenuChainFast);
+		const dur = Math.max(fast ? 300 : 560, Math.min(1100, Number(ms) || (fast ? 380 : 820)));
 		const dir = sign < 0 ? -1 : 1;
 		const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 		const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
 		try {
 			const overlay = flipEl.closest(
-				'.projects-about-transition, .about-projects-transition, .about-contact-transition, .contact-about-transition, .about-biocv-transition'
+				'.projects-about-transition, .about-projects-transition, .about-contact-transition, .contact-about-transition, .about-biocv-transition, .msk-phone-leaf-chain'
 			);
 			if (overlay) {
 				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				try {
 					overlay.querySelectorAll(
-						'.projects-about-turn__flip, .about-projects-turn__flip, .about-contact-turn__flip, .contact-about-turn__flip, .about-biocv-turn__flip, ' +
-						'.projects-about-under, .about-projects-turn__under, .about-contact-turn__under, .contact-about-turn__under, .about-biocv-under'
+						'.projects-about-turn__flip, .about-projects-turn__flip, .about-contact-turn__flip, .contact-about-turn__flip, .about-biocv-turn__flip, .msk-phone-leaf-chain__flip, ' +
+						'.projects-about-under, .about-projects-turn__under, .about-contact-turn__under, .contact-about-turn__under, .about-biocv-under, .msk-phone-leaf-chain__under'
 					).forEach((el) => {
 						el.style.setProperty('left', '0px', 'important');
 						el.style.setProperty('right', 'auto', 'important');
@@ -2719,6 +2720,247 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 		requestAnimationFrame(step);
 	}
+
+	/**
+	 * Telefon MENU: springer flere led (Projekter↔bio↔CV↔Kontakt) =
+	 * samme papir-bladre, hurtigt efter hinanden, én navigation til sidst.
+	 */
+	(function initPhoneMenuLeafChain() {
+		const ORDER = ['projects', 'bio', 'cv', 'contact'];
+		const FINAL_HREF = {
+			projects: 'projects.html',
+			bio: 'about.html',
+			cv: 'about.html#cv',
+			contact: 'contact.html'
+		};
+		let busy = false;
+
+		function previewSrc(key) {
+			const v = window.mskAssetV || '';
+			if (key === 'projects') return 'projects.html?preview=1&v=' + v;
+			if (key === 'bio') return 'about.html?preview=1&phonePage=bio&v=' + v;
+			if (key === 'cv') return 'about.html?preview=1&phonePage=cv&v=' + v;
+			if (key === 'contact') return 'contact.html?preview=1&v=' + v;
+			return '';
+		}
+
+		function currentKey() {
+			try {
+				const path = (window.location.pathname || '').toLowerCase();
+				if (path.endsWith('/projects.html') || path.endsWith('projects.html')) return 'projects';
+				if (path.endsWith('/contact.html') || path.endsWith('contact.html')) return 'contact';
+				if (path.endsWith('/about.html') || path.endsWith('about.html')) {
+					const hash = (window.location.hash || '').toLowerCase();
+					if (hash === '#cv' || hash === '#udmaerkelser') return 'cv';
+					if (document.documentElement.classList.contains('msk-about-phone-cv')) return 'cv';
+					return 'bio';
+				}
+			} catch (_) {}
+			return null;
+		}
+
+		function targetKeyFromHref(hrefAttr) {
+			const raw = String(hrefAttr || '').trim().toLowerCase();
+			if (!raw) return null;
+			const noQuery = raw.split('?')[0];
+			if (noQuery === 'projects.html' || noQuery.endsWith('/projects.html')) return 'projects';
+			if (noQuery === 'contact.html' || noQuery.endsWith('/contact.html')) return 'contact';
+			if (
+				noQuery === 'about.html#cv' ||
+				noQuery === 'about.html#udmaerkelser' ||
+				noQuery === '#cv' ||
+				noQuery === '#udmaerkelser'
+			) return 'cv';
+			if (
+				noQuery === 'about.html' ||
+				noQuery === './about.html' ||
+				noQuery === 'about.html#' ||
+				noQuery === 'about.html#top' ||
+				(noQuery.startsWith('about.html') && noQuery.indexOf('#cv') === -1 && noQuery.indexOf('#udmaerkelser') === -1)
+			) return 'bio';
+			return null;
+		}
+
+		function hopsBetween(fromKey, toKey) {
+			const a = ORDER.indexOf(fromKey);
+			const b = ORDER.indexOf(toKey);
+			if (a < 0 || b < 0 || a === b) return [];
+			const dir = b > a ? 1 : -1;
+			const hops = [];
+			for (let i = a; i !== b; i += dir) {
+				hops.push({
+					from: ORDER[i],
+					to: ORDER[i + dir],
+					sign: dir > 0 ? -1 : 1
+				});
+			}
+			return hops;
+		}
+
+		function ensureOverlay() {
+			let ov = document.querySelector('.msk-phone-leaf-chain');
+			if (ov) return ov;
+			ov = document.createElement('div');
+			ov.className = 'msk-phone-leaf-chain msk-phone-menu-paper-flip';
+			ov.setAttribute('aria-hidden', 'true');
+			ov.innerHTML =
+				'<div class="msk-phone-leaf-chain__under">' +
+					'<iframe class="msk-phone-leaf-chain__frame msk-phone-leaf-chain__under-frame" title="" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>' +
+				'</div>' +
+				'<div class="msk-phone-leaf-chain__flip">' +
+					'<div class="msk-phone-leaf-chain__flip-face msk-phone-leaf-chain__flip-face--front">' +
+						'<iframe class="msk-phone-leaf-chain__frame msk-phone-leaf-chain__flip-front" title="" loading="eager" referrerpolicy="no-referrer" tabindex="-1"></iframe>' +
+					'</div>' +
+					'<div class="msk-phone-leaf-chain__flip-face msk-phone-leaf-chain__flip-face--back" aria-hidden="true"></div>' +
+				'</div>';
+			document.body.appendChild(ov);
+			return ov;
+		}
+
+		function resetFlip(flipEl) {
+			if (!flipEl) return;
+			try {
+				if (flipEl._mskPaperSettleRaf) cancelAnimationFrame(flipEl._mskPaperSettleRaf);
+				if (flipEl._mskPaperPaintRaf) cancelAnimationFrame(flipEl._mskPaperPaintRaf);
+			} catch (_) {}
+			flipEl._mskPaperSettleRaf = 0;
+			flipEl._mskPaperPaintRaf = 0;
+			flipEl._mskPaperQueued = null;
+			flipEl._mskPaperCornerY = null;
+			flipEl._mskPaperSideBand = false;
+			flipEl._mskPaperTx = null;
+			flipEl._mskPaperTy = null;
+			flipEl._mskPaperAnim = false;
+			flipEl._mskPaperSettling = false;
+			flipEl._mskHoldFx = null;
+			flipEl._mskHoldFy = null;
+			flipEl._mskHoldP = null;
+			flipEl.style.transition = '';
+			flipEl.style.animation = 'none';
+			flipEl.style.transform = 'none';
+			flipEl.style.clipPath = '';
+			const curl = flipEl._mskLiveCurl;
+			if (curl) {
+				try {
+					if (curl.front) {
+						curl.front.style.clipPath = '';
+						curl.front.style.opacity = '';
+					}
+					if (curl.flap) {
+						try { curl.flap.remove(); } catch (_) { curl.flap.style.display = 'none'; }
+					}
+					if (curl.shade) {
+						try { curl.shade.remove(); } catch (_) {}
+					}
+				} catch (_) {}
+				flipEl._mskLiveCurl = null;
+			}
+		}
+
+		function setFrameSrc(fr, src) {
+			return new Promise((resolve) => {
+				if (!fr || !src) {
+					resolve();
+					return;
+				}
+				let done = false;
+				const finish = () => {
+					if (done) return;
+					done = true;
+					try { fr.removeEventListener('load', finish); } catch (_) {}
+					resolve();
+				};
+				try {
+					if ((fr.getAttribute('src') || '') === src) {
+						finish();
+						return;
+					}
+				} catch (_) {}
+				try { fr.addEventListener('load', finish, { once: true }); } catch (_) {}
+				try { fr.setAttribute('src', src); } catch (_) {
+					try { fr.src = src; } catch (_) {}
+				}
+				window.setTimeout(finish, 260);
+			});
+		}
+
+		function cleanupOverlay(ov) {
+			try { document.body.classList.remove('msk-phone-leaf-chain-active'); } catch (_) {}
+			try {
+				if (ov) ov.remove();
+				else document.querySelectorAll('.msk-phone-leaf-chain').forEach((n) => n.remove());
+			} catch (_) {}
+			busy = false;
+			try { window._mskPhoneLeafChainBusy = false; } catch (_) {}
+		}
+
+		function runChain(hops, finalHref) {
+			if (!hops || !hops.length) {
+				try { window.location.href = finalHref; } catch (_) {}
+				return;
+			}
+			busy = true;
+			try { window._mskPhoneLeafChainBusy = true; } catch (_) {}
+			try { closeMobileBurgerMenu(true); } catch (_) {}
+			try { document.body.style.overflow = 'hidden'; } catch (_) {}
+			document.body.classList.add('msk-phone-leaf-chain-active');
+			const ov = ensureOverlay();
+			ov.classList.add('is-ready', 'is-turning');
+			const flipEl = ov.querySelector('.msk-phone-leaf-chain__flip');
+			const frontFr = ov.querySelector('.msk-phone-leaf-chain__flip-front');
+			const underFr = ov.querySelector('.msk-phone-leaf-chain__under-frame');
+			const hopMs = hops.length >= 3 ? 340 : 400;
+
+			const runHop = (idx) => {
+				if (idx >= hops.length) {
+					cleanupOverlay(ov);
+					try { window.location.href = finalHref; } catch (_) {}
+					return;
+				}
+				const hop = hops[idx];
+				resetFlip(flipEl);
+				if (flipEl) flipEl._mskPhoneMenuChainFast = true;
+				Promise.all([
+					setFrameSrc(frontFr, previewSrc(hop.from)),
+					setFrameSrc(underFr, previewSrc(hop.to))
+				]).then(() => {
+					requestAnimationFrame(() => {
+						mskAnimatePhoneMenuPaperFlip(flipEl, hop.sign, hopMs, () => {
+							runHop(idx + 1);
+						});
+					});
+				});
+			};
+			runHop(0);
+		}
+
+		document.addEventListener('click', (e) => {
+			try {
+				if (typeof mskIsPhoneMenuNavOnly !== 'function' || !mskIsPhoneMenuNavOnly()) return;
+				if (busy || window._mskPhoneLeafChainBusy) {
+					try { e.preventDefault(); } catch (_) {}
+					try { e.stopImmediatePropagation(); } catch (_) {}
+					return;
+				}
+				const a = e.target && e.target.closest ? e.target.closest('a') : null;
+				if (!a) return;
+				if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+				const hrefAttr = (a.getAttribute('href') || '').trim();
+				const toKey = targetKeyFromHref(hrefAttr);
+				if (!toKey) return;
+				const fromKey = currentKey();
+				if (!fromKey) return;
+				const hops = hopsBetween(fromKey, toKey);
+				/* Ét led: lad eksisterende single-bladre køre */
+				if (hops.length <= 1) return;
+				try { e.preventDefault(); } catch (_) {}
+				try { e.stopImmediatePropagation(); } catch (_) {}
+				const finalHref = FINAL_HREF[toKey] || hrefAttr;
+				runChain(hops, finalHref);
+			} catch (_) {}
+		}, true);
+	})();
+
 	/** Tablet + telefon: samme fold-flap (portræt = blankt linjeret papir). Telefon må ikke skjule flappen. */
 	function mskIsComputerLikeFoldViewport() {
 		try {
@@ -15858,7 +16100,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 17 okt - klokken 20:01';
+		const stampText = 'update søndag 18 okt - klokken 16:27';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
