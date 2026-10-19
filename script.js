@@ -9371,8 +9371,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		) {
 			return false;
 		}
-		/* Telefon = iPad-lock × portraitScale; ringe lidt større end den nedskruede label-fill */
-		let ringBoost = 1.22;
+		/* Telefon = iPad-lock × portraitScale; ringe lidt større end label-fill (p329: mere fill) */
+		let ringBoost = 1.3;
 		try {
 			const pf = typeof mskGetPhonePortraitProfileFactors === 'function'
 				? mskGetPhonePortraitProfileFactors()
@@ -10008,23 +10008,24 @@ document.addEventListener('DOMContentLoaded', function() {
 					const portraitBandH = capH > 0 ? capH : Math.min(layoutH, ih);
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const phoneGridLock = phonePortraitGrid ? mskGetProjectsIpadPortraitLock()?.grid : null;
-					const safeTop = NAV_H + Math.round((phonePortraitGrid ? 28 : 36) * scale * phoneSafeMarginAdj);
+					/* Telefon: mindre top/bund-margen → mindmap fylder papiret (p329) */
+					const safeTop = NAV_H + Math.round((phonePortraitGrid ? 14 : 36) * scale * phoneSafeMarginAdj);
 					let safeBottom =
 						portraitBandH -
-						Math.round((phonePortraitGrid ? 28 : 40) * scale * phoneSafeMarginAdj) -
+						Math.round((phonePortraitGrid ? 16 : 40) * scale * phoneSafeMarginAdj) -
 						mskSafeAreaInsetBottomPx();
 					if (safeBottom < safeTop + 120) {
-						safeBottom = portraitBandH - Math.round((phonePortraitGrid ? 28 : 40) * scale * phoneSafeMarginAdj);
+						safeBottom = portraitBandH - Math.round((phonePortraitGrid ? 16 : 40) * scale * phoneSafeMarginAdj);
 					}
 					const edgePad = Math.max(
-						18,
-						Math.round((phonePortraitGrid ? 40 : 52) * scale * phoneSafeMarginAdj)
+						14,
+						Math.round((phonePortraitGrid ? 28 : 52) * scale * phoneSafeMarginAdj)
 					);
 					const minX = edgePad;
 					const maxX = layoutW - edgePad;
-					/* Telefon: lidt mere indryk end tablet (0.22/0.78), så ringe ikke klipper kanter */
-					const colLeftMul = phonePortraitGrid ? 0.26 + (1 - phoneColInsetAdj) * 0.03 : 0.22;
-					const colRightMul = phonePortraitGrid ? 0.74 - (1 - phoneColInsetAdj) * 0.03 : 0.78;
+					/* Telefon: bredere kolonner (0.20/0.80) — colInsetAdj > 1 skubber yderligere ud */
+					const colLeftMul = phonePortraitGrid ? 0.2 + (1 - phoneColInsetAdj) * 0.06 : 0.22;
+					const colRightMul = phonePortraitGrid ? 0.8 - (1 - phoneColInsetAdj) * 0.06 : 0.78;
 					const baseLeft = Math.max(
 						minX,
 						Math.min(maxX, layoutW * colLeftMul)
@@ -16183,7 +16184,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 18 okt - klokken 17:33';
+		const stampText = 'update mandag 19 okt - klokken 14:07';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
