@@ -9354,8 +9354,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 				}
-				/* Ekstra bredde uden at løfte højden (tekst gik ud i siderne) */
-				w = Math.round(w * 1.18);
+				/* Ekstra bredde uden at løfte højden (p347) */
+				w = Math.round(w * 1.32);
 			} else if (key === 'ungeModUv') {
 				w = Math.round(w * 1.46);
 				h = Math.round(h * 1.26);
@@ -16242,7 +16242,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 20 okt - klokken 01:05';
+		const stampText = 'update tirsdag 20 okt - klokken 01:07';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
