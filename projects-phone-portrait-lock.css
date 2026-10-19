@@ -247,7 +247,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	justify-content: center !important;
 	gap: 0 !important;
-	max-width: min(calc(310px * var(--phone-portrait-scale, 0.37)), 44vw) !important;
+	max-width: min(calc(360px * var(--phone-portrait-scale, 0.37)), 52vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title--image,
@@ -267,7 +267,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(28px * var(--phone-portrait-scale, 0.37))) scale(0.96) !important;
+	transform: translateY(calc(30px * var(--phone-portrait-scale, 0.37))) scale(1.05) !important;
 	transform-origin: center center !important;
 	filter: none !important;
 	-webkit-filter: none !important;
@@ -282,18 +282,18 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	justify-content: flex-start !important;
 	align-items: center !important;
 	gap: 0 !important;
-	line-height: 0.92 !important;
+	line-height: 0.95 !important;
 	margin-top: 0 !important;
-	/* Fyld ovalen uden at stikke ud (p334) */
-	transform: translateY(calc(-54px * var(--phone-portrait-scale, 0.37))) scale(1.08) !important;
+	/* Større, tydeligere Kravling i den større oval (p339) */
+	transform: translateY(calc(-48px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
 	transform-origin: center center !important;
 	flex-shrink: 0 !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1 {
-	font-size: clamp(11px, 3.2vw, 14px) !important;
-	line-height: 0.92 !important;
+	font-size: clamp(13px, 3.8vw, 16px) !important;
+	line-height: 0.95 !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	order: 1 !important;
@@ -301,30 +301,30 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
-	font-size: clamp(11px, 3.2vw, 14px) !important;
-	line-height: 0.92 !important;
-	margin: calc(-2px * var(--pLabelMul, 1)) 0 0 0 !important;
+	font-size: clamp(13px, 3.8vw, 16px) !important;
+	line-height: 0.95 !important;
+	margin: calc(-1px * var(--pLabelMul, 1)) 0 0 0 !important;
 	padding: 0 !important;
 	order: 2 !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
-	font-size: clamp(14px, 4vw, 18px) !important;
-	line-height: 0.92 !important;
-	margin: calc(-2px * var(--pLabelMul, 1)) 0 0 0 !important;
+	font-size: clamp(16px, 4.6vw, 20px) !important;
+	line-height: 0.95 !important;
+	margin: calc(-1px * var(--pLabelMul, 1)) 0 0 0 !important;
 	padding: 0 !important;
 	order: 3 !important;
 }
 
-/* REPOP — Kravling 2025: tyndere skrift (telefon portræt) */
+/* REPOP — Kravling tydelig (tykkere vægt) */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
-	font-weight: 500 !important;
+	font-weight: 700 !important;
 	-webkit-text-stroke: 0 !important;
 	paint-order: normal !important;
 	text-shadow: none !important;
