@@ -9315,11 +9315,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (phonePortraitRing) {
 			if (key === 'repop') {
 				/*
-				 * Fit oval tæt om synlig titel+Kravling (ikke for stor).
-				 * Mål kun tekst-delene; lille pad så charcoal ikke skærer glyffer (p345).
+				 * Højde er god (p345). Bredde skal omslutte titel+Kravling i siderne (p346).
+				 * Mål tekst; behold h tæt, giv mere padX.
 				 */
-				w = Math.round(w * 1.72);
-				h = Math.round(h * 1.88);
+				const fallW = Math.round(w * 1.72);
+				const fallH = Math.round(h * 1.88);
+				w = fallW;
+				h = fallH;
 				if (node && node.getBoundingClientRect) {
 					try {
 						let minL = Infinity;
@@ -9344,13 +9346,16 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (Number.isFinite(minL) && maxR > minL && maxB > minT) {
 							const contentW = maxR - minL;
 							const contentH = maxB - minT;
-							const padX = Math.max(10, Math.round(contentW * 0.09));
+							/* Mere luft i siderne — højde uændret ift. p345-fit */
+							const padX = Math.max(16, Math.round(contentW * 0.16));
 							const padY = Math.max(12, Math.round(contentH * 0.11));
 							w = Math.round(contentW + padX * 2);
 							h = Math.round(contentH + padY * 2);
 						}
 					} catch (_) {}
 				}
+				/* Ekstra bredde uden at løfte højden (tekst gik ud i siderne) */
+				w = Math.round(w * 1.18);
 			} else if (key === 'ungeModUv') {
 				w = Math.round(w * 1.46);
 				h = Math.round(h * 1.26);
@@ -16237,7 +16242,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 20 okt - klokken 00:57';
+		const stampText = 'update tirsdag 20 okt - klokken 01:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
