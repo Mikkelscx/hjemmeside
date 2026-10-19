@@ -9315,11 +9315,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (phonePortraitRing) {
 			if (key === 'repop') {
 				/*
-				 * Oval skal omslutte den *synlige* titel+Kravling (CSS scale gør
-				 * teksten større end node-boksen). Edge-clamp må ikke krympe den igen (p343).
+				 * Fit oval tæt om synlig titel+Kravling (ikke for stor).
+				 * Mål kun tekst-delene; lille pad så charcoal ikke skærer glyffer (p345).
 				 */
-				w = Math.round(w * 2.45);
-				h = Math.round(h * 2.65);
+				w = Math.round(w * 1.72);
+				h = Math.round(h * 1.88);
 				if (node && node.getBoundingClientRect) {
 					try {
 						let minL = Infinity;
@@ -9327,7 +9327,6 @@ document.addEventListener('DOMContentLoaded', function() {
 						let maxR = -Infinity;
 						let maxB = -Infinity;
 						const parts = [
-							node,
 							node.querySelector('.project-node__title--image'),
 							node.querySelector('.project-node__title-img--repop'),
 							node.querySelector('.kravling-nomineret-badge--inline'),
@@ -9345,10 +9344,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (Number.isFinite(minL) && maxR > minL && maxB > minT) {
 							const contentW = maxR - minL;
 							const contentH = maxB - minT;
-							const padX = Math.max(18, Math.round(contentW * 0.16));
-							const padY = Math.max(20, Math.round(contentH * 0.18));
-							w = Math.max(w, Math.round(contentW + padX * 2));
-							h = Math.max(h, Math.round(contentH + padY * 2));
+							const padX = Math.max(10, Math.round(contentW * 0.09));
+							const padY = Math.max(12, Math.round(contentH * 0.11));
+							w = Math.round(contentW + padX * 2);
+							h = Math.round(contentH + padY * 2);
 						}
 					} catch (_) {}
 				}
@@ -16238,7 +16237,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 20 okt - klokken 00:54';
+		const stampText = 'update tirsdag 20 okt - klokken 00:57';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
