@@ -9314,9 +9314,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		 */
 		if (phonePortraitRing) {
 			if (key === 'repop') {
-				/* Oval lidt større end p340 — mere luft omkring titel + Kravling (p341) */
-				w = Math.round(w * 1.98);
-				h = Math.round(h * 2.16);
+				/* Oval lidt større end p341 — mere luft omkring titel + Kravling (p342) */
+				w = Math.round(w * 2.12);
+				h = Math.round(h * 2.32);
 			} else if (key === 'ungeModUv') {
 				w = Math.round(w * 1.46);
 				h = Math.round(h * 1.26);
@@ -16206,7 +16206,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 20 okt - klokken 00:45';
+		const stampText = 'update tirsdag 20 okt - klokken 00:47';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
