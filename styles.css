@@ -10651,8 +10651,6 @@ html.msk-projects-phone-portrait {
     }
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .project-node__title-img--twister,
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .project-node__title-img--twister,
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .project-node__title-img--kobajer,
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .project-node__title-img--kobajer,
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"] .project-node__title-img--brainfarts,
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts,
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="byens-landhandel"] .project-node__title-img--byens,
@@ -10660,6 +10658,7 @@ html.msk-projects-phone-portrait {
         width: 100% !important;
         max-width: 100% !important;
     }
+    /* Købajer-titel styres i projects-phone-portrait-lock.css (overskrift > Kravling) */
 
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node,
     body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node {
