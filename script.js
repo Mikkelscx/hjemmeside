@@ -9309,32 +9309,35 @@ document.addEventListener('DOMContentLoaded', function() {
 			!mskIsProjectsTabletPortraitViewport() &&
 			!document.documentElement.classList.contains('msk-projects-ipad-portrait');
 		let rotate = spec.rotate;
-		/* Telefon: Unge bredere; Kø-Bajer større oval; Brainfarts/Byens større */
+		/* Telefon: ringe matcher labels (Repop/Unge/Købajer/Byens — p332) */
 		if (phonePortraitRing) {
-			if (key === 'ungeModUv') {
-				w = Math.round(w * 1.48);
-				h = Math.round(h * 1.08);
+			if (key === 'repop') {
+				w = Math.round(w * 1.14);
+				h = Math.round(h * 1.12);
+			} else if (key === 'ungeModUv') {
+				w = Math.round(w * 1.42);
+				h = Math.round(h * 1.2);
 			} else if (key === 'kobajer') {
-				w = Math.round(w * 1.38);
-				h = Math.round(h * 1.34);
-			} else if (key === 'brainfarts') {
 				w = Math.round(w * 1.32);
-				h = Math.round(h * 1.28);
+				h = Math.round(h * 1.36);
+			} else if (key === 'brainfarts') {
+				w = Math.round(w * 1.28);
+				h = Math.round(h * 1.24);
 			} else if (key === 'byens') {
-				w = Math.round(w * 1.3);
-				h = Math.round(h * 1.22);
+				w = Math.round(w * 1.34);
+				h = Math.round(h * 1.28);
 			}
 		}
-		/* Blød kant-clamp (clip håndterer soft edge) */
+		/* Blød kant-clamp — undgå at krympe ring under label (ellers tekst uden for oval) */
 		if (phonePortraitRing && node && node.getBoundingClientRect) {
 			try {
 				const iw = Math.max(1, window.innerWidth || 390);
-				const inset = Math.max(4, Math.round(iw * 0.01));
+				const inset = Math.max(2, Math.round(iw * 0.006));
 				const nr = node.getBoundingClientRect();
 				const cx = nr.left + nr.width * 0.5 + (dx || 0);
 				const allowW = Math.max(48, Math.min(cx - inset, iw - inset - cx) * 2);
-				if (w > allowW * 1.16 && allowW > 40) {
-					const s = (allowW * 1.1) / w;
+				if (w > allowW * 1.28 && allowW > 40) {
+					const s = (allowW * 1.2) / w;
 					w = Math.round(w * s);
 					h = Math.round(h * s);
 					dx = Math.round(dx * s);
@@ -16195,7 +16198,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 19 okt - klokken 14:21';
+		const stampText = 'update mandag 19 okt - klokken 14:35';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
