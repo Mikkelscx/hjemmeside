@@ -9371,8 +9371,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		) {
 			return false;
 		}
-		/* Telefon = iPad-lock × portraitScale; ringe lidt større end label-fill (p329: mere fill) */
-		let ringBoost = 1.3;
+		/* Telefon = iPad-lock × portraitScale; ringe lidt større end label-fill */
+		let ringBoost = 1.24;
 		try {
 			const pf = typeof mskGetPhonePortraitProfileFactors === 'function'
 				? mskGetPhonePortraitProfileFactors()
@@ -10008,24 +10008,33 @@ document.addEventListener('DOMContentLoaded', function() {
 					const portraitBandH = capH > 0 ? capH : Math.min(layoutH, ih);
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const phoneGridLock = phonePortraitGrid ? mskGetProjectsIpadPortraitLock()?.grid : null;
-					/* Telefon: mindre top/bund-margen → mindmap fylder papiret (p329) */
-					const safeTop = NAV_H + Math.round((phonePortraitGrid ? 14 : 36) * scale * phoneSafeMarginAdj);
+					/*
+					 * Telefon: safe-pad i rigtige px (ikke kun ×tiny portraitScale) —
+					 * ellers klippes ydre ringe når boblerne bliver større (p330).
+					 */
+					const phoneSafePadTop = phonePortraitGrid
+						? Math.max(44, Math.round(56 * phoneSafeMarginAdj))
+						: Math.round(36 * scale * phoneSafeMarginAdj);
+					const phoneSafePadBottom = phonePortraitGrid
+						? Math.max(48, Math.round(60 * phoneSafeMarginAdj))
+						: Math.round(40 * scale * phoneSafeMarginAdj);
+					const safeTop = NAV_H + (phonePortraitGrid ? phoneSafePadTop : Math.round(36 * scale * phoneSafeMarginAdj));
 					let safeBottom =
 						portraitBandH -
-						Math.round((phonePortraitGrid ? 16 : 40) * scale * phoneSafeMarginAdj) -
+						(phonePortraitGrid ? phoneSafePadBottom : Math.round(40 * scale * phoneSafeMarginAdj)) -
 						mskSafeAreaInsetBottomPx();
 					if (safeBottom < safeTop + 120) {
-						safeBottom = portraitBandH - Math.round((phonePortraitGrid ? 16 : 40) * scale * phoneSafeMarginAdj);
+						safeBottom = portraitBandH - (phonePortraitGrid ? phoneSafePadBottom : Math.round(40 * scale * phoneSafeMarginAdj));
 					}
 					const edgePad = Math.max(
-						14,
-						Math.round((phonePortraitGrid ? 28 : 52) * scale * phoneSafeMarginAdj)
+						18,
+						Math.round((phonePortraitGrid ? 36 : 52) * scale * phoneSafeMarginAdj)
 					);
 					const minX = edgePad;
 					const maxX = layoutW - edgePad;
-					/* Telefon: bredere kolonner (0.20/0.80) — colInsetAdj > 1 skubber yderligere ud */
-					const colLeftMul = phonePortraitGrid ? 0.2 + (1 - phoneColInsetAdj) * 0.06 : 0.22;
-					const colRightMul = phonePortraitGrid ? 0.8 - (1 - phoneColInsetAdj) * 0.06 : 0.78;
+					/* Telefon: lidt indryk vs tablet, så ringe ikke klipper sider */
+					const colLeftMul = phonePortraitGrid ? 0.24 + (1 - phoneColInsetAdj) * 0.04 : 0.22;
+					const colRightMul = phonePortraitGrid ? 0.76 - (1 - phoneColInsetAdj) * 0.04 : 0.78;
 					const baseLeft = Math.max(
 						minX,
 						Math.min(maxX, layoutW * colLeftMul)
@@ -10083,11 +10092,13 @@ document.addEventListener('DOMContentLoaded', function() {
 						const y1 = safeTop + pad;
 						const y5 = safeBottom - pad;
 						const full = y5 - y1;
-						const rowSpanMul = phonePortraitGrid
+						let rowSpanMul = phonePortraitGrid
 							? (phoneGridLock?.rowSpanMul ?? 0.88) * phoneRowSpanAdj
 							: mskUseProjectsIpadPortraitLock()
 								? (mskGetProjectsIpadPortraitLock().grid.rowSpanMul || 0.88)
 								: 0.88;
+						/* Telefon: aldrig mere end ~94% af safe-båndet (ydre ringe har radius uden for center) */
+						if (phonePortraitGrid) rowSpanMul = Math.min(0.94, rowSpanMul);
 						const span = full * rowSpanMul;
 						const mid = (y1 + y5) / 2;
 						const y1c = mid - span / 2;
@@ -16184,7 +16195,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 19 okt - klokken 14:12';
+		const stampText = 'update mandag 19 okt - klokken 14:21';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

@@ -704,8 +704,8 @@ html.msk-projects-phone-portrait .projects-about-transition .projects-about-turn
 
 /* Kontinuerlig skalering (reference iPhone 12 Pro 390x844) — JS saetter praecise vars ved resize */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain {
-	width: var(--projectsBrainSize, clamp(68px, calc(145px * var(--phone-fit-ratio, var(--phone-w-ratio, 1))), 196px)) !important;
-	height: var(--projectsBrainSize, clamp(68px, calc(145px * var(--phone-fit-ratio, var(--phone-w-ratio, 1))), 196px)) !important;
+	width: var(--projectsBrainSize, clamp(68px, calc(128px * var(--phone-fit-ratio, var(--phone-w-ratio, 1))), 168px)) !important;
+	height: var(--projectsBrainSize, clamp(68px, calc(128px * var(--phone-fit-ratio, var(--phone-w-ratio, 1))), 168px)) !important;
 }
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
 	max-width: min(calc(300px * var(--phone-w-ratio, 1)), calc(var(--phone-node-max-vw, 42) * 1vw)) !important;

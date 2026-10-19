@@ -22,8 +22,8 @@
 	const MSK_PHONE_REF_LABEL_MUL = MSK_PHONE_REF_BASE_SCALE;
 	const MSK_PHONE_REF_BRAIN_PX = (318 * MSK_PHONE_PORTRAIT_REF.w) / 1024;
 	const MSK_PHONE_REF_ASPECT = MSK_PHONE_PORTRAIT_REF.w / MSK_PHONE_PORTRAIT_REF.h;
-	/* Fyld mere af den høje telefon-skærm (IMG / Pro Max: meget tomt papir over/under). */
-	const MSK_PHONE_FILL_BOOST = 1.2;
+	/* Lidt større end ren tablet→phone scale — men ikke så meget at top/bund klippes (p331). */
+	const MSK_PHONE_FILL_BOOST = 1.08;
 
 	function mskClamp(n, lo, hi) {
 		return Math.max(lo, Math.min(hi, n));
@@ -83,7 +83,7 @@
 		let portraitScale = mskClamp(
 			MSK_PHONE_REF_BASE_SCALE * fitRatio * MSK_PHONE_FILL_BOOST,
 			MSK_PHONE_REF_BASE_SCALE * 0.48,
-			MSK_PHONE_REF_BASE_SCALE * 1.85
+			MSK_PHONE_REF_BASE_SCALE * 1.7
 		);
 
 		/* Reference 390×844 → alle adj ≈ 1.0; mindre/større telefoner skalerer blødt omkring det */
@@ -92,19 +92,21 @@
 		 * CSS bruger tablet-formler: scale(FACTOR * pLabelMul) → labels tracker ringene.
 		 */
 		let labelMul = portraitScale;
-		let brainPx = mskClamp(318 * portraitScale, 64, 196);
+		let brainPx = mskClamp(318 * portraitScale, 64, 168);
 
-		/* Lodret fill: højere row-span på høje telefoner, så boblerne ikke klumper midt på papiret */
-		const rowSpanAdj = mskClamp(1.12 + (hRatio - 1) * 0.5, 0.82, 1.28);
-		const ringAdj = mskClamp(1.04 + (wRatio - 1) * 0.14, 0.9, 1.16);
-		const rowVertMul = mskClamp(1.08 + (hRatio - 1) * 0.42, 0.78, 1.24);
-		const safeMarginAdj = mskClamp(0.82 + (hRatio - 1) * 0.12, 0.62, 0.98);
+		/*
+		 * Lodret span: hold 0.88×adj ≤ ~0.95 af safe-båndet (ringe stikker uden for node-center).
+		 * p330 med adj≈1.17 klippede REPOP/BRAINFARTS — max ~1.06.
+		 */
+		const rowSpanAdj = mskClamp(1.02 + (hRatio - 1) * 0.22, 0.85, 1.08);
+		const ringAdj = mskClamp(1.02 + (wRatio - 1) * 0.12, 0.9, 1.12);
+		const rowVertMul = mskClamp(1.02 + (hRatio - 1) * 0.28, 0.78, 1.12);
+		const safeMarginAdj = mskClamp(0.95 + (hRatio - 1) * 0.15, 0.78, 1.08);
 		const lineAdj = mskClamp(1 + (fitRatio - 1) * 0.22, 0.78, 1.16);
-		/* Højere → smallere inset i script.js (bredere kolonner) */
-		const colInsetAdj = mskClamp(1.35 + (wRatio - 1) * 0.2, 1.05, 1.55);
+		const colInsetAdj = mskClamp(1.1 + (wRatio - 1) * 0.12, 0.95, 1.25);
 		/* Node-bredde under ringene — tablet-fill-scale (1.9+) må ikke sprænge ovalen */
-		const nodeMaxVw = mskClamp(39 + (wRatio - 1) * 12, 32, 48);
-		const nudgeMul = mskClamp(1.06 + (wRatio - 1) * 0.22, 0.8, 1.2);
+		const nodeMaxVw = mskClamp(36 + (wRatio - 1) * 10, 30, 44);
+		const nudgeMul = mskClamp(1.02 + (wRatio - 1) * 0.18, 0.78, 1.14);
 
 		/* Meget smalle/hoeje eller brede/lave skærme: ekstra lodret komprimering */
 		const aspectCompress =
@@ -114,8 +116,8 @@
 					? mskClamp(1.04 - (aspectDelta - 1.08) * 0.2, 0.92, 1.04)
 					: 1;
 
-		const rowSpanFinal = mskClamp(rowSpanAdj * aspectCompress, 0.5, 1.26);
-		const rowVertFinal = mskClamp(rowVertMul * aspectCompress, 0.48, 1.22);
+		const rowSpanFinal = mskClamp(rowSpanAdj * aspectCompress, 0.5, 1.08);
+		const rowVertFinal = mskClamp(rowVertMul * aspectCompress, 0.48, 1.1);
 
 		/*
 		 * Ingen global composition-krymp: tablet→phone scale (portraitScale/labelMul) skal fylde
