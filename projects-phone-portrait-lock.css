@@ -247,7 +247,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	justify-content: center !important;
 	gap: 0 !important;
-	max-width: min(calc(340px * var(--phone-portrait-scale, 0.37)), 48vw) !important;
+	max-width: min(calc(310px * var(--phone-portrait-scale, 0.37)), 44vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title--image,
@@ -267,7 +267,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(28px * var(--phone-portrait-scale, 0.37))) scale(0.92) !important;
+	transform: translateY(calc(28px * var(--phone-portrait-scale, 0.37))) scale(0.96) !important;
 	transform-origin: center center !important;
 	filter: none !important;
 	-webkit-filter: none !important;
@@ -284,8 +284,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	gap: 0 !important;
 	line-height: 0.92 !important;
 	margin-top: 0 !important;
-	/* Tekst midt i den større oval (p333) */
-	transform: translateY(calc(-58px * var(--phone-portrait-scale, 0.37))) scale(1.05) !important;
+	/* Fyld ovalen uden at stikke ud (p334) */
+	transform: translateY(calc(-54px * var(--phone-portrait-scale, 0.37))) scale(1.08) !important;
 	transform-origin: center center !important;
 	flex-shrink: 0 !important;
 }
@@ -368,9 +368,9 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
-	width: 88% !important;
-	max-width: 88% !important;
-	transform: translateY(calc(4px * var(--phone-portrait-scale, 0.37))) scale(0.88) !important;
+	width: 90% !important;
+	max-width: 90% !important;
+	transform: translateY(calc(6px * var(--phone-portrait-scale, 0.37))) scale(0.9) !important;
 	transform-origin: center center !important;
 }
 
@@ -458,7 +458,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	justify-content: center !important;
 	gap: 0 !important;
-	max-width: min(calc(300px * var(--phone-portrait-scale, 0.37)), 42vw) !important;
+	max-width: min(calc(270px * var(--phone-portrait-scale, 0.37)), 36vw) !important;
 	overflow: visible !important;
 	padding: 2px 6px 0 !important;
 }
@@ -478,10 +478,9 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .project-node__title-img--kobajer,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
-	width: 68% !important;
-	max-width: 68% !important;
-	/* Titel + nominering midt i den større oval */
-	transform: translateY(calc(-18px * var(--phone-portrait-scale, 0.37))) scale(0.94) !important;
+	width: 74% !important;
+	max-width: 74% !important;
+	transform: translateY(calc(-22px * var(--phone-portrait-scale, 0.37))) scale(1.0) !important;
 	transform-origin: center center !important;
 }
 
@@ -496,12 +495,12 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	gap: 0 !important;
 	line-height: 1 !important;
-	margin-top: calc(-40px * var(--phone-portrait-scale, 0.37)) !important;
+	margin-top: calc(-32px * var(--phone-portrait-scale, 0.37)) !important;
 	margin-bottom: 0 !important;
-	max-width: 78% !important;
+	max-width: 76% !important;
 	padding: 0 4px 0 !important;
 	background: none !important;
-	transform: translateY(calc(-36px * var(--phone-portrait-scale, 0.37))) scale(0.92) !important;
+	transform: translateY(calc(-28px * var(--phone-portrait-scale, 0.37))) scale(1.02) !important;
 	transform-origin: center top !important;
 }
 
@@ -623,7 +622,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="byens-landhandel"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] {
-	max-width: min(calc(360px * var(--phone-portrait-scale, 0.37)), 46vw) !important;
+	max-width: min(calc(320px * var(--phone-portrait-scale, 0.37)), 40vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"] .project-node__title,
@@ -646,9 +645,9 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="byens-landhandel"] .project-node__title-img--byens,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] .project-node__title-img--byens {
-	width: 86% !important;
-	max-width: 86% !important;
-	transform: translateY(calc(4px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
+	width: 90% !important;
+	max-width: 90% !important;
+	transform: translateY(calc(6px * var(--phone-portrait-scale, 0.37))) scale(1.32) !important;
 	transform-origin: center center !important;
 }
 
