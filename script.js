@@ -9309,41 +9309,33 @@ document.addEventListener('DOMContentLoaded', function() {
 			!mskIsProjectsTabletPortraitViewport() &&
 			!document.documentElement.classList.contains('msk-projects-ipad-portrait');
 		let rotate = spec.rotate;
-		/* Telefon: ringe matcher labels (Repop/Unge/Købajer/Byens — p332) */
+		/*
+		 * Telefon: cirklerne SKAL være større end teksten (p333).
+		 * Ingen edge-clamp her — den krympede ringene under labels.
+		 */
 		if (phonePortraitRing) {
 			if (key === 'repop') {
-				w = Math.round(w * 1.14);
-				h = Math.round(h * 1.12);
+				w = Math.round(w * 1.48);
+				h = Math.round(h * 1.55);
 			} else if (key === 'ungeModUv') {
-				w = Math.round(w * 1.42);
-				h = Math.round(h * 1.2);
+				w = Math.round(w * 1.58);
+				h = Math.round(h * 1.42);
 			} else if (key === 'kobajer') {
-				w = Math.round(w * 1.32);
-				h = Math.round(h * 1.36);
+				w = Math.round(w * 1.52);
+				h = Math.round(h * 1.68);
 			} else if (key === 'brainfarts') {
-				w = Math.round(w * 1.28);
-				h = Math.round(h * 1.24);
+				w = Math.round(w * 1.32);
+				h = Math.round(h * 1.3);
 			} else if (key === 'byens') {
-				w = Math.round(w * 1.34);
-				h = Math.round(h * 1.28);
+				w = Math.round(w * 1.5);
+				h = Math.round(h * 1.48);
+			} else if (key === 'naturli') {
+				w = Math.round(w * 1.18);
+				h = Math.round(h * 1.18);
+			} else if (key === 'durex' || key === 'twister') {
+				w = Math.round(w * 1.12);
+				h = Math.round(h * 1.14);
 			}
-		}
-		/* Blød kant-clamp — undgå at krympe ring under label (ellers tekst uden for oval) */
-		if (phonePortraitRing && node && node.getBoundingClientRect) {
-			try {
-				const iw = Math.max(1, window.innerWidth || 390);
-				const inset = Math.max(2, Math.round(iw * 0.006));
-				const nr = node.getBoundingClientRect();
-				const cx = nr.left + nr.width * 0.5 + (dx || 0);
-				const allowW = Math.max(48, Math.min(cx - inset, iw - inset - cx) * 2);
-				if (w > allowW * 1.28 && allowW > 40) {
-					const s = (allowW * 1.2) / w;
-					w = Math.round(w * s);
-					h = Math.round(h * s);
-					dx = Math.round(dx * s);
-					dy = Math.round(dy * s);
-				}
-			} catch (_) {}
 		}
 		mskAppendPortraitHtmlRing(container, node, {
 			src: spec.src,
@@ -9374,8 +9366,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		) {
 			return false;
 		}
-		/* Telefon = iPad-lock × portraitScale; ringe lidt større end label-fill */
-		let ringBoost = 1.24;
+		/* Telefon = iPad-lock × portraitScale; ringe større end labels (p333) */
+		let ringBoost = 1.4;
 		try {
 			const pf = typeof mskGetPhonePortraitProfileFactors === 'function'
 				? mskGetPhonePortraitProfileFactors()
@@ -16198,7 +16190,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 19 okt - klokken 14:35';
+		const stampText = 'update mandag 19 okt - klokken 14:39';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

@@ -105,7 +105,7 @@
 		const lineAdj = mskClamp(1 + (fitRatio - 1) * 0.22, 0.78, 1.16);
 		const colInsetAdj = mskClamp(1.1 + (wRatio - 1) * 0.12, 0.95, 1.25);
 		/* Node-bredde under ringene — tablet-fill-scale (1.9+) må ikke sprænge ovalen */
-		const nodeMaxVw = mskClamp(36 + (wRatio - 1) * 10, 30, 44);
+		const nodeMaxVw = mskClamp(40 + (wRatio - 1) * 12, 34, 50);
 		const nudgeMul = mskClamp(1.02 + (wRatio - 1) * 0.18, 0.78, 1.14);
 
 		/* Meget smalle/hoeje eller brede/lave skærme: ekstra lodret komprimering */
