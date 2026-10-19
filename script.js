@@ -9314,9 +9314,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		 */
 		if (phonePortraitRing) {
 			if (key === 'repop') {
-				/* Større oval + plads til tydelig Kravling (p339) */
-				w = Math.round(w * 1.48);
-				h = Math.round(h * 1.55);
+				/* Oval skal omslutte titel + Kravling (p340) — tekst må ikke gå udenfor */
+				w = Math.round(w * 1.82);
+				h = Math.round(h * 1.98);
 			} else if (key === 'ungeModUv') {
 				w = Math.round(w * 1.46);
 				h = Math.round(h * 1.26);
@@ -9341,8 +9341,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const nr = node.getBoundingClientRect();
 				const cx = nr.left + nr.width * 0.5 + (dx || 0);
 				const allowW = Math.max(48, Math.min(cx - inset, iw - inset - cx) * 2);
-				if (w > allowW * 1.35 && allowW > 40) {
-					const s = (allowW * 1.22) / w;
+				/* Repop: mere slack — ovalen skal følge den tydelige Kravling-tekst */
+				const allowMul = key === 'repop' ? 1.55 : 1.35;
+				const softMul = key === 'repop' ? 1.38 : 1.22;
+				if (w > allowW * allowMul && allowW > 40) {
+					const s = (allowW * softMul) / w;
 					w = Math.round(w * s);
 					h = Math.round(h * s);
 					dx = Math.round(dx * s);
@@ -10150,8 +10153,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						styleNode(node, i);
 						if (phonePortraitGrid && p.key === 'repop') {
 							const repopMaxW = Math.min(
-								Math.floor(maxW * 1.32),
-								Math.max(72, Math.floor(layoutW * 0.54))
+								Math.floor(maxW * 1.42),
+								Math.max(72, Math.floor(layoutW * 0.58))
 							);
 							node.style.setProperty('max-width', `${repopMaxW}px`, 'important');
 						}
@@ -10176,8 +10179,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							x += Math.round(28 * scale * nudgeMul);
 							y -= Math.round(12 * scale);
 						}
-						/* Repop: mod højre så boblen + Kravling ikke klipper i venstre kant */
-						if (p.key === 'repop') x += Math.round(28 * scale * nudgeMul);
+						/* Repop: mod højre så den større oval ikke klipper i venstre kant */
+						if (p.key === 'repop') x += Math.round(36 * scale * nudgeMul);
 						/* Byens: træk mod venstre så cirkel + tekst ikke klipper i højre kant */
 						if (p.key === 'byens') x -= Math.round(38 * scale * nudgeMul);
 						/* Alt under hjernen (række 4–5): endnu tættere på hjernen (kun portræt-grid) */
@@ -16203,7 +16206,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 20 okt - klokken 00:37';
+		const stampText = 'update tirsdag 20 okt - klokken 00:43';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

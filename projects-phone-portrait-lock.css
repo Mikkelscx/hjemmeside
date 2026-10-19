@@ -247,7 +247,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	justify-content: center !important;
 	gap: 0 !important;
-	max-width: min(calc(360px * var(--phone-portrait-scale, 0.37)), 52vw) !important;
+	max-width: min(calc(360px * var(--phone-portrait-scale, 0.37)), 58vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title--image,
