@@ -625,7 +625,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="byens-landhandel"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] {
-	max-width: min(calc(320px * var(--phone-portrait-scale, 0.37)), 40vw) !important;
+	max-width: min(calc(320px * var(--phone-portrait-scale, 0.37)), 48vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"] .project-node__title,
@@ -650,7 +650,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] .project-node__title-img--byens {
 	width: 90% !important;
 	max-width: 90% !important;
-	transform: translateY(calc(6px * var(--phone-portrait-scale, 0.37))) scale(1.32) !important;
+	/* Større titel i den større oval (p356) */
+	transform: translateY(calc(6px * var(--phone-portrait-scale, 0.37))) scale(1.48) !important;
 	transform-origin: center center !important;
 }
 
