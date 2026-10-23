@@ -385,9 +385,10 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	justify-content: center !important;
 	gap: 0 !important;
 	overflow: visible !important;
-	width: min(calc(260px * var(--phone-portrait-scale, 0.37)), 34vw) !important;
-	min-width: min(calc(260px * var(--phone-portrait-scale, 0.37)), 34vw) !important;
-	max-width: min(calc(260px * var(--phone-portrait-scale, 0.37)), 34vw) !important;
+	/* Bredere node så større D&AD VINDER passer (p364) */
+	width: min(calc(320px * var(--phone-portrait-scale, 0.37)), 46vw) !important;
+	min-width: min(calc(320px * var(--phone-portrait-scale, 0.37)), 46vw) !important;
+	max-width: min(calc(320px * var(--phone-portrait-scale, 0.37)), 46vw) !important;
 	padding: 2px 8px !important;
 }
 
@@ -423,11 +424,11 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	flex-wrap: nowrap !important;
 	align-items: center !important;
 	justify-content: center !important;
-	/* D&AD lidt højere op i Twister-ovalen */
+	/* D&AD lidt højere op i Twister-ovalen + større badge (p364) */
 	margin-top: calc(-22px * var(--phone-portrait-scale, 0.37)) !important;
 	min-width: 0 !important;
 	min-height: 0 !important;
-	transform: translateY(calc(-14px * var(--phone-portrait-scale, 0.37))) scale(1) !important;
+	transform: translateY(calc(-14px * var(--phone-portrait-scale, 0.37))) scale(1.18) !important;
 	transform-origin: center center !important;
 	gap: 0 !important;
 }
@@ -436,7 +437,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-	width: calc(66px * var(--phone-portrait-scale, 0.37)) !important;
+	/* Større D&AD-logo (p364) — undgå dobbelt-krymp via tiny portrait-scale */
+	width: min(16vw, 52px) !important;
 	height: auto !important;
 }
 
@@ -444,10 +446,11 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
-	width: calc(124px * var(--phone-portrait-scale, 0.37)) !important;
+	/* Større “D&AD VINDER” tekst (p364) */
+	width: min(34vw, 108px) !important;
 	height: auto !important;
-	margin-left: calc(-22px * var(--pLabelMul, 1)) !important;
-	transform: translateY(calc(8px * var(--pLabelMul, 1))) !important;
+	margin-left: calc(-18px * var(--pLabelMul, 1)) !important;
+	transform: translateY(calc(6px * var(--pLabelMul, 1))) !important;
 }
 
 /* KØ-BAJER — fyld ovalen, men hold titel+Kravling INDENFOR ringen */
