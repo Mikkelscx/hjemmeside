@@ -9372,9 +9372,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				w = Math.round(w * 1.26);
 				h = Math.round(h * 1.24);
 			} else if (key === 'byens') {
-				/* Oval lidt mindre end p356; tekst skaleres i CSS (p357) */
-				w = Math.round(w * 1.46);
-				h = Math.round(h * 1.40);
+				/* Oval mindre igen — tekst forbliver stor i CSS (p358) */
+				w = Math.round(w * 1.30);
+				h = Math.round(h * 1.26);
 			}
 		}
 		/* Kun krymp hvis ring ville gå langt uden for skærmen — ikke Repop/Byens */
@@ -16247,7 +16247,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 23 okt - klokken 14:40';
+		const stampText = 'update fredag 23 okt - klokken 14:42';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
