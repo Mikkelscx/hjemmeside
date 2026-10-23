@@ -12562,15 +12562,15 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: forkort øverste del af stregen under Twister (større oval forneden) */
+					/* Telefon: kun lidt luft under Twister-ovalen — p364 blev for kort (p366) */
 					try {
 						if (
 							phonePortraitProjectsChain &&
 							!tabletPortraitProjectsChain
 						) {
-							twBrfGapA += svgScale(22);
-							a.y += svgScale(10);
-							twBrfLenMul *= 0.92;
+							twBrfGapA += svgScale(8);
+							a.y += svgScale(3);
+							twBrfLenMul *= 0.98;
 						}
 					} catch (_) {}
 					lineImg(
@@ -16320,7 +16320,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 23 okt - klokken 16:10';
+		const stampText = 'update fredag 23 okt - klokken 16:12';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
