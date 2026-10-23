@@ -9377,8 +9377,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				 * p359 blev for høj/smal ift. “Byens Landhandel”.
 				 */
 				const iw = Math.max(1, window.innerWidth || 390);
-				/* Lidt bredere end p360 (p361) */
-				const maxRingW = Math.round(iw * 0.62);
+				/* Bredere endnu (p362) */
+				const maxRingW = Math.round(iw * 0.72);
 				if (node && node.getBoundingClientRect) {
 					try {
 						let minL = Infinity;
@@ -9403,23 +9403,23 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (Number.isFinite(minL) && maxR > minL && maxB > minT) {
 							const contentW = maxR - minL;
 							const contentH = Math.max(1, maxB - minT);
-							const padX = Math.max(22, Math.round(contentW * 0.24));
+							const padX = Math.max(28, Math.round(contentW * 0.32));
 							const padY = Math.max(8, Math.round(contentH * 0.12));
 							w = Math.round(contentW + padX * 2);
 							/* Flad oval — højde følger tekst, ikke en høj cirkel */
-							h = Math.round(Math.max(contentH + padY * 2, w * 0.36));
-							h = Math.min(h, Math.round(w * 0.44));
+							h = Math.round(Math.max(contentH + padY * 2, w * 0.34));
+							h = Math.min(h, Math.round(w * 0.42));
 						} else {
-							w = Math.round(Math.min(maxRingW, w * 0.78));
-							h = Math.round(w * 0.40);
+							w = Math.round(Math.min(maxRingW, w * 0.88));
+							h = Math.round(w * 0.38);
 						}
 					} catch (_) {
-						w = Math.round(Math.min(maxRingW, w * 0.78));
-						h = Math.round(w * 0.40);
+						w = Math.round(Math.min(maxRingW, w * 0.88));
+						h = Math.round(w * 0.38);
 					}
 				} else {
-					w = Math.round(Math.min(maxRingW, w * 0.78));
-					h = Math.round(w * 0.40);
+					w = Math.round(Math.min(maxRingW, w * 0.88));
+					h = Math.round(w * 0.38);
 				}
 				if (w > maxRingW) {
 					const s = maxRingW / w;
@@ -16298,7 +16298,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 23 okt - klokken 14:53';
+		const stampText = 'update fredag 23 okt - klokken 14:56';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
