@@ -625,7 +625,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="byens-landhandel"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="byens-landhandel"] {
-	max-width: min(calc(320px * var(--phone-portrait-scale, 0.37)), 42vw) !important;
+	max-width: min(calc(320px * var(--phone-portrait-scale, 0.37)), 44vw) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"] .project-node__title,
