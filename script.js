@@ -9373,10 +9373,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				h = Math.round(h * 1.24);
 			} else if (key === 'byens') {
 				/*
-				 * iPad-lock byens er ekstremt bred (~2.55×) → på telefon lander ovalen
-				 * ~650px+ (bredere end skærmen), så multipliers næsten ikke ses.
-				 * Fit ovalen til den synlige titel i stedet (p359).
+				 * Vandret oval omkring titel: bredere, ikke så høj (p360).
+				 * p359 blev for høj/smal ift. “Byens Landhandel”.
 				 */
+				const iw = Math.max(1, window.innerWidth || 390);
+				const maxRingW = Math.round(iw * 0.56);
 				if (node && node.getBoundingClientRect) {
 					try {
 						let minL = Infinity;
@@ -9400,28 +9401,34 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						if (Number.isFinite(minL) && maxR > minL && maxB > minT) {
 							const contentW = maxR - minL;
-							const contentH = maxB - minT;
-							const padX = Math.max(14, Math.round(contentW * 0.14));
-							const padY = Math.max(12, Math.round(contentH * 0.22));
+							const contentH = Math.max(1, maxB - minT);
+							const padX = Math.max(18, Math.round(contentW * 0.18));
+							const padY = Math.max(8, Math.round(contentH * 0.12));
 							w = Math.round(contentW + padX * 2);
-							h = Math.round(contentH + padY * 2);
+							/* Flad oval — højde følger tekst, ikke en høj cirkel */
+							h = Math.round(Math.max(contentH + padY * 2, w * 0.38));
+							h = Math.min(h, Math.round(w * 0.48));
 						} else {
-							/* Fallback hvis titel ikke er målt endnu */
-							w = Math.round(w * 0.55);
-							h = Math.round(h * 0.95);
+							w = Math.round(Math.min(maxRingW, w * 0.72));
+							h = Math.round(w * 0.42);
 						}
 					} catch (_) {
-						w = Math.round(w * 0.55);
-						h = Math.round(h * 0.95);
+						w = Math.round(Math.min(maxRingW, w * 0.72));
+						h = Math.round(w * 0.42);
 					}
 				} else {
-					w = Math.round(w * 0.55);
-					h = Math.round(h * 0.95);
+					w = Math.round(Math.min(maxRingW, w * 0.72));
+					h = Math.round(w * 0.42);
+				}
+				if (w > maxRingW) {
+					const s = maxRingW / w;
+					w = maxRingW;
+					h = Math.round(h * s);
 				}
 			}
 		}
-		/* Kun krymp hvis ring ville gå langt uden for skærmen — ikke Repop */
-		if (phonePortraitRing && key !== 'repop' && node && node.getBoundingClientRect) {
+		/* Kun krymp hvis ring ville gå langt uden for skærmen — ikke Repop/Byens (Byens har egen cap) */
+		if (phonePortraitRing && key !== 'repop' && key !== 'byens' && node && node.getBoundingClientRect) {
 			try {
 				const iw = Math.max(1, window.innerWidth || 390);
 				const inset = Math.max(2, Math.round(iw * 0.008));
@@ -16290,7 +16297,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 23 okt - klokken 14:47';
+		const stampText = 'update fredag 23 okt - klokken 14:50';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
