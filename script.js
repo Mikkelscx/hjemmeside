@@ -9361,9 +9361,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				w = Math.round(w * 1.04);
 				h = Math.round(h * 1.03);
 			} else if (key === 'twister') {
-				/* Bredere oval forneden til større D&AD VINDER (p364) */
-				w = Math.round(w * 1.38);
-				h = Math.round(h * 1.14);
+				/* Oval matcher D&AD-størrelse (p365) */
+				w = Math.round(w * 1.32);
+				h = Math.round(h * 1.16);
 			} else if (key === 'ungeModUv') {
 				w = Math.round(w * 1.46);
 				h = Math.round(h * 1.26);
@@ -16320,7 +16320,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 23 okt - klokken 16:07';
+		const stampText = 'update fredag 23 okt - klokken 16:10';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
