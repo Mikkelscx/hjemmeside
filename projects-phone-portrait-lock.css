@@ -462,7 +462,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	justify-content: center !important;
 	gap: 0 !important;
-	max-width: min(calc(270px * var(--phone-portrait-scale, 0.37)), 36vw) !important;
+	/* Lidt bredere node til den bredere oval (p372) */
+	max-width: min(calc(290px * var(--phone-portrait-scale, 0.37)), 40vw) !important;
 	overflow: visible !important;
 	padding: 2px 6px 0 !important;
 }

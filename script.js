@@ -9368,10 +9368,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				w = Math.round(w * 1.46);
 				h = Math.round(h * 1.26);
 			} else if (key === 'kobajer') {
-				/* Lidt højere oval + ring ned, så titel+Kravling centrerer (p335) */
-				w = Math.round(w * 1.34);
-				h = Math.round(h * 1.52);
-				dy = Math.round(dy + 18);
+				/* Lavere + lidt bredere vandret — mindre dead space (p372) */
+				w = Math.round(w * 1.44);
+				h = Math.round(h * 1.28);
+				dy = Math.round(dy + 14);
 			} else if (key === 'brainfarts') {
 				w = Math.round(w * 1.26);
 				h = Math.round(h * 1.24);
@@ -16320,7 +16320,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 15:51';
+		const stampText = 'update lørdag 24 okt - klokken 15:53';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
