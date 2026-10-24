@@ -9368,15 +9368,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				w = Math.round(w * 1.46);
 				h = Math.round(h * 1.26);
 			} else if (key === 'kobajer') {
-				/*
-				 * Behold bredde (vandret); gør ovalen lavere lodret (p381).
-				 * (p380 gjorde den smallere i bredden — det var omvendt.)
-				 */
+				/* Lidt ned + smallere vandret (p382) */
 				const iw = Math.max(1, window.innerWidth || 390);
-				w = Math.round(iw * 0.64);
+				w = Math.round(iw * 0.56);
 				h = Math.round(iw * 0.42);
-				dy = Math.round(dy + 10);
-				const growRight = Math.round(w * 0.08);
+				dy = Math.round(dy + 20);
+				const growRight = Math.round(w * 0.06);
 				w += growRight;
 				dx = Math.round(dx + growRight * 0.5);
 			} else if (key === 'brainfarts') {
@@ -16335,7 +16332,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 17:01';
+		const stampText = 'update lørdag 24 okt - klokken 17:04';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
