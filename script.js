@@ -12340,12 +12340,41 @@ document.addEventListener('DOMContentLoaded', function() {
 				const svgScale = (n) =>
 					n * scale * (portraitGridLines ? portraitLineScale : 1) * phonePortraitLineMul;
 				/*
-				 * Telefon: streger skal stoppe udenfor ringene (ikke ind over tekst),
-				 * og for korte kæde-streger skal forlænges — uden at røre tablet-lock.
+				 * Telefon: streger måles til ring-overlay (ikke kun tekst-node),
+				 * med klaring i rigtige CSS→SVG px — svgScale(12) blev ~5px og gik ind i ovalerne (p402).
 				 */
-				const phoneLineClear = (n) => (phoneLinesOnly ? svgScale(n) : 0);
-				const phoneGapOut = (gap, minPx) =>
-					phoneLinesOnly ? Math.max(gap, phoneLineClear(minPx)) : gap;
+				const phoneClearSvg = (cssPx) => {
+					if (!phoneLinesOnly) return 0;
+					try {
+						const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+						const p1 = mskSvgPointFromClientPx(currentSvg, 0, cssPx);
+						return Math.abs(p1.y - p0.y) || cssPx;
+					} catch (_) {
+						return cssPx;
+					}
+				};
+				const phoneGapOut = (gap, minCssPx) =>
+					phoneLinesOnly ? Math.max(gap, phoneClearSvg(minCssPx)) : gap;
+				const phoneRingRect = (node) => {
+					if (!phoneLinesOnly || !node || !container) return null;
+					try {
+						const href = (node.getAttribute('href') || '').toLowerCase();
+						if (!href) return null;
+						const rings = container.querySelectorAll('.msk-portrait-ring-overlay');
+						for (let i = 0; i < rings.length; i++) {
+							const el = rings[i];
+							if ((el.dataset.nodeHref || '') === href) {
+								const r = el.getBoundingClientRect();
+								if (r.width > 8 && r.height > 8) return r;
+							}
+						}
+					} catch (_) {}
+					return null;
+				};
+				const phonePt = (node, kind, fallbackRect) => {
+					const rr = phoneRingRect(node);
+					return pt(rr || fallbackRect, kind);
+				};
 				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
 				const portraitUnderBrainStrokePullUp =
 					portraitGridLines ? svgScale(16) : 0;
@@ -12456,8 +12485,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const portraitBottomRowLineTune = portraitGridLines;
 
 				if (repRect && durRect) {
-					const repBot = pt(repRect, 'bottom');
-					const durTop = pt(durRect, 'top');
+					const repBot = phonePt(repop, 'bottom', repRect);
+					const durTop = phonePt(durex, 'top', durRect);
 					let repDurexLineH = svgScale(210);
 					let repDurexIpadPortraitExtraDy = 0;
 					let repDurexGapA = svgScale(2);
@@ -12481,16 +12510,16 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					let repDurexA = {
 						x: repBot.x,
-						y: repBot.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy,
+						y: repBot.y + (phoneLinesOnly ? 0 : repDurexPortraitLineDy + repDurexIpadPortraitExtraDy),
 					};
 					let repDurexB = {
 						x: durTop.x,
-						y: durTop.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy,
+						y: durTop.y + (phoneLinesOnly ? 0 : repDurexPortraitLineDy + repDurexIpadPortraitExtraDy),
 					};
 					if (phoneLinesOnly) {
-						repDurexGapA = phoneGapOut(repDurexGapA, 12);
-						repDurexGapB = phoneGapOut(repDurexGapB, 12);
-						repDurexLenMul = Math.max(repDurexLenMul, 1.12);
+						repDurexGapA = phoneGapOut(0, 6);
+						repDurexGapB = phoneGapOut(0, 6);
+						repDurexLenMul = Math.max(repDurexLenMul, 1.18);
 					}
 					lineImg(
 						'assets/Linje 2.webp',
@@ -12506,18 +12535,21 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				if (durRect) {
 					const bh = (brainBottom.y - brainTop.y) || 1;
+					const durRing = phoneRingRect(durex) || durRect;
 					let a = mskSvgPointFromClientPx(
 						currentSvg,
-						durRect.right - durRect.width * 0.30,
-						durRect.top + durRect.height * 0.72
+						durRing.right - durRing.width * (phoneLinesOnly ? 0.35 : 0.3),
+						phoneLinesOnly
+							? durRing.bottom - Math.min(10, durRing.height * 0.08)
+							: durRect.top + durRect.height * 0.72
 					);
-					let b = { x: brainLeft.x + svgScale(52), y: brainTop.y + bh * 0.30 };
+					let b = { x: brainLeft.x + svgScale(52), y: brainTop.y + bh * 0.3 };
 					let durexGapA = svgScale(8);
 					let durexGapB = svgScale(13);
 					let durexLenMul = portraitUpperLineMul;
 					let durexLineH = svgScale(220);
 					try {
-						if (portraitGridLines) {
+						if (portraitGridLines && !phoneLinesOnly) {
 							const ic = mskIpadPortraitLineLock('durexBrain');
 							if (ic) {
 								const durexBrainIpadDy = svgScale(ic.brainIpadDy);
@@ -12534,13 +12566,19 @@ document.addEventListener('DOMContentLoaded', function() {
 								durexLenMul = portraitUpperLineMul * 1.16;
 								durexLineH = svgScale(318);
 							}
+						} else if (portraitGridLines) {
+							const ic = mskIpadPortraitLineLock('durexBrain');
+							if (ic) {
+								durexLenMul = ic.lenMul;
+								durexLineH = svgScale(ic.lineH);
+							}
 						}
 					} catch (_) {}
 					durexLineH *= phoneBrainStrokeMul;
 					if (phoneLinesOnly) {
-						durexGapA = phoneGapOut(durexGapA, 14);
-						durexGapB = phoneGapOut(durexGapB, 16);
-						durexLenMul = Math.max(durexLenMul, 1.08);
+						durexGapA = phoneGapOut(0, 8);
+						durexGapB = phoneGapOut(0, 12);
+						durexLenMul = Math.max(durexLenMul, 1.12);
 					}
 					lineImg('assets/linje 6.webp', a, b, durexLineH, {
 						gapA: durexGapA,
@@ -12571,20 +12609,26 @@ document.addEventListener('DOMContentLoaded', function() {
 					try {
 						if (portraitGridLines) {
 							const ic = mskIpadPortraitLineLock('twBrain');
+							const twRing = phoneRingRect(twister) || twiRect;
+							const twTop = pt(twRing, 'top');
+							const twMid = pt(twRing, 'center');
 							if (ic) {
-								const twTop = pt(twiRect, 'top');
-								const twMid = pt(twiRect, 'center');
-								b = {
-									x: twMid.x + svgScale(14) + shiftX,
-									y: twTop.y + svgScale(10) + svgScale(38) + twBrainLineDy - twPortraitPullUp,
-								};
-								twBrainAngleOffset = ic.angleOffset;
+								b = phoneLinesOnly
+									? { x: twMid.x, y: twTop.y }
+									: {
+											x: twMid.x + svgScale(14) + shiftX,
+											y:
+												twTop.y +
+												svgScale(10) +
+												svgScale(38) +
+												twBrainLineDy -
+												twPortraitPullUp,
+										};
+								twBrainAngleOffset = phoneLinesOnly ? -18 : ic.angleOffset;
 								twBrainGapB = svgScale(ic.gapB);
 								twBrainLenMul = underBrainLineLenMul * ic.lenMul;
 								twBrainLineH = svgScale(ic.lineH);
 							} else {
-								const twTop = pt(twiRect, 'top');
-								const twMid = pt(twiRect, 'center');
 								b = {
 									x: twMid.x + svgScale(14) + shiftX,
 									y: twTop.y + svgScale(10) + svgScale(38) + twBrainLineDy - twPortraitPullUp,
@@ -12598,9 +12642,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					twBrainLineH *= phoneBrainStrokeMul;
 					if (phoneLinesOnly) {
-						twBrainGapA = phoneGapOut(twBrainGapA, 14);
-						twBrainGapB = phoneGapOut(twBrainGapB, 16);
-						twBrainLenMul = Math.max(twBrainLenMul, underBrainLineLenMul * 1.28);
+						twBrainGapA = phoneGapOut(0, 10);
+						twBrainGapB = phoneGapOut(0, 8);
+						twBrainLenMul = Math.max(twBrainLenMul, underBrainLineLenMul * 1.32);
 					}
 					lineImg('assets/linje 8.webp', a, b, twBrainLineH, {
 						gapA: twBrainGapA,
@@ -12615,8 +12659,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrfGapA = -svgScale(16);
 					let twBrfGapB = svgScale(0);
 					let twBrfLenMul = 1.58;
-					const twBot = pt(twiRect, 'bottom');
-					const bfTop = pt(brfRect, 'top');
+					const twBot = phonePt(twister, 'bottom', twiRect);
+					const bfTop = phonePt(brainfarts, 'top', brfRect);
 					let twBrfLineH = svgScale(232);
 					let a = { x: twBot.x, y: twBot.y + twBrfDown - twBrfShiftUp };
 					let b = { x: bfTop.x, y: bfTop.y + twBrfDown - twBrfShiftUp };
@@ -12625,9 +12669,18 @@ document.addEventListener('DOMContentLoaded', function() {
 							const ic = mskIpadPortraitLineLock('twBrainfarts');
 							if (ic) {
 								twBrfShiftUp = svgScale(ic.shiftUp);
-								a.y = twBot.y + twBrfDown - twBrfShiftUp - svgScale(ic.liftExtra);
-								b.y =
-									bfTop.y + twBrfDown - twBrfShiftUp - svgScale(ic.liftExtra) + svgScale(ic.bfDownExtra);
+								if (phoneLinesOnly) {
+									a = { x: twBot.x, y: twBot.y };
+									b = { x: bfTop.x, y: bfTop.y };
+								} else {
+									a.y = twBot.y + twBrfDown - twBrfShiftUp - svgScale(ic.liftExtra);
+									b.y =
+										bfTop.y +
+										twBrfDown -
+										twBrfShiftUp -
+										svgScale(ic.liftExtra) +
+										svgScale(ic.bfDownExtra);
+								}
 								twBrfLineH = svgScale(ic.lineH);
 								twBrfGapA = svgScale(ic.gapA);
 								twBrfGapB = svgScale(ic.gapB);
@@ -12643,12 +12696,12 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: klaring udenfor ringe + længere Twister→Brainfarts (p401) */
+					/* Telefon: ring-kanter + klaring + længde (p402) */
 					try {
 						if (phoneLinesOnly) {
-							twBrfGapA = phoneGapOut(twBrfGapA, 12);
-							twBrfGapB = phoneGapOut(twBrfGapB, 12);
-							twBrfLenMul = Math.max(twBrfLenMul, 1.48);
+							twBrfGapA = phoneGapOut(0, 6);
+							twBrfGapB = phoneGapOut(0, 6);
+							twBrfLenMul = Math.max(twBrfLenMul, 1.52);
 						}
 					} catch (_) {}
 					lineImg(
@@ -12666,8 +12719,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				if (natRect && ungRect) {
 					/* Smallere (lavere height) men lidt længere (højere lenMul + lidt mindre gap) */
-					const natBottomPt = pt(natRect, 'bottom');
-					const ungTopPt = pt(ungRect, 'top');
+					const natBottomPt = phonePt(naturli, 'bottom', natRect);
+					const ungTopPt = phonePt(unge, 'top', ungRect);
 					let natUngA = natBottomPt;
 					let natUngB = ungTopPt;
 					let natUngGapA = svgScale(6);
@@ -12679,14 +12732,19 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (portraitGridLines) {
 							const ic = mskIpadPortraitLineLock('natUng');
 							if (ic) {
-								natUngA = {
-									x: natBottomPt.x,
-									y: natBottomPt.y - svgScale(ic.aLift) - svgScale(ic.liftY),
-								};
-								natUngB = {
-									x: ungTopPt.x,
-									y: ungTopPt.y + svgScale(ic.bDrop) - svgScale(ic.liftY),
-								};
+								if (phoneLinesOnly) {
+									natUngA = { x: natBottomPt.x, y: natBottomPt.y };
+									natUngB = { x: ungTopPt.x, y: ungTopPt.y };
+								} else {
+									natUngA = {
+										x: natBottomPt.x,
+										y: natBottomPt.y - svgScale(ic.aLift) - svgScale(ic.liftY),
+									};
+									natUngB = {
+										x: ungTopPt.x,
+										y: ungTopPt.y + svgScale(ic.bDrop) - svgScale(ic.liftY),
+									};
+								}
 								natUngGapA = svgScale(ic.gapA);
 								natUngGapB = svgScale(ic.gapB);
 								natUngLenMul = ic.lenMul;
@@ -12709,12 +12767,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						/* Ankre på node-kanter + klaring — lock aLift/bDrop gik ind i ringene */
-						natUngA = { x: natBottomPt.x, y: natBottomPt.y };
-						natUngB = { x: ungTopPt.x, y: ungTopPt.y };
-						natUngGapA = phoneGapOut(svgScale(10), 12);
-						natUngGapB = phoneGapOut(svgScale(10), 12);
-						natUngLenMul = Math.max(natUngLenMul, 1.28);
+						natUngGapA = phoneGapOut(0, 6);
+						natUngGapB = phoneGapOut(0, 6);
+						natUngLenMul = Math.max(natUngLenMul, 1.32);
 					}
 					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
 						gapA: natUngGapA,
@@ -12725,13 +12780,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (ungRect) {
 					const ungeLineDy = svgScale(16);
 					const bh = (brainBottom.y - brainTop.y) || 1;
+					const ungRing = phoneRingRect(unge) || ungRect;
 					let a = mskSvgPointFromClientPx(
 						currentSvg,
-						ungRect.left + ungRect.width * 0.34,
-						ungRect.top + ungRect.height * 0.62
+						ungRing.left + ungRing.width * (phoneLinesOnly ? 0.32 : 0.34),
+						phoneLinesOnly
+							? ungRing.bottom - Math.min(10, ungRing.height * 0.08)
+							: ungRect.top + ungRect.height * 0.62
 					);
-					a.y += ungeLineDy;
-					let b = { x: brainRight.x - svgScale(52), y: brainTop.y + bh * 0.30 + ungeLineDy };
+					if (!phoneLinesOnly) a.y += ungeLineDy;
+					let b = {
+						x: brainRight.x - svgScale(52),
+						y: brainTop.y + bh * 0.3 + (phoneLinesOnly ? 0 : ungeLineDy),
+					};
 					let ungeGapA = svgScale(4);
 					let ungeGapB = svgScale(5);
 					let ungeLenMul = portraitUpperLineMul * 1.08;
@@ -12740,7 +12801,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (portraitGridLines) {
 							const ic = mskIpadPortraitLineLock('ungeBrain');
 							if (ic) {
-								b.y += svgScale(ic.bExtraDy);
+								if (!phoneLinesOnly) b.y += svgScale(ic.bExtraDy);
 								ungeGapB = svgScale(ic.gapB);
 								ungeLenMul = ic.lenMul;
 								ungeLineH = svgScale(ic.lineH);
@@ -12754,9 +12815,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					ungeLineH *= phoneBrainStrokeMul;
 					if (phoneLinesOnly) {
-						ungeGapA = phoneGapOut(ungeGapA, 14);
-						ungeGapB = phoneGapOut(ungeGapB, 16);
-						ungeLenMul = Math.max(ungeLenMul, 1.08);
+						ungeGapA = phoneGapOut(0, 8);
+						ungeGapB = phoneGapOut(0, 12);
+						ungeLenMul = Math.max(ungeLenMul, 1.12);
 					}
 					lineImg('assets/linje 5.webp', a, b, ungeLineH, {
 						gapA: ungeGapA,
@@ -12769,23 +12830,29 @@ document.addEventListener('DOMContentLoaded', function() {
 						x: brainRight.x - svgScale(52),
 						y: brainBottom.y - svgScale(58) - portraitUnderBrainStrokePullUp,
 					};
-					const kobTop = pt(kobRect, 'top');
-					const b = {
-						x:
-							mskSvgPointFromClientPx(
-								currentSvg,
-								kobRect.left + kobRect.width * 0.32,
-								kobRect.top
-							).x - svgScale(4),
-						y: kobTop.y - svgScale(14) - portraitUnderBrainStrokePullUp,
-					};
+					const kobRing = phoneRingRect(kobajer) || kobRect;
+					const kobTop = pt(kobRing, 'top');
+					const b = phoneLinesOnly
+						? {
+								x: pt(kobRing, 'center').x - svgScale(8),
+								y: kobTop.y,
+							}
+						: {
+								x:
+									mskSvgPointFromClientPx(
+										currentSvg,
+										kobRect.left + kobRect.width * 0.32,
+										kobRect.top
+									).x - svgScale(4),
+								y: kobTop.y - svgScale(14) - portraitUnderBrainStrokePullUp,
+							};
 					let kobBrainLineH = svgScale(235) * phoneBrainStrokeMul;
 					let kobBrainGapA = -svgScale(14);
 					let kobBrainGapB = svgScale(2);
 					let kobBrainLenMul = underBrainLineLenMul * 1.38;
 					if (phoneLinesOnly) {
-						kobBrainGapA = phoneGapOut(kobBrainGapA, 14);
-						kobBrainGapB = phoneGapOut(kobBrainGapB, 14);
+						kobBrainGapA = phoneGapOut(0, 10);
+						kobBrainGapB = phoneGapOut(0, 8);
 						kobBrainLenMul = Math.max(kobBrainLenMul, underBrainLineLenMul * 1.42);
 					}
 					lineImg('assets/Linje 4.webp', a, b, kobBrainLineH, {
@@ -12804,8 +12871,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					const kobByeShiftUp = svgScale(kobByeShiftUpPx);
 					const kobByeShiftLeft = svgScale(18);
-					const a0 = pt(kobRect, 'bottom');
-					const b0 = pt(byeRect, 'top');
+					const a0 = phonePt(kobajer, 'bottom', kobRect);
+					const b0 = phonePt(byens, 'top', byeRect);
 					/* iPad 641–1024 portræt + lodret mindmap: længere streg Kø → Byens (kun her) */
 					let kobByeTopInsetX = svgScale(34);
 					let kobByeLenMul = 1.88;
@@ -12865,9 +12932,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						kobByeLineGapA = phoneGapOut(kobByeLineGapA, 14);
-						kobByeLineGapB = phoneGapOut(kobByeLineGapB, 14);
-						kobByeLenMul = Math.max(kobByeLenMul, 2.36);
+						/* Lodret mellem ring-kanter — skip shift der trak ind i ovalerne */
+						a.x = a0.x;
+						b.x = a0.x;
+						a.y = a0.y;
+						b.y = b0.y;
+						kobByeLineGapA = phoneGapOut(0, 6);
+						kobByeLineGapB = phoneGapOut(0, 6);
+						kobByeLenMul = Math.max(kobByeLenMul, 2.4);
 					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
 					lineImg('assets/linje 1.webp', a, b, kobByeLineH, {
@@ -16421,7 +16493,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 18:32';
+		const stampText = 'update lørdag 24 okt - klokken 18:40';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
