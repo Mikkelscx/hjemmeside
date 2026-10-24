@@ -9365,10 +9365,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				w = Math.round(w * 1.32);
 				h = Math.round(h * 1.16);
 			} else if (key === 'ungeModUv') {
-				/* Midt mellem baseline og p388 (p389) */
-				w = Math.round(w * 1.58);
-				h = Math.round(h * 1.26);
-				dy = Math.round(dy - 5);
+				/* Tættere oval omkring tekst — mindre end p389 (p390) */
+				w = Math.round(w * 1.22);
+				h = Math.round(h * 1.05);
+				dy = Math.round(dy - 4);
 			} else if (key === 'kobajer') {
 				/* Lidt op ift. p385 (p386) + smallere vandret + lidt til højre */
 				const iw = Math.max(1, window.innerWidth || 390);
@@ -16335,7 +16335,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 17:51';
+		const stampText = 'update lørdag 24 okt - klokken 17:57';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
