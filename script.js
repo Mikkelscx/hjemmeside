@@ -12538,8 +12538,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					durexLineH *= phoneBrainStrokeMul;
 					if (phoneLinesOnly) {
-						/* Øverste ende mere til venstre (p407) */
-						a.x -= svgScale(22);
+						/*
+						 * Øverste ende tydeligt mere til venstre (p408).
+						 * svgScale(22) blev ~8px og usynligt — brug CSS→SVG px.
+						 */
+						let outX = svgScale(48);
+						try {
+							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 40, 0);
+							outX = Math.abs(p1.x - p0.x) || outX;
+						} catch (_) {}
+						a.x -= outX;
 						durexGapA = phoneGapOut(durexGapA, 14);
 						durexGapB = phoneGapOut(durexGapB, 16);
 						durexLenMul = Math.max(durexLenMul, 1.08);
@@ -12756,8 +12765,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					ungeLineH *= phoneBrainStrokeMul;
 					if (phoneLinesOnly) {
-						/* Øverste ende mere til højre (p407) */
-						a.x += svgScale(22);
+						/*
+						 * Øverste ende tydeligt mere til højre (p408).
+						 * svgScale(22) blev ~8px og usynligt — brug CSS→SVG px.
+						 */
+						let outX = svgScale(48);
+						try {
+							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 40, 0);
+							outX = Math.abs(p1.x - p0.x) || outX;
+						} catch (_) {}
+						a.x += outX;
 						ungeGapA = phoneGapOut(ungeGapA, 14);
 						ungeGapB = phoneGapOut(ungeGapB, 16);
 						ungeLenMul = Math.max(ungeLenMul, 1.08);
@@ -16453,7 +16471,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 25 okt - klokken 00:07';
+		const stampText = 'update søndag 25 okt - klokken 00:10';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
