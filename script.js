@@ -12865,9 +12865,34 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						kobByeLineGapA = phoneGapOut(kobByeLineGapA, 14);
-						kobByeLineGapB = phoneGapOut(kobByeLineGapB, 14);
-						kobByeLenMul = Math.max(kobByeLenMul, 2.36);
+						/*
+						 * Kø→Byens forsvandt: lock-shift + store gaps > afstand mellem noder (p404).
+						 * Tegn lodret mellem ring-/nodekanter med lille klaring.
+						 */
+						let kobEdge = kobRect;
+						let byeEdge = byeRect;
+						try {
+							const rings = container.querySelectorAll('.msk-portrait-ring-overlay');
+							for (let ri = 0; ri < rings.length; ri++) {
+								const href = rings[ri].dataset.nodeHref || '';
+								const rr = rings[ri].getBoundingClientRect();
+								if (rr.width < 8 || rr.height < 8) continue;
+								if (href.includes('kobajer')) kobEdge = rr;
+								if (href.includes('byens')) byeEdge = rr;
+							}
+						} catch (_) {}
+						const ka = pt(kobEdge, 'bottom');
+						const kb = pt(byeEdge, 'top');
+						a.x = ka.x;
+						b.x = ka.x;
+						a.y = ka.y;
+						b.y = kb.y;
+						const span = Math.max(0, Math.abs(kb.y - ka.y));
+						const clear = Math.min(svgScale(8), span * 0.12);
+						kobByeLineGapA = Math.max(svgScale(2), clear);
+						kobByeLineGapB = Math.max(svgScale(2), clear);
+						kobByeLenMul = 1.08;
+						kobByeLineH = Math.max(kobByeLineH, svgScale(180));
 					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
 					lineImg('assets/linje 1.webp', a, b, kobByeLineH, {
@@ -16421,7 +16446,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 18:44';
+		const stampText = 'update lørdag 24 okt - klokken 18:48';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
