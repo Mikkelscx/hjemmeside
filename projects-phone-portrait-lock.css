@@ -267,7 +267,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(30px * var(--phone-portrait-scale, 0.37))) scale(1.05) !important;
+	/* Lidt længere ned så titel møder Kravling tættere (p387) */
+	transform: translateY(calc(38px * var(--phone-portrait-scale, 0.37))) scale(1.05) !important;
 	transform-origin: center center !important;
 	filter: none !important;
 	-webkit-filter: none !important;
@@ -282,10 +283,10 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	justify-content: flex-start !important;
 	align-items: center !important;
 	gap: 0 !important;
-	line-height: 0.95 !important;
+	line-height: 0.82 !important;
 	margin-top: 0 !important;
-	/* Større, tydeligere Kravling i den større oval (p339) */
-	transform: translateY(calc(-48px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
+	/* Tættere op under titel (p387) */
+	transform: translateY(calc(-64px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
 	transform-origin: center center !important;
 	flex-shrink: 0 !important;
 }
@@ -293,7 +294,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1 {
 	font-size: clamp(13px, 3.8vw, 16px) !important;
-	line-height: 0.95 !important;
+	line-height: 0.82 !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	order: 1 !important;
@@ -302,8 +303,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
 	font-size: clamp(13px, 3.8vw, 16px) !important;
-	line-height: 0.95 !important;
-	margin: calc(-1px * var(--pLabelMul, 1)) 0 0 0 !important;
+	line-height: 0.82 !important;
+	margin: calc(-4px * var(--pLabelMul, 1)) 0 0 0 !important;
 	padding: 0 !important;
 	order: 2 !important;
 }
@@ -311,8 +312,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
 	font-size: clamp(16px, 4.6vw, 20px) !important;
-	line-height: 0.95 !important;
-	margin: calc(-1px * var(--pLabelMul, 1)) 0 0 0 !important;
+	line-height: 0.82 !important;
+	margin: calc(-4px * var(--pLabelMul, 1)) 0 0 0 !important;
 	padding: 0 !important;
 	order: 3 !important;
 }
