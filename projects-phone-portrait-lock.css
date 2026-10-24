@@ -482,10 +482,10 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .project-node__title-img--kobajer,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
-	/* Overskrift — samme tæthed/ned-nudge som Twister (p370) */
+	/* Midt mellem før og p370 (p371) */
 	width: 88% !important;
 	max-width: 88% !important;
-	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
+	transform: translateY(calc(-6px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
 	transform-origin: center center !important;
 }
 
@@ -500,13 +500,13 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	align-items: center !important;
 	gap: 0 !important;
 	line-height: 0.9 !important;
-	/* Tættere på titel + hele blokken lidt ned (p370) */
-	margin-top: calc(-52px * var(--phone-portrait-scale, 0.37)) !important;
+	/* Lidt tættere end original, men mildere end p370 (p371) */
+	margin-top: calc(-36px * var(--phone-portrait-scale, 0.37)) !important;
 	margin-bottom: 0 !important;
 	max-width: 82% !important;
 	padding: 0 4px 0 !important;
 	background: none !important;
-	transform: translateY(calc(-28px * var(--phone-portrait-scale, 0.37))) scale(1) !important;
+	transform: translateY(calc(-22px * var(--phone-portrait-scale, 0.37))) scale(1) !important;
 	transform-origin: center top !important;
 	opacity: 1 !important;
 }
