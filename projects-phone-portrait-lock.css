@@ -336,9 +336,10 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="naturli"],
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="naturli"] {
-	width: min(calc(260px * var(--phone-portrait-scale, 0.37)), 34vw) !important;
-	min-width: min(calc(260px * var(--phone-portrait-scale, 0.37)), 34vw) !important;
-	max-width: min(calc(260px * var(--phone-portrait-scale, 0.37)), 34vw) !important;
+	/* Lidt bredere tekstflade ift. bredere ring (p417) */
+	width: min(calc(280px * var(--phone-portrait-scale, 0.37)), 38vw) !important;
+	min-width: min(calc(280px * var(--phone-portrait-scale, 0.37)), 38vw) !important;
+	max-width: min(calc(280px * var(--phone-portrait-scale, 0.37)), 38vw) !important;
 	padding: 4px 8px !important;
 }
 
@@ -355,7 +356,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	width: 100% !important;
 	max-width: none !important;
 	height: auto !important;
-	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
+	/* Fylder den bredere oval (p417) */
+	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.48) !important;
 	transform-origin: center center !important;
 }
 
