@@ -9368,13 +9368,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				w = Math.round(w * 1.46);
 				h = Math.round(h * 1.26);
 			} else if (key === 'kobajer') {
-				/*
-				 * Lidt bredere vandret end p374 (p375).
-				 */
-				w = Math.round(w * 1.44);
-				h = Math.round(h * 1.22);
-				dy = Math.round(dy + 18);
-				const growRight = Math.round(w * 0.10);
+				/* Større endnu (p376) */
+				w = Math.round(w * 1.52);
+				h = Math.round(h * 1.26);
+				dy = Math.round(dy + 16);
+				const growRight = Math.round(w * 0.12);
 				w += growRight;
 				dx = Math.round(dx + growRight * 0.5);
 			} else if (key === 'brainfarts') {
@@ -16325,7 +16323,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 16:26';
+		const stampText = 'update lørdag 24 okt - klokken 16:29';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
