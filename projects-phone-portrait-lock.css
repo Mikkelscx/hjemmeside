@@ -409,8 +409,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	width: 100% !important;
 	max-width: 100% !important;
 	height: auto !important;
-	/* Lidt mindre ned — tættere på D&AD (p367) */
-	transform: translateY(calc(38px * var(--phone-portrait-scale, 0.37))) scale(1.22) scaleX(1) !important;
+	/* Endnu tættere på D&AD — kun telefon-portræt (p368) */
+	transform: translateY(calc(28px * var(--phone-portrait-scale, 0.37))) scale(1.22) scaleX(1) !important;
 	transform-origin: center center !important;
 }
 
@@ -425,11 +425,11 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	flex-wrap: nowrap !important;
 	align-items: center !important;
 	justify-content: center !important;
-	/* Træk D&AD op — mindre dead space under TWISTER (p367) */
-	margin-top: calc(-42px * var(--phone-portrait-scale, 0.37)) !important;
+	/* Træk D&AD endnu tættere op under TWISTER (p368) */
+	margin-top: calc(-56px * var(--phone-portrait-scale, 0.37)) !important;
 	min-width: 0 !important;
 	min-height: 0 !important;
-	transform: translateY(calc(-28px * var(--phone-portrait-scale, 0.37))) scale(1.06) !important;
+	transform: translateY(calc(-40px * var(--phone-portrait-scale, 0.37))) scale(1.06) !important;
 	transform-origin: center center !important;
 	gap: 0 !important;
 }
