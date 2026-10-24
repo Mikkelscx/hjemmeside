@@ -9369,58 +9369,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				h = Math.round(h * 1.26);
 			} else if (key === 'kobajer') {
 				/*
-				 * Edge-clamp knuste ovalen til ~180px (usynlige bumps).
-				 * Fit til synlig titel+Kravling; ekstra bredde til højre (p378).
+				 * Clamp + content-fit fulgte den for små node (~180px) → ingen synlig forskel.
+				 * Fast viewport-størrelse så ovalen klart omslutter Kravling (p379).
 				 */
 				const iw = Math.max(1, window.innerWidth || 390);
-				const maxRingW = Math.round(iw * 0.72);
-				let fitted = false;
-				if (node && node.getBoundingClientRect) {
-					try {
-						let minL = Infinity;
-						let minT = Infinity;
-						let maxR = -Infinity;
-						let maxB = -Infinity;
-						const parts = [
-							node.querySelector('.project-node__title--image'),
-							node.querySelector('.project-node__title-img--kobajer'),
-							node.querySelector('.kobajer-kravling-2024-badge--inline'),
-						];
-						for (let pi = 0; pi < parts.length; pi++) {
-							const el = parts[pi];
-							if (!el || !el.getBoundingClientRect) continue;
-							const r = el.getBoundingClientRect();
-							if (!r.width && !r.height) continue;
-							minL = Math.min(minL, r.left);
-							minT = Math.min(minT, r.top);
-							maxR = Math.max(maxR, r.right);
-							maxB = Math.max(maxB, r.bottom);
-						}
-						if (Number.isFinite(minL) && maxR > minL && maxB > minT) {
-							const contentW = maxR - minL;
-							const contentH = Math.max(1, maxB - minT);
-							const padX = Math.max(22, Math.round(contentW * 0.22));
-							const padY = Math.max(16, Math.round(contentH * 0.16));
-							w = Math.round(contentW + padX * 2);
-							h = Math.round(contentH + padY * 2);
-							fitted = true;
-						}
-					} catch (_) {}
-				}
-				if (!fitted) {
-					w = Math.round(w * 1.72);
-					h = Math.round(h * 1.38);
-				}
-				/* Lidt lavere top + ekspansion til højre */
-				dy = Math.round(dy + 10);
+				w = Math.round(iw * 0.64);
+				h = Math.round(w * 0.78);
+				dy = Math.round(dy + 8);
 				const growRight = Math.round(w * 0.10);
 				w += growRight;
 				dx = Math.round(dx + growRight * 0.5);
-				if (w > maxRingW) {
-					const s = maxRingW / w;
-					w = maxRingW;
-					h = Math.round(h * s);
-				}
 			} else if (key === 'brainfarts') {
 				w = Math.round(w * 1.26);
 				h = Math.round(h * 1.24);
@@ -10310,6 +10268,13 @@ document.addEventListener('DOMContentLoaded', function() {
 								Math.max(72, Math.floor(layoutW * 0.62))
 							);
 							node.style.setProperty('max-width', `${repopMaxW}px`, 'important');
+						}
+						if (phonePortraitGrid && p.key === 'kobajer') {
+							const kobajerMaxW = Math.min(
+								Math.floor(maxW * 1.35),
+								Math.max(72, Math.floor(layoutW * 0.48))
+							);
+							node.style.setProperty('max-width', `${kobajerMaxW}px`, 'important');
 						}
 						if (p.key === 'durex' || p.key === 'unge') {
 							const fs = parseFloat(window.getComputedStyle(node).fontSize) || 16;
@@ -16370,7 +16335,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 16:45';
+		const stampText = 'update lørdag 24 okt - klokken 16:47';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
