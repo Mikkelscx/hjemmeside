@@ -12539,8 +12539,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					durexLineH *= phoneBrainStrokeMul;
 					if (phoneLinesOnly) {
 						/*
-						 * Øverste ende tydeligt mere til venstre (p408).
-						 * svgScale(22) blev ~8px og usynligt — brug CSS→SVG px.
+						 * Øverste ende mere til venstre + tykkere streg (p410).
+						 * Tidligere tykkelse var for lav til at se forskel.
 						 */
 						let outX = svgScale(48);
 						try {
@@ -12552,6 +12552,13 @@ document.addEventListener('DOMContentLoaded', function() {
 						durexGapA = phoneGapOut(durexGapA, 14);
 						durexGapB = phoneGapOut(durexGapB, 16);
 						durexLenMul = Math.max(durexLenMul, 1.08);
+						try {
+							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 160);
+							durexLineH = Math.max(durexLineH * 1.55, Math.abs(t1.y - t0.y) || svgScale(400));
+						} catch (_) {
+							durexLineH = Math.max(durexLineH * 1.55, svgScale(400));
+						}
 					}
 					lineImg('assets/linje 6.webp', a, b, durexLineH, {
 						gapA: durexGapA,
@@ -16478,7 +16485,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 25 okt - klokken 00:14';
+		const stampText = 'update søndag 25 okt - klokken 00:18';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
