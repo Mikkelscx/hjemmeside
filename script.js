@@ -9369,14 +9369,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				h = Math.round(h * 1.26);
 			} else if (key === 'kobajer') {
 				/*
-				 * Clamp + content-fit fulgte den for små node (~180px) → ingen synlig forskel.
-				 * Fast viewport-størrelse så ovalen klart omslutter Kravling (p379).
+				 * p379 var for bred vandret — behold højde, smallere kun horisontalt (p380).
 				 */
 				const iw = Math.max(1, window.innerWidth || 390);
-				w = Math.round(iw * 0.64);
-				h = Math.round(w * 0.78);
+				w = Math.round(iw * 0.52);
+				h = Math.round(iw * 0.50);
 				dy = Math.round(dy + 8);
-				const growRight = Math.round(w * 0.10);
+				const growRight = Math.round(w * 0.06);
 				w += growRight;
 				dx = Math.round(dx + growRight * 0.5);
 			} else if (key === 'brainfarts') {
@@ -16335,7 +16334,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 16:47';
+		const stampText = 'update lørdag 24 okt - klokken 16:58';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
