@@ -12512,8 +12512,15 @@ document.addEventListener('DOMContentLoaded', function() {
 							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 10);
 							inset = Math.abs(p1.y - p0.y) || inset;
 						} catch (_) {}
-						repDurexA = { x: ra.x, y: ra.y - inset };
-						repDurexB = { x: rb.x, y: rb.y + inset };
+						let lift = inset;
+						try {
+							const q0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
+							lift = Math.abs(q1.y - q0.y) || lift;
+						} catch (_) {}
+						/* Lidt op (p412) */
+						repDurexA = { x: ra.x, y: ra.y - inset - lift };
+						repDurexB = { x: rb.x, y: rb.y + inset - lift };
 						repDurexGapA = 0;
 						repDurexGapB = 0;
 						repDurexLenMul = 1.55;
@@ -12776,8 +12783,15 @@ document.addEventListener('DOMContentLoaded', function() {
 							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 10);
 							inset = Math.abs(p1.y - p0.y) || inset;
 						} catch (_) {}
-						natUngA = { x: na.x, y: na.y - inset };
-						natUngB = { x: nb.x, y: nb.y + inset };
+						let lift = inset;
+						try {
+							const q0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
+							lift = Math.abs(q1.y - q0.y) || lift;
+						} catch (_) {}
+						/* Lidt op (p412) */
+						natUngA = { x: na.x, y: na.y - inset - lift };
+						natUngB = { x: nb.x, y: nb.y + inset - lift };
 						natUngGapA = 0;
 						natUngGapB = 0;
 						natUngLenMul = 1.55;
@@ -16533,7 +16547,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 25 okt - klokken 00:22';
+		const stampText = 'update søndag 25 okt - klokken 00:36';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
