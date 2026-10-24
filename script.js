@@ -9357,8 +9357,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Ekstra bredde uden at løfte højden (p350 — en myg mere) */
 				w = Math.round(w * 1.58);
 			} else if (key === 'durex') {
-				/* Midt mellem baseline og p353 (p355) */
-				w = Math.round(w * 1.04);
+				/* Lidt bredere vandret (p397); højde uændret ift. p355 */
+				w = Math.round(w * 1.18);
 				h = Math.round(h * 1.03);
 			} else if (key === 'twister') {
 				/* Oval matcher D&AD-størrelse (p365) */
@@ -9479,7 +9479,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 		}
-		/* Kun krymp hvis ring ville gå langt uden for skærmen — ikke Repop/Byens/Twister/Købajer/Unge */
+		/* Kun krymp hvis ring ville gå langt uden for skærmen — ikke Repop/Byens/Twister/Købajer/Unge/Durex */
 		if (
 			phonePortraitRing &&
 			key !== 'repop' &&
@@ -9487,6 +9487,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			key !== 'twister' &&
 			key !== 'kobajer' &&
 			key !== 'ungeModUv' &&
+			key !== 'durex' &&
 			node &&
 			node.getBoundingClientRect
 		) {
@@ -16376,7 +16377,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 18:14';
+		const stampText = 'update lørdag 24 okt - klokken 18:17';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
