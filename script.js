@@ -9365,9 +9365,51 @@ document.addEventListener('DOMContentLoaded', function() {
 				w = Math.round(w * 1.32);
 				h = Math.round(h * 1.16);
 			} else if (key === 'ungeModUv') {
-				/* Tættere oval omkring tekst — mindre end p389 (p390) */
-				w = Math.round(w * 1.22);
-				h = Math.round(h * 1.05);
+				/*
+				 * Fit titel — lock-base er for stor på telefon (p391).
+				 * Lidt bredere end høj (vandret oval) + lidt op.
+				 */
+				const iw = Math.max(1, window.innerWidth || 390);
+				let fitW = Math.round(iw * 0.34);
+				let fitH = Math.round(iw * 0.16);
+				if (node && node.getBoundingClientRect) {
+					try {
+						let minL = Infinity;
+						let minT = Infinity;
+						let maxR = -Infinity;
+						let maxB = -Infinity;
+						const parts = [
+							node.querySelector('.project-node__title-img--unge-mod-uv'),
+							node.querySelector('.project-node__title--image'),
+						];
+						for (let pi = 0; pi < parts.length; pi++) {
+							const el = parts[pi];
+							if (!el || !el.getBoundingClientRect) continue;
+							const r = el.getBoundingClientRect();
+							if (!r.width && !r.height) continue;
+							minL = Math.min(minL, r.left);
+							minT = Math.min(minT, r.top);
+							maxR = Math.max(maxR, r.right);
+							maxB = Math.max(maxB, r.bottom);
+						}
+						if (Number.isFinite(minL) && maxR > minL && maxB > minT) {
+							const contentW = maxR - minL;
+							const contentH = maxB - minT;
+							const padX = Math.max(10, Math.round(contentW * 0.14));
+							const padY = Math.max(6, Math.round(contentH * 0.28));
+							fitW = Math.round(contentW + padX * 2);
+							fitH = Math.round(contentH + padY * 2);
+						}
+					} catch (_) {}
+				}
+				const maxRingW = Math.round(iw * 0.4);
+				if (fitW > maxRingW) {
+					const s = maxRingW / fitW;
+					fitW = maxRingW;
+					fitH = Math.round(fitH * s);
+				}
+				w = fitW;
+				h = Math.max(Math.round(iw * 0.14), Math.min(fitH, Math.round(fitW * 0.48)));
 				dy = Math.round(dy - 4);
 			} else if (key === 'kobajer') {
 				/* Lidt op ift. p385 (p386) + smallere vandret + lidt til højre */
@@ -16335,7 +16377,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 17:57';
+		const stampText = 'update lørdag 24 okt - klokken 18:00';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
