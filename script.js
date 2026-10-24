@@ -12866,7 +12866,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					if (phoneLinesOnly) {
 						/*
-						 * Kø→Byens: ring-kanter, tættere ind mod ovalerne (p405 — længere end p404).
+						 * Kø→Byens: ring-webp padding gør bbox for “kort” — træk til synlig oval (p406).
 						 */
 						let kobEdge = kobRect;
 						let byeEdge = byeRect;
@@ -12882,15 +12882,19 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						const ka = pt(kobEdge, 'bottom');
 						const kb = pt(byeEdge, 'top');
+						let inset = svgScale(10);
+						try {
+							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
+							inset = Math.abs(p1.y - p0.y) || inset;
+						} catch (_) {}
 						a.x = ka.x;
 						b.x = ka.x;
-						a.y = ka.y;
-						b.y = kb.y;
-						const span = Math.max(0, Math.abs(kb.y - ka.y));
-						const clear = Math.min(svgScale(3), span * 0.04);
-						kobByeLineGapA = Math.max(svgScale(1), clear);
-						kobByeLineGapB = Math.max(svgScale(1), clear);
-						kobByeLenMul = 1.22;
+						a.y = ka.y - inset;
+						b.y = kb.y + inset;
+						kobByeLineGapA = 0;
+						kobByeLineGapB = 0;
+						kobByeLenMul = 1.48;
 						kobByeLineH = Math.max(kobByeLineH, svgScale(180));
 					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
@@ -16445,7 +16449,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 23:56';
+		const stampText = 'update søndag 25 okt - klokken 00:01';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
