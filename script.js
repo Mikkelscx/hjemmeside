@@ -9366,10 +9366,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				h = Math.round(h * 1.16);
 			} else if (key === 'ungeModUv') {
 				/*
-				 * Titel-fit midtvej (p392) + en smule bredere vandret (p393).
+				 * Titel-fit + lidt mere bredde end p393 (p394).
 				 */
 				const iw = Math.max(1, window.innerWidth || 390);
-				let fitW = Math.round(iw * 0.44);
+				let fitW = Math.round(iw * 0.48);
 				let fitH = Math.round(iw * 0.19);
 				if (node && node.getBoundingClientRect) {
 					try {
@@ -9394,21 +9394,21 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (Number.isFinite(minL) && maxR > minL && maxB > minT) {
 							const contentW = maxR - minL;
 							const contentH = maxB - minT;
-							const padX = Math.max(16, Math.round(contentW * 0.28));
+							const padX = Math.max(18, Math.round(contentW * 0.34));
 							const padY = Math.max(8, Math.round(contentH * 0.4));
 							fitW = Math.round(contentW + padX * 2);
 							fitH = Math.round(contentH + padY * 2);
 						}
 					} catch (_) {}
 				}
-				const maxRingW = Math.round(iw * 0.52);
+				const maxRingW = Math.round(iw * 0.56);
 				if (fitW > maxRingW) {
 					const s = maxRingW / fitW;
 					fitW = maxRingW;
 					fitH = Math.round(fitH * s);
 				}
 				w = fitW;
-				h = Math.max(Math.round(iw * 0.17), Math.min(fitH, Math.round(fitW * 0.48)));
+				h = Math.max(Math.round(iw * 0.17), Math.min(fitH, Math.round(fitW * 0.45)));
 				dy = Math.round(dy - 4);
 			} else if (key === 'kobajer') {
 				/* Lidt op ift. p385 (p386) + smallere vandret + lidt til højre */
@@ -16376,7 +16376,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 18:06';
+		const stampText = 'update lørdag 24 okt - klokken 18:09';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
