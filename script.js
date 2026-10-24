@@ -12866,8 +12866,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					if (phoneLinesOnly) {
 						/*
-						 * Kø→Byens forsvandt: lock-shift + store gaps > afstand mellem noder (p404).
-						 * Tegn lodret mellem ring-/nodekanter med lille klaring.
+						 * Kø→Byens: ring-kanter, tættere ind mod ovalerne (p405 — længere end p404).
 						 */
 						let kobEdge = kobRect;
 						let byeEdge = byeRect;
@@ -12888,10 +12887,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						a.y = ka.y;
 						b.y = kb.y;
 						const span = Math.max(0, Math.abs(kb.y - ka.y));
-						const clear = Math.min(svgScale(8), span * 0.12);
-						kobByeLineGapA = Math.max(svgScale(2), clear);
-						kobByeLineGapB = Math.max(svgScale(2), clear);
-						kobByeLenMul = 1.08;
+						const clear = Math.min(svgScale(3), span * 0.04);
+						kobByeLineGapA = Math.max(svgScale(1), clear);
+						kobByeLineGapB = Math.max(svgScale(1), clear);
+						kobByeLenMul = 1.22;
 						kobByeLineH = Math.max(kobByeLineH, svgScale(180));
 					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
@@ -16446,7 +16445,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 18:48';
+		const stampText = 'update lørdag 24 okt - klokken 23:56';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
