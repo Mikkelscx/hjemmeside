@@ -9357,8 +9357,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Ekstra bredde uden at løfte højden (p350 — en myg mere) */
 				w = Math.round(w * 1.58);
 			} else if (key === 'durex') {
-				/* Midt mellem p355 og p397 (p398) */
-				w = Math.round(w * 1.11);
+				/* Lidt under p398 — stadig en myg over baseline (p399) */
+				w = Math.round(w * 1.07);
 				h = Math.round(h * 1.03);
 			} else if (key === 'twister') {
 				/* Oval matcher D&AD-størrelse (p365) */
@@ -16377,7 +16377,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 24 okt - klokken 18:22';
+		const stampText = 'update lørdag 24 okt - klokken 18:24';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
