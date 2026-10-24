@@ -661,7 +661,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	transform-origin: center center !important;
 }
 
-/* Trekant centreret i cirklen, under tekstlaget */
+/* Trekant fylder ovalen (p414) — under tekstlaget */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
 	position: absolute !important;
 	left: 50% !important;
@@ -669,14 +669,14 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	right: auto !important;
 	bottom: auto !important;
 	margin: 0 !important;
-	width: calc(102px * var(--pRepopFill, 0.85)) !important;
-	max-width: 94% !important;
+	width: min(48vw, 200px) !important;
+	max-width: none !important;
 	height: auto !important;
-	opacity: 0.62 !important;
+	opacity: 0.72 !important;
 	pointer-events: none !important;
 	z-index: 0 !important;
 	display: block !important;
-	transform: translate(-50%, -50%) rotate(-1deg) !important;
+	transform: translate(-50%, -50%) rotate(-1deg) scale(1.08) !important;
 	transform-origin: center center !important;
 }
 
