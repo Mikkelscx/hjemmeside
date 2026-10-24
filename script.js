@@ -12488,9 +12488,35 @@ document.addEventListener('DOMContentLoaded', function() {
 						y: durTop.y + repDurexPortraitLineDy + repDurexIpadPortraitExtraDy,
 					};
 					if (phoneLinesOnly) {
-						repDurexGapA = phoneGapOut(repDurexGapA, 12);
-						repDurexGapB = phoneGapOut(repDurexGapB, 12);
-						repDurexLenMul = Math.max(repDurexLenMul, 1.12);
+						/*
+						 * Øverste venstre streg længere (p411).
+						 * Lock gapA ~34 + phoneGapOut åd længden — nul gaps + høj lenMul.
+						 */
+						let repEdge = repRect;
+						let durEdge = durRect;
+						try {
+							const rings = container.querySelectorAll('.msk-portrait-ring-overlay');
+							for (let ri = 0; ri < rings.length; ri++) {
+								const href = rings[ri].dataset.nodeHref || '';
+								const rr = rings[ri].getBoundingClientRect();
+								if (rr.width < 8 || rr.height < 8) continue;
+								if (href.includes('repop')) repEdge = rr;
+								if (href.includes('durex')) durEdge = rr;
+							}
+						} catch (_) {}
+						const ra = pt(repEdge, 'bottom');
+						const rb = pt(durEdge, 'top');
+						let inset = svgScale(8);
+						try {
+							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 10);
+							inset = Math.abs(p1.y - p0.y) || inset;
+						} catch (_) {}
+						repDurexA = { x: ra.x, y: ra.y - inset };
+						repDurexB = { x: rb.x, y: rb.y + inset };
+						repDurexGapA = 0;
+						repDurexGapB = 0;
+						repDurexLenMul = 1.55;
 					}
 					lineImg(
 						'assets/Linje 2.webp',
@@ -12727,12 +12753,34 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						/* Ankre på node-kanter + klaring — lock aLift/bDrop gik ind i ringene */
-						natUngA = { x: natBottomPt.x, y: natBottomPt.y };
-						natUngB = { x: ungTopPt.x, y: ungTopPt.y };
-						natUngGapA = phoneGapOut(svgScale(10), 12);
-						natUngGapB = phoneGapOut(svgScale(10), 12);
-						natUngLenMul = Math.max(natUngLenMul, 1.28);
+						/*
+						 * Øverste højre streg længere (p411) — samme ring+inset som Rep↔Dur.
+						 */
+						let natEdge = natRect;
+						let ungEdge = ungRect;
+						try {
+							const rings = container.querySelectorAll('.msk-portrait-ring-overlay');
+							for (let ri = 0; ri < rings.length; ri++) {
+								const href = rings[ri].dataset.nodeHref || '';
+								const rr = rings[ri].getBoundingClientRect();
+								if (rr.width < 8 || rr.height < 8) continue;
+								if (href.includes('naturli')) natEdge = rr;
+								if (href.includes('unge-mod-uv')) ungEdge = rr;
+							}
+						} catch (_) {}
+						const na = pt(natEdge, 'bottom');
+						const nb = pt(ungEdge, 'top');
+						let inset = svgScale(8);
+						try {
+							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 10);
+							inset = Math.abs(p1.y - p0.y) || inset;
+						} catch (_) {}
+						natUngA = { x: na.x, y: na.y - inset };
+						natUngB = { x: nb.x, y: nb.y + inset };
+						natUngGapA = 0;
+						natUngGapB = 0;
+						natUngLenMul = 1.55;
 					}
 					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
 						gapA: natUngGapA,
@@ -16485,7 +16533,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 25 okt - klokken 00:18';
+		const stampText = 'update søndag 25 okt - klokken 00:22';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
