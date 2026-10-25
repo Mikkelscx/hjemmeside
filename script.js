@@ -9233,13 +9233,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		img.dataset.nodeIndex = node.dataset.nodeIndex || '';
 
 		const rot = spec.rotate ? ` rotate(${spec.rotate}deg)` : '';
+		const flipX = spec.flipX ? ' scaleX(-1)' : '';
 		img.style.cssText = [
 			'position:absolute',
 			`left:${cx + dx}px`,
 			`top:${cy + dy}px`,
 			`width:${spec.w}px`,
 			`height:${spec.h}px`,
-			`transform:translate(-50%,-50%)${rot}`,
+			`transform:translate(-50%,-50%)${rot}${flipX}`,
 			'transform-origin:center center',
 			'pointer-events:auto',
 			href.includes('brainfarts') ? 'cursor:not-allowed' : 'cursor:pointer',
@@ -9309,10 +9310,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			!mskIsProjectsTabletPortraitViewport() &&
 			!document.documentElement.classList.contains('msk-projects-ipad-portrait');
 		let rotate = spec.rotate;
+		let flipX = !!spec.flipX;
 		/*
 		 * Telefon: ringe lidt større end labels — ikke så store at ovalerne dominerer (p334).
 		 */
 		if (phonePortraitRing) {
+			/*
+			 * p421: Twister + Købajer — spids/hale pegede væk fra hjernen (som på screenshot).
+			 * Spejlvend så de peger indad som Durex/Unge.
+			 */
+			if (key === 'twister') flipX = !flipX;
+			if (key === 'kobajer') flipX = !flipX;
 			if (key === 'repop') {
 				/*
 				 * Højde er god (p345). Bredde skal omslutte titel+Kravling i siderne (p346).
@@ -9515,6 +9523,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			dx,
 			dy,
 			rotate,
+			flipX,
 			cls: spec.cls,
 		});
 		return true;
@@ -12404,6 +12413,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					const gapB = opts.gapB !== undefined ? opts.gapB : svgScale(8);
 					const lenMul = opts.lenMul != null ? opts.lenMul : 1;
 					const angleOffsetDeg = opts.angleOffsetDeg != null ? opts.angleOffsetDeg : 0;
+					const mirror = !!opts.mirror;
 					const ax = a.x, ay = a.y;
 					const bx = b.x, by = b.y;
 					const dx = bx - ax;
@@ -12427,7 +12437,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					img.setAttribute('height', String(heightPx));
 					img.setAttribute('opacity', '1');
 					img.setAttribute('preserveAspectRatio', 'none');
-					img.setAttribute('transform', `rotate(${angle} ${sx} ${sy})`);
+					/* mirror: spejl over stregens akse (scaleY i lokal streg-frame) */
+					img.setAttribute(
+						'transform',
+						mirror
+							? `rotate(${angle} ${sx} ${sy}) translate(${sx} ${sy}) scale(1 -1) translate(${-sx} ${-sy})`
+							: `rotate(${angle} ${sx} ${sy})`
+					);
 					img.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 					img.style.pointerEvents = 'none';
 					img.style.display = 'block';
@@ -12650,10 +12666,11 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					twBrainLineH *= phoneBrainStrokeMul;
+					let twBrainMirror = false;
+					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p420: phoneGapOut(+14) åd korte under-hjerne-spænd → Twister-streg forsvandt.
-						 * Kant fra hjerne til Twister-ring, negative gaps, uden underBrain 0.77.
+						 * p421: spejlvend streg + synlig længde (p420 var for kort/forkert vendt).
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12667,26 +12684,33 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						const twTopR = pt(twEdge, 'top');
 						const twMidR = pt(twEdge, 'center');
-						a.x = brainLeft.x + svgScale(10);
-						a.y = brainBottom.y - svgScale(22);
-						b = { x: twMidR.x, y: twTopR.y + svgScale(6) };
-						twBrainAngleOffset = -8;
-						twBrainGapA = -svgScale(10);
-						twBrainGapB = -svgScale(14);
-						twBrainLenMul = 1.38;
+						/* Fra ring → hjerne (spejlet retning ift. p420) */
+						a.x = twMidR.x;
+						a.y = twTopR.y + svgScale(4);
+						b = {
+							x: brainLeft.x + svgScale(8),
+							y: brainBottom.y - svgScale(18),
+						};
+						twBrainAngleOffset = 8;
+						twBrainGapA = -svgScale(8);
+						twBrainGapB = -svgScale(12);
+						twBrainLenMul = 1.42;
+						twBrainMirror = true;
+						twBrainAsset = 'assets/Linje 4.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
-							twBrainLineH = Math.max(twBrainLineH, Math.abs(t1.y - t0.y) || svgScale(280));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 88);
+							twBrainLineH = Math.max(svgScale(200), Math.abs(t1.y - t0.y) || svgScale(200));
 						} catch (_) {
-							twBrainLineH = Math.max(twBrainLineH, svgScale(280));
+							twBrainLineH = svgScale(200);
 						}
 					}
-					lineImg('assets/linje 8.webp', a, b, twBrainLineH, {
+					lineImg(twBrainAsset, a, b, twBrainLineH, {
 						gapA: twBrainGapA,
 						gapB: twBrainGapB,
 						lenMul: twBrainLenMul,
 						angleOffsetDeg: twBrainAngleOffset,
+						mirror: twBrainMirror,
 					});
 				}
 				if (twiRect && brfRect) {
@@ -12903,9 +12927,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainGapA = -svgScale(14);
 					let kobBrainGapB = svgScale(2);
 					let kobBrainLenMul = underBrainLineLenMul * 1.38;
+					let kobBrainMirror = false;
+					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p420: samme som Twister — phoneGapOut gjorde Kø→hjerne til en stub.
+						 * p421: spejlvend som Twister — synlig streg ring → hjerne.
 						 */
 						let kobEdge = kobRect;
 						try {
@@ -12919,25 +12945,28 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						const kobTopR = pt(kobEdge, 'top');
 						const kobMidR = pt(kobEdge, 'center');
-						a.x = brainRight.x - svgScale(10);
-						a.y = brainBottom.y - svgScale(22);
-						b.x = kobMidR.x;
-						b.y = kobTopR.y + svgScale(6);
-						kobBrainGapA = -svgScale(10);
-						kobBrainGapB = -svgScale(14);
-						kobBrainLenMul = 1.38;
+						a.x = kobMidR.x;
+						a.y = kobTopR.y + svgScale(4);
+						b.x = brainRight.x - svgScale(8);
+						b.y = brainBottom.y - svgScale(18);
+						kobBrainGapA = -svgScale(8);
+						kobBrainGapB = -svgScale(12);
+						kobBrainLenMul = 1.42;
+						kobBrainMirror = true;
+						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
-							kobBrainLineH = Math.max(kobBrainLineH, Math.abs(t1.y - t0.y) || svgScale(280));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 88);
+							kobBrainLineH = Math.max(svgScale(200), Math.abs(t1.y - t0.y) || svgScale(200));
 						} catch (_) {
-							kobBrainLineH = Math.max(kobBrainLineH, svgScale(280));
+							kobBrainLineH = svgScale(200);
 						}
 					}
-					lineImg('assets/Linje 4.webp', a, b, kobBrainLineH, {
+					lineImg(kobBrainAsset, a, b, kobBrainLineH, {
 						gapA: kobBrainGapA,
 						gapB: kobBrainGapB,
 						lenMul: kobBrainLenMul,
+						mirror: kobBrainMirror,
 					});
 				}
 				if (kobRect && byeRect) {
@@ -16602,7 +16631,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 25 okt - klokken 15:05';
+		const stampText = 'update søndag 25 okt - klokken 15:10';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
