@@ -356,8 +356,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	width: 100% !important;
 	max-width: none !important;
 	height: auto !important;
-	/* Fylder den bredere oval (p417) */
-	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.48) !important;
+	/* Fylder den bredere oval (p418) */
+	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.62) !important;
 	transform-origin: center center !important;
 }
 
@@ -650,7 +650,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	z-index: 2 !important;
 	width: 100% !important;
 	max-width: 100% !important;
-	transform: translateY(calc(9px * var(--phone-portrait-scale, 0.37))) scale(1.48) !important;
+	transform: translateY(calc(9px * var(--phone-portrait-scale, 0.37))) scale(1.58) !important;
 	transform-origin: center center !important;
 }
 
@@ -663,7 +663,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	transform-origin: center center !important;
 }
 
-/* Trekant i ovalen (p415) — fylder cirklen uden at stikke ud */
+/* Trekant fylder ovalen (p418) — matcher DevTools-mål uden at stikke ud */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
 	position: absolute !important;
 	left: 50% !important;
@@ -671,10 +671,10 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	right: auto !important;
 	bottom: auto !important;
 	margin: 0 !important;
-	width: 78% !important;
-	max-width: 78% !important;
+	width: 92% !important;
+	max-width: 92% !important;
 	height: auto !important;
-	opacity: 0.72 !important;
+	opacity: 0.78 !important;
 	pointer-events: none !important;
 	z-index: 0 !important;
 	display: block !important;
