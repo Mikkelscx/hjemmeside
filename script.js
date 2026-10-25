@@ -12651,9 +12651,36 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					twBrainLineH *= phoneBrainStrokeMul;
 					if (phoneLinesOnly) {
-						twBrainGapA = phoneGapOut(twBrainGapA, 14);
-						twBrainGapB = phoneGapOut(twBrainGapB, 16);
-						twBrainLenMul = Math.max(twBrainLenMul, underBrainLineLenMul * 1.28);
+						/*
+						 * p420: phoneGapOut(+14) åd korte under-hjerne-spænd → Twister-streg forsvandt.
+						 * Kant fra hjerne til Twister-ring, negative gaps, uden underBrain 0.77.
+						 */
+						let twEdge = twiRect;
+						try {
+							const rings = container.querySelectorAll('.msk-portrait-ring-overlay');
+							for (let ri = 0; ri < rings.length; ri++) {
+								const href = rings[ri].dataset.nodeHref || '';
+								const rr = rings[ri].getBoundingClientRect();
+								if (rr.width < 8 || rr.height < 8) continue;
+								if (href.includes('twister')) twEdge = rr;
+							}
+						} catch (_) {}
+						const twTopR = pt(twEdge, 'top');
+						const twMidR = pt(twEdge, 'center');
+						a.x = brainLeft.x + svgScale(10);
+						a.y = brainBottom.y - svgScale(22);
+						b = { x: twMidR.x, y: twTopR.y + svgScale(6) };
+						twBrainAngleOffset = -8;
+						twBrainGapA = -svgScale(10);
+						twBrainGapB = -svgScale(14);
+						twBrainLenMul = 1.38;
+						try {
+							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
+							twBrainLineH = Math.max(twBrainLineH, Math.abs(t1.y - t0.y) || svgScale(280));
+						} catch (_) {
+							twBrainLineH = Math.max(twBrainLineH, svgScale(280));
+						}
 					}
 					lineImg('assets/linje 8.webp', a, b, twBrainLineH, {
 						gapA: twBrainGapA,
@@ -12877,9 +12904,35 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainGapB = svgScale(2);
 					let kobBrainLenMul = underBrainLineLenMul * 1.38;
 					if (phoneLinesOnly) {
-						kobBrainGapA = phoneGapOut(kobBrainGapA, 14);
-						kobBrainGapB = phoneGapOut(kobBrainGapB, 14);
-						kobBrainLenMul = Math.max(kobBrainLenMul, underBrainLineLenMul * 1.42);
+						/*
+						 * p420: samme som Twister — phoneGapOut gjorde Kø→hjerne til en stub.
+						 */
+						let kobEdge = kobRect;
+						try {
+							const rings = container.querySelectorAll('.msk-portrait-ring-overlay');
+							for (let ri = 0; ri < rings.length; ri++) {
+								const href = rings[ri].dataset.nodeHref || '';
+								const rr = rings[ri].getBoundingClientRect();
+								if (rr.width < 8 || rr.height < 8) continue;
+								if (href.includes('kobajer')) kobEdge = rr;
+							}
+						} catch (_) {}
+						const kobTopR = pt(kobEdge, 'top');
+						const kobMidR = pt(kobEdge, 'center');
+						a.x = brainRight.x - svgScale(10);
+						a.y = brainBottom.y - svgScale(22);
+						b.x = kobMidR.x;
+						b.y = kobTopR.y + svgScale(6);
+						kobBrainGapA = -svgScale(10);
+						kobBrainGapB = -svgScale(14);
+						kobBrainLenMul = 1.38;
+						try {
+							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
+							kobBrainLineH = Math.max(kobBrainLineH, Math.abs(t1.y - t0.y) || svgScale(280));
+						} catch (_) {
+							kobBrainLineH = Math.max(kobBrainLineH, svgScale(280));
+						}
 					}
 					lineImg('assets/Linje 4.webp', a, b, kobBrainLineH, {
 						gapA: kobBrainGapA,
@@ -16549,7 +16602,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 25 okt - klokken 02:16';
+		const stampText = 'update søndag 25 okt - klokken 15:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
