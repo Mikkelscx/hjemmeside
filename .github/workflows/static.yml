@@ -46,7 +46,7 @@ jobs:
             --exclude 'styles-20260924p*.css' \
             ./ publish/
           # Behold kun de seneste cache-bust assets (nuværende + lidt historik)
-          for n in 425 426 427 428 429 430; do
+          for n in 426 427 428 429 430 431; do
             [ -f "script-20260924p${n}.js" ] && cp "script-20260924p${n}.js" publish/
             [ -f "styles-20260924p${n}.css" ] && cp "styles-20260924p${n}.css" publish/
           done
