@@ -12670,7 +12670,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p424: stop OVER cirklen (ikke ind i ovalen) — klaring over ring-top.
+						 * p425: spejlvend under-hjerne-streg (Twister); stop over cirklen.
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12685,11 +12685,11 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twTopR = pt(twEdge, 'top');
 						const twMidR = pt(twEdge, 'center');
 						let inX = svgScale(14);
-						let clear = svgScale(6);
+						let clear = svgScale(10);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 8);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 14);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
 						} catch (_) {}
@@ -12703,7 +12703,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						twBrainGapA = 0;
 						twBrainGapB = 0;
 						twBrainLenMul = 1.12;
-						twBrainMirror = false;
+						twBrainMirror = true;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
@@ -12939,7 +12939,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p424: stop OVER cirklen (spejl af Twister) — ikke ind i ovalen.
+						 * p425: spejlvend under-hjerne-streg (Købajer, modsat Twister); stop over cirklen.
 						 */
 						let kobEdge = kobRect;
 						try {
@@ -12954,11 +12954,11 @@ document.addEventListener('DOMContentLoaded', function() {
 						const kobTopR = pt(kobEdge, 'top');
 						const kobMidR = pt(kobEdge, 'center');
 						let inX = svgScale(14);
-						let clear = svgScale(6);
+						let clear = svgScale(10);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 8);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 14);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
 						} catch (_) {}
@@ -12969,7 +12969,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						kobBrainGapA = 0;
 						kobBrainGapB = 0;
 						kobBrainLenMul = 1.12;
-						kobBrainMirror = true;
+						kobBrainMirror = false;
 						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
@@ -16648,7 +16648,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 26 okt - klokken 15:21';
+		const stampText = 'update mandag 26 okt - klokken 15:34';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

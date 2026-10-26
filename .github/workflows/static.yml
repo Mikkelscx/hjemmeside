@@ -15,11 +15,10 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Allow only one concurrent deployment; cancel older queued runs so latest wins
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   # Single deploy job since we're just deploying
@@ -31,13 +30,36 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Prepare slim publish tree
+        run: |
+          set -e
+          mkdir -p publish
+          # Hele sitet, men uden historiske cache-bust kopier / tunge logs (Pages artifact-limit)
+          rsync -a \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'publish' \
+            --exclude 'hjemmesiden' \
+            --exclude 'auto-commit.log' \
+            --exclude '_debug' \
+            --exclude 'script-20260924p*.js' \
+            --exclude 'styles-20260924p*.css' \
+            ./ publish/
+          # Behold kun de seneste cache-bust assets (nuværende + lidt historik)
+          for n in 420 421 422 423 424 425; do
+            [ -f "script-20260924p${n}.js" ] && cp "script-20260924p${n}.js" publish/
+            [ -f "styles-20260924p${n}.css" ] && cp "styles-20260924p${n}.css" publish/
+          done
+          # Altid kanoniske filer
+          cp -f script.js styles.css publish/
+          touch publish/.nojekyll
+          du -sh publish
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: 'publish'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
