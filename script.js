@@ -12674,7 +12674,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p426: spejlvend Twister-streg for sig (vandret); stop over cirklen.
+						 * p427: tydeligere + lidt længere op i hjernen; stop over cirklen.
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12690,31 +12690,34 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twMidR = pt(twEdge, 'center');
 						let inX = svgScale(14);
 						let clear = svgScale(10);
+						let upBrain = svgScale(18);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
 							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 14);
+							const q2 = mskSvgPointFromClientPx(currentSvg, 0, 22);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
+							upBrain = Math.abs(q2.y - p0.y) || upBrain;
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
-						a.y = brainBottom.y - svgScale(8);
+						a.y = brainBottom.y - upBrain;
 						b = {
 							x: twMidR.x + inX * 0.35,
 							y: twTopR.y - clear,
 						};
 						twBrainAngleOffset = 0;
-						twBrainGapA = 0;
+						twBrainGapA = -svgScale(6);
 						twBrainGapB = 0;
-						twBrainLenMul = 1.12;
-						twBrainMirror = true; /* spejlvend denne streg */
+						twBrainLenMul = 1.18;
+						twBrainMirror = true;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
-							twBrainLineH = Math.max(svgScale(220), Math.abs(t1.y - t0.y) || svgScale(220));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 165);
+							twBrainLineH = Math.max(svgScale(300), Math.abs(t1.y - t0.y) || svgScale(300));
 						} catch (_) {
-							twBrainLineH = svgScale(220);
+							twBrainLineH = svgScale(300);
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -12943,7 +12946,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p426: spejlvend Købajer-streg for sig (vandret); stop over cirklen.
+						 * p427: tydeligere + lidt længere op i hjernen; stop over cirklen.
 						 */
 						let kobEdge = kobRect;
 						try {
@@ -12959,28 +12962,31 @@ document.addEventListener('DOMContentLoaded', function() {
 						const kobMidR = pt(kobEdge, 'center');
 						let inX = svgScale(14);
 						let clear = svgScale(10);
+						let upBrain = svgScale(18);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
 							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 14);
+							const q2 = mskSvgPointFromClientPx(currentSvg, 0, 22);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
+							upBrain = Math.abs(q2.y - p0.y) || upBrain;
 						} catch (_) {}
 						a.x = brainRight.x - inX;
-						a.y = brainBottom.y - svgScale(8);
+						a.y = brainBottom.y - upBrain;
 						b.x = kobMidR.x - inX * 0.35;
 						b.y = kobTopR.y - clear;
-						kobBrainGapA = 0;
+						kobBrainGapA = -svgScale(6);
 						kobBrainGapB = 0;
-						kobBrainLenMul = 1.12;
-						kobBrainMirror = true; /* spejlvend denne streg for sig */
+						kobBrainLenMul = 1.18;
+						kobBrainMirror = true;
 						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
-							kobBrainLineH = Math.max(svgScale(220), Math.abs(t1.y - t0.y) || svgScale(220));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 165);
+							kobBrainLineH = Math.max(svgScale(300), Math.abs(t1.y - t0.y) || svgScale(300));
 						} catch (_) {
-							kobBrainLineH = svgScale(220);
+							kobBrainLineH = svgScale(300);
 						}
 					}
 					lineImg(kobBrainAsset, a, b, kobBrainLineH, {
@@ -16652,7 +16658,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 00:17';
+		const stampText = 'update tirsdag 27 okt - klokken 00:22';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
