@@ -12674,7 +12674,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p428: tilbage til p426 — spejlvendt, stop over cirklen (uden ekstra tykkelse/længde).
+						 * p429: kun Twister — lidt længere op, tykkere/tydeligere; stop over cirklen.
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12690,31 +12690,34 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twMidR = pt(twEdge, 'center');
 						let inX = svgScale(14);
 						let clear = svgScale(10);
+						let upBrain = svgScale(14);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
 							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 14);
+							const q2 = mskSvgPointFromClientPx(currentSvg, 0, 18);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
+							upBrain = Math.abs(q2.y - p0.y) || upBrain;
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
-						a.y = brainBottom.y - svgScale(8);
+						a.y = brainBottom.y - upBrain;
 						b = {
 							x: twMidR.x + inX * 0.35,
 							y: twTopR.y - clear,
 						};
 						twBrainAngleOffset = 0;
-						twBrainGapA = 0;
+						twBrainGapA = -svgScale(4);
 						twBrainGapB = 0;
-						twBrainLenMul = 1.12;
+						twBrainLenMul = 1.16;
 						twBrainMirror = true;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
-							twBrainLineH = Math.max(svgScale(220), Math.abs(t1.y - t0.y) || svgScale(220));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 148);
+							twBrainLineH = Math.max(svgScale(275), Math.abs(t1.y - t0.y) || svgScale(275));
 						} catch (_) {
-							twBrainLineH = svgScale(220);
+							twBrainLineH = svgScale(275);
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -16652,7 +16655,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 00:26';
+		const stampText = 'update tirsdag 27 okt - klokken 00:33';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
