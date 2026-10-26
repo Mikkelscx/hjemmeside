@@ -12670,8 +12670,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p423: under-hjerne venstre — stroke uden mirror; Købajer spejler.
-						 * Anker inde i ovalen (top→mid), ikke padded bbox-top.
+						 * p424: stop OVER cirklen (ikke ind i ovalen) — klaring over ring-top.
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12686,29 +12685,32 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twTopR = pt(twEdge, 'top');
 						const twMidR = pt(twEdge, 'center');
 						let inX = svgScale(14);
+						let clear = svgScale(6);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 8);
 							inX = Math.abs(p1.x - p0.x) || inX;
+							clear = Math.abs(q1.y - p0.y) || clear;
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
-						a.y = brainBottom.y - svgScale(10);
+						a.y = brainBottom.y - svgScale(8);
 						b = {
-							x: twMidR.x + inX * 0.4,
-							y: twTopR.y + (twMidR.y - twTopR.y) * 0.55,
+							x: twMidR.x + inX * 0.35,
+							y: twTopR.y - clear,
 						};
 						twBrainAngleOffset = 0;
-						twBrainGapA = -svgScale(10);
-						twBrainGapB = -svgScale(14);
-						twBrainLenMul = 1.58;
+						twBrainGapA = 0;
+						twBrainGapB = 0;
+						twBrainLenMul = 1.12;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 130);
-							twBrainLineH = Math.max(svgScale(240), Math.abs(t1.y - t0.y) || svgScale(240));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
+							twBrainLineH = Math.max(svgScale(220), Math.abs(t1.y - t0.y) || svgScale(220));
 						} catch (_) {
-							twBrainLineH = svgScale(240);
+							twBrainLineH = svgScale(220);
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -12937,8 +12939,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p423: under-hjerne højre — spejlvendt stroke ift. Twister.
-						 * Samme anker-logik (top→mid), så længden matcher.
+						 * p424: stop OVER cirklen (spejl af Twister) — ikke ind i ovalen.
 						 */
 						let kobEdge = kobRect;
 						try {
@@ -12953,26 +12954,29 @@ document.addEventListener('DOMContentLoaded', function() {
 						const kobTopR = pt(kobEdge, 'top');
 						const kobMidR = pt(kobEdge, 'center');
 						let inX = svgScale(14);
+						let clear = svgScale(6);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 8);
 							inX = Math.abs(p1.x - p0.x) || inX;
+							clear = Math.abs(q1.y - p0.y) || clear;
 						} catch (_) {}
 						a.x = brainRight.x - inX;
-						a.y = brainBottom.y - svgScale(10);
-						b.x = kobMidR.x - inX * 0.4;
-						b.y = kobTopR.y + (kobMidR.y - kobTopR.y) * 0.55;
-						kobBrainGapA = -svgScale(10);
-						kobBrainGapB = -svgScale(14);
-						kobBrainLenMul = 1.58;
+						a.y = brainBottom.y - svgScale(8);
+						b.x = kobMidR.x - inX * 0.35;
+						b.y = kobTopR.y - clear;
+						kobBrainGapA = 0;
+						kobBrainGapB = 0;
+						kobBrainLenMul = 1.12;
 						kobBrainMirror = true;
 						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 130);
-							kobBrainLineH = Math.max(svgScale(240), Math.abs(t1.y - t0.y) || svgScale(240));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
+							kobBrainLineH = Math.max(svgScale(220), Math.abs(t1.y - t0.y) || svgScale(220));
 						} catch (_) {
-							kobBrainLineH = svgScale(240);
+							kobBrainLineH = svgScale(220);
 						}
 					}
 					lineImg(kobBrainAsset, a, b, kobBrainLineH, {
@@ -16644,7 +16648,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 26 okt - klokken 15:01';
+		const stampText = 'update mandag 26 okt - klokken 15:21';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
