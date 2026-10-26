@@ -12437,13 +12437,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					img.setAttribute('height', String(heightPx));
 					img.setAttribute('opacity', '1');
 					img.setAttribute('preserveAspectRatio', 'none');
-					/* mirror: spejl på tværs af stregen (bue/hældning) */
-					img.setAttribute(
-						'transform',
-						mirror
-							? `rotate(${angle} ${sx} ${sy}) translate(${sx} ${sy}) scale(1 -1) translate(${-sx} ${-sy})`
-							: `rotate(${angle} ${sx} ${sy})`
-					);
+					/* mirror: vandret spejl af streg-asset omkring midtpunkt (hver streg for sig) */
+					if (mirror) {
+						const mx = (sx + ex) * 0.5;
+						const my = (sy + ey) * 0.5;
+						img.setAttribute(
+							'transform',
+							`translate(${mx} ${my}) scale(-1 1) translate(${-mx} ${-my}) rotate(${angle} ${sx} ${sy})`
+						);
+					} else {
+						img.setAttribute('transform', `rotate(${angle} ${sx} ${sy})`);
+					}
 					img.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
 					img.style.pointerEvents = 'none';
 					img.style.display = 'block';
@@ -12670,7 +12674,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p425: spejlvend under-hjerne-streg (Twister); stop over cirklen.
+						 * p426: spejlvend Twister-streg for sig (vandret); stop over cirklen.
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12703,7 +12707,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						twBrainGapA = 0;
 						twBrainGapB = 0;
 						twBrainLenMul = 1.12;
-						twBrainMirror = true;
+						twBrainMirror = true; /* spejlvend denne streg */
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
@@ -12939,7 +12943,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p425: spejlvend under-hjerne-streg (Købajer, modsat Twister); stop over cirklen.
+						 * p426: spejlvend Købajer-streg for sig (vandret); stop over cirklen.
 						 */
 						let kobEdge = kobRect;
 						try {
@@ -12969,7 +12973,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						kobBrainGapA = 0;
 						kobBrainGapB = 0;
 						kobBrainLenMul = 1.12;
-						kobBrainMirror = false;
+						kobBrainMirror = true; /* spejlvend denne streg for sig */
 						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
@@ -16648,7 +16652,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 26 okt - klokken 15:34';
+		const stampText = 'update tirsdag 27 okt - klokken 00:17';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
