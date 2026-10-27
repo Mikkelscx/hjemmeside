@@ -12520,8 +12520,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					};
 					if (phoneLinesOnly) {
 						/*
-						 * p435: kant-til-kant uden lift (lift + positive gaps → stubbe på Safari
-						 * ift. Chrome DevTools).
+						 * p436: længere øvre kæde — ring-webp har padding, så træk ind til synlig oval
+						 * (uden p412-lift der skød den skæv på Safari).
 						 */
 						let repEdge = repRect;
 						let durEdge = durRect;
@@ -12537,18 +12537,17 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						const ra = pt(repEdge, 'bottom');
 						const rb = pt(durEdge, 'top');
-						let clear = svgScale(4);
+						let inset = svgScale(10);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 5);
-							clear = Math.abs(p1.y - p0.y) || clear;
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
+							inset = Math.abs(p1.y - p0.y) || inset;
 						} catch (_) {}
-						repDurexA = { x: ra.x, y: ra.y + clear };
-						repDurexB = { x: rb.x, y: rb.y - clear };
+						repDurexA = { x: ra.x, y: ra.y - inset };
+						repDurexB = { x: rb.x, y: rb.y + inset };
 						repDurexGapA = 0;
 						repDurexGapB = 0;
-						/* mindmapLineLenMul 0.92 — kompensér + bløde asset-ender */
-						repDurexLenMul = 1.22;
+						repDurexLenMul = 1.48;
 					}
 					lineImg(
 						'assets/Linje 2.webp',
@@ -12678,7 +12677,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p434: tilbage til p430/p432 — længere + bredere; stop over cirklen.
+						 * p436: stop tydeligt OVER Twister-ringen (ingen gapB/lenMul ind i cirklen);
+						 * stadig længde op mod hjernen.
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12693,12 +12693,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twTopR = pt(twEdge, 'top');
 						const twMidR = pt(twEdge, 'center');
 						let inX = svgScale(14);
-						let clear = svgScale(8);
+						let clear = svgScale(16);
 						let upBrain = svgScale(8);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 10);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 20);
 							const q2 = mskSvgPointFromClientPx(currentSvg, 0, 10);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
@@ -12712,8 +12712,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						};
 						twBrainAngleOffset = 0;
 						twBrainGapA = -svgScale(18);
-						twBrainGapB = -svgScale(4);
-						twBrainLenMul = 1.38;
+						twBrainGapB = svgScale(6);
+						/* ~1/0.92 så synlig længde ≈ a→b uden at skyde ind i cirklen */
+						twBrainLenMul = 1.09;
 						twBrainMirror = true;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
@@ -12766,7 +12767,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: ring-kant som DevTools (p435) — ikke phoneGapOut-stubbe */
+					/* Telefon: nederste venstre streg større — ind til synlig oval + tykkere (p436) */
 					try {
 						if (phoneLinesOnly) {
 							let twEdge = twiRect;
@@ -12783,17 +12784,24 @@ document.addEventListener('DOMContentLoaded', function() {
 							} catch (_) {}
 							const ta = pt(twEdge, 'bottom');
 							const tb = pt(brfEdge, 'top');
-							let clear = svgScale(4);
+							let inset = svgScale(10);
 							try {
 								const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-								const p1 = mskSvgPointFromClientPx(currentSvg, 0, 5);
-								clear = Math.abs(p1.y - p0.y) || clear;
+								const p1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
+								inset = Math.abs(p1.y - p0.y) || inset;
 							} catch (_) {}
-							a = { x: ta.x, y: ta.y + clear };
-							b = { x: tb.x, y: tb.y - clear };
+							a = { x: ta.x, y: ta.y - inset };
+							b = { x: tb.x, y: tb.y + inset };
 							twBrfGapA = 0;
 							twBrfGapB = 0;
-							twBrfLenMul = 1.22;
+							twBrfLenMul = 1.48;
+							try {
+								const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+								const t1 = mskSvgPointFromClientPx(currentSvg, 0, 170);
+								twBrfLineH = Math.max(svgScale(300), Math.abs(t1.y - t0.y) || svgScale(300));
+							} catch (_) {
+								twBrfLineH = Math.max(twBrfLineH, svgScale(300));
+							}
 						}
 					} catch (_) {}
 					lineImg(
@@ -12854,7 +12862,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						/* p435: kant-til-kant uden lift (som Rep↔Dur / DevTools) */
+						/* p436: længere øvre højre kæde — samme inset som Rep↔Dur */
 						let natEdge = natRect;
 						let ungEdge = ungRect;
 						try {
@@ -12869,17 +12877,17 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						const na = pt(natEdge, 'bottom');
 						const nb = pt(ungEdge, 'top');
-						let clear = svgScale(4);
+						let inset = svgScale(10);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 5);
-							clear = Math.abs(p1.y - p0.y) || clear;
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
+							inset = Math.abs(p1.y - p0.y) || inset;
 						} catch (_) {}
-						natUngA = { x: na.x, y: na.y + clear };
-						natUngB = { x: nb.x, y: nb.y - clear };
+						natUngA = { x: na.x, y: na.y - inset };
+						natUngB = { x: nb.x, y: nb.y + inset };
 						natUngGapA = 0;
 						natUngGapB = 0;
-						natUngLenMul = 1.22;
+						natUngLenMul = 1.48;
 					}
 					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
 						gapA: natUngGapA,
@@ -16674,7 +16682,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 01:15';
+		const stampText = 'update tirsdag 27 okt - klokken 01:28';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
