@@ -12677,7 +12677,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p440: samme placering, men nederste ende mere til venstre (drejet).
+						 * p441: nederste ende endnu mere til venstre.
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12693,17 +12693,17 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twMidR = pt(twEdge, 'center');
 						let inX = svgScale(14);
 						let clear = svgScale(16);
-						let leftNudge = svgScale(28);
+						let leftNudge = svgScale(52);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
 							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 18);
-							const qL = mskSvgPointFromClientPx(currentSvg, 32, 0);
+							const qL = mskSvgPointFromClientPx(currentSvg, 58, 0);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
 							leftNudge = Math.abs(qL.x - p0.x) || leftNudge;
 						} catch (_) {}
-						/* Start under venstre hjerne-kant; nederste ende lidt mere til venstre */
+						/* Start under venstre hjerne-kant; nederste ende tydeligt mere til venstre */
 						a.x = brainLeft.x + inX;
 						a.y = brainBottom.y - svgScale(8);
 						b = {
@@ -16681,7 +16681,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 01:56';
+		const stampText = 'update tirsdag 27 okt - klokken 01:58';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
