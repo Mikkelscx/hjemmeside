@@ -817,13 +817,42 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 							el.remove();
 						} catch (_) {}
 					});
-				/* Telefon landskab: ryd portræt-grid DOM/inline så ellipse kan tegnes */
-				if (phoneLandscape) {
+				/*
+				 * Telefon landskab: ryd KUN hvis portræt-grid stadig hænger.
+				 * Ellers (hvert resize-tick) slettes ellipse left/top → tekster stables til venstre.
+				 */
+				if (phoneLandscape && mskProjectsMindmapHasPortraitGridArtifacts()) {
 					try {
 						mskProjectsMindmapClearPortraitGridArtifacts();
 					} catch (_) {}
 					try {
 						mskClearProjectsPortraitPhoneCanvasStyles();
+					} catch (_) {}
+				}
+				/* Cold load / efter clear: hvis noder mangler ellipse-left, tving layout én gang */
+				if (phoneLandscape) {
+					try {
+						const orphans = container.querySelectorAll('a.project-node');
+						let needs = false;
+						orphans.forEach((n) => {
+							if (!n.style.left) needs = true;
+						});
+						if (needs && !window.__mskPhoneLsEllipseLayoutScheduled) {
+							window.__mskPhoneLsEllipseLayoutScheduled = true;
+							window.__mskProjectsBypassSpokeFreeze = true;
+							window.__mskProjectsForceLayout = true;
+							window.__mskProjectsRelayoutNow = true;
+							window.requestAnimationFrame(() => {
+								try {
+									if (typeof window.__mskProjectsRelayout === 'function') {
+										window.__mskProjectsRelayout(true);
+									}
+								} catch (_) {}
+								try {
+									window.__mskPhoneLsEllipseLayoutScheduled = false;
+								} catch (_) {}
+							});
+						}
 					} catch (_) {}
 				}
 			} else if (portraitGrid) {
@@ -1041,6 +1070,12 @@ function mskProjectsMindmapRelayoutAfterTabletOrientation(force) {
 				c.classList.remove('projects-mindmap--portrait', 'projects-mindmap--phone-canvas');
 				c.dataset.mskRevealed = '1';
 			}
+			/* Efter clear: tving ellipse-layout (ellers forbliver noder uden left/top) */
+			try {
+				window.__mskProjectsBypassSpokeFreeze = true;
+				window.__mskProjectsForceLayout = true;
+				window.__mskProjectsRelayoutNow = true;
+			} catch (_) {}
 		} else if (enteringPortrait) {
 			root.classList.remove(
 				'msk-projects-ipad-landscape',
@@ -16837,7 +16872,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 15:15';
+		const stampText = 'update tirsdag 27 okt - klokken 15:22';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
