@@ -12674,7 +12674,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p433: kun Twister — lidt længere op mod hjernen (mellem p430 og p431).
+						 * p434: tilbage til p430/p432 — længere + bredere; stop over cirklen.
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12690,12 +12690,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twMidR = pt(twEdge, 'center');
 						let inX = svgScale(14);
 						let clear = svgScale(8);
-						let upBrain = svgScale(18);
+						let upBrain = svgScale(8);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
 							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 10);
-							const q2 = mskSvgPointFromClientPx(currentSvg, 0, 22);
+							const q2 = mskSvgPointFromClientPx(currentSvg, 0, 10);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
 							upBrain = Math.abs(q2.y - p0.y) || upBrain;
@@ -12707,9 +12707,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							y: twTopR.y - clear,
 						};
 						twBrainAngleOffset = 0;
-						twBrainGapA = -svgScale(22);
+						twBrainGapA = -svgScale(18);
 						twBrainGapB = -svgScale(4);
-						twBrainLenMul = 1.42;
+						twBrainLenMul = 1.38;
 						twBrainMirror = true;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
@@ -16655,7 +16655,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 01:01';
+		const stampText = 'update tirsdag 27 okt - klokken 01:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
