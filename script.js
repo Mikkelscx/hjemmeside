@@ -46,7 +46,8 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-const MSK_PROJECTS_LANDSCAPE_FIT = 0.86;
+/* Telefon/kort landskab: lidt strammere scale så ellipsen ikke fylder lodret for meget (p445). */
+const MSK_PROJECTS_LANDSCAPE_FIT = 0.78;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
@@ -10767,8 +10768,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			   (tidligere min(rx, rxTight) trykkede rx ned til ~158px og stablede knapper i midten). */
 			try {
 				if (isShortLandscape && !narrow) {
-					/* Lodret: lidt højere bue så top/bund bruger mere af højden — samme node-/ring-størrelse (kun placering) */
-					ry = Math.min(ry, Math.max(138, h * 0.54));
+					/* p445: press lodret sammen — lavere ry så top/bund ikke fylder viewport */
+					ry = Math.min(ry, Math.max(108, h * 0.40));
 					/* Vandret: scale(MSK_PROJECTS_LANDSCAPE_FIT) — layout-rx skal være højere end w/2 for synlig bredde, men fuld
 					   (vw/2)/fit klippede sidebobler (titler rækker ud). Bland mod rx fra padding ovenfor. */
 					try {
@@ -10811,14 +10812,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				const href = (node.getAttribute('href') || '').toLowerCase();
 				const shortLs = shortLsRing;
 
-				/* Øvre bue: mindre træk mod midten i kort landscape → mere plads til top/bund */
+				/* p445: kort landscape — træk top/bund mere ind mod midten (lodret presse) */
 				if (Math.sin(angle) < -0.12) {
-					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 12 : 26;
+					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 30 : 26;
 					y += Math.round(topPull * scale);
 				}
 
 				if (Math.sin(angle) > 0.38) {
-					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 22 : 38;
+					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 36 : 38;
 					y -= botPull;
 				}
 
@@ -10826,18 +10827,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
 				if (href.includes('repop')) y += touchLayout ? 14 : tabletLandscape ? 10 : 35;
 				/* Kort mobil-landscape: cirkel + indhold lidt op */
-				if (href.includes('repop') && isShortLandscape) y -= 20;
-				/* Kort landscape: skub højre-side (Naturli / Durex / Unge) fra hinanden — mindre overlap på tværs af enheder */
+				if (href.includes('repop') && isShortLandscape) y -= 14;
+				/* Kort landscape: let vandret luft — undgå ekstra lodret spredning */
 				if (isShortLandscape) {
 					if (href.includes('naturli')) {
-						y -= 10;
+						y -= 2;
 						x += 6;
 					}
 					if (href.includes('durex')) {
 						x += 8;
 					}
 					if (href.includes('unge-mod-uv')) {
-						y += 12;
+						y += 4;
 						x += 6;
 					}
 				}
@@ -16872,7 +16873,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 15:22';
+		const stampText = 'update tirsdag 27 okt - klokken 15:30';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

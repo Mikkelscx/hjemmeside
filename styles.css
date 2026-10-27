@@ -14370,8 +14370,9 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         --projectsScaleMin: 0.64;
         /* Samlet scale for hele mindmap (hjerne, linjer, cirkler, faner) — kun kort mobil-landscape */
         /* Skal matche MSK_PROJECTS_LANDSCAPE_FIT i script.js (layout-rx kompenserer for denne scale) */
-        --projectsLandscapeFit: 0.86;
-        --projectsBrainSize: 118px;
+        /* p445: strammere scale — lodret for stor i phone landscape */
+        --projectsLandscapeFit: 0.78;
+        --projectsBrainSize: 96px;
         transform-origin: 50% 50%;
         transform:
             translateX(env(safe-area-inset-left, 0px))
@@ -20301,12 +20302,12 @@ html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .
  * ikke de indlejrede mobil-badges. Hele ellipsen skal være synlig.
  */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container {
-    --projectsLandscapeFit: 0.86;
-    --projectsBrainSize: 118px;
+    --projectsLandscapeFit: 0.78;
+    --projectsBrainSize: 96px;
     transform:
         translateX(env(safe-area-inset-left, 0px))
         translateY(env(safe-area-inset-top, 0px))
-        scale(0.86) !important;
+        scale(0.78) !important;
     transform-origin: 50% 50% !important;
 }
 
