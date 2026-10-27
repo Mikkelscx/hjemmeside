@@ -12677,8 +12677,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p439: placer igen — fra hjerne skråt ned-venstre mod Twister,
-						 * spejl af Kø-stregen, stop lige OVER ringen (ikke ind i cirklen).
+						 * p440: samme placering, men nederste ende mere til venstre (drejet).
 						 */
 						let twEdge = twiRect;
 						try {
@@ -12694,24 +12693,26 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twMidR = pt(twEdge, 'center');
 						let inX = svgScale(14);
 						let clear = svgScale(16);
+						let leftNudge = svgScale(28);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
 							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 18);
+							const qL = mskSvgPointFromClientPx(currentSvg, 32, 0);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
+							leftNudge = Math.abs(qL.x - p0.x) || leftNudge;
 						} catch (_) {}
-						/* Start under venstre hjerne-kant; slut midt over Twister-ringen */
+						/* Start under venstre hjerne-kant; nederste ende lidt mere til venstre */
 						a.x = brainLeft.x + inX;
 						a.y = brainBottom.y - svgScale(8);
 						b = {
-							x: twMidR.x + inX * 0.2,
+							x: twMidR.x - leftNudge,
 							y: twTopR.y - clear,
 						};
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
 						twBrainGapB = svgScale(4);
-						/* ~1/0.92 så synlig længde ≈ a→b uden overshoot ind i cirklen */
 						twBrainLenMul = 1.05;
 						twBrainMirror = true;
 						twBrainAsset = 'assets/linje 8.webp';
@@ -16680,7 +16681,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 01:52';
+		const stampText = 'update tirsdag 27 okt - klokken 01:56';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
