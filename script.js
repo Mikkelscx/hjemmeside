@@ -14263,9 +14263,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imagePath);
 				image.setAttribute('href', imagePath);
 				image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imagePath);
+				/* Short LS: lidt mildere end fuld assetS så rød streg/titel ikke klippes */
+				const bfAssetS = mskIsProjectsShortLandscapeViewport() ? Math.max(assetS, 0.88) : assetS;
 				let bw =
-					240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWRing * assetS;
-				let bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH * assetS;
+					240 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWRing * bfAssetS;
+				let bh = 200 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH * bfAssetS;
 				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
 				[bw, bh] = shrinkPhoneRing(bw, bh);
 				const bfDrawCy = centerY + (ipadLandscapeRings ? -s(2) : 0);
@@ -14315,7 +14317,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							projectsDesktopRingMul *
 							bfShortLsStretchX *
 							bfIpadMulWRing *
-							assetS
+							bfAssetS
 					)
 				);
 				fill.setAttribute(
@@ -14326,7 +14328,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							projectsDesktopRingMul *
 							bfIpadMulH *
 							bfFillRyMul *
-							assetS
+							bfAssetS
 					)
 				);
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
@@ -14349,8 +14351,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					// Keep it smaller and within the circle-ish area (circle image is 240x200, scaled by brainfartsRingScale)
 					const w =
-						205 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWLine * assetS;
-					const h = 160 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH * assetS;
+						205 * brainfartsRingScale * projectsDesktopRingMul * bfShortLsStretchX * bfIpadMulWLine * bfAssetS;
+					const h = 160 * brainfartsRingScale * projectsDesktopRingMul * bfIpadMulH * bfAssetS;
 					lineImg.setAttribute('width', String(w));
 					lineImg.setAttribute('height', String(h));
 					// Place it so it goes from RIGHT side -> down to BOTTOM-LEFT
@@ -14636,8 +14638,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
 				let drawCx = kCenterX;
 				if (ipadLandscapeRings) drawCx -= s(14);
-				/* Kort LS: ringen lidt ned så titel sidder i midten (som computer) */
-				const kobajerCircleDy = mskIsProjectsShortLandscapeViewport() ? s(22) : s(10);
+				/* Kort LS: ringen ned så titel sidder i midten (som computer) */
+				const kobajerCircleDy = mskIsProjectsShortLandscapeViewport() ? s(40) : s(10);
 				image.setAttribute('x', String(drawCx - (w / 2)));
 				image.setAttribute('y', String(drawCy - (h / 2) + kobajerCircleDy));
 				image.setAttribute('width', String(w));
@@ -16872,7 +16874,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 17:24';
+		const stampText = 'update tirsdag 27 okt - klokken 17:26';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
