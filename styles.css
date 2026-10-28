@@ -14458,35 +14458,40 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
     /* Faner + billedtitler: mindre i landscape (ovenfor) */
 
-    /* Projects phone LS: desktop-lignende badges UDENFOR ringe (pile synlige) */
-    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        z-index: 24 !important;
+    /* Phone LS: trekant INDE i BRAINFARTS-cirklen (ikke fritstående ved Kø-bajer) */
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
         pointer-events: none !important;
-        width: min(92px, 22vw) !important;
-    }
-    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        width: min(36px, 9vw) !important;
-        height: auto !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"],
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] {
         position: relative !important;
     }
-    /* Inline-skilt bruges ikke i phone LS (JS fjerner det) — skjul hvis den alligevel findes */
-    body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
+    body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline,
+    body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
+        position: absolute !important;
+        left: 50% !important;
+        top: 54% !important;
+        transform: translate(-50%, -50%) rotate(-1deg) scale(1.05) !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.72 !important;
+        width: min(78px, 18vw) !important;
+        max-width: 72% !important;
+        height: auto !important;
+        margin: 0 !important;
+        pointer-events: none !important;
+        z-index: 2 !important;
+        image-rendering: crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
     }
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
-        z-index: 1;
+        z-index: 3;
     }
 
     /* Phone LS: behold standalone D&AD + Kravling 2025 med pile (som computer) */
@@ -20348,11 +20353,26 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .dandd-badge--inline,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__sign--inline {
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
+}
+
+/* Phone LS: skjul fritstående Under-ombygning; trekant kun inline i Brainfarts */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node .brainfarts-build__sign--inline,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 0.72 !important;
 }
 
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge,
@@ -20360,19 +20380,10 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__sign {
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-}
-
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
-    width: 96px;
-    height: 122px;
-    z-index: 14;
 }
 
 /* Telefon landskab: badges læsbare som på computer (vmin på 430px gør clamp for små) */
