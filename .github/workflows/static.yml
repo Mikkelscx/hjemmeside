@@ -45,11 +45,15 @@ jobs:
             --exclude 'script-20260924p*.js' \
             --exclude 'styles-20260924p*.css' \
             ./ publish/
-          # Behold kun de seneste cache-bust assets (nuværende + lidt historik)
-          for n in 460 461 462 463 464; do
-            [ -f "script-20260924p${n}.js" ] && cp "script-20260924p${n}.js" publish/
-            [ -f "styles-20260924p${n}.css" ] && cp "styles-20260924p${n}.css" publish/
-          done
+          # Behold aktuelle cache-bust assets: læs højeste pN fra HTML, kopiér den + 4 forrige
+          LATEST=$(grep -hoE '20260924p[0-9]+' index.html projects.html about.html contact.html ai-universe.html 2>/dev/null | sed -E 's/.*p([0-9]+)/\1/' | sort -n | tail -1)
+          if [ -n "$LATEST" ]; then
+            START=$((LATEST > 4 ? LATEST - 4 : 1))
+            for n in $(seq "$START" "$LATEST"); do
+              [ -f "script-20260924p${n}.js" ] && cp "script-20260924p${n}.js" publish/
+              [ -f "styles-20260924p${n}.css" ] && cp "styles-20260924p${n}.css" publish/
+            done
+          fi
           # Altid kanoniske filer
           cp -f script.js styles.css publish/
           touch publish/.nojekyll
