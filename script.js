@@ -14941,7 +14941,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (portraitNaturli) naturliMul = 0.88;
 					if (ipadPortraitRings) naturliMul = Math.max(naturliMul, 0.98);
 				} catch {}
-				/* Telefon-landskab: ingen short-LS mul/stretch — samme oval-proportion som computer */
 				/* Kun desktop (min-width 1025): lidt mindre ring så den matcher mindre tekst-webp i CSS — ikke tablet/mobil */
 				try {
 					const iwDesk = mskViewportSize().w || 0;
@@ -14974,8 +14973,16 @@ document.addEventListener('DOMContentLoaded', function() {
 						naturliStretchX *= 1.28;
 					}
 				} catch {}
-				const naturliLsMulH = 1;
-				const naturliLsMulW = 1;
+				let naturliLsMulH = 1;
+				let naturliLsMulW = 1;
+				try {
+					if (mskIsProjectsPhoneLandscapeViewport()) {
+						/* Phone LS: bredere + lavere NATURLI’-oval */
+						naturliLsMulW = 1.28;
+						naturliLsMulH = 0.78;
+						naturliStretchX *= 1.12;
+					}
+				} catch {}
 				const nW =
 					240 * naturliMul * projectsDesktopRingMul * naturliStretchX * naturliLsMulW * assetS;
 				let nH = 140 * naturliMul * projectsDesktopRingMul * naturliLsMulH * assetS;
@@ -15018,7 +15025,10 @@ document.addEventListener('DOMContentLoaded', function() {
 							assetS
 					)
 				);
-				fill.setAttribute('ry', String(70 * 0.66 * naturliMul * projectsDesktopRingMul * assetS));
+				fill.setAttribute(
+					'ry',
+					String(70 * 0.66 * naturliMul * projectsDesktopRingMul * naturliLsMulH * assetS)
+				);
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -17118,7 +17128,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 23:28';
+		const stampText = 'update onsdag 28 okt - klokken 23:34';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
