@@ -46,7 +46,7 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-/* Telefon/kort landskab: p450 — fyld skærmen (0.88); ellipse/badges som computer, tilpasset mobil. */
+/* Telefon/kort landskab: p451 — desktop-lignende ellipse/badges (0.88); ellipse/badges som computer, tilpasset mobil. */
 const MSK_PROJECTS_LANDSCAPE_FIT = 0.88;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
@@ -10777,10 +10777,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			   (tidligere min(rx, rxTight) trykkede rx ned til ~158px og stablede knapper i midten). */
 			try {
 				if (isShortLandscape && !narrow) {
-					/* p450: desktop-lignende flad ellipse — bredere rx, mild lodret */
-					ry = Math.min(ry, Math.max(118, h * 0.44));
-					/* Vandret: scale(MSK_PROJECTS_LANDSCAPE_FIT) — layout-rx skal være højere end w/2 for synlig bredde, men fuld
-					   (vw/2)/fit klippede sidebobler (titler rækker ud). Bland mod rx fra padding ovenfor. */
+					/* p451: fladere ellipse som computer — mindre ry, bredere rx */
+					ry = Math.min(ry, Math.max(104, h * 0.38));
 					try {
 						const innerMax = Math.max(window.innerWidth || 0, window.innerHeight || 0);
 						const vw = Math.max(1, w, innerMax, lv.w, lv.h);
@@ -10790,11 +10788,10 @@ document.addEventListener('DOMContentLoaded', function() {
 							const v = parseFloat(cs.getPropertyValue('--projectsLandscapeFit') || '');
 							if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
 						} catch (_) {}
-						const edgePad = 14;
+						const edgePad = 12;
 						const rxLo = rx;
 						const rxFull = Math.max(40, (vw / 2 - edgePad) / fit);
-						/* Højere blend → mere som computer (sidebobler længere ude) */
-						const rxBlend = 0.78;
+						const rxBlend = 0.82;
 						rx = Math.max(rxLo, rxLo + (rxFull - rxLo) * rxBlend);
 					} catch (_) {
 						/* Undlad fallback der capper rx til ~w/2 — det fjerner hele scale-kompensationen. */
@@ -10822,14 +10819,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				const href = (node.getAttribute('href') || '').toLowerCase();
 				const shortLs = shortLsRing;
 
-				/* p450: top/bund som computer (short LS bruger samme pull som desktop) */
+				/* p451: short LS ekstra ind top/bund så ellipsen ikke fylder hele højden */
 				if (Math.sin(angle) < -0.12) {
-					const topPull = tabletLandscape ? 0 : shortLs ? 16 : 26;
+					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 34 : 26;
 					y += Math.round(topPull * scale);
 				}
 
 				if (Math.sin(angle) > 0.38) {
-					const botPull = tabletLandscape ? 0 : shortLs ? 0 : 38;
+					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 44 : 38;
 					y -= botPull;
 				}
 
@@ -11369,22 +11366,32 @@ document.addEventListener('DOMContentLoaded', function() {
 			const r = repopNode.getBoundingClientRect();
 			const titleImg = repopNode.querySelector('.project-node__title-img--repop');
 			const titleRect = titleImg ? titleImg.getBoundingClientRect() : r;
-			/* Pilens højre kant skal møde venstre kant af REPOP-teksten (ikke hele fanen) */
-			let anchorLeft = titleRect.left - containerRect.left;
-
 			const tabletLs = !!mskIsProjectsTabletLandscapeViewport();
-			const ovalLeft = r.left - containerRect.left;
-			const width = tabletLs ? 82 : 138;
-			const height = tabletLs ? 50 : 80;
-			const tipOverlapPx = tabletLs ? 22 : 4;
-			let shiftRightPx = tabletLs ? 0 : 76;
+			const phoneLs = !!mskIsProjectsPhoneLandscapeViewport();
+			/* Telefon LS: scale() på container — skærm-delta → lokal */
+			let fit = 1;
+			try {
+				if (phoneLs) {
+					const v = parseFloat(getComputedStyle(container).getPropertyValue('--projectsLandscapeFit') || '');
+					if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
+				}
+			} catch (_) {}
+			const toLocal = (d) => (phoneLs ? d / fit : d);
+			/* Pilens højre kant skal møde venstre kant af REPOP-teksten (ikke hele fanen) */
+			let anchorLeft = toLocal(titleRect.left - containerRect.left);
+
+			const ovalLeft = toLocal(r.left - containerRect.left);
+			const width = tabletLs ? 82 : phoneLs ? 110 : 138;
+			const height = tabletLs ? 50 : phoneLs ? 64 : 80;
+			const tipOverlapPx = tabletLs ? 22 : phoneLs ? 8 : 4;
+			let shiftRightPx = tabletLs ? 0 : phoneLs ? 28 : 76;
 			const left = tabletLs
 				? ovalLeft - width + tipOverlapPx
 				: anchorLeft - width + tipOverlapPx + shiftRightPx;
 
 			const top = tabletLs
-				? (r.top - containerRect.top) + (r.height / 2) + 6
-				: (r.top - containerRect.top) + (r.height / 2) + 12;
+				? toLocal(r.top - containerRect.top) + (r.height / 2) / (phoneLs ? fit : 1) + 6
+				: toLocal(r.top - containerRect.top) + toLocal(r.height / 2) + (phoneLs ? 8 : 12);
 
 			line.style.width = `${width}px`;
 			line.style.height = `${height}px`;
@@ -11476,12 +11483,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const containerRect = container.getBoundingClientRect();
 			const a = arrow.getBoundingClientRect();
-
-			const width = 160;
 			const tabletLs = !!mskIsProjectsTabletLandscapeViewport();
-			const gap = tabletLs ? -30 : 4;
-			const left = (a.left - containerRect.left) - width - gap;
-			const top = (a.top - containerRect.top) + (a.height / 2);
+			const phoneLs = !!mskIsProjectsPhoneLandscapeViewport();
+			let fit = 1;
+			try {
+				if (phoneLs) {
+					const v = parseFloat(getComputedStyle(container).getPropertyValue('--projectsLandscapeFit') || '');
+					if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
+				}
+			} catch (_) {}
+			const toLocal = (d) => (phoneLs ? d / fit : d);
+
+			/* Telefon LS: kortere badge tæt på pilen (ellers ser den ud til at sidde over Byens) */
+			const width = phoneLs ? 132 : 160;
+			const gap = tabletLs ? -30 : phoneLs ? -8 : 4;
+			const left = toLocal(a.left - containerRect.left) - width - gap;
+			const top = toLocal(a.top - containerRect.top) + toLocal(a.height / 2);
 
 			badge.style.width = `${width}px`;
 			badge.style.height = 'auto';
@@ -11489,7 +11506,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			badge.style.top = `${top}px`;
 			badge.style.transform = tabletLs
 				? 'translateY(-50%) translateX(8px) translateY(-14px) rotate(-2deg)'
-				: 'translateY(-50%) translateX(22px) translateY(-12px) rotate(-2deg)';
+				: phoneLs
+					? 'translateY(-50%) translateX(6px) translateY(-8px) rotate(-2deg)'
+					: 'translateY(-50%) translateX(22px) translateY(-12px) rotate(-2deg)';
 		}
 
 		// Place arrow asset just under KØ-BAJER
@@ -14111,10 +14130,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		mskProjectsSyncLayoutBeforePaint();
 		const scale = 1;
 		const s = (n) => n * scale;
-		/* Kort landscape: ringe tættere på computer-proportion (0.76 gjorde boblerne for “små” ift. desktop) */
+		/* Kort landscape: ringe lidt under 1 så titel fylder boblen som på computer */
 		let assetS = 1;
 		try {
-			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.9;
+			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.84;
 		} catch (_) {
 			assetS = 1;
 		}
@@ -14646,16 +14665,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
 				let drawCx = kCenterX;
 				if (ipadLandscapeRings) drawCx -= s(14);
-				/* Kort LS: ringen ned så titel sidder i midten (som computer) */
-				const kobajerCircleDy = mskIsProjectsShortLandscapeViewport() ? s(40) : s(10);
+				/* Kort LS: samme lille dy som computer — rotate-pivot SKAL være ringens centrum (ellers flytter 180° ringen op fra titlen) */
+				const kobajerCircleDy = s(10);
+				const kobajerImgCy = drawCy + kobajerCircleDy;
 				image.setAttribute('x', String(drawCx - (w / 2)));
-				image.setAttribute('y', String(drawCy - (h / 2) + kobajerCircleDy));
+				image.setAttribute('y', String(kobajerImgCy - (h / 2)));
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.setAttribute('transform', `rotate(180 ${drawCx} ${drawCy})`);
+				image.setAttribute('transform', `rotate(180 ${drawCx} ${kobajerImgCy})`);
 				image.style.pointerEvents = 'auto';
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
@@ -14667,7 +14687,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(drawCx));
-				fill.setAttribute('cy', String(drawCy - s(1)));
+				fill.setAttribute('cy', String(kobajerImgCy - s(1)));
 				{
 					const shortLs = mskIsProjectsShortLandscapeViewport();
 					const rxMul = shortLs ? 0.59 : 0.56;
@@ -16882,7 +16902,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 14:55';
+		const stampText = 'update onsdag 28 okt - klokken 15:00';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
