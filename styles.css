@@ -20423,8 +20423,8 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
     position: absolute !important;
     left: 50% !important;
-    top: 32% !important;
-    transform: translate(calc(-50% + 10px), -50%) scale(0.94) !important;
+    top: 58% !important;
+    transform: translate(calc(-50% + 10px), -50%) scale(1) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
     z-index: 6 !important;
@@ -20435,12 +20435,12 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-    width: min(44px, 10vw) !important;
+    width: min(52px, 12vw) !important;
     height: auto !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
-    width: min(94px, 21vw) !important;
+    width: min(112px, 25vw) !important;
     height: auto !important;
     margin: 0 0 0 -4px !important;
 }
@@ -20448,11 +20448,11 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title {
     position: relative;
     z-index: 3;
-    transform: translateY(-28px) !important;
+    transform: translateY(-34px) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-    transform: translateY(-12px) !important;
+    transform: translateY(-16px) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
