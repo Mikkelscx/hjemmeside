@@ -20421,6 +20421,12 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     max-width: min(128px, 28vw) !important;
     width: min(128px, 28vw) !important;
 }
+/* Phone LS: Unge mod UV større tekst i cirklen */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
+    max-width: min(145px, 32vw) !important;
+    width: min(145px, 32vw) !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
     display: flex !important;

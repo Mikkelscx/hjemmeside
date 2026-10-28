@@ -15066,9 +15066,14 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (ipadLandscapeRings) ungeMul = 1;
 				} catch {}
 				let ungeStretchX = 1;
+				let ungeLsMulH = 1;
 				if (ipadPortraitRings) ungeStretchX = 1.82 * pRing;
 				else if (ipadLandscapeRings) ungeStretchX = 1;
-				const ungeLsMulH = 1;
+				else if (mskIsProjectsPhoneLandscapeViewport()) {
+					/* Phone LS: større Unge mod UV-cirkel */
+					ungeStretchX = 1.26;
+					ungeLsMulH = 1.22;
+				}
 				let uw = 320 * ungeMul * projectsDesktopRingMul * ungeStretchX * assetS;
 				let uh = 150 * ungeMul * projectsDesktopRingMul * ungeLsMulH * assetS;
 				if (ipadLandscapeRings) uh *= ipadLsRingVertMul;
@@ -15092,7 +15097,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				fill.setAttribute('cx', String(centerX));
 				fill.setAttribute('cy', String(centerY)); // UNGE MOD UV: keep centered
 				fill.setAttribute('rx', String(160 * ungeMul * 0.54 * projectsDesktopRingMul * ungeStretchX * assetS)); // UNGE MOD UV: wider left+right
-				fill.setAttribute('ry', String(75 * ungeMul * 0.51 * projectsDesktopRingMul * assetS));  // UNGE MOD UV: slightly more top+bottom
+				fill.setAttribute('ry', String(75 * ungeMul * 0.51 * projectsDesktopRingMul * ungeLsMulH * assetS));  // UNGE MOD UV: slightly more top+bottom
 				fill.setAttribute('fill', 'rgba(118, 75, 162, 0.42)');
 				fill.classList.add('frame-fill');
 				fill.dataset.nodeIndex = String(index);
@@ -17132,7 +17137,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 23:43';
+		const stampText = 'update onsdag 28 okt - klokken 23:48';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
