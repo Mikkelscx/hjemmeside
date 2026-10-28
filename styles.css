@@ -20407,6 +20407,14 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     width: min(164px, 36vw) !important;
     max-width: min(164px, 36vw) !important;
 }
+/* Phone LS: NATURLI’ tekst en myg større + en myg op */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli {
+    width: auto !important;
+    max-width: min(120px, 26vw) !important;
+    transform: translate(-5px, 3px) !important;
+    transform-origin: center center;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
     display: flex !important;
