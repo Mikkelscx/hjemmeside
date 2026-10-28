@@ -11075,12 +11075,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					y = Math.max(bandTopClamp, Math.min(bandBottomClamp, y));
 					try {
 						/*
-						 * Phone LS: TWISTER var i home-indicator-zonen (kun en bue synlig).
-						 * Force midt-lav — EFTER band-clamp, ellers bliver y skubbet ned igen.
+						 * Phone LS: TWISTER mellem hjerne og bund — synlig oval, uden at sidde i home-indicator.
+						 * (0.22 var for højt / overlap; fuld bund var klippet.)
 						 */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('twister')) {
 							const twMaxY = Math.round(
-								centerY + Math.min(ryEff * 0.22, layoutH * 0.12)
+								centerY + Math.min(ryEff * 0.58, layoutH * 0.28)
 							);
 							y = Math.min(y, Math.max(bandTopClamp + 24, twMaxY));
 						}
@@ -14260,9 +14260,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (mskIsProjectsShortLandscapeViewport()) {
 					extensionAmount = nodeRadius * 2.04 + 14;
 				}
-				/* Phone LS: kortere streg — stop et stykke før boblen */
+				/* Phone LS: lidt kortere streg — stop nær boblekanten */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					extensionAmount = -nodeRadius * 0.35;
+					extensionAmount = nodeRadius * 0.22;
 				}
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount - 30; // Move line up by 30px
@@ -14270,7 +14270,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				let twShortLsSpokeBoost = mskIsProjectsShortLandscapeViewport() ? 1.1 : 1;
-				if (mskIsProjectsPhoneLandscapeViewport()) twShortLsSpokeBoost = 0.78;
+				if (mskIsProjectsPhoneLandscapeViewport()) twShortLsSpokeBoost = 0.92;
 				const lineLength =
 					Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) *
 					spokeLenMul *
@@ -17250,7 +17250,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 29 okt - klokken 00:05';
+		const stampText = 'update torsdag 29 okt - klokken 00:11';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
