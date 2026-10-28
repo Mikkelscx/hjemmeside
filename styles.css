@@ -20423,7 +20423,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
     position: absolute !important;
     left: 50% !important;
-    top: 64% !important;
+    top: 60% !important;
     transform: translate(-50%, -50%) scale(0.86) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
@@ -20448,11 +20448,11 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title {
     position: relative;
     z-index: 3;
-    transform: translateY(-10px) !important;
+    transform: translateY(-20px) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-    transform: translateY(0) !important;
+    transform: translateY(-6px) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
