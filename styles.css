@@ -14657,11 +14657,11 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         gap: 1px !important;
         max-width: min(96%, 260px) !important;
     }
-    /* Phone LS: px-offset fra nodens midte (top% på lav node rykker næsten ikke) */
+    /* Phone LS: centrér badge (-50%) + lidt op — uden -50% hang hele logoet under cirklen */
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
         top: 50% !important;
-        transform: translate(calc(-50% + 10px), -4px) scale(1.06) !important;
+        transform: translate(calc(-50% + 10px), calc(-50% - 10px)) scale(1.06) !important;
         z-index: 6 !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
@@ -20439,9 +20439,9 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
     position: absolute !important;
     left: 50% !important;
-    /* Node-midte + px op — top% på lav node gav næsten ingen synlig forskel */
+    /* Centrér (-50%) + lidt op under TWISTER — mangler -50% = logo under cirklen */
     top: 50% !important;
-    transform: translate(calc(-50% + 10px), -4px) scale(1.06) !important;
+    transform: translate(calc(-50% + 10px), calc(-50% - 10px)) scale(1.06) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
     z-index: 6 !important;
