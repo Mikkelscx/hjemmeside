@@ -11042,6 +11042,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						y += Math.round(14 * scale);
 					}
 				} catch {}
+				try {
+					/* Phone LS: TWISTER op — cirkel + tekst + D&AD må ikke klippes i bunden */
+					if (mskIsProjectsPhoneLandscapeViewport() && href.includes('twister')) {
+						y -= Math.round(42 * scale);
+					}
+				} catch {}
 
 				x = Math.round(x);
 				y = Math.round(y);
@@ -14249,12 +14255,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (mskIsProjectsShortLandscapeViewport()) {
 					extensionAmount = nodeRadius * 2.04 + 14;
 				}
+				/* Phone LS: kortere streg — stop før midten af boblen */
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					extensionAmount = nodeRadius * 0.55;
+				}
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount - 30; // Move line up by 30px
 				
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
-				const twShortLsSpokeBoost = mskIsProjectsShortLandscapeViewport() ? 1.1 : 1;
+				let twShortLsSpokeBoost = mskIsProjectsShortLandscapeViewport() ? 1.1 : 1;
+				if (mskIsProjectsPhoneLandscapeViewport()) twShortLsSpokeBoost = 0.88;
 				const lineLength =
 					Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) *
 					spokeLenMul *
@@ -15214,7 +15225,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				let twCenterX = centerX;
 				let twCenterY = centerY;
 				try {
-					if (twBadgeRect) {
+					/* Phone LS: ring om titlen (D&AD er absolute i CSS) — undgå kæmpe union der klippes i bunden */
+					if (twBadgeRect && !mskIsProjectsPhoneLandscapeViewport()) {
 						const left = Math.min(twTitleRect.left, twBadgeRect.left);
 						const right = Math.max(twTitleRect.right, twBadgeRect.right);
 						const top = Math.min(twTitleRect.top, twBadgeRect.top);
@@ -15257,6 +15269,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Phone LS: lidt bredere Twister-cirkel */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
 					w *= 1.14;
+					h *= 1.08;
 				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
 				let circleDy = landscapeMindmap && !ipadLandscapeRings ? s(48) : s(20);
@@ -15266,6 +15279,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Kort mobil-landscape: ringen op så titel midter i ovalen (som desktop) */
 				if (mskIsProjectsShortLandscapeViewport()) {
 					circleDy -= s(46);
+				}
+				/* Phone LS: ekstra op så oval + D&AD er synlig */
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					circleDy -= s(22);
 				}
 				/* iPad portræt mindmap: ring + fill lidt op */
 				if (ipadPortraitRings) {
@@ -17228,7 +17245,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 23:54';
+		const stampText = 'update onsdag 28 okt - klokken 23:59';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
