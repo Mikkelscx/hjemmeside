@@ -46,8 +46,8 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-/* Telefon/kort landskab: p446 — midt mellem p444 (0.86) og p445 (0.78). */
-const MSK_PROJECTS_LANDSCAPE_FIT = 0.82;
+/* Telefon/kort landskab: p448 — lidt strammere lodret end p446 (0.82); p445 (0.78) var for meget. */
+const MSK_PROJECTS_LANDSCAPE_FIT = 0.79;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
@@ -10768,8 +10768,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			   (tidligere min(rx, rxTight) trykkede rx ned til ~158px og stablede knapper i midten). */
 			try {
 				if (isShortLandscape && !narrow) {
-					/* p446: lidt tilbage fra p445 — stadig strammere end p444 */
-					ry = Math.min(ry, Math.max(122, h * 0.46));
+					/* p448: strammere lodret end p446 — stadig mildere end p445 (0.40) */
+					ry = Math.min(ry, Math.max(112, h * 0.42));
 					/* Vandret: scale(MSK_PROJECTS_LANDSCAPE_FIT) — layout-rx skal være højere end w/2 for synlig bredde, men fuld
 					   (vw/2)/fit klippede sidebobler (titler rækker ud). Bland mod rx fra padding ovenfor. */
 					try {
@@ -10812,14 +10812,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				const href = (node.getAttribute('href') || '').toLowerCase();
 				const shortLs = shortLsRing;
 
-				/* p446: top/bund lidt ind — mildere end p445 */
+				/* p448: top/bund ind — mellem p446 og p445 */
 				if (Math.sin(angle) < -0.12) {
-					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 20 : 26;
+					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 26 : 26;
 					y += Math.round(topPull * scale);
 				}
 
 				if (Math.sin(angle) > 0.38) {
-					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 28 : 38;
+					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 32 : 38;
 					y -= botPull;
 				}
 
@@ -16874,7 +16874,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 27 okt - klokken 17:26';
+		const stampText = 'update onsdag 28 okt - klokken 13:51';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
