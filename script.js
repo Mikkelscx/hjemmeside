@@ -11042,13 +11042,6 @@ document.addEventListener('DOMContentLoaded', function() {
 						y += Math.round(14 * scale);
 					}
 				} catch {}
-				try {
-					/* Phone LS: TWISTER op — cirkel + tekst + D&AD må ikke klippes i bunden */
-					if (mskIsProjectsPhoneLandscapeViewport() && href.includes('twister')) {
-						y -= Math.round(42 * scale);
-					}
-				} catch {}
-
 				x = Math.round(x);
 				y = Math.round(y);
 
@@ -11080,6 +11073,18 @@ document.addEventListener('DOMContentLoaded', function() {
 						x = Math.max(padXL, Math.min(layoutW - padXR, x));
 					}
 					y = Math.max(bandTopClamp, Math.min(bandBottomClamp, y));
+					try {
+						/*
+						 * Phone LS: TWISTER var i home-indicator-zonen (kun en bue synlig).
+						 * Force midt-lav — EFTER band-clamp, ellers bliver y skubbet ned igen.
+						 */
+						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('twister')) {
+							const twMaxY = Math.round(
+								centerY + Math.min(ryEff * 0.22, layoutH * 0.12)
+							);
+							y = Math.min(y, Math.max(bandTopClamp + 24, twMaxY));
+						}
+					} catch (_) {}
 				}
 
 				node.style.setProperty('position', 'absolute', 'important');
@@ -14255,9 +14260,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (mskIsProjectsShortLandscapeViewport()) {
 					extensionAmount = nodeRadius * 2.04 + 14;
 				}
-				/* Phone LS: kortere streg — stop før midten af boblen */
+				/* Phone LS: kortere streg — stop et stykke før boblen */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					extensionAmount = nodeRadius * 0.55;
+					extensionAmount = -nodeRadius * 0.35;
 				}
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount - 30; // Move line up by 30px
@@ -14265,7 +14270,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Calculate rotation and length for the image asset
 				const angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
 				let twShortLsSpokeBoost = mskIsProjectsShortLandscapeViewport() ? 1.1 : 1;
-				if (mskIsProjectsPhoneLandscapeViewport()) twShortLsSpokeBoost = 0.88;
+				if (mskIsProjectsPhoneLandscapeViewport()) twShortLsSpokeBoost = 0.78;
 				const lineLength =
 					Math.sqrt((lineEndX - brainStartX) ** 2 + (lineEndY - brainStartY) ** 2) *
 					spokeLenMul *
@@ -15266,10 +15271,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					h *= 1 + (1.52 - 1) * pRing;
 				}
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: lidt bredere Twister-cirkel */
+				/* Phone LS: lidt bredere Twister-cirkel; hold højden kompakt så den ikke klippes */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.14;
-					h *= 1.08;
+					w *= 1.12;
+					h *= 0.98;
 				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
 				let circleDy = landscapeMindmap && !ipadLandscapeRings ? s(48) : s(20);
@@ -15280,9 +15285,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (mskIsProjectsShortLandscapeViewport()) {
 					circleDy -= s(46);
 				}
-				/* Phone LS: ekstra op så oval + D&AD er synlig */
+				/* Phone LS: ringen følger noden (ingen ekstra ned-skub) */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					circleDy -= s(22);
+					circleDy = -s(8);
 				}
 				/* iPad portræt mindmap: ring + fill lidt op */
 				if (ipadPortraitRings) {
@@ -17245,7 +17250,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 23:59';
+		const stampText = 'update torsdag 29 okt - klokken 00:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
