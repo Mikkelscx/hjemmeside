@@ -14657,10 +14657,21 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         gap: 1px !important;
         max-width: min(96%, 260px) !important;
     }
+    /* Phone LS: px-offset fra nodens midte (top% på lav node rykker næsten ikke) */
+    html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
+    html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
+        top: 50% !important;
+        transform: translate(calc(-50% + 10px), -4px) scale(1.06) !important;
+        z-index: 6 !important;
+    }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
         width: 54px !important;
         height: auto !important;
+    }
+    html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
+    html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
+        width: min(58px, 13vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
@@ -14670,6 +14681,11 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         margin-top: 0 !important;
         margin-left: -10px !important;
         align-self: center !important;
+    }
+    html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
+    html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
+        width: min(124px, 28vw) !important;
+        margin-left: -4px !important;
     }
 }
 
@@ -20423,8 +20439,9 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
     position: absolute !important;
     left: 50% !important;
-    top: 28% !important;
-    transform: translate(calc(-50% + 10px), -50%) scale(1.06) !important;
+    /* Node-midte + px op — top% på lav node gav næsten ingen synlig forskel */
+    top: 50% !important;
+    transform: translate(calc(-50% + 10px), -4px) scale(1.06) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
     z-index: 6 !important;
