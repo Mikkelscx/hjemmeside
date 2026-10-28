@@ -20400,23 +20400,23 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] {
     position: relative !important;
 }
-/* Phone LS: REPOP titel mellemvej — mellem default (1.32) og p470 (1.38) */
+/* Phone LS: REPOP titel — kun et lille nøk over default (1.32), under p471 */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .project-node__title-img--repop,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title-img--repop {
     filter:
-        contrast(1.35)
-        drop-shadow(0.98px 0 0 rgba(26, 26, 26, 0.94))
-        drop-shadow(-0.98px 0 0 rgba(26, 26, 26, 0.94))
-        drop-shadow(0 0.85px 0 rgba(26, 26, 26, 0.94))
-        drop-shadow(0 -0.85px 0 rgba(26, 26, 26, 0.94))
-        drop-shadow(0.54px 0 0 rgba(26, 26, 26, 0.73))
-        drop-shadow(-0.54px 0 0 rgba(26, 26, 26, 0.73))
-        drop-shadow(0 0.46px 0 rgba(26, 26, 26, 0.73))
-        drop-shadow(0 -0.46px 0 rgba(26, 26, 26, 0.73))
-        drop-shadow(0.81px 0.81px 0 rgba(26, 26, 26, 0.85))
-        drop-shadow(-0.81px 0.81px 0 rgba(26, 26, 26, 0.85))
-        drop-shadow(0.81px -0.81px 0 rgba(26, 26, 26, 0.85))
-        drop-shadow(-0.81px -0.81px 0 rgba(26, 26, 26, 0.85)) !important;
+        contrast(1.33)
+        drop-shadow(0.96px 0 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(-0.96px 0 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0 0.83px 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0 -0.83px 0 rgba(26, 26, 26, 0.94))
+        drop-shadow(0.53px 0 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(-0.53px 0 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0 0.45px 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0 -0.45px 0 rgba(26, 26, 26, 0.72))
+        drop-shadow(0.79px 0.79px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(-0.79px 0.79px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(0.79px -0.79px 0 rgba(26, 26, 26, 0.84))
+        drop-shadow(-0.79px -0.79px 0 rgba(26, 26, 26, 0.84)) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
