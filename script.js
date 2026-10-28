@@ -46,8 +46,8 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-/* Telefon/kort landskab: p454 — bred computer-ellipse der fylder viewport (fit 1). */
-const MSK_PROJECTS_LANDSCAPE_FIT = 1;
+/* Telefon/kort landskab: p455 — bred computer-ellipse med luft til badges/pile. */
+const MSK_PROJECTS_LANDSCAPE_FIT = 0.94;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
@@ -1347,17 +1347,32 @@ function positionBrainfartsBuildNote() {
 		} catch (_) {}
 		const toLocal = (screenDelta) => (phoneLs ? screenDelta / fit : screenDelta);
 		const cx = toLocal(ringRect.left + ringRect.width / 2 - cRect.left);
-		const leftNudgePx = tabletLs ? 78 : phoneLs ? 36 : 48;
-		const leftPx = cx - leftNudgePx;
-		/* Desktop/tablet: op under ringen. Telefon LS: lige under ringen som computer (ikke ind i boblen). */
-		const topPx = phoneLs
-			? toLocal(ringRect.bottom - cRect.top) + 4
+		const leftNudgePx = tabletLs ? 78 : phoneLs ? 8 : 48;
+		let leftPx = cx - leftNudgePx;
+		/* Desktop/tablet: op under ringen. Telefon LS: under ringen, ind mod midten. */
+		let topPx = phoneLs
+			? toLocal(ringRect.bottom - cRect.top) + 2
 			: ringRect.bottom - cRect.top - (tabletLs ? 96 : 70);
+		if (phoneLs) {
+			leftPx = Math.max(56, Math.min(leftPx + 28, toLocal(cRect.width) - 56));
+			topPx = Math.max(8, Math.min(topPx, toLocal(cRect.height) - 52));
+		}
 		build.style.setProperty('left', `${Math.round(leftPx)}px`, 'important');
 		build.style.setProperty('top', `${Math.round(topPx)}px`, 'important');
 		build.style.setProperty('right', 'auto', 'important');
 		build.style.setProperty('bottom', 'auto', 'important');
 		build.style.setProperty('transform', 'translateX(-50%)', 'important');
+		if (phoneLs) {
+			build.style.setProperty('display', 'block', 'important');
+			build.style.setProperty('visibility', 'visible', 'important');
+			build.style.setProperty('opacity', '1', 'important');
+			const arrow = build.querySelector('.brainfarts-build__arrow') || document.querySelector('.brainfarts-build__arrow');
+			if (arrow) {
+				arrow.style.setProperty('display', 'block', 'important');
+				arrow.style.setProperty('visibility', 'visible', 'important');
+				arrow.style.setProperty('opacity', '1', 'important');
+			}
+		}
 	} catch (_) {}
 }
 
@@ -10774,9 +10789,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			} catch {}
 			/*
-			 * Telefon/kort landskab (p454): WIDTH-FIRST som computer.
-			 * Fyld viewport-bredden først (deskRatio ≥ 1.85). Krymp IKKE rx når højden
-			 * begrænser — ellers lander en lille rund ring midt i skærmen (p451–p453).
+			 * Telefon/kort landskab (p455): WIDTH-FIRST som computer, med margin til
+			 * ringe + badges/pile (ellers skæres NATURLI/DUREX/Byens/Kø-bajer af).
 			 */
 			try {
 				if (isShortLandscape && !narrow) {
@@ -10788,8 +10802,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					const deskRatio = 1.85; /* målt på computer ~611/331 */
 					const fitSafe = Math.max(0.5, fit);
-					const visPadX = 36;
-					const visPadY = 28;
+					const visPadX = 92; /* plads til ring-radius + lidt luft */
+					const visPadY = 46;
 					rx = Math.round((layoutW / 2 - visPadX) / fitSafe);
 					ry = Math.round(rx / deskRatio);
 					const ryMax = Math.round((layoutH / 2 - visPadY) / fitSafe);
@@ -10818,19 +10832,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				const href = (node.getAttribute('href') || '').toLowerCase();
 				const shortLs = shortLsRing;
 
-				/* Top/bund-ind + deskLike — short LS: samme computer-offsets (p454) */
+				/* Top/bund-ind + deskLike — short LS: milde offsets så ringe ikke klippes */
 				if (Math.sin(angle) < -0.12) {
-					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 4 : 26;
+					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 8 : 26;
 					y += Math.round(topPull * scale);
 				}
 
 				if (Math.sin(angle) > 0.38) {
-					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 4 : 38;
+					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 10 : 38;
 					y -= botPull;
 				}
 
 				if (href.includes('repop')) {
-					y += touchLayout ? 14 : tabletLandscape ? 10 : isShortLandscape ? 22 : 35;
+					y += touchLayout ? 14 : tabletLandscape ? 10 : isShortLandscape ? 14 : 35;
 				}
 
 				const deskLike =
@@ -10839,8 +10853,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					(!narrow && !isShortLandscape && w >= 1025);
 				try {
 					if (deskLike) {
-						/* Short LS: fuld leftPush som computer — åbn venstre side */
-						const leftPush = Math.round(56 * scale);
+						/* Short LS: let leftPush — fuld 56 skubbede Byens/Brainfarts/Kø af kanten */
+						const leftPush = Math.round((isShortLandscape ? 14 : 56) * scale);
 						if (
 							href.includes('byens-landhandel') ||
 							href.includes('brainfarts') ||
@@ -10852,13 +10866,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 				try {
 					if (deskLike && href.includes('unge-mod-uv')) {
-						y += Math.round(46 * scale);
-						x += Math.round(56 * scale);
+						y += Math.round((isShortLandscape ? 18 : 46) * scale);
+						x += Math.round((isShortLandscape ? 18 : 56) * scale);
 					}
 				} catch {}
 				try {
 					if (deskLike && href.includes('twister')) {
-						y += Math.round(14 * scale);
+						y += Math.round((isShortLandscape ? 6 : 14) * scale);
 					}
 				} catch {}
 
@@ -10866,22 +10880,23 @@ document.addEventListener('DOMContentLoaded', function() {
 				y = Math.round(y);
 
 				if (tabletLandscape || isShortLandscape) {
+					/* Short LS: hold node-centre indenfor så oval+titel ikke skæres af */
 					const padX = isShortLandscape
-						? Math.round(22 * scale)
+						? Math.round(78 * scale)
 						: href.includes('brainfarts')
 							? Math.round(118 * scale)
 							: Math.round(72 * scale);
-					let bandTopClamp = Math.round(isShortLandscape ? 24 * scale : 44 * scale);
+					let bandTopClamp = Math.round(isShortLandscape ? 36 * scale : 44 * scale);
 					try {
 						const nb = document.querySelector('.navbar');
 						if (nb && nb.getBoundingClientRect) {
 							bandTopClamp = Math.max(
 								bandTopClamp,
-								Math.round(nb.getBoundingClientRect().bottom + (isShortLandscape ? 4 : 14))
+								Math.round(nb.getBoundingClientRect().bottom + (isShortLandscape ? 6 : 14))
 							);
 						}
 					} catch (_) {}
-					const bandBottomClamp = layoutH - Math.round(isShortLandscape ? 12 * scale : 18 * scale);
+					const bandBottomClamp = layoutH - Math.round(isShortLandscape ? 36 * scale : 18 * scale);
 					if (href.includes('durex') && !isShortLandscape) {
 						const durexMaxX = layoutW - Math.round(72 * scale);
 						x = Math.max(padX, Math.min(durexMaxX, x));
@@ -11254,11 +11269,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			const containerRect = container.getBoundingClientRect();
 			const r = twisterNode.getBoundingClientRect();
 			const tabletLs = !!mskIsProjectsTabletLandscapeViewport();
+			const phoneLs = !!mskIsProjectsPhoneLandscapeViewport();
 			const top =
 				(r.top - containerRect.top) +
 				(r.height / 2) +
-				(tabletLs ? 32 : 46);
-			const left = (r.right - containerRect.left) + (tabletLs ? 34 : 14 + 70);
+				(tabletLs ? 32 : phoneLs ? 18 : 46);
+			let left = (r.right - containerRect.left) + (tabletLs ? 34 : phoneLs ? 10 : 14 + 70);
+			/* Telefon LS: hold D&AD inde i viewport så pilen til Twister er synlig */
+			if (phoneLs) {
+				const maxLeft = containerRect.width - 88;
+				if (left > maxLeft) left = Math.max(8, maxLeft);
+			}
 
 			badge.style.left = `${left}px`;
 			badge.style.top = `${top}px`;
@@ -11381,17 +11402,23 @@ document.addEventListener('DOMContentLoaded', function() {
 			let anchorLeft = toLocal(titleRect.left - containerRect.left);
 
 			const ovalLeft = toLocal(r.left - containerRect.left);
-			const width = tabletLs ? 82 : phoneLs ? 110 : 138;
-			const height = tabletLs ? 50 : phoneLs ? 64 : 80;
-			const tipOverlapPx = tabletLs ? 22 : phoneLs ? 8 : 4;
-			let shiftRightPx = tabletLs ? 0 : phoneLs ? 28 : 76;
-			const left = tabletLs
+			const width = tabletLs ? 82 : phoneLs ? 72 : 138;
+			const height = tabletLs ? 50 : phoneLs ? 44 : 80;
+			const tipOverlapPx = tabletLs ? 22 : phoneLs ? 10 : 4;
+			let shiftRightPx = tabletLs ? 0 : phoneLs ? 4 : 76;
+			let left = tabletLs
 				? ovalLeft - width + tipOverlapPx
 				: anchorLeft - width + tipOverlapPx + shiftRightPx;
+			/* Telefon LS: pil skal sidde lige venstre for REPOP — ikke flyde midt/over Byens */
+			if (phoneLs) {
+				const minLeft = 4;
+				const maxLeft = Math.max(minLeft, ovalLeft - width + tipOverlapPx);
+				left = Math.min(maxLeft, Math.max(minLeft, left));
+			}
 
 			const top = tabletLs
 				? toLocal(r.top - containerRect.top) + (r.height / 2) / (phoneLs ? fit : 1) + 6
-				: toLocal(r.top - containerRect.top) + toLocal(r.height / 2) + (phoneLs ? 8 : 12);
+				: toLocal(r.top - containerRect.top) + toLocal(r.height / 2) + (phoneLs ? 2 : 12);
 
 			line.style.width = `${width}px`;
 			line.style.height = `${height}px`;
@@ -11494,11 +11521,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			} catch (_) {}
 			const toLocal = (d) => (phoneLs ? d / fit : d);
 
-			/* Telefon LS: kortere badge tæt på pilen (ellers ser den ud til at sidde over Byens) */
-			const width = phoneLs ? 132 : 160;
-			const gap = tabletLs ? -30 : phoneLs ? -8 : 4;
-			const left = toLocal(a.left - containerRect.left) - width - gap;
-			const top = toLocal(a.top - containerRect.top) + toLocal(a.height / 2);
+			/* Telefon LS: badge tæt på pilen/REPOP, clamped inde i viewport */
+			const width = phoneLs ? 108 : 160;
+			const gap = tabletLs ? -30 : phoneLs ? 2 : 4;
+			let left = toLocal(a.left - containerRect.left) - width - gap;
+			let top = toLocal(a.top - containerRect.top) + toLocal(a.height / 2);
+			if (phoneLs) {
+				left = Math.max(4, Math.min(left, toLocal(containerRect.width) - width - 4));
+				top = Math.max(28, Math.min(top, toLocal(containerRect.height) - 28));
+			}
 
 			badge.style.width = `${width}px`;
 			badge.style.height = 'auto';
@@ -11507,7 +11538,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			badge.style.transform = tabletLs
 				? 'translateY(-50%) translateX(8px) translateY(-14px) rotate(-2deg)'
 				: phoneLs
-					? 'translateY(-50%) translateX(6px) translateY(-8px) rotate(-2deg)'
+					? 'translateY(-50%) translateX(2px) translateY(-4px) rotate(-2deg)'
 					: 'translateY(-50%) translateX(22px) translateY(-12px) rotate(-2deg)';
 		}
 
@@ -11548,6 +11579,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const containerRect = container.getBoundingClientRect();
 			const r = kobajerNode.getBoundingClientRect();
+			const phoneLs = !!mskIsProjectsPhoneLandscapeViewport();
 
 			let width = 66;
 			let arrowScaleY = 1.4;
@@ -11557,11 +11589,22 @@ document.addEventListener('DOMContentLoaded', function() {
 					width = 66;
 					arrowScaleY = 1.4;
 					arrowScaleX = 1;
+				} else if (phoneLs) {
+					width = 44;
+					arrowScaleY = 1.15;
+					arrowScaleX = 1;
 				}
 			} catch (_) {}
-			const gap = -35; // move slightly down
-			const left = (r.left - containerRect.left) + (r.width / 2) - (width / 2) - 42; // more to the right
-			const top = (r.bottom - containerRect.top) + gap;
+			/* Telefon LS: pil + badge ind mod midten (højre/ned) — ikke ud over venstre/bund-kant */
+			const gap = phoneLs ? -18 : -35;
+			let left = phoneLs
+				? (r.left - containerRect.left) + (r.width * 0.42)
+				: (r.left - containerRect.left) + (r.width / 2) - (width / 2) - 42;
+			let top = (r.bottom - containerRect.top) + gap;
+			if (phoneLs) {
+				left = Math.max(8, Math.min(left, containerRect.width - width - 8));
+				top = Math.max(8, Math.min(top, containerRect.height - 56));
+			}
 
 			arrow.style.setProperty('width', `${width}px`, 'important');
 			arrow.style.setProperty('height', 'auto', 'important');
@@ -11572,7 +11615,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			arrow.style.top = `${top}px`;
 			// Point down, and make it thicker without making it longer
 			arrow.style.transformOrigin = '50% 50%';
-			arrow.style.transform = `rotate(115deg) scale(${arrowScaleX}, ${arrowScaleY})`;
+			arrow.style.transform = `rotate(${phoneLs ? 130 : 115}deg) scale(${arrowScaleX}, ${arrowScaleY})`;
 
 			// Position the "Kravlingprisen nomineret 2024" label under the arrow tip
 			createAndPositionKobajerKravling2024Label();
@@ -11687,11 +11730,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			const toLocal = (d) => (phoneLs ? d / fit : d);
 
 			// Arrow tip ≈ bottom-center of its visual bounding box
-			const tipX = toLocal(r.left - containerRect.left) + toLocal(r.width / 2);
-			const tipY = toLocal(r.bottom - containerRect.top);
+			let tipX = toLocal(r.left - containerRect.left) + toLocal(r.width / 2);
+			let tipY = toLocal(r.bottom - containerRect.top);
+			/* Telefon LS: badge lige under/højre for pil — hold inde så 2024 læses med Kø-bajer */
+			if (phoneLs) {
+				tipX = Math.max(70, Math.min(tipX + 12, toLocal(containerRect.width) - 70));
+				tipY = Math.max(48, Math.min(tipY - 4, toLocal(containerRect.height) - 36));
+			}
 
-			badge.style.left = `${tipX - (phoneLs ? 18 : 28)}px`; // a bit more to the left
-			badge.style.top = `${tipY - (phoneLs ? 10 : 22)}px`; // lidt ned ift. pilspids
+			badge.style.left = `${tipX - (phoneLs ? 8 : 28)}px`;
+			badge.style.top = `${tipY - (phoneLs ? 6 : 22)}px`;
 			badge.style.transform = 'translateX(-50%) rotate(-2deg)';
 			badge.dataset.lastLeft = badge.style.left;
 			badge.dataset.lastTop = badge.style.top;
@@ -14142,7 +14190,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		/* Kort landscape: ringe tæt på computer-proportion ift. titel */
 		let assetS = 1;
 		try {
-			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.78;
+			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.7;
 		} catch (_) {
 			assetS = 1;
 		}
@@ -16911,7 +16959,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 15:26';
+		const stampText = 'update onsdag 28 okt - klokken 16:12';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

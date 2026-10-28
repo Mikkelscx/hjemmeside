@@ -14370,8 +14370,8 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         --projectsScaleMin: 0.64;
         /* Samlet scale for hele mindmap (hjerne, linjer, cirkler, faner) — kun kort mobil-landscape */
         /* Skal matche MSK_PROJECTS_LANDSCAPE_FIT i script.js (layout-rx kompenserer for denne scale) */
-        /* p454: fuld viewport — bred computer-ellipse (ingen shrink) */
-        --projectsLandscapeFit: 1;
+        /* p455: bred computer-ellipse med lidt shrink så badges/pile ikke klippes */
+        --projectsLandscapeFit: 0.94;
         --projectsBrainSize: 104px;
         transform-origin: 50% 50%;
         transform:
@@ -14397,19 +14397,19 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     /* NATURLI': kun kort landscape — finjuster tekst-webp (ned + lidt venstre) */
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
         width: auto !important;
-        max-width: min(156px, 38vw) !important;
+        max-width: min(132px, 30vw) !important;
         transform: translate(-5px, 7px) !important;
         transform-origin: center center;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
-        max-width: min(132px, 30vw) !important;
-        width: min(132px, 30vw) !important;
+        max-width: min(118px, 26vw) !important;
+        width: min(118px, 26vw) !important;
     }
-    /* UNGE MOD UV: større tekst-webp i kort mobil-landscape (cirkel uændret i JS) + lidt ned */
+    /* UNGE MOD UV: lidt mindre i phone LS så ringen ikke klippes */
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
-        max-width: min(168px, 40vw) !important;
-        width: min(168px, 40vw) !important;
-        transform: translateY(10px) !important;
+        max-width: min(140px, 32vw) !important;
+        width: min(140px, 32vw) !important;
+        transform: translateY(6px) !important;
         transform-origin: center center;
     }
     /* TWISTER: tekst-webp lidt ned i kort mobil-landscape (cirkel uændret i JS) */
@@ -14437,13 +14437,13 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     /* Byens Landhandel: kun kort landscape — lidt større end default-labels; oval følger basis-JS (ingen ekstra mul) */
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"],
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href="byens-landhandel.html"] {
-        width: min(198px, 46vw) !important;
+        width: min(168px, 38vw) !important;
         min-width: 0 !important;
-        max-width: min(198px, 46vw) !important;
+        max-width: min(168px, 38vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
-        max-width: min(186px, 44vw) !important;
-        width: min(186px, 44vw) !important;
+        max-width: min(156px, 36vw) !important;
+        width: min(156px, 36vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .kravling-nomineret-badge--inline,
     body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline {
@@ -14459,54 +14459,77 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
     /* Faner + billedtitler: mindre i landscape (ovenfor) */
 
-    /* Projects: horizontal mobile BRAINFARTS sign inside circle */
-    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow,
+    /* Projects phone LS: desktop-lignende badges UDENFOR ringe (pile synlige) */
     body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 24 !important;
+        pointer-events: none !important;
+        width: min(92px, 22vw) !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build__arrow {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: min(36px, 9vw) !important;
+        height: auto !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"],
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] {
         position: relative !important;
     }
+    /* Inline-skilt bruges ikke i phone LS (JS fjerner det) — skjul hvis den alligevel findes */
     body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
-        position: absolute;
-        left: 50%;
-        top: 52%;
-        transform: translate(-50%, -50%) rotate(-1deg) scale(1.1);
-        display: block !important;
-        visibility: visible !important;
-        width: 108px;
-        max-width: 88%;
-        height: auto;
-        margin: 0;
-        pointer-events: none;
-        opacity: 0.38 !important;
-        z-index: 0;
-        image-rendering: crisp-edges;
-        image-rendering: -webkit-optimize-contrast;
-        filter: none;
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
     }
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
         z-index: 1;
     }
 
-    /* Projects: horizontal mobile TWISTER has D&AD inside circle */
-    body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge,
-    body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
+    /* Phone LS: behold standalone D&AD + Kravling 2025 med pile (som computer) */
+    body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 24 !important;
+        transform: translateY(-50%) rotate(-2deg) scale(0.72) !important;
+        transform-origin: left center !important;
     }
-
-    /* Projects: horizontal mobile REPOP has KRAVLING 2025 inside circle */
-    body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line,
+    body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 23 !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 23 !important;
+    }
     body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 24 !important;
+        font-size: 0.55rem !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 23 !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 24 !important;
+        font-size: 0.52rem !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"],
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] {
