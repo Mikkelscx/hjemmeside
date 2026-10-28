@@ -54,6 +54,8 @@ const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
 const MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX = 58;
 /** iPad landskab: hold mindmap centreret (ikke skubbet i kanten — Brainfarts skal have luft) */
 const MSK_PROJECTS_IPAD_LS_LAYOUT_LEFT_PX = 0;
+/** Telefon landskab: ryk hele ellipse-mindmap mod venstre (px i layout-rum) */
+const MSK_PROJECTS_PHONE_LS_LAYOUT_LEFT_PX = 44;
 
 /**
  * Ét stabilt mål for layout (afrundet heltal) — documentElement.client*, ikke visualViewport.
@@ -10735,6 +10737,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					brain.style.setProperty('bottom', 'auto', 'important');
 					brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
 				} catch (_) {}
+			} else if (isShortLandscape) {
+				/* p462: hele phone-LS mindmap (hjerne + noder + streger) mod venstre */
+				centerX = Math.round(layoutW / 2) - MSK_PROJECTS_PHONE_LS_LAYOUT_LEFT_PX;
+				centerY = Math.round(layoutH / 2);
+				try {
+					brain.style.setProperty('position', 'absolute', 'important');
+					brain.style.setProperty('left', `${centerX}px`, 'important');
+					brain.style.setProperty('top', `${centerY}px`, 'important');
+					brain.style.setProperty('right', 'auto', 'important');
+					brain.style.setProperty('bottom', 'auto', 'important');
+					brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+				} catch (_) {}
 			}
 
 			// Use an ellipse ring (rx > ry). On phones, drop the desktop min radius (200px) or left/right nodes clip off-screen.
@@ -10878,12 +10892,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				y = Math.round(y);
 
 				if (tabletLandscape || isShortLandscape) {
-					/* Short LS: side-pad lidt åbent (p461 længde) + lodret band fra p460 */
-					const padX = isShortLandscape
-						? Math.round(88 * scale)
+					/* Short LS: efter venstre-shift — lidt mindre pad til venstre, mere til højre */
+					const padXL = isShortLandscape
+						? Math.round(72 * scale)
 						: href.includes('brainfarts')
 							? Math.round(118 * scale)
 							: Math.round(72 * scale);
+					const padXR = isShortLandscape
+						? Math.round(100 * scale)
+						: padXL;
 					let bandTopClamp = Math.round(isShortLandscape ? 36 * scale : 44 * scale);
 					try {
 						const nb = document.querySelector('.navbar');
@@ -10897,9 +10914,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					const bandBottomClamp = layoutH - Math.round(isShortLandscape ? 36 * scale : 18 * scale);
 					if (href.includes('durex') && !isShortLandscape) {
 						const durexMaxX = layoutW - Math.round(72 * scale);
-						x = Math.max(padX, Math.min(durexMaxX, x));
+						x = Math.max(padXL, Math.min(durexMaxX, x));
 					} else {
-						x = Math.max(padX, Math.min(layoutW - padX, x));
+						x = Math.max(padXL, Math.min(layoutW - padXR, x));
 					}
 					y = Math.max(bandTopClamp, Math.min(bandBottomClamp, y));
 				}
@@ -16957,7 +16974,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 18:03';
+		const stampText = 'update onsdag 28 okt - klokken 18:07';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
