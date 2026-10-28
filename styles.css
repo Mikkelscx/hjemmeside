@@ -14370,7 +14370,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         --projectsScaleMin: 0.64;
         /* Samlet scale for hele mindmap (hjerne, linjer, cirkler, faner) — kun kort mobil-landscape */
         /* Skal matche MSK_PROJECTS_LANDSCAPE_FIT i script.js (layout-rx kompenserer for denne scale) */
-        /* p449: fyld bredden; lodret holdes af ellipse-ry (ikke lav uniform scale) */
+        /* p450: fyld bredden; ellipse/badges som computer */
         --projectsLandscapeFit: 0.88;
         --projectsBrainSize: 106px;
         transform-origin: 50% 50%;
@@ -20335,8 +20335,38 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brainfarts-build {
-    width: 110px;
-    height: 140px;
+    width: 96px;
+    height: 122px;
+    z-index: 14;
+}
+
+/* Telefon landskab: badges læsbare som på computer (vmin på 430px gør clamp for små) */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge {
+    z-index: 14;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge .kravling-line1 {
+    font-size: 13px !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge .kravling-line2 {
+    font-size: 12px !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge .kravling-line3 {
+    font-size: 18px !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
+    z-index: 14;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge .kravling-line1,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge .kravling-line2 {
+    font-size: 12px !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge .kravling-line3 {
+    font-size: 16px !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge {
+    z-index: 14;
+    transform: translateY(-50%) rotate(-2deg) scale(0.92);
+    transform-origin: 50% 50%;
 }
 
 /*

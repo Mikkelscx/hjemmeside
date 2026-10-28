@@ -46,7 +46,7 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-/* Telefon/kort landskab: p449 — fyld skærmen (0.88); lodret kompression via ry/topPull, ikke lav uniform scale. */
+/* Telefon/kort landskab: p450 — fyld skærmen (0.88); ellipse/badges som computer, tilpasset mobil. */
 const MSK_PROJECTS_LANDSCAPE_FIT = 0.88;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
@@ -1339,11 +1339,20 @@ function positionBrainfartsBuildNote() {
 			if (!bfNode) return;
 			ringRect = bfNode.getBoundingClientRect();
 		}
-		const cx = ringRect.left + ringRect.width / 2 - cRect.left;
-		const leftNudgePx = tabletLs ? 78 : phoneLs ? 40 : 48;
+		/* Telefon LS: container er scale()'et — skærm-delta → lokal left/top (ellers overlapper skiltet ringen) */
+		let fit = 1;
+		try {
+			const v = parseFloat(getComputedStyle(container).getPropertyValue('--projectsLandscapeFit') || '');
+			if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
+		} catch (_) {}
+		const toLocal = (screenDelta) => (phoneLs ? screenDelta / fit : screenDelta);
+		const cx = toLocal(ringRect.left + ringRect.width / 2 - cRect.left);
+		const leftNudgePx = tabletLs ? 78 : phoneLs ? 36 : 48;
 		const leftPx = cx - leftNudgePx;
-		/* Højere op mod ringen — på tablet tættere på Brainfarts så skiltet ikke rammer Kø-bajer */
-		const topPx = ringRect.bottom - cRect.top - (tabletLs ? 96 : phoneLs ? 52 : 70);
+		/* Desktop/tablet: op under ringen. Telefon LS: lige under ringen som computer (ikke ind i boblen). */
+		const topPx = phoneLs
+			? toLocal(ringRect.bottom - cRect.top) + 4
+			: ringRect.bottom - cRect.top - (tabletLs ? 96 : 70);
 		build.style.setProperty('left', `${Math.round(leftPx)}px`, 'important');
 		build.style.setProperty('top', `${Math.round(topPx)}px`, 'important');
 		build.style.setProperty('right', 'auto', 'important');
@@ -10768,8 +10777,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			   (tidligere min(rx, rxTight) trykkede rx ned til ~158px og stablede knapper i midten). */
 			try {
 				if (isShortLandscape && !narrow) {
-					/* p448: strammere lodret end p446 — stadig mildere end p445 (0.40) */
-					ry = Math.min(ry, Math.max(112, h * 0.42));
+					/* p450: desktop-lignende flad ellipse — bredere rx, mild lodret */
+					ry = Math.min(ry, Math.max(118, h * 0.44));
 					/* Vandret: scale(MSK_PROJECTS_LANDSCAPE_FIT) — layout-rx skal være højere end w/2 for synlig bredde, men fuld
 					   (vw/2)/fit klippede sidebobler (titler rækker ud). Bland mod rx fra padding ovenfor. */
 					try {
@@ -10781,10 +10790,11 @@ document.addEventListener('DOMContentLoaded', function() {
 							const v = parseFloat(cs.getPropertyValue('--projectsLandscapeFit') || '');
 							if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
 						} catch (_) {}
-						const edgePad = 18;
+						const edgePad = 14;
 						const rxLo = rx;
 						const rxFull = Math.max(40, (vw / 2 - edgePad) / fit);
-						const rxBlend = 0.56;
+						/* Højere blend → mere som computer (sidebobler længere ude) */
+						const rxBlend = 0.78;
 						rx = Math.max(rxLo, rxLo + (rxFull - rxLo) * rxBlend);
 					} catch (_) {
 						/* Undlad fallback der capper rx til ~w/2 — det fjerner hele scale-kompensationen. */
@@ -10812,25 +10822,24 @@ document.addEventListener('DOMContentLoaded', function() {
 				const href = (node.getAttribute('href') || '').toLowerCase();
 				const shortLs = shortLsRing;
 
-				/* p448: top/bund ind — mellem p446 og p445 */
+				/* p450: top/bund som computer (short LS bruger samme pull som desktop) */
 				if (Math.sin(angle) < -0.12) {
-					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 26 : 26;
+					const topPull = tabletLandscape ? 0 : shortLs ? 16 : 26;
 					y += Math.round(topPull * scale);
 				}
 
 				if (Math.sin(angle) > 0.38) {
-					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 32 : 38;
+					const botPull = tabletLandscape ? 0 : shortLs ? 0 : 38;
 					y -= botPull;
 				}
 
 				// Move REPOP + its connected assets (circle/arrow/badges) down one ruled line.
 				// (Those assets are positioned from the node's on-screen rect, so this shifts all of it.)
 				if (href.includes('repop')) y += touchLayout ? 14 : tabletLandscape ? 10 : 35;
-				/* Kort mobil-landscape: cirkel + indhold lidt op */
-				if (href.includes('repop') && isShortLandscape) y -= 16;
+				/* Kort mobil-landscape: kun let op (ellers for langt fra desktop-placering) */
+				if (href.includes('repop') && isShortLandscape) y -= 8;
 				/*
 				 * Desktop + iPad landskab + telefon-landskab: samme ellipse-offsets som computer.
-				 * (Tidligere skippede short LS deskLike → venstre side klemt, UNGE/TWISTER ikke som desktop.)
 				 */
 				const deskLike =
 					tabletLandscape ||
@@ -10838,8 +10847,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					(!narrow && !isShortLandscape && w >= 1025);
 				try {
 					if (deskLike) {
-						/* Telefon LS: mildere leftPush så Brainfarts ikke klippes */
-						const leftPush = Math.round((isShortLandscape ? 22 : 56) * scale);
+						/* Telefon LS: tættere på desktop leftPush, stadig clampet nedenfor */
+						const leftPush = Math.round((isShortLandscape ? 40 : 56) * scale);
 						if (
 							href.includes('byens-landhandel') ||
 							href.includes('brainfarts') ||
@@ -10851,16 +10860,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 				try {
 					if (deskLike && href.includes('unge-mod-uv')) {
-						y += Math.round((isShortLandscape ? 18 : 46) * scale);
-						x += Math.round((isShortLandscape ? 28 : 56) * scale);
+						y += Math.round((isShortLandscape ? 30 : 46) * scale);
+						x += Math.round((isShortLandscape ? 40 : 56) * scale);
 					}
 				} catch {}
 				try {
 					if (deskLike && href.includes('twister')) {
-						y += Math.round((isShortLandscape ? 10 : 14) * scale);
+						y += Math.round(14 * scale);
 					}
 				} catch {}
-				/* Kort landscape uden deskLike-mikro-nudges — deskLike ovenfor erstatter dem */
 
 				x = Math.round(x);
 				y = Math.round(y);
@@ -14103,10 +14111,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		mskProjectsSyncLayoutBeforePaint();
 		const scale = 1;
 		const s = (n) => n * scale;
-		/* Kort landscape: mindre håndtegnede cirkler (SVG) så de matcher mindre titelbilleder */
+		/* Kort landscape: ringe tættere på computer-proportion (0.76 gjorde boblerne for “små” ift. desktop) */
 		let assetS = 1;
 		try {
-			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.76;
+			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.9;
 		} catch (_) {
 			assetS = 1;
 		}
@@ -16874,7 +16882,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 14:02';
+		const stampText = 'update onsdag 28 okt - klokken 14:55';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
