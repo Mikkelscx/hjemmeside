@@ -14370,8 +14370,8 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         --projectsScaleMin: 0.64;
         /* Samlet scale for hele mindmap (hjerne, linjer, cirkler, faner) — kun kort mobil-landscape */
         /* Skal matche MSK_PROJECTS_LANDSCAPE_FIT i script.js (layout-rx kompenserer for denne scale) */
-        /* p455: bred computer-ellipse med lidt shrink så badges/pile ikke klippes */
-        --projectsLandscapeFit: 0.94;
+        /* p456: match html.msk-projects-phone-landscape scale(0.82) */
+        --projectsLandscapeFit: 0.82;
         --projectsBrainSize: 104px;
         transform-origin: 50% 50%;
         transform:
@@ -14391,25 +14391,25 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         width: min(136px, 30vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--repop {
-        max-width: min(156px, 34vw) !important;
-        width: min(156px, 34vw) !important;
+        max-width: min(128px, 28vw) !important;
+        width: min(128px, 28vw) !important;
     }
     /* NATURLI': kun kort landscape — finjuster tekst-webp (ned + lidt venstre) */
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli {
         width: auto !important;
-        max-width: min(132px, 30vw) !important;
+        max-width: min(112px, 24vw) !important;
         transform: translate(-5px, 7px) !important;
         transform-origin: center center;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex {
+        max-width: min(104px, 22vw) !important;
+        width: min(104px, 22vw) !important;
+    }
+    /* UNGE MOD UV: mindre i phone LS så ringen ikke klippes */
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
         max-width: min(118px, 26vw) !important;
         width: min(118px, 26vw) !important;
-    }
-    /* UNGE MOD UV: lidt mindre i phone LS så ringen ikke klippes */
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv {
-        max-width: min(140px, 32vw) !important;
-        width: min(140px, 32vw) !important;
-        transform: translateY(6px) !important;
+        transform: translateY(4px) !important;
         transform-origin: center center;
     }
     /* TWISTER: tekst-webp lidt ned i kort mobil-landscape (cirkel uændret i JS) */
@@ -14437,13 +14437,13 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     /* Byens Landhandel: kun kort landscape — lidt større end default-labels; oval følger basis-JS (ingen ekstra mul) */
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"],
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href="byens-landhandel.html"] {
-        width: min(168px, 38vw) !important;
+        width: min(140px, 30vw) !important;
         min-width: 0 !important;
-        max-width: min(168px, 38vw) !important;
+        max-width: min(140px, 30vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens {
-        max-width: min(156px, 36vw) !important;
-        width: min(156px, 36vw) !important;
+        max-width: min(128px, 28vw) !important;
+        width: min(128px, 28vw) !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .kravling-nomineret-badge--inline,
     body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline {
@@ -20321,16 +20321,22 @@ html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .
 }
 
 /*
- * Telefon landskab: samme komposition som computer — Kravling/D&AD/skilt uden for cirklerne,
- * ikke de indlejrede mobil-badges. Hele ellipsen skal være synlig.
+ * Telefon landskab (p456): hele ellipsen + badges inde i viewport.
+ * Tidligere scale(0.9) + for lille center-pad → ringe skåret af til højre/venstre.
  */
+html.msk-projects-phone-landscape,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container {
-    --projectsLandscapeFit: 0.9;
-    --projectsBrainSize: 104px;
+    --projectsLandscapeFit: 0.82;
+    --projectsBrainSize: 92px;
+    overflow: visible !important;
     transform:
         translateX(env(safe-area-inset-left, 0px))
         translateY(env(safe-area-inset-top, 0px))
-        scale(0.9) !important;
+        scale(0.82) !important;
     transform-origin: 50% 50% !important;
 }
 
