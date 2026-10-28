@@ -14494,33 +14494,15 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         z-index: 3;
     }
 
-    /* Phone LS: behold standalone D&AD + Kravling 2025 med pile (som computer) */
-    body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge {
-        display: flex !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        z-index: 24 !important;
-        transform: translateY(-50%) rotate(-2deg) scale(0.72) !important;
-        transform-origin: left center !important;
-    }
-    body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        z-index: 23 !important;
-    }
-    body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        z-index: 23 !important;
-    }
+    /* Phone LS short: D&AD/Kravling 2025 er inline — skjul fritstående + pile */
+    body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge,
+    body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line,
+    body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line,
     body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        z-index: 24 !important;
-        font-size: 0.55rem !important;
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow {
         display: block !important;
@@ -20355,8 +20337,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
 }
 
-/* Phone LS: D&AD/Kobajer forbliver fritstående — skjul kun deres inline-kopier */
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .dandd-badge--inline,
+/* Phone LS: Kobajer forbliver fritstående — skjul kun dens inline-kopi (D&AD er inline i TWISTER) */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline {
     display: none !important;
     visibility: hidden !important;
@@ -20427,6 +20408,48 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     max-width: min(145px, 32vw) !important;
     width: min(145px, 32vw) !important;
 }
+/* Phone LS: D&AD inde i TWISTER (som portræt) */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"],
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] {
+    position: relative !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 72% !important;
+    transform: translate(-50%, -50%) scale(0.92) !important;
+    transform-origin: 50% 50% !important;
+    pointer-events: none !important;
+    z-index: 6 !important;
+    gap: 1px !important;
+    margin: 0 !important;
+    width: max-content !important;
+    max-width: 96% !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
+    width: min(36px, 8vw) !important;
+    height: auto !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
+    width: min(78px, 17vw) !important;
+    height: auto !important;
+    margin: 0 0 0 -4px !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title {
+    position: relative;
+    z-index: 3;
+    transform: translateY(-6px) !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
     display: flex !important;
@@ -20476,8 +20499,14 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     margin: -2px 0 0 !important;
 }
 
+/* Phone LS: skjul fritstående D&AD + connector — badge bor i TWISTER */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
     display: block !important;
@@ -20495,9 +20524,6 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge .kravling-line3 {
     font-size: 16px !important;
-}
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge {
-    z-index: 14;
 }
 
 /*

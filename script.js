@@ -824,7 +824,7 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 						});
 				} else if (phoneLandscape) {
 					container
-						.querySelectorAll('.dandd-badge--inline, .kobajer-kravling-2024-badge--inline')
+						.querySelectorAll('.kobajer-kravling-2024-badge--inline')
 						.forEach((el) => {
 							try {
 								el.remove();
@@ -835,6 +835,9 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 					} catch (_) {}
 					try {
 						mskEnsureKravlingPhoneLandscapeInlineBadge();
+					} catch (_) {}
+					try {
+						mskEnsureDandDPhoneLandscapeInlineBadge();
 					} catch (_) {}
 				}
 				/*
@@ -1399,6 +1402,62 @@ function mskEnsureKravlingPhoneLandscapeInlineBadge() {
 			standalone.style.setProperty('opacity', '0', 'important');
 		}
 		const line = container.querySelector('.repop-kravling-line');
+		if (line) {
+			line.style.setProperty('display', 'none', 'important');
+			line.style.setProperty('visibility', 'hidden', 'important');
+			line.style.setProperty('opacity', '0', 'important');
+		}
+	} catch (_) {}
+}
+
+/** Telefon landskab: D&AD inde i TWISTER-cirklen (som portræt / ældre builds). */
+function mskEnsureDandDPhoneLandscapeInlineBadge() {
+	try {
+		if (mskIsProjectsTabletLandscapeViewport()) return;
+		if (!mskIsProjectsPhoneLandscapeViewport() && !mskIsProjectsShortLandscapeViewport()) return;
+		const container = document.querySelector('.brainstorm-container');
+		if (!container) return;
+		const tw = container.querySelector('a[href*="twister"], .project-node[href*="twister"]');
+		if (!tw) return;
+		try {
+			tw.style.setProperty('position', 'relative', 'important');
+			tw.style.setProperty('display', 'flex', 'important');
+			tw.style.setProperty('flex-direction', 'column', 'important');
+			tw.style.setProperty('align-items', 'center', 'important');
+			tw.style.setProperty('justify-content', 'center', 'important');
+		} catch (_) {}
+		let el = tw.querySelector('.dandd-badge--inline');
+		if (!el) {
+			el = document.createElement('div');
+			el.className = 'dandd-badge dandd-badge--inline';
+			el.setAttribute('aria-hidden', 'true');
+			const logo = document.createElement('img');
+			logo.className = 'dandd-logo';
+			logo.alt = 'D&AD';
+			logo.src = 'assets/D&AD LOGO.webp';
+			logo.onerror = () => {
+				logo.onerror = null;
+				logo.src = 'assets/D&AD logo.webp';
+			};
+			const winner = document.createElement('img');
+			winner.className = 'dandd-winner';
+			winner.alt = 'D&AD VINDER';
+			winner.src = 'assets/D&AD VINDER.webp';
+			el.appendChild(logo);
+			el.appendChild(winner);
+			tw.appendChild(el);
+		}
+		el.style.setProperty('display', 'flex', 'important');
+		el.style.setProperty('visibility', 'visible', 'important');
+		el.style.setProperty('opacity', '1', 'important');
+		el.style.setProperty('pointer-events', 'none', 'important');
+		const standalone = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
+		if (standalone) {
+			standalone.style.setProperty('display', 'none', 'important');
+			standalone.style.setProperty('visibility', 'hidden', 'important');
+			standalone.style.setProperty('opacity', '0', 'important');
+		}
+		const line = container.querySelector('.twister-dandd-line');
 		if (line) {
 			line.style.setProperty('display', 'none', 'important');
 			line.style.setProperty('visibility', 'hidden', 'important');
@@ -10133,6 +10192,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						const svg = document.querySelector('.connecting-lines');
 						if (svg) delete svg.dataset.mskDynamicGraphicsBuilt;
 					} catch (_) {}
+					try {
+						mskEnsureDandDPhoneLandscapeInlineBadge();
+					} catch (_) {}
 					createConnectingLines(redrawOpts);
 					createHandDrawnFrames(redrawOpts);
 					mskProjectsMindmapMarkGraphicsBuilt();
@@ -11083,6 +11145,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				mskEnsureKravlingPhoneLandscapeInlineBadge();
 			} catch (_) {}
+			try {
+				mskEnsureDandDPhoneLandscapeInlineBadge();
+			} catch (_) {}
 		}
 
 		/** iPad landskab: “Under ombygning” inde i BRAINFARTS-cirklen — ikke den store desktop-pil. */
@@ -11120,9 +11185,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					!mskIsProjectsTabletLandscapeViewport() &&
 					(mskIsProjectsPhoneLandscapeViewport() || mskIsProjectsShortLandscapeViewport())
 				) {
-					/* Phone LS: Kravling + Brainfarts inline i cirklerne; D&AD/Kobajer forbliver fritstående */
+					/* Phone LS: Kravling + D&AD + Brainfarts inline i cirklerne; Kobajer forbliver fritstående */
 					container
-						.querySelectorAll('.dandd-badge--inline, .kobajer-kravling-2024-badge--inline')
+						.querySelectorAll('.kobajer-kravling-2024-badge--inline')
 						.forEach((el) => {
 							try {
 								el.remove();
@@ -11133,6 +11198,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					try {
 						mskEnsureKravlingPhoneLandscapeInlineBadge();
+					} catch (_) {}
+					try {
+						mskEnsureDandDPhoneLandscapeInlineBadge();
 					} catch (_) {}
 					return;
 				}
@@ -11276,6 +11344,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
+			/* Telefon LS: D&AD bor inde i TWISTER — ikke fritstående */
+			if (
+				!mskIsProjectsTabletLandscapeViewport() &&
+				(mskIsProjectsPhoneLandscapeViewport() || mskIsProjectsShortLandscapeViewport())
+			) {
+				try {
+					mskEnsureDandDPhoneLandscapeInlineBadge();
+				} catch (_) {}
+				return;
+			}
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			if (!twisterNode) return;
 
@@ -11448,6 +11526,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
 			if (container.classList.contains('projects-mindmap--portrait') || mskIsProjectsPortraitGridDocumentMode()) return;
+			if (
+				!mskIsProjectsTabletLandscapeViewport() &&
+				(mskIsProjectsPhoneLandscapeViewport() || mskIsProjectsShortLandscapeViewport())
+			) {
+				return;
+			}
 			const twisterNode = Array.from(nodes).find(n => (n.getAttribute('href') || '').toLowerCase().includes('twister'));
 			const badge = container.querySelector('.dandd-badge:not(.dandd-badge--inline)');
 			if (!twisterNode || !badge) return;
@@ -15170,6 +15254,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					h *= 1 + (1.52 - 1) * pRing;
 				}
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
+				/* Phone LS: lidt bredere Twister-cirkel */
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					w *= 1.14;
+				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
 				let circleDy = landscapeMindmap && !ipadLandscapeRings ? s(48) : s(20);
 				if (ipadLandscapeRings) {
@@ -15910,6 +15998,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch (_) {}
 			}
 			mskProjectsSyncLayoutBeforePaint();
+			try {
+				mskEnsureDandDPhoneLandscapeInlineBadge();
+			} catch (_) {}
 			createConnectingLines(redrawOpts);
 			createHandDrawnFrames(redrawOpts);
 			mskProjectsMindmapMarkGraphicsBuilt();
@@ -17137,7 +17228,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 23:48';
+		const stampText = 'update onsdag 28 okt - klokken 23:54';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
