@@ -11676,13 +11676,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			const containerRect = container.getBoundingClientRect();
 			const r = arrow.getBoundingClientRect();
+			const phoneLs = !!mskIsProjectsPhoneLandscapeViewport();
+			let fit = 1;
+			try {
+				if (phoneLs) {
+					const v = parseFloat(getComputedStyle(container).getPropertyValue('--projectsLandscapeFit') || '');
+					if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
+				}
+			} catch (_) {}
+			const toLocal = (d) => (phoneLs ? d / fit : d);
 
 			// Arrow tip ≈ bottom-center of its visual bounding box
-			const tipX = (r.left - containerRect.left) + (r.width / 2);
-			const tipY = (r.bottom - containerRect.top);
+			const tipX = toLocal(r.left - containerRect.left) + toLocal(r.width / 2);
+			const tipY = toLocal(r.bottom - containerRect.top);
 
-			badge.style.left = `${tipX - 28}px`; // a bit more to the left
-			badge.style.top = `${tipY - 22}px`; // lidt ned ift. pilspids
+			badge.style.left = `${tipX - (phoneLs ? 18 : 28)}px`; // a bit more to the left
+			badge.style.top = `${tipY - (phoneLs ? 10 : 22)}px`; // lidt ned ift. pilspids
 			badge.style.transform = 'translateX(-50%) rotate(-2deg)';
 			badge.dataset.lastLeft = badge.style.left;
 			badge.dataset.lastTop = badge.style.top;
@@ -16902,7 +16911,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 15:00';
+		const stampText = 'update onsdag 28 okt - klokken 15:01';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
