@@ -811,15 +811,28 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 		if (container) {
 			if (tabletLandscape || phoneLandscape) {
 				container.classList.remove('projects-mindmap--portrait', 'projects-mindmap--phone-canvas');
+				/* Fjern inline Kravling/D&AD — IKKE Brainfarts-trekant på phone LS (den skal blive i cirklen) */
 				container
 					.querySelectorAll(
-						'.kravling-nomineret-badge--inline, .dandd-badge--inline, .kobajer-kravling-2024-badge--inline, .brainfarts-build__sign--inline'
+						'.kravling-nomineret-badge--inline, .dandd-badge--inline, .kobajer-kravling-2024-badge--inline'
 					)
 					.forEach((el) => {
 						try {
 							el.remove();
 						} catch (_) {}
 					});
+				if (tabletLandscape && !phoneLandscape) {
+					container.querySelectorAll('.brainfarts-build__sign--inline').forEach((el) => {
+						try {
+							el.remove();
+						} catch (_) {}
+					});
+				}
+				if (phoneLandscape) {
+					try {
+						mskEnsureBrainfartsPhoneLandscapeInlineSign();
+					} catch (_) {}
+				}
 				/*
 				 * Telefon landskab: ryd KUN hvis portræt-grid stadig hænger.
 				 * Ellers (hvert resize-tick) slettes ellipse left/top → tekster stables til venstre.
@@ -1305,6 +1318,45 @@ function mskClearTwisterIpadLandscapeTitleNudge() {
 	} catch (_) {}
 	document.addEventListener('DOMContentLoaded', tick);
 })();
+
+/** Telefon landskab: “Under ombygning”-trekant inde i BRAINFARTS-cirklen. */
+function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
+	try {
+		if (!mskIsProjectsPhoneLandscapeViewport() && !mskIsProjectsShortLandscapeViewport()) return;
+		const container = document.querySelector('.brainstorm-container');
+		if (!container) return;
+		const bf = container.querySelector('a[href*="brainfarts"], .project-node[href*="brainfarts"]');
+		if (!bf) return;
+		let img = bf.querySelector('.brainfarts-build__sign--inline');
+		if (!img) {
+			img = document.createElement('img');
+			img.className = 'brainfarts-build__sign--inline';
+			img.alt = '';
+			img.draggable = false;
+			img.setAttribute('aria-hidden', 'true');
+			bf.appendChild(img);
+		}
+		img.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
+		img.style.setProperty('display', 'block', 'important');
+		img.style.setProperty('visibility', 'visible', 'important');
+		img.style.setProperty('opacity', '0.88', 'important');
+		img.style.setProperty('position', 'absolute', 'important');
+		img.style.setProperty('left', '50%', 'important');
+		img.style.setProperty('top', '56%', 'important');
+		img.style.setProperty('transform', 'translate(-50%, -50%) rotate(-1deg)', 'important');
+		img.style.setProperty('width', '72px', 'important');
+		img.style.setProperty('max-width', '70%', 'important');
+		img.style.setProperty('height', 'auto', 'important');
+		img.style.setProperty('z-index', '6', 'important');
+		img.style.setProperty('pointer-events', 'none', 'important');
+		const build = container.querySelector('.brainfarts-build');
+		if (build) {
+			build.style.setProperty('display', 'none', 'important');
+			build.style.setProperty('visibility', 'hidden', 'important');
+			build.style.setProperty('opacity', '0', 'important');
+		}
+	} catch (_) {}
+}
 
 /** Projekter desktop: “Under ombygning” + pil lige under BRAINFARTS-cirklen (følger SVG-ring efter layout). */
 function positionBrainfartsBuildNote() {
@@ -10976,6 +11028,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				ensureBrainfartsInlineSignForTabletLandscape();
 			} catch (_) {}
+			try {
+				mskEnsureBrainfartsPhoneLandscapeInlineSign();
+			} catch (_) {}
 		}
 
 		/** iPad landskab: “Under ombygning” inde i BRAINFARTS-cirklen — ikke den store desktop-pil. */
@@ -11012,24 +11067,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							} catch (_) {}
 						});
 					try {
-						const bf = container.querySelector('a[href*="brainfarts"], .project-node[href*="brainfarts"]');
-						if (bf && !bf.querySelector('.brainfarts-build__sign--inline')) {
-							const img = document.createElement('img');
-							img.className = 'brainfarts-build__sign--inline';
-							img.alt = '';
-							img.draggable = false;
-							img.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
-							img.setAttribute('aria-hidden', 'true');
-							bf.appendChild(img);
-						}
-					} catch (_) {}
-					try {
-						const build = container.querySelector('.brainfarts-build');
-						if (build) {
-							build.style.setProperty('display', 'none', 'important');
-							build.style.setProperty('visibility', 'hidden', 'important');
-							build.style.setProperty('opacity', '0', 'important');
-						}
+						mskEnsureBrainfartsPhoneLandscapeInlineSign();
 					} catch (_) {}
 					return;
 				}
@@ -16987,7 +17025,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 18:12';
+		const stampText = 'update onsdag 28 okt - klokken 18:17';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
