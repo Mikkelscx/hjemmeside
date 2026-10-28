@@ -46,8 +46,8 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-/* Telefon/kort landskab: p448 — lidt strammere lodret end p446 (0.82); p445 (0.78) var for meget. */
-const MSK_PROJECTS_LANDSCAPE_FIT = 0.79;
+/* Telefon/kort landskab: p449 — fyld skærmen (0.88); lodret kompression via ry/topPull, ikke lav uniform scale. */
+const MSK_PROJECTS_LANDSCAPE_FIT = 0.88;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
@@ -16874,7 +16874,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 13:51';
+		const stampText = 'update onsdag 28 okt - klokken 14:02';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
