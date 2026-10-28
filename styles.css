@@ -14370,9 +14370,9 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         --projectsScaleMin: 0.64;
         /* Samlet scale for hele mindmap (hjerne, linjer, cirkler, faner) — kun kort mobil-landscape */
         /* Skal matche MSK_PROJECTS_LANDSCAPE_FIT i script.js (layout-rx kompenserer for denne scale) */
-        /* p459: tilbage til p456 scale(0.82) */
-        --projectsLandscapeFit: 0.82;
-        --projectsBrainSize: 104px;
+        /* p460: lidt mere højde — scale 0.86 */
+        --projectsLandscapeFit: 0.86;
+        --projectsBrainSize: 100px;
         transform-origin: 50% 50%;
         transform:
             translateX(env(safe-area-inset-left, 0px))
@@ -20320,7 +20320,7 @@ html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .
 }
 
 /*
- * Telefon landskab (p457): brug mere bredde/højde end p456, stadig inde i viewport.
+ * Telefon landskab (p460): lidt højere ellipse end p459, uden p457-bredi-clip.
  */
 html.msk-projects-phone-landscape,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme {
@@ -20328,13 +20328,13 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme {
     overflow-y: hidden !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container {
-    --projectsLandscapeFit: 0.82;
-    --projectsBrainSize: 92px;
+    --projectsLandscapeFit: 0.86;
+    --projectsBrainSize: 100px;
     overflow: visible !important;
     transform:
         translateX(env(safe-area-inset-left, 0px))
         translateY(env(safe-area-inset-top, 0px))
-        scale(0.82) !important;
+        scale(0.86) !important;
     transform-origin: 50% 50% !important;
 }
 /* p459: tving ringe/streger synlige i phone LS */
