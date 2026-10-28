@@ -20410,34 +20410,34 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
     position: absolute !important;
     left: 50% !important;
-    top: 74% !important;
-    transform: translate(-50%, -50%) !important;
+    top: 76% !important;
+    transform: translate(-50%, -50%) scale(1.12) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
     z-index: 6 !important;
     text-align: center !important;
     line-height: 1 !important;
     gap: 0 !important;
-    max-width: min(92%, 120px) !important;
+    max-width: min(96%, 150px) !important;
     width: max-content !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1 {
-    font-size: 9px !important;
+    font-size: 12px !important;
     font-weight: 500 !important;
     line-height: 1 !important;
     margin: 0 !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
-    font-size: 9px !important;
+    font-size: 12px !important;
     font-weight: 500 !important;
     line-height: 1 !important;
     margin: -2px 0 0 !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
-    font-size: 13px !important;
+    font-size: 18px !important;
     font-weight: 500 !important;
     line-height: 1 !important;
     margin: -2px 0 0 !important;
