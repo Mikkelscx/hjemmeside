@@ -20424,7 +20424,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     position: absolute !important;
     left: 50% !important;
     top: 32% !important;
-    transform: translate(-50%, -50%) scale(0.86) !important;
+    transform: translate(calc(-50% + 10px), -50%) scale(0.86) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
     z-index: 6 !important;
