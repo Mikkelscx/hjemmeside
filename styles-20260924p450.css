@@ -20365,8 +20365,6 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge {
     z-index: 14;
-    transform: translateY(-50%) rotate(-2deg) scale(0.92);
-    transform-origin: 50% 50%;
 }
 
 /*
