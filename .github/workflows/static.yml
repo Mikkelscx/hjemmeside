@@ -53,11 +53,12 @@ jobs:
           # Altid kanoniske filer
           cp -f script.js styles.css publish/
           touch publish/.nojekyll
-          # Kun min-hjemmeside ejer www.mikkelsc.dk — undgå dual-CNAME deploy-fail
+          # www.mikkelsc.dk serveres af hjemmeside-Pages (github.io/hjemmeside → www).
+          # Kun dét repo må have CNAME — ellers fejler Deploy to GitHub Pages.
           if [ "${GITHUB_REPOSITORY:-}" = "Mikkelscx/hjemmeside" ]; then
-            rm -f publish/CNAME
-          else
             printf 'www.mikkelsc.dk\n' > publish/CNAME
+          else
+            rm -f publish/CNAME
           fi
           du -sh publish
       - name: Setup Pages
