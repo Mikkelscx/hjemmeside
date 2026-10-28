@@ -10,7 +10,7 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p457';
+        var v = '20260924p458';
         try {
             var q = new URLSearchParams(location.search || '');
             var phonePage = q.get('phonePage');
@@ -26,17 +26,21 @@
                 location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
                 return;
             }
-            if (!q.has('preview') && !sessionStorage.getItem('mskHtmlFresh_' + v)) {
+            if (!q.has('preview')) {
+                try {
+                    Object.keys(sessionStorage).forEach(function (k) {
+                        if (k.indexOf('mskHtmlFresh_') === 0) sessionStorage.removeItem(k);
+                    });
+                } catch (e0) {}
                 fetch(location.pathname + '?msknet=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' })
                     .then(function (r) { return r.text(); })
                     .then(function (html) {
                         var m = html.match(/var v = '(20260924p[0-9]+)'/);
-                        if (m && m[1] !== v) {
-                            q.set('v', m[1]);
+                        var live = (m && m[1]) ? m[1] : v;
+                        if (q.get('v') !== live) {
+                            q.set('v', live);
                             q.set('_t', String(Date.now()));
                             location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
-                        } else {
-                            sessionStorage.setItem('mskHtmlFresh_' + v, '1');
                         }
                     })
                     .catch(function () {});
@@ -358,7 +362,7 @@
     (function () {
         /* Preview-iframes SKAL loade script (navbar-bladre skal vise rigtigt design).
            transition-preview i script.js blokerer nestede peels — kant-peel er stadig slået fra på telefon. */
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p457') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p458') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>

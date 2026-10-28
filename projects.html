@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- p457-deploy -->
+<!-- p458-deploy -->
 <html lang="da">
 <head>
     <!-- msk-cache:p348- -->
@@ -130,31 +130,38 @@
     <link rel="preload" as="image" href="assets/D&amp;AD%20VINDER.webp">
     <script>
     (function () {
-        var v = '20260924p457';
+        var v = '20260924p458';
         try {
             var q = new URLSearchParams(location.search || '');
             if (q.has('preview')) {
                 document.documentElement.classList.add('transition-preview');
                 document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
-            } else if (q.get('v') !== v) {
-                q.set('v', v);
-                q.set('_t', String(Date.now()));
-                location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
-                return;
-            } else if (!sessionStorage.getItem('mskHtmlFresh_' + v)) {
+            } else {
+                /* Ryd gamle freshness-markers der kunne låse browseren på forældet HTML */
+                try {
+                    Object.keys(sessionStorage).forEach(function (k) {
+                        if (k.indexOf('mskHtmlFresh_') === 0) sessionStorage.removeItem(k);
+                    });
+                } catch (e0) {}
+                /* Spørg altid netværket (GH Pages cacher HTML i ~10 min) — undgå sessionStorage-lås */
                 fetch(location.pathname + '?msknet=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' })
                     .then(function (r) { return r.text(); })
                     .then(function (html) {
                         var m = html.match(/var v = '(20260924p[0-9]+)'/);
-                        if (m && m[1] !== v) {
-                            q.set('v', m[1]);
+                        var live = (m && m[1]) ? m[1] : v;
+                        if (q.get('v') !== live) {
+                            q.set('v', live);
                             q.set('_t', String(Date.now()));
                             location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
-                        } else {
-                            sessionStorage.setItem('mskHtmlFresh_' + v, '1');
                         }
                     })
-                    .catch(function () {});
+                    .catch(function () {
+                        if (q.get('v') !== v) {
+                            q.set('v', v);
+                            q.set('_t', String(Date.now()));
+                            location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
+                        }
+                    });
             }
         } catch (e) {}
         window.mskAssetV = v;
@@ -697,7 +704,7 @@
     <script>
     (function () {
         /* Preview skal loade script så mindmap/design matcher under navbar-bladre. */
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p457') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p458') + '.js"><\/script>');
     })();
     </script>
     <script>
