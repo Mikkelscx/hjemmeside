@@ -20355,7 +20355,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
 }
 
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kravling-nomineret-badge--inline,
+/* Phone LS: D&AD/Kobajer forbliver fritstående — skjul kun deres inline-kopier */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .dandd-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline {
     display: none !important;
@@ -20387,9 +20387,63 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     pointer-events: none !important;
 }
 
+/* Phone LS: skjul fritstående Kravling 2025 + connector — badge bor i REPOP */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"],
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] {
+    position: relative !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 74% !important;
+    transform: translate(-50%, -50%) !important;
+    transform-origin: 50% 50% !important;
+    pointer-events: none !important;
+    z-index: 6 !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    gap: 0 !important;
+    max-width: min(92%, 120px) !important;
+    width: max-content !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1 {
+    font-size: 9px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
+    font-size: 9px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    margin: -2px 0 0 !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    margin: -2px 0 0 !important;
+}
+
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .dandd-badge,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .repop-kravling-line,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .twister-dandd-line,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
@@ -20398,19 +20452,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
 }
 
-/* Telefon landskab: badges læsbare som på computer (vmin på 430px gør clamp for små) */
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge {
-    z-index: 14;
-}
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge .kravling-line1 {
-    font-size: 13px !important;
-}
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge .kravling-line2 {
-    font-size: 12px !important;
-}
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kravling-nomineret-badge .kravling-line3 {
-    font-size: 18px !important;
-}
+/* Telefon landskab: øvrige fritstående badges læsbare */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
     z-index: 14;
 }
