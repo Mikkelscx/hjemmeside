@@ -20400,10 +20400,12 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] {
     position: relative !important;
 }
-/* Phone LS: REPOP uden fake-bold drop-shadows (matcher øvrige titel-webp’er); let contrast */
+/* Phone LS: REPOP lidt større (ikke tykkere) + uden fake-bold drop-shadows */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .project-node__title-img--repop,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .project-node__title-img--repop {
     filter: contrast(1.1) !important;
+    width: min(146px, 32vw) !important;
+    max-width: min(146px, 32vw) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
