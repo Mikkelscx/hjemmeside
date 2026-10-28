@@ -46,8 +46,8 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-/* Telefon/kort landskab: p460 — p456-basis + lidt mere højde (ikke p457-bredde). */
-const MSK_PROJECTS_LANDSCAPE_FIT = 0.86;
+/* Telefon/kort landskab: p461 — p460-højde + mere bredde (stadig under p457-clip). */
+const MSK_PROJECTS_LANDSCAPE_FIT = 0.88;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
@@ -10789,8 +10789,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			} catch {}
 			/*
-			 * Telefon/kort landskab (p460): samme sikre bredde-pad som p456,
-			 * men mindre visPadY så ellipsen bruger mere af højden.
+			 * Telefon/kort landskab (p461): p460-højde + mere længde/bredde.
+			 * visPadX mellem p456 (118) og p457 (72) — undgå ring-clip.
 			 */
 			try {
 				if (isShortLandscape && !narrow) {
@@ -10802,8 +10802,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					const deskRatio = 1.85; /* målt på computer ~611/331 */
 					const fitSafe = Math.max(0.5, fit);
-					const visPadX = 112; /* hold side-luft så ringe ikke klippes */
-					const visPadY = 34; /* p460: mere højde end p456/p459 */
+					const visPadX = 88; /* p461: brug længden bedre */
+					const visPadY = 34;
 					rx = Math.round((layoutW / 2 - visPadX) / fitSafe);
 					ry = Math.round(rx / deskRatio);
 					const ryMax = Math.round((layoutH / 2 - visPadY) / fitSafe);
@@ -10878,9 +10878,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				y = Math.round(y);
 
 				if (tabletLandscape || isShortLandscape) {
-					/* Short LS: side-pad uændret; lodret band mere åbent (p460) */
+					/* Short LS: side-pad lidt åbent (p461 længde) + lodret band fra p460 */
 					const padX = isShortLandscape
-						? Math.round(112 * scale)
+						? Math.round(88 * scale)
 						: href.includes('brainfarts')
 							? Math.round(118 * scale)
 							: Math.round(72 * scale);
@@ -14188,7 +14188,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		/* Kort landscape: ringe tæt på computer-proportion ift. titel */
 		let assetS = 1;
 		try {
-			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.68;
+			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.7;
 		} catch (_) {
 			assetS = 1;
 		}
@@ -16957,7 +16957,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 17:57';
+		const stampText = 'update onsdag 28 okt - klokken 18:03';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
