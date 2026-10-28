@@ -14370,8 +14370,8 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         --projectsScaleMin: 0.64;
         /* Samlet scale for hele mindmap (hjerne, linjer, cirkler, faner) — kun kort mobil-landscape */
         /* Skal matche MSK_PROJECTS_LANDSCAPE_FIT i script.js (layout-rx kompenserer for denne scale) */
-        /* p453: computer-ellipse skaleret til mobil landskab */
-        --projectsLandscapeFit: 0.9;
+        /* p454: fuld viewport — bred computer-ellipse (ingen shrink) */
+        --projectsLandscapeFit: 1;
         --projectsBrainSize: 104px;
         transform-origin: 50% 50%;
         transform:

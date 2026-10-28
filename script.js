@@ -46,8 +46,8 @@ function mskViewportSize() {
 const MSK_PROJECTS_LANDSCAPE_MAX_W = 1024;
 const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
-/* Telefon/kort landskab: p453 — computer-ellipse (ratio ~1.85) skaleret til mobil. */
-const MSK_PROJECTS_LANDSCAPE_FIT = 0.9;
+/* Telefon/kort landskab: p454 — bred computer-ellipse der fylder viewport (fit 1). */
+const MSK_PROJECTS_LANDSCAPE_FIT = 1;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
@@ -10774,8 +10774,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			} catch {}
 			/*
-			 * Telefon/kort landskab (p453): samme VANDRETTE ELLIPSE som computer (ratio ~1.85),
-			 * skaleret til 932×430 — ikke den lige cirkel (p452) brugeren afviste.
+			 * Telefon/kort landskab (p454): WIDTH-FIRST som computer.
+			 * Fyld viewport-bredden først (deskRatio ≥ 1.85). Krymp IKKE rx når højden
+			 * begrænser — ellers lander en lille rund ring midt i skærmen (p451–p453).
 			 */
 			try {
 				if (isShortLandscape && !narrow) {
@@ -10786,14 +10787,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
 					} catch (_) {}
 					const deskRatio = 1.85; /* målt på computer ~611/331 */
-					const padY = Math.round(46 / fit);
-					const padX = Math.round(72 / fit);
-					ry = Math.min(Math.max(118, layoutH / 2 - padY), Math.round(layoutH * 0.36));
-					rx = Math.round(ry * deskRatio);
-					const rxCap = Math.max(160, layoutW / 2 - padX);
-					if (rx > rxCap) {
-						rx = rxCap;
-						ry = Math.round(rx / deskRatio);
+					const fitSafe = Math.max(0.5, fit);
+					const visPadX = 36;
+					const visPadY = 28;
+					rx = Math.round((layoutW / 2 - visPadX) / fitSafe);
+					ry = Math.round(rx / deskRatio);
+					const ryMax = Math.round((layoutH / 2 - visPadY) / fitSafe);
+					if (ry > ryMax) {
+						/* Hold bredden — flatter end 1.85 hellere end lille cirkel */
+						ry = Math.max(100, ryMax);
 					}
 				}
 			} catch {}
@@ -10816,19 +10818,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				const href = (node.getAttribute('href') || '').toLowerCase();
 				const shortLs = shortLsRing;
 
-				/* Top/bund-ind + deskLike — computer-offsets, mildere på short LS */
+				/* Top/bund-ind + deskLike — short LS: samme computer-offsets (p454) */
 				if (Math.sin(angle) < -0.12) {
-					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 14 : 26;
+					const topPull = tabletLandscape ? 0 : shortLs ? 16 : isShortLandscape ? 4 : 26;
 					y += Math.round(topPull * scale);
 				}
 
 				if (Math.sin(angle) > 0.38) {
-					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 18 : 38;
+					const botPull = tabletLandscape ? 0 : shortLs ? 0 : isShortLandscape ? 4 : 38;
 					y -= botPull;
 				}
 
 				if (href.includes('repop')) {
-					y += touchLayout ? 14 : tabletLandscape ? 10 : isShortLandscape ? 18 : 35;
+					y += touchLayout ? 14 : tabletLandscape ? 10 : isShortLandscape ? 22 : 35;
 				}
 
 				const deskLike =
@@ -10837,8 +10839,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					(!narrow && !isShortLandscape && w >= 1025);
 				try {
 					if (deskLike) {
-						/* Short LS: halv leftPush ift. computer — undgår overlap, men åbner venstre som desktop */
-						const leftPush = Math.round((isShortLandscape ? 28 : 56) * scale);
+						/* Short LS: fuld leftPush som computer — åbn venstre side */
+						const leftPush = Math.round(56 * scale);
 						if (
 							href.includes('byens-landhandel') ||
 							href.includes('brainfarts') ||
@@ -10850,13 +10852,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				} catch {}
 				try {
 					if (deskLike && href.includes('unge-mod-uv')) {
-						y += Math.round((isShortLandscape ? 22 : 46) * scale);
-						x += Math.round((isShortLandscape ? 28 : 56) * scale);
+						y += Math.round(46 * scale);
+						x += Math.round(56 * scale);
 					}
 				} catch {}
 				try {
 					if (deskLike && href.includes('twister')) {
-						y += Math.round((isShortLandscape ? 8 : 14) * scale);
+						y += Math.round(14 * scale);
 					}
 				} catch {}
 
@@ -10865,7 +10867,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				if (tabletLandscape || isShortLandscape) {
 					const padX = isShortLandscape
-						? Math.round(44 * scale)
+						? Math.round(22 * scale)
 						: href.includes('brainfarts')
 							? Math.round(118 * scale)
 							: Math.round(72 * scale);
@@ -14140,7 +14142,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		/* Kort landscape: ringe tæt på computer-proportion ift. titel */
 		let assetS = 1;
 		try {
-			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.82;
+			if (mskIsProjectsShortLandscapeViewport()) assetS = 0.78;
 		} catch (_) {
 			assetS = 1;
 		}
@@ -16909,7 +16911,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 28 okt - klokken 15:18';
+		const stampText = 'update onsdag 28 okt - klokken 15:26';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
