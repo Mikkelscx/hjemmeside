@@ -45,8 +45,10 @@ jobs:
             --exclude 'script-20260924p*.js' \
             --exclude 'styles-20260924p*.css' \
             ./ publish/
-          # Behold aktuelle cache-bust assets: læs højeste pN fra HTML, kopiér den + 4 forrige
-          LATEST=$(grep -hoE '20260924p[0-9]+' index.html projects.html about.html contact.html ai-universe.html 2>/dev/null | sed -E 's/.*p([0-9]+)/\1/' | sort -n | tail -1)
+          # Behold cache-bust assets refereret af ALLE HTML-sider (+ buffer på 4 under højeste pN).
+          # Ellers 404'er projektsider (twister/repop/…) der hang på gamle p-numre.
+          VERSIONS=$(grep -hoE '20260924p[0-9]+' *.html 2>/dev/null | sed -E 's/.*p([0-9]+)/\1/' | sort -n | uniq)
+          LATEST=$(printf '%s\n' $VERSIONS | tail -1)
           if [ -n "$LATEST" ]; then
             START=$((LATEST > 4 ? LATEST - 4 : 1))
             for n in $(seq "$START" "$LATEST"); do
@@ -54,6 +56,10 @@ jobs:
               [ -f "styles-20260924p${n}.css" ] && cp "styles-20260924p${n}.css" publish/
             done
           fi
+          for n in $VERSIONS; do
+            [ -f "script-20260924p${n}.js" ] && cp "script-20260924p${n}.js" publish/
+            [ -f "styles-20260924p${n}.css" ] && cp "styles-20260924p${n}.css" publish/
+          done
           # Altid kanoniske filer
           cp -f script.js styles.css publish/
           touch publish/.nojekyll
