@@ -14685,11 +14685,11 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
         width: min(124px, 28vw) !important;
-        margin-left: -18px !important;
+        margin-left: -28px !important;
     }
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-        margin-right: -6px !important;
+        margin-right: -10px !important;
     }
 }
 
@@ -20458,13 +20458,13 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
     width: min(58px, 13vw) !important;
     height: auto !important;
-    margin: 0 -6px 0 0 !important;
+    margin: 0 -10px 0 0 !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
     width: min(124px, 28vw) !important;
     height: auto !important;
-    margin: 0 0 0 -18px !important;
+    margin: 0 0 0 -28px !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title {
