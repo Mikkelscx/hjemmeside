@@ -14671,8 +14671,8 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-        width: min(46px, 10.5vw) !important;
-        margin-right: 2px !important;
+        width: min(54px, 12vw) !important;
+        margin-right: -4px !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
@@ -14686,7 +14686,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
         width: min(100px, 22vw) !important;
-        margin-left: -10px !important;
+        margin-left: -16px !important;
     }
 }
 
@@ -20453,15 +20453,15 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-    width: min(46px, 10.5vw) !important;
+    width: min(54px, 12vw) !important;
     height: auto !important;
-    margin: 0 2px 0 0 !important;
+    margin: 0 -4px 0 0 !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-winner {
     width: min(100px, 22vw) !important;
     height: auto !important;
-    margin: 0 0 0 -10px !important;
+    margin: 0 0 0 -16px !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .project-node__title,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title {
