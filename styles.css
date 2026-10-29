@@ -14657,11 +14657,11 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         gap: 1px !important;
         max-width: min(96%, 260px) !important;
     }
-    /* Phone LS: centrér badge (-50%) + lidt længere ned i ovalen */
+    /* Phone LS: centrér badge (-50%) + lidt op i ovalen */
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
         top: 50% !important;
-        transform: translate(calc(-50% + 8px), calc(-50% - 4px)) scale(0.92) !important;
+        transform: translate(calc(-50% + 8px), calc(-50% - 16px)) scale(0.92) !important;
         z-index: 6 !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
@@ -20440,9 +20440,9 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
     position: absolute !important;
     left: 50% !important;
-    /* Centrér (-50%) + D&AD lidt længere ned i ovalen */
+    /* Centrér (-50%) + D&AD lidt op i ovalen */
     top: 50% !important;
-    transform: translate(calc(-50% + 8px), calc(-50% - 4px)) scale(0.92) !important;
+    transform: translate(calc(-50% + 8px), calc(-50% - 16px)) scale(0.92) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
     z-index: 6 !important;
