@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- p502-deploy -->
 <html lang="da">
 <head>
     <meta charset="UTF-8">
@@ -9,12 +10,94 @@
     <title>TWISTER - Mikkel's Portfolio</title>
     <script>
     (function () {
-        window.mskAssetV = '20260924p501';
-        document.write('<link rel="stylesheet" href="styles-' + window.mskAssetV + '.css">');
+        var v = '20260924p502';
+        try {
+            var q = new URLSearchParams(location.search || '');
+            if (!q.has('preview') && q.get('v') !== v) {
+                q.set('v', v);
+                q.set('_t', String(Date.now()));
+                location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
+                return;
+            }
+        } catch (e) {}
+        window.mskAssetV = v;
+        document.write('<link rel="stylesheet" href="styles-' + v + '.css?v=' + v + '">');
     })();
     </script>
     <noscript><link rel="stylesheet" href="styles.css"></noscript>
     <style>
+        /* Kritiske Twister-styles — sikrer ramme/logo selv hvis cache midlertidigt misser CSS */
+        body.twister-page {
+            margin: 0 !important;
+            background: linear-gradient(135deg, #32CD32 0%, #32CD32 25%, #FF69B4 40%, #FFFACD 100%) !important;
+            min-height: 100dvh;
+            color: #333;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+        body.twister-page .navbar {
+            list-style: none;
+        }
+        body.twister-page .nav-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.25rem;
+            justify-content: center;
+        }
+        body.twister-page .nav-link {
+            color: #04230c !important;
+            text-decoration: none !important;
+            font-weight: 700;
+        }
+        body.twister-page .page-content.twister-content,
+        body.twister-page .page-content {
+            border-radius: 20px !important;
+            padding: 2rem 2rem 1rem !important;
+            margin: 5.5rem auto 2rem !important;
+            max-width: 1400px !important;
+            width: min(calc(100vw - 40px), 1400px) !important;
+            position: relative !important;
+            border: 3px solid transparent !important;
+            background:
+                linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)) padding-box,
+                conic-gradient(
+                    from 210deg,
+                    rgba(50, 205, 50, 0.95) 0%,
+                    rgba(50, 205, 50, 0.95) 26%,
+                    rgba(255, 105, 180, 0.95) 42%,
+                    rgba(255, 250, 205, 0.95) 72%,
+                    rgba(50, 205, 50, 0.95) 100%
+                ) border-box !important;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(255,255,255,0.35) inset !important;
+            box-sizing: border-box !important;
+            text-align: center !important;
+        }
+        body.twister-page .twister-logo {
+            max-width: min(300px, 70vw) !important;
+            width: auto !important;
+            height: auto !important;
+            display: block !important;
+            margin: 0 auto 1.5rem !important;
+        }
+        body.twister-page .campaign-steps {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+        @media (min-width: 769px) {
+            body.twister-page .campaign-steps {
+                grid-template-columns: 1fr 1fr 1fr !important;
+            }
+        }
+        body.twister-page .step-image {
+            max-width: 100% !important;
+            height: auto !important;
+            object-fit: contain !important;
+        }
         /* Desktop Safari: tving dokument-scroll (html scroller; body overflow-y visible) */
         @media (min-width: 1025px),
                (min-width: 1024px) and (hover: hover) and (pointer: fine) {
@@ -36,8 +119,10 @@
                 position: relative !important;
                 inset: auto !important;
             }
+            body.twister-page .campaign-steps {
+                grid-template-columns: 1fr 1fr 1fr !important;
+            }
         }
-
     </style>
 </head>
 <body class="twister-page">
@@ -160,7 +245,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p501') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p502') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>
