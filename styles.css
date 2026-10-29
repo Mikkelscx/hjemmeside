@@ -14671,7 +14671,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-        width: min(54px, 12vw) !important;
+        width: min(64px, 14vw) !important;
         margin-right: -4px !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-winner,
@@ -20453,7 +20453,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline .dandd-logo {
-    width: min(54px, 12vw) !important;
+    width: min(64px, 14vw) !important;
     height: auto !important;
     margin: 0 -4px 0 0 !important;
 }
