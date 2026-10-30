@@ -20354,11 +20354,58 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
 }
 
-/* Phone LS: Kobajer forbliver fritstående — skjul kun dens inline-kopi (D&AD er inline i TWISTER) */
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-kravling-2024-badge--inline {
+/* Phone LS: Kravling 2024 inde i KØ-BAJER (ikke fritstående under) */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    margin-top: -10px !important;
+    z-index: 6 !important;
+    pointer-events: none !important;
+    max-width: 96% !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    line-height: 1.02 !important;
+    transform: scale(0.86) !important;
+    transform-origin: center top !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line1,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line1,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2 {
+    font-size: 11px !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line2 {
+    margin-top: -3px !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kravling-line3 {
+    font-size: 14px !important;
+    margin-top: -3px !important;
+    line-height: 1 !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title--image,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title--image {
+    transform: translateY(-8px) !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 /* Phone LS: skjul fritstående Under-ombygning; trekant kun inline i Brainfarts */
@@ -20532,24 +20579,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 0 !important;
     pointer-events: none !important;
 }
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-/* Telefon landskab: øvrige fritstående badges læsbare */
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {
-    z-index: 14;
-}
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge .kravling-line1,
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge .kravling-line2 {
-    font-size: 12px !important;
-}
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge .kravling-line3 {
-    font-size: 16px !important;
-}
+/* Phone LS: Købajer-pil + fritstående Kravling skjules (badge er inline i cirklen) */
 
 /*
  * Browser-zoom aktiv: tillad pan/scroll op/ned og venstre/højre (projekter, kontakt m.fl.).

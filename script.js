@@ -839,6 +839,9 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 					try {
 						mskEnsureDandDPhoneLandscapeInlineBadge();
 					} catch (_) {}
+					try {
+						mskEnsureKobajerPhoneLandscapeInlineBadge();
+					} catch (_) {}
 				}
 				/*
 				 * Telefon landskab: ryd KUN hvis portræt-grid stadig hænger.
@@ -1406,6 +1409,57 @@ function mskEnsureKravlingPhoneLandscapeInlineBadge() {
 			line.style.setProperty('display', 'none', 'important');
 			line.style.setProperty('visibility', 'hidden', 'important');
 			line.style.setProperty('opacity', '0', 'important');
+		}
+	} catch (_) {}
+}
+
+/** Telefon landskab: Kravling 2024 inde i KØ-BAJER-cirklen (ikke fritstående under). */
+function mskEnsureKobajerPhoneLandscapeInlineBadge() {
+	try {
+		if (mskIsProjectsTabletLandscapeViewport()) return;
+		if (!mskIsProjectsPhoneLandscapeViewport() && !mskIsProjectsShortLandscapeViewport()) return;
+		const container = document.querySelector('.brainstorm-container');
+		if (!container) return;
+		const kob = container.querySelector('a[href*="kobajer"], .project-node[href*="kobajer"]');
+		if (!kob) return;
+		try {
+			kob.style.setProperty('position', 'relative', 'important');
+			kob.style.setProperty('display', 'flex', 'important');
+			kob.style.setProperty('flex-direction', 'column', 'important');
+			kob.style.setProperty('align-items', 'center', 'important');
+			kob.style.setProperty('justify-content', 'center', 'important');
+		} catch (_) {}
+		let el = kob.querySelector('.kobajer-kravling-2024-badge--inline');
+		if (!el) {
+			el = document.createElement('div');
+			el.className = 'kobajer-kravling-2024-badge kobajer-kravling-2024-badge--inline';
+			el.setAttribute('aria-hidden', 'true');
+			el.innerHTML = `
+				<div class="kobajer-kravling-2024-text">
+					<div class="kravling-line1">KRAVLINGPRISEN</div>
+					<div class="kravling-line2">NOMINERET</div>
+					<div class="kravling-line3">2024</div>
+				</div>
+			`;
+			kob.appendChild(el);
+		}
+		el.style.setProperty('display', 'flex', 'important');
+		el.style.setProperty('visibility', 'visible', 'important');
+		el.style.setProperty('opacity', '1', 'important');
+		el.style.setProperty('pointer-events', 'none', 'important');
+		const standalone = container.querySelector(
+			'.kobajer-kravling-2024-badge:not(.kobajer-kravling-2024-badge--inline)'
+		);
+		if (standalone) {
+			standalone.style.setProperty('display', 'none', 'important');
+			standalone.style.setProperty('visibility', 'hidden', 'important');
+			standalone.style.setProperty('opacity', '0', 'important');
+		}
+		const arrow = container.querySelector('.kobajer-arrow');
+		if (arrow) {
+			arrow.style.setProperty('display', 'none', 'important');
+			arrow.style.setProperty('visibility', 'hidden', 'important');
+			arrow.style.setProperty('opacity', '0', 'important');
 		}
 	} catch (_) {}
 }
@@ -10195,6 +10249,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					try {
 						mskEnsureDandDPhoneLandscapeInlineBadge();
 					} catch (_) {}
+					try {
+						mskEnsureKobajerPhoneLandscapeInlineBadge();
+					} catch (_) {}
 					createConnectingLines(redrawOpts);
 					createHandDrawnFrames(redrawOpts);
 					mskProjectsMindmapMarkGraphicsBuilt();
@@ -11159,6 +11216,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				mskEnsureDandDPhoneLandscapeInlineBadge();
 			} catch (_) {}
+			try {
+				mskEnsureKobajerPhoneLandscapeInlineBadge();
+			} catch (_) {}
 		}
 
 		/** iPad landskab: “Under ombygning” inde i BRAINFARTS-cirklen — ikke den store desktop-pil. */
@@ -11196,14 +11256,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					!mskIsProjectsTabletLandscapeViewport() &&
 					(mskIsProjectsPhoneLandscapeViewport() || mskIsProjectsShortLandscapeViewport())
 				) {
-					/* Phone LS: Kravling + D&AD + Brainfarts inline i cirklerne; Kobajer forbliver fritstående */
-					container
-						.querySelectorAll('.kobajer-kravling-2024-badge--inline')
-						.forEach((el) => {
-							try {
-								el.remove();
-							} catch (_) {}
-						});
+					/* Phone LS: Kravling/D&AD/Kobajer/Brainfarts inline i cirklerne */
 					try {
 						mskEnsureBrainfartsPhoneLandscapeInlineSign();
 					} catch (_) {}
@@ -11212,6 +11265,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					try {
 						mskEnsureDandDPhoneLandscapeInlineBadge();
+					} catch (_) {}
+					try {
+						mskEnsureKobajerPhoneLandscapeInlineBadge();
 					} catch (_) {}
 					return;
 				}
@@ -14976,6 +15032,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
+				/* Phone LS: større oval så titel + Kravling 2024 er inden i cirklen */
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					w *= 1.38;
+					h *= 1.62;
+				}
 				[w, h] = shrinkPhoneRing(w, h);
 				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
 				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
@@ -16022,6 +16083,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			mskProjectsSyncLayoutBeforePaint();
 			try {
 				mskEnsureDandDPhoneLandscapeInlineBadge();
+			} catch (_) {}
+			try {
+				mskEnsureKobajerPhoneLandscapeInlineBadge();
 			} catch (_) {}
 			createConnectingLines(redrawOpts);
 			createHandDrawnFrames(redrawOpts);
@@ -17250,7 +17314,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 29 okt - klokken 17:07';
+		const stampText = 'update fredag 30 okt - klokken 15:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
