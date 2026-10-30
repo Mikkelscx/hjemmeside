@@ -11142,6 +11142,17 @@ document.addEventListener('DOMContentLoaded', function() {
 							y = Math.min(y, Math.max(bandTopClamp + 24, twMaxY));
 						}
 					} catch (_) {}
+					try {
+						/* Phone LS: KØ-BAJER inde i billedet (ikke klippet i venstre/bund) */
+						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
+							const kobMinX = Math.round(Math.max(padXL, layoutW * 0.16));
+							const kobMaxY = Math.round(
+								Math.min(bandBottomClamp, centerY + Math.min(ryEff * 0.52, layoutH * 0.26))
+							);
+							x = Math.max(kobMinX, x);
+							y = Math.min(y, Math.max(bandTopClamp + 20, kobMaxY));
+						}
+					} catch (_) {}
 				}
 
 				node.style.setProperty('position', 'absolute', 'important');
@@ -15032,10 +15043,24 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: større oval så titel + Kravling 2024 er inden i cirklen */
+				/* Phone LS: oval lidt større end titel — men capped så den ikke klippes af viewport */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.38;
-					h *= 1.62;
+					w *= 1.14;
+					h *= 1.26;
+					try {
+						const maxW = Math.round((window.innerWidth || 400) * 0.26);
+						const maxH = Math.round((window.innerHeight || 300) * 0.38);
+						if (w > maxW) {
+							const sFit = maxW / w;
+							w = maxW;
+							h = Math.round(h * sFit);
+						}
+						if (h > maxH) {
+							const sFit = maxH / h;
+							h = maxH;
+							w = Math.round(w * sFit);
+						}
+					} catch (_) {}
 				}
 				[w, h] = shrinkPhoneRing(w, h);
 				/* Telefon: ring følger union (titel+Kravling); lidt under centrum; noden uændret → hjernen→Kø-Bajer-linje uændret */
@@ -15043,7 +15068,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				let drawCx = kCenterX;
 				if (ipadLandscapeRings) drawCx -= s(14);
 				/* Kort LS: samme lille dy som computer — rotate-pivot SKAL være ringens centrum (ellers flytter 180° ringen op fra titlen) */
-				const kobajerCircleDy = s(10);
+				const kobajerCircleDy = mskIsProjectsPhoneLandscapeViewport() ? s(2) : s(10);
 				const kobajerImgCy = drawCy + kobajerCircleDy;
 				image.setAttribute('x', String(drawCx - (w / 2)));
 				image.setAttribute('y', String(kobajerImgCy - (h / 2)));
@@ -17314,7 +17339,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 30 okt - klokken 15:05';
+		const stampText = 'update fredag 30 okt - klokken 16:01';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
