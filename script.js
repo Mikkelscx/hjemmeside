@@ -11140,7 +11140,8 @@ document.addEventListener('DOMContentLoaded', function() {
 								centerY + Math.min(ryEff * 0.58, layoutH * 0.28)
 							);
 							y = Math.min(y, Math.max(bandTopClamp + 24, twMaxY));
-							y = Math.min(bandBottomClamp - 4, y + Math.round(72 * scale));
+							/* Tillad lidt under bandBottom — ellers cap’er 36px-pad Twister for højt */
+							y = Math.min(layoutH - Math.round(10 * scale), y + Math.round(96 * scale));
 						}
 					} catch (_) {}
 					try {
@@ -17340,7 +17341,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 31 okt - klokken 15:15';
+		const stampText = 'update lørdag 31 okt - klokken 15:18';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
