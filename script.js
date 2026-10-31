@@ -11145,9 +11145,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					try {
-						/* Phone LS: KØ-BAJER inde i billedet (ikke klippet i venstre/bund) */
+						/* Phone LS: KØ-BAJER længere ind (oval må ikke klippes i venstre kant) */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
-							const kobMinX = Math.round(Math.max(padXL, layoutW * 0.16));
+							const kobMinX = Math.round(Math.max(padXL + 28, layoutW * 0.24));
 							const kobMaxY = Math.round(
 								Math.min(bandBottomClamp, centerY + Math.min(ryEff * 0.52, layoutH * 0.26))
 							);
@@ -15045,13 +15045,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: oval lidt større end titel — men capped så den ikke klippes af viewport */
+				/* Phone LS: bredere oval om titel+Kravling — cap ift. plads til venstre kant */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.14;
-					h *= 1.26;
+					w *= 1.36;
+					h *= 1.38;
 					try {
-						const maxW = Math.round((window.innerWidth || 400) * 0.26);
-						const maxH = Math.round((window.innerHeight || 300) * 0.38);
+						const leftSafe = 14;
+						const maxWByLeft = Math.max(96, Math.round(2 * (kCenterX - leftSafe)));
+						const maxW = Math.min(Math.round((window.innerWidth || 400) * 0.34), maxWByLeft);
+						const maxH = Math.round((window.innerHeight || 300) * 0.42);
 						if (w > maxW) {
 							const sFit = maxW / w;
 							w = maxW;
@@ -17341,7 +17343,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 31 okt - klokken 15:18';
+		const stampText = 'update lørdag 31 okt - klokken 15:31';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
