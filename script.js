@@ -1473,8 +1473,8 @@ function mskEnsureDandDPhoneLandscapeInlineBadge() {
 		const tw = container.querySelector('a[href*="twister"], .project-node[href*="twister"]');
 		if (!tw) return;
 		try {
-			/* Twister: behold relative (godkendt phone-LS placering) — kun flex til D&AD-stack */
-			tw.style.setProperty('position', 'relative', 'important');
+			/* Absolute + flex — relative blandt absolute-søskende skubber Twister op under hjernen */
+			tw.style.setProperty('position', 'absolute', 'important');
 			tw.style.setProperty('display', 'flex', 'important');
 			tw.style.setProperty('flex-direction', 'column', 'important');
 			tw.style.setProperty('align-items', 'center', 'important');
@@ -11132,14 +11132,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					y = Math.max(bandTopClamp, Math.min(bandBottomClamp, y));
 					try {
 						/*
-						 * Phone LS: TWISTER mellem hjerne og bund — synlig oval, uden at sidde i home-indicator.
-						 * (0.22 var for højt / overlap; fuld bund var klippet.)
+						 * Phone LS: TWISTER lavere (som før p517) — absolute-placering + ekstra dy
+						 * så ovalen ikke klæber op under hjernen (relative-flow blandt absolute-søskende fejlede).
 						 */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('twister')) {
 							const twMaxY = Math.round(
 								centerY + Math.min(ryEff * 0.58, layoutH * 0.28)
 							);
 							y = Math.min(y, Math.max(bandTopClamp + 24, twMaxY));
+							y = Math.min(bandBottomClamp - 4, y + Math.round(72 * scale));
 						}
 					} catch (_) {}
 					try {
@@ -17339,7 +17340,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 31 okt - klokken 15:10';
+		const stampText = 'update lørdag 31 okt - klokken 15:15';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

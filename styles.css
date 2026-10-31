@@ -20475,7 +20475,8 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 /* Phone LS: D&AD inde i TWISTER (som portræt) */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"],
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] {
-    position: relative !important;
+    /* Absolute — same ellipse coords as other phone-LS nodes (relative jumped up under brain) */
+    position: absolute !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
