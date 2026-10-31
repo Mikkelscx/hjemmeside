@@ -20375,9 +20375,9 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    /* Synlig ens luft mellem KRAVLINGPRISEN / NOMINERET / 2024 (2px var usynlig) */
-    gap: 6px !important;
-    row-gap: 6px !important;
+    /* Synlig ens luft mellem KRAVLINGPRISEN / NOMINERET / 2024 */
+    gap: 10px !important;
+    row-gap: 10px !important;
     line-height: 1 !important;
     transform: scale(0.92) !important;
     transform-origin: center top !important;
