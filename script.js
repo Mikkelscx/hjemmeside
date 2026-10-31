@@ -1473,8 +1473,8 @@ function mskEnsureDandDPhoneLandscapeInlineBadge() {
 		const tw = container.querySelector('a[href*="twister"], .project-node[href*="twister"]');
 		if (!tw) return;
 		try {
-			/* Absolute + flex — relative ødelægger phone-LS top/left-ellipse */
-			tw.style.setProperty('position', 'absolute', 'important');
+			/* Twister: behold relative (godkendt phone-LS placering) — kun flex til D&AD-stack */
+			tw.style.setProperty('position', 'relative', 'important');
 			tw.style.setProperty('display', 'flex', 'important');
 			tw.style.setProperty('flex-direction', 'column', 'important');
 			tw.style.setProperty('align-items', 'center', 'important');
@@ -17339,7 +17339,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 30 okt - klokken 16:09';
+		const stampText = 'update lørdag 31 okt - klokken 15:10';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
