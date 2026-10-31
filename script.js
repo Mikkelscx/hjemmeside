@@ -11145,14 +11145,19 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					try {
-						/* Phone LS: KØ-BAJER længere ind (oval må ikke klippes i venstre kant) */
+						/* Phone LS: KØ-BAJER ned i tomt venstre hjørne — plads til større oval */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
-							const kobMinX = Math.round(Math.max(padXL + 28, layoutW * 0.24));
-							const kobMaxY = Math.round(
-								Math.min(bandBottomClamp, centerY + Math.min(ryEff * 0.52, layoutH * 0.26))
+							const kobMinX = Math.round(padXL + 52);
+							const kobMaxX = Math.round(layoutW * 0.22);
+							x = Math.max(kobMinX, Math.min(kobMaxX, x));
+							const kobTargetY = Math.round(
+								Math.min(
+									layoutH - Math.round(16 * scale),
+									centerY + Math.min(ryEff * 0.82, layoutH * 0.42)
+								)
 							);
-							x = Math.max(kobMinX, x);
-							y = Math.min(y, Math.max(bandTopClamp + 20, kobMaxY));
+							y = Math.max(y, kobTargetY);
+							y = Math.min(layoutH - Math.round(14 * scale), y);
 						}
 					} catch (_) {}
 				}
@@ -14995,9 +15000,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const baseW = s(232) * assetS;
 				const baseH = s(landscapeMindmap ? 292 : 232) * assetS;
-				const padX = s(landscapeMindmap ? 92 : 80) * assetS;
+				let padX = s(landscapeMindmap ? 92 : 80) * assetS;
 				const padYPortrait = kBadgeRect ? 58 : 44;
-				const padY = s(landscapeMindmap ? 124 : padYPortrait) * assetS;
+				let padY = s(landscapeMindmap ? 124 : padYPortrait) * assetS;
+				/* Phone LS: ekstra luft så titel+Kravling ikke skærer ovalkanten */
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					padX = s(118) * assetS;
+					padY = s(96) * assetS;
+				}
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
 				const kobajerRingScale = 0.78;
@@ -15045,15 +15055,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: bredere oval om titel+Kravling — cap ift. plads til venstre kant */
+				/* Phone LS: større oval i venstre hjørne — cap til synlig plads */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.36;
-					h *= 1.38;
+					w *= 1.52;
+					h *= 1.58;
 					try {
-						const leftSafe = 14;
-						const maxWByLeft = Math.max(96, Math.round(2 * (kCenterX - leftSafe)));
-						const maxW = Math.min(Math.round((window.innerWidth || 400) * 0.34), maxWByLeft);
-						const maxH = Math.round((window.innerHeight || 300) * 0.42);
+						const iw = window.innerWidth || 400;
+						const ih = window.innerHeight || 300;
+						const leftSafe = 10;
+						const bottomSafe = 8;
+						const maxWByLeft = Math.max(110, Math.round(2 * (kCenterX - leftSafe)));
+						const maxHByBottom = Math.max(110, Math.round(2 * (ih - kCenterY - bottomSafe)));
+						const maxW = Math.min(Math.round(iw * 0.40), maxWByLeft);
+						const maxH = Math.min(Math.round(ih * 0.50), maxHByBottom);
 						if (w > maxW) {
 							const sFit = maxW / w;
 							w = maxW;
@@ -17343,7 +17357,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 31 okt - klokken 15:31';
+		const stampText = 'update lørdag 31 okt - klokken 15:36';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
