@@ -15048,23 +15048,21 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: bredere + lavere oval om titel+Kravling */
+				/* Phone LS: bredere + lavere oval — form må ikke ændres når noden presses i hjørnet */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
 					w *= 1.78;
 					h *= 1.28;
 					try {
 						const iw = window.innerWidth || 400;
 						const ih = window.innerHeight || 300;
-						const leftSafe = 8;
-						const maxWByLeft = Math.max(140, Math.round(2 * (kCenterX - leftSafe)));
-						const maxW = Math.min(Math.round(iw * 0.48), maxWByLeft);
+						/* Kun viewport-cap (ens skala) — ikke maxWByLeft, den kvaste ovalen i hjørnet */
+						const maxW = Math.round(iw * 0.48);
 						const maxH = Math.round(ih * 0.40);
-						if (w > maxW) {
-							w = maxW;
-						}
-						if (h > maxH) {
-							h = maxH;
-						}
+						let sFit = 1;
+						if (w > maxW) sFit = Math.min(sFit, maxW / w);
+						if (h > maxH) sFit = Math.min(sFit, maxH / h);
+						w = Math.round(w * sFit);
+						h = Math.round(h * sFit);
 					} catch (_) {}
 				}
 				[w, h] = shrinkPhoneRing(w, h);
@@ -17344,7 +17342,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 1 nov - klokken 16:58';
+		const stampText = 'update søndag 1 nov - klokken 17:48';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
