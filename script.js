@@ -14981,16 +14981,13 @@ document.addEventListener('DOMContentLoaded', function() {
 						const bottom = Math.max(kTitleRect.bottom, kBadgeRect.bottom);
 						unionW = Math.max(1, right - left);
 						unionH = Math.max(1, bottom - top);
-						/* Phone LS: ring følger noden — ikke tekst-union (ellers følger ovalen når tekst flyttes) */
-						if (!mskIsProjectsPhoneLandscapeViewport()) {
-							const unionCenter = svgCenterFromRect(
-								currentSvg,
-								{ left, top, width: unionW, height: unionH },
-								containerRect
-							);
-							kCenterX = unionCenter.x;
-							kCenterY = unionCenter.y;
-						}
+						const unionCenter = svgCenterFromRect(
+							currentSvg,
+							{ left, top, width: unionW, height: unionH },
+							containerRect
+						);
+						kCenterX = unionCenter.x;
+						kCenterY = unionCenter.y;
 					}
 				} catch {}
 
@@ -15002,7 +14999,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Phone LS: ekstra luft så titel+Kravling ikke skærer ovalkanten */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
 					padX = s(118) * assetS;
-					padY = s(96) * assetS;
+					padY = s(110) * assetS;
 				}
 				let w = Math.max(baseW, unionW + padX);
 				let h = Math.max(baseH, unionH + padY);
@@ -17345,7 +17342,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 1 nov - klokken 18:05';
+		const stampText = 'update søndag 1 nov - klokken 18:11';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
