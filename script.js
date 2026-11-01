@@ -11145,17 +11145,17 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					try {
-						/* Phone LS: KØ-BAJER lidt længere ned mod venstre hjørne */
+						/* Phone LS: KØ-BAJER endnu lidt mere ned/venstre mod hjørnet */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
-							const kobRingHalfW = Math.round(Math.min(layoutW * 0.11, 92));
-							const kobRingHalfH = Math.round(Math.min(layoutH * 0.14, 56));
-							const kobMinX = Math.round(padXL + kobRingHalfW);
+							const kobRingHalfW = Math.round(Math.min(layoutW * 0.10, 84));
+							const kobRingHalfH = Math.round(Math.min(layoutH * 0.12, 48));
+							const kobMinX = Math.round(Math.max(8, padXL - 4) + kobRingHalfW);
 							x = kobMinX;
 							const kobTargetY = Math.round(
-								centerY + Math.min(ryEff * 0.92, layoutH * 0.46)
+								centerY + Math.min(ryEff * 0.98, layoutH * 0.50)
 							);
 							y = Math.max(y, kobTargetY);
-							y = Math.min(layoutH - kobRingHalfH - Math.round(1 * scale), y);
+							y = Math.min(layoutH - kobRingHalfH, y);
 						}
 					} catch (_) {}
 				}
@@ -17349,7 +17349,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 1 nov - klokken 16:36';
+		const stampText = 'update søndag 1 nov - klokken 16:51';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
