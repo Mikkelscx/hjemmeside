@@ -11145,12 +11145,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					try {
-						/* Phone LS: KØ-BAJER presset ned i venstre hjørne */
+						/* Phone LS: KØ-BAJER i venstre hjørne — hele ovalen synlig (ellers klippes Kravling ud) */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
-							const kobRingHalfW = Math.round(Math.min(layoutW * 0.095, 78));
-							const kobRingHalfH = Math.round(Math.min(layoutH * 0.09, 36));
-							x = kobRingHalfW + 6;
-							y = layoutH - kobRingHalfH + 10;
+							const kobRingHalfW = Math.round(Math.min(layoutW * 0.12, 100));
+							const kobRingHalfH = Math.round(Math.min(layoutH * 0.22, 90));
+							x = kobRingHalfW + 8;
+							y = layoutH - kobRingHalfH - 6;
 						}
 					} catch (_) {}
 				}
@@ -15048,16 +15048,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: bredere + lavere oval — form må ikke ændres når noden presses i hjørnet */
+				/* Phone LS: bred oval der stadig er høj nok til titel+Kravling */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.78;
-					h *= 1.28;
+					w *= 1.72;
+					h *= 1.48;
 					try {
 						const iw = window.innerWidth || 400;
 						const ih = window.innerHeight || 300;
-						/* Kun viewport-cap (ens skala) — ikke maxWByLeft, den kvaste ovalen i hjørnet */
-						const maxW = Math.round(iw * 0.48);
-						const maxH = Math.round(ih * 0.40);
+						const maxW = Math.round(iw * 0.46);
+						const maxH = Math.round(ih * 0.50);
 						let sFit = 1;
 						if (w > maxW) sFit = Math.min(sFit, maxW / w);
 						if (h > maxH) sFit = Math.min(sFit, maxH / h);
@@ -15071,7 +15070,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				let drawCx = kCenterX;
 				if (ipadLandscapeRings) drawCx -= s(14);
 				/* Kort LS: samme lille dy som computer — rotate-pivot SKAL være ringens centrum (ellers flytter 180° ringen op fra titlen) */
-				const kobajerCircleDy = mskIsProjectsPhoneLandscapeViewport() ? s(2) : s(10);
+				const kobajerCircleDy = mskIsProjectsPhoneLandscapeViewport() ? s(6) : s(10);
 				const kobajerImgCy = drawCy + kobajerCircleDy;
 				image.setAttribute('x', String(drawCx - (w / 2)));
 				image.setAttribute('y', String(kobajerImgCy - (h / 2)));
@@ -17342,7 +17341,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 1 nov - klokken 18:11';
+		const stampText = 'update søndag 1 nov - klokken 18:35';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
