@@ -11145,17 +11145,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					try {
-						/* Phone LS: KØ-BAJER endnu lidt mere ned/venstre mod hjørnet */
+						/* Phone LS: KØ-BAJER presset ned i venstre hjørne */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
-							const kobRingHalfW = Math.round(Math.min(layoutW * 0.10, 84));
-							const kobRingHalfH = Math.round(Math.min(layoutH * 0.12, 48));
-							const kobMinX = Math.round(Math.max(8, padXL - 4) + kobRingHalfW);
-							x = kobMinX;
-							const kobTargetY = Math.round(
-								centerY + Math.min(ryEff * 0.98, layoutH * 0.50)
-							);
-							y = Math.max(y, kobTargetY);
-							y = Math.min(layoutH - kobRingHalfH, y);
+							const kobRingHalfW = Math.round(Math.min(layoutW * 0.095, 78));
+							const kobRingHalfH = Math.round(Math.min(layoutH * 0.09, 36));
+							x = kobRingHalfW + 6;
+							y = layoutH - kobRingHalfH + 10;
 						}
 					} catch (_) {}
 				}
@@ -17349,7 +17344,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 1 nov - klokken 16:51';
+		const stampText = 'update søndag 1 nov - klokken 16:58';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
