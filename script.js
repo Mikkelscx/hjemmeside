@@ -14981,13 +14981,16 @@ document.addEventListener('DOMContentLoaded', function() {
 						const bottom = Math.max(kTitleRect.bottom, kBadgeRect.bottom);
 						unionW = Math.max(1, right - left);
 						unionH = Math.max(1, bottom - top);
-						const unionCenter = svgCenterFromRect(
-							currentSvg,
-							{ left, top, width: unionW, height: unionH },
-							containerRect
-						);
-						kCenterX = unionCenter.x;
-						kCenterY = unionCenter.y;
+						/* Phone LS: ring følger noden — ikke tekst-union (ellers følger ovalen når tekst flyttes) */
+						if (!mskIsProjectsPhoneLandscapeViewport()) {
+							const unionCenter = svgCenterFromRect(
+								currentSvg,
+								{ left, top, width: unionW, height: unionH },
+								containerRect
+							);
+							kCenterX = unionCenter.x;
+							kCenterY = unionCenter.y;
+						}
 					}
 				} catch {}
 
@@ -17342,7 +17345,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 1 nov - klokken 17:54';
+		const stampText = 'update søndag 1 nov - klokken 18:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
