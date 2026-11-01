@@ -11145,10 +11145,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					try {
-						/* Phone LS: KØ-BAJER tættere på nedre venstre hjørne */
+						/* Phone LS: KØ-BAJER tættere på nedre venstre hjørne (bredere/lavere oval) */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
-							const kobRingHalfW = Math.round(Math.min(layoutW * 0.095, 80));
-							const kobRingHalfH = Math.round(Math.min(layoutH * 0.195, 78));
+							const kobRingHalfW = Math.round(Math.min(layoutW * 0.11, 92));
+							const kobRingHalfH = Math.round(Math.min(layoutH * 0.16, 64));
 							const kobMinX = Math.round(padXL + kobRingHalfW);
 							x = kobMinX;
 							const kobTargetY = Math.round(
@@ -15053,26 +15053,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: større oval om titel+Kravling — cap kun bredde ift. venstre kant */
+				/* Phone LS: bredere + lavere oval om titel+Kravling */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.55;
-					h *= 1.62;
+					w *= 1.78;
+					h *= 1.28;
 					try {
 						const iw = window.innerWidth || 400;
 						const ih = window.innerHeight || 300;
 						const leftSafe = 8;
 						const maxWByLeft = Math.max(140, Math.round(2 * (kCenterX - leftSafe)));
-						const maxW = Math.min(Math.round(iw * 0.42), maxWByLeft);
-						const maxH = Math.round(ih * 0.52);
+						const maxW = Math.min(Math.round(iw * 0.48), maxWByLeft);
+						const maxH = Math.round(ih * 0.40);
 						if (w > maxW) {
-							const sFit = maxW / w;
 							w = maxW;
-							h = Math.round(h * sFit);
 						}
 						if (h > maxH) {
-							const sFit = maxH / h;
 							h = maxH;
-							w = Math.round(w * sFit);
 						}
 					} catch (_) {}
 				}
@@ -17353,7 +17349,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 31 okt - klokken 19:08';
+		const stampText = 'update søndag 1 nov - klokken 16:25';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
