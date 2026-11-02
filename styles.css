@@ -20402,7 +20402,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     visibility: visible !important;
     opacity: 1 !important;
     position: relative !important;
-    margin-top: -18px !important;
+    margin-top: -8px !important;
     transform: none !important;
     z-index: 6 !important;
     pointer-events: none !important;
@@ -20417,8 +20417,8 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     gap: 4px !important;
     row-gap: 4px !important;
     line-height: 1 !important;
-    transform: scale(0.84) !important;
-    transform-origin: center top !important;
+    transform: scale(0.86) !important;
+    transform-origin: center center !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text > div + div,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text > div + div {
@@ -20449,7 +20449,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title--image,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title--image {
-    transform: translateY(4px) !important;
+    transform: none !important;
     transform-origin: center center !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title-img--kobajer,
