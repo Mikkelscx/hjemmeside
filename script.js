@@ -108,6 +108,9 @@ function mskClearProjectsPhoneLandscapeRefCanvas() {
 			'margin',
 			'transform',
 			'transform-origin',
+			'z-index',
+			'visibility',
+			'opacity',
 		].forEach((p) => {
 			try {
 				container.style.removeProperty(p);
@@ -139,12 +142,16 @@ function mskSyncProjectsPhoneLandscapeFit() {
 			container.style.setProperty('min-height', `${MSK_PHONE_LS_REF_H}px`, 'important');
 			container.style.setProperty('max-width', `${MSK_PHONE_LS_REF_W}px`, 'important');
 			container.style.setProperty('max-height', `${MSK_PHONE_LS_REF_H}px`, 'important');
-			container.style.setProperty('position', 'absolute', 'important');
+			/* fixed = midt i viewport (absolute ift. body forsvandt pga. kollapset højde) */
+			container.style.setProperty('position', 'fixed', 'important');
 			container.style.setProperty('left', '50%', 'important');
 			container.style.setProperty('top', '50%', 'important');
 			container.style.setProperty('right', 'auto', 'important');
 			container.style.setProperty('bottom', 'auto', 'important');
 			container.style.setProperty('margin', '0', 'important');
+			container.style.setProperty('z-index', '5', 'important');
+			container.style.setProperty('visibility', 'visible', 'important');
+			container.style.setProperty('opacity', '1', 'important');
 			container.style.setProperty('--projectsLandscapeFit', sFit);
 			container.style.setProperty(
 				'transform',
@@ -17491,7 +17498,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 00:10';
+		const stampText = 'update tirsdag 3 nov - klokken 00:16';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

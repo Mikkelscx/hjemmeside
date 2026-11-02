@@ -14380,7 +14380,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
             scale(var(--projectsLandscapeFit))
             scaleX(var(--projectsSx)) scaleY(var(--projectsSy));
     }
-    /* Phone LS: overstyr short-LS width:100% — brug låst 14 Pro Max-canvas */
+    /* Phone LS: overstyr short-LS width:100% — brug låst 14 Pro Max-canvas (fixed) */
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container,
     html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container {
         width: 932px !important;
@@ -14388,10 +14388,13 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         min-height: 430px !important;
         max-width: 932px !important;
         max-height: 430px !important;
-        position: absolute !important;
+        position: fixed !important;
         left: 50% !important;
         top: 50% !important;
         margin: 0 !important;
+        z-index: 5 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         transform: translate(-50%, -50%) scale(var(--projectsLandscapeFit, 0.88)) !important;
         transform-origin: center center !important;
     }
@@ -20351,9 +20354,8 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme {
     overflow-y: hidden !important;
 }
 /*
- * Phone LS: låst 14 Pro Max-canvas (932×430). JS sætter width/height +
- * transform: translate(-50%,-50%) scale(0.88 × contain) så ALLE telefoner
- * får samme proportioner som det godkendte design.
+ * Phone LS: låst 14 Pro Max-canvas (932×430), fixed midt i viewport.
+ * (absolute ift. body kollapsede højden → mindmap forsvandt uden for overflow:hidden)
  */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container,
 html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container {
@@ -20366,28 +20368,27 @@ html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brain
     min-height: var(--phone-ls-ref-h) !important;
     max-width: var(--phone-ls-ref-w) !important;
     max-height: var(--phone-ls-ref-h) !important;
-    position: absolute !important;
+    position: fixed !important;
     left: 50% !important;
     top: 50% !important;
     right: auto !important;
     bottom: auto !important;
     margin: 0 !important;
     overflow: visible !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 5 !important;
     transform: translate(-50%, -50%) scale(var(--projectsLandscapeFit)) !important;
     transform-origin: center center !important;
 }
-/* Parent skal fylde viewport så 50%/50% centrerer ref-canvas */
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme,
-html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme {
-    position: relative !important;
-}
-html.msk-projects-phone-landscape body.projects-page.sketchbook-theme main.projects-mobile,
-html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme main.projects-mobile {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    overflow: hidden !important;
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brain,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container .brain,
+html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 /* p459: tving ringe/streger synlige i phone LS */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
