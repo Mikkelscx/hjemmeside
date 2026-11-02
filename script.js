@@ -11951,9 +11951,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		function createAndPositionKobajerKravling2024Label() {
 			const container = document.querySelector('.brainstorm-container');
 			if (!container) return;
+			/* Phone LS: Kravling bor inline under Købajer — undgå left/top der skubber den skråt */
+			try {
+				if (mskIsProjectsPhoneLandscapeViewport()) return;
+			} catch (_) {}
 			const arrow = container.querySelector('.kobajer-arrow');
 
-			let badge = container.querySelector('.kobajer-kravling-2024-badge');
+			let badge = container.querySelector('.kobajer-kravling-2024-badge:not(.kobajer-kravling-2024-badge--inline)');
 			if (!badge) {
 				badge = document.createElement('div');
 				badge.className = 'kobajer-kravling-2024-badge';
@@ -17351,7 +17355,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 2 nov - klokken 01:17';
+		const stampText = 'update mandag 2 nov - klokken 01:30';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
