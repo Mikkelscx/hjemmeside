@@ -48,14 +48,80 @@ const MSK_PROJECTS_LANDSCAPE_MAX_H = 520;
 /** Skal matche `--projectsLandscapeFit` i kort mobil-landscape (styles.css). Bruges til layout-rx så ringen fylder bredden efter `scale()`. */
 /* Telefon/kort landskab: p461 — p460-højde + mere bredde (stadig under p457-clip). */
 const MSK_PROJECTS_LANDSCAPE_FIT = 0.88;
+/**
+ * Godkendt phone-LS reference: iPhone 14 Pro Max landscape (DevTools 932×430).
+ * Andre modeller skalerer compositionen så den ligner denne reference.
+ */
+const MSK_PHONE_LS_REF_W = 932;
+const MSK_PHONE_LS_REF_H = 430;
 /** iPad Pro 13" landskab er 1376px. Over 1366 faldt den ellers over i computer-ellipsen. */
 const MSK_PROJECTS_TABLET_LONG_MAX_PX = 1400;
 /** iPad landskab: træk hele mindmap (hjernen + noder + streger) lidt op */
 const MSK_PROJECTS_IPAD_LS_LAYOUT_UP_PX = 58;
 /** iPad landskab: hold mindmap centreret (ikke skubbet i kanten — Brainfarts skal have luft) */
 const MSK_PROJECTS_IPAD_LS_LAYOUT_LEFT_PX = 0;
-/** Telefon landskab: ryk hele ellipse-mindmap mod venstre (px i layout-rum) */
+/** Telefon landskab: ryk hele ellipse-mindmap mod venstre (px i layout-rum @ ref 932) */
 const MSK_PROJECTS_PHONE_LS_LAYOUT_LEFT_PX = 44;
+
+/** Brugbar phone-LS viewport (layout + evt. mindre visualViewport fra Safari-chrome). */
+function mskProjectsPhoneLandscapeUsableBox() {
+	const box = mskProjectsLayoutViewportBox();
+	let w = box.w;
+	let h = box.h;
+	try {
+		const vv = window.visualViewport;
+		if (vv && vv.width >= 280 && vv.height >= 220) {
+			w = Math.min(w, Math.round(vv.width));
+			h = Math.min(h, Math.round(vv.height));
+		}
+	} catch (_) {}
+	try {
+		const cs = getComputedStyle(document.documentElement);
+		const safeL = parseFloat(cs.getPropertyValue('env(safe-area-inset-left)')) || 0;
+		const safeR = parseFloat(cs.getPropertyValue('env(safe-area-inset-right)')) || 0;
+		const safeT = parseFloat(cs.getPropertyValue('env(safe-area-inset-top)')) || 0;
+		const safeB = parseFloat(cs.getPropertyValue('env(safe-area-inset-bottom)')) || 0;
+		/* env() via getPropertyValue virker ikke alle steder — fallback via probe */
+		void safeL;
+		void safeR;
+		void safeT;
+		void safeB;
+	} catch (_) {}
+	return { w: Math.max(1, w), h: Math.max(1, h) };
+}
+
+/** Fit så 14 Pro Max-kompositionen (932×430 @ 0.88) passes ind i aktuelle telefon-LS. */
+function mskComputeProjectsPhoneLandscapeFit(w, h) {
+	const iw = Math.max(1, w || MSK_PHONE_LS_REF_W);
+	const ih = Math.max(1, h || MSK_PHONE_LS_REF_H);
+	const contain = Math.min(iw / MSK_PHONE_LS_REF_W, ih / MSK_PHONE_LS_REF_H);
+	/* Ref ≈ 1.0 → 0.88. Mindre/højere chrome → lavere fit så intet klippes. */
+	const fit = MSK_PROJECTS_LANDSCAPE_FIT * Math.min(1, contain / 0.985);
+	return Math.max(0.7, Math.min(0.92, fit));
+}
+
+function mskSyncProjectsPhoneLandscapeFit() {
+	try {
+		if (!mskIsProjectsPhoneLandscapeViewport()) return MSK_PROJECTS_LANDSCAPE_FIT;
+		const { w, h } = mskProjectsPhoneLandscapeUsableBox();
+		const fit = mskComputeProjectsPhoneLandscapeFit(w, h);
+		const sFit = String(Math.round(fit * 1000) / 1000);
+		try {
+			document.documentElement.style.setProperty('--projectsLandscapeFit', sFit);
+		} catch (_) {}
+		try {
+			const container = document.querySelector('.brainstorm-container');
+			if (container) container.style.setProperty('--projectsLandscapeFit', sFit);
+		} catch (_) {}
+		return fit;
+	} catch (_) {
+		return MSK_PROJECTS_LANDSCAPE_FIT;
+	}
+}
+try {
+	window.mskSyncProjectsPhoneLandscapeFit = mskSyncProjectsPhoneLandscapeFit;
+	window.mskComputeProjectsPhoneLandscapeFit = mskComputeProjectsPhoneLandscapeFit;
+} catch (_) {}
 
 /**
  * Ét stabilt mål for layout (afrundet heltal) — documentElement.client*, ikke visualViewport.
@@ -792,6 +858,11 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 			'msk-projects-phone-portrait-no-scroll',
 			phonePortrait
 		);
+		if (phoneLandscape) {
+			try {
+				mskSyncProjectsPhoneLandscapeFit();
+			} catch (_) {}
+		}
 		if (phonePortrait) {
 			try {
 				if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
@@ -10489,6 +10560,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				layoutW = Math.round(Math.max(1, Math.min(iw, rawCW)));
 				layoutH = Math.round(Math.max(1, Math.min(ih, rawCH)));
 			}
+			/* Phone LS: brug synlig Safari-viewport (ikke kun client*) så 13 Pro Max matcher 14 Pro Max-ref */
+			try {
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					const usable = mskProjectsPhoneLandscapeUsableBox();
+					layoutW = Math.round(Math.max(1, Math.min(layoutW, usable.w)));
+					layoutH = Math.round(Math.max(1, Math.min(layoutH, usable.h)));
+					mskSyncProjectsPhoneLandscapeFit();
+				}
+			} catch (_) {}
 			/* Aldrig layout højere end viewport — undtagen telefon-canvas (768×1024 reference) */
 			if (document.body && document.body.classList.contains('projects-page')) {
 				layoutW = Math.round(Math.max(1, Math.min(layoutW, iw)));
@@ -10950,8 +11030,14 @@ document.addEventListener('DOMContentLoaded', function() {
 					brain.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
 				} catch (_) {}
 			} else if (isShortLandscape) {
-				/* p462: hele phone-LS mindmap (hjerne + noder + streger) mod venstre */
-				centerX = Math.round(layoutW / 2) - MSK_PROJECTS_PHONE_LS_LAYOUT_LEFT_PX;
+				/* p462: hele phone-LS mindmap (hjerne + noder + streger) mod venstre — skaleret ift. 14 Pro Max-ref */
+				try {
+					mskSyncProjectsPhoneLandscapeFit();
+				} catch (_) {}
+				const leftShift = Math.round(
+					MSK_PROJECTS_PHONE_LS_LAYOUT_LEFT_PX * (layoutW / MSK_PHONE_LS_REF_W)
+				);
+				centerX = Math.round(layoutW / 2) - leftShift;
 				centerY = Math.round(layoutH / 2);
 				try {
 					brain.style.setProperty('position', 'absolute', 'important');
@@ -11022,14 +11108,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (isShortLandscape && !narrow) {
 					let fit = MSK_PROJECTS_LANDSCAPE_FIT;
 					try {
+						mskSyncProjectsPhoneLandscapeFit();
+					} catch (_) {}
+					try {
 						const cs = window.getComputedStyle(container);
 						const v = parseFloat(cs.getPropertyValue('--projectsLandscapeFit') || '');
 						if (Number.isFinite(v) && v >= 0.25 && v <= 1) fit = v;
 					} catch (_) {}
 					const deskRatio = 1.85; /* målt på computer ~611/331 */
 					const fitSafe = Math.max(0.5, fit);
-					const visPadX = 88; /* p461: brug længden bedre */
-					const visPadY = 34;
+					/* Padding skaleret ift. 14 Pro Max-ref så ellipse-margen matcher på alle telefoner */
+					const visPadX = Math.round(88 * (layoutW / MSK_PHONE_LS_REF_W));
+					const visPadY = Math.round(34 * (layoutH / MSK_PHONE_LS_REF_H));
 					rx = Math.round((layoutW / 2 - visPadX) / fitSafe);
 					ry = Math.round(rx / deskRatio);
 					const ryMax = Math.round((layoutH / 2 - visPadY) / fitSafe);
@@ -11149,9 +11239,17 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
 							const kobRingHalfW = Math.round(Math.min(layoutW * 0.14, 118));
 							const kobRingHalfH = Math.round(Math.min(layoutH * 0.26, 108));
-							/* Phone LS: oval+indhold lidt ned og lidt til venstre */
-							x = kobRingHalfW - 16;
-							y = layoutH - kobRingHalfH + 56;
+							/* Phone LS: ref-nudges (14 Pro Max) skaleret til aktuel viewport — undgå clip på 13 Pro Max */
+							const sx = layoutW / MSK_PHONE_LS_REF_W;
+							const sy = layoutH / MSK_PHONE_LS_REF_H;
+							const leftNudge = Math.round(16 * sx);
+							const downNudge = Math.round(56 * sy);
+							x = kobRingHalfW - leftNudge;
+							y = layoutH - kobRingHalfH + downNudge;
+							/* Hold oval inde i papiret på kortere Safari-viewports */
+							y = Math.min(y, layoutH - Math.round(kobRingHalfH * 0.62));
+							y = Math.max(y, kobRingHalfH + 6);
+							x = Math.max(x, kobRingHalfW + 4);
 						}
 					} catch (_) {}
 				}
@@ -17356,7 +17454,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 2 nov - klokken 17:09';
+		const stampText = 'update mandag 2 nov - klokken 23:55';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

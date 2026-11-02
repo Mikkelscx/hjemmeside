@@ -20336,13 +20336,14 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme {
     overflow-y: hidden !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container {
+    /* JS sætter --projectsLandscapeFit pr. model (ref: 14 Pro Max 932×430 @ 0.88) */
     --projectsLandscapeFit: 0.88;
     --projectsBrainSize: 102px;
     overflow: visible !important;
     transform:
         translateX(env(safe-area-inset-left, 0px))
         translateY(env(safe-area-inset-top, 0px))
-        scale(0.88) !important;
+        scale(var(--projectsLandscapeFit)) !important;
     transform-origin: 50% 50% !important;
 }
 /* p459: tving ringe/streger synlige i phone LS */
