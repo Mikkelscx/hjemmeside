@@ -20425,7 +20425,8 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     margin-left: 0 !important;
     margin-right: 0 !important;
     padding: 0 !important;
-    transform: none !important;
+    /* Samme vandrette nudge som Købajer-titel — undgå skrå forskydning */
+    transform: translateX(-18px) !important;
     z-index: 6 !important;
     pointer-events: none !important;
     max-width: 96% !important;
@@ -20488,8 +20489,8 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     display: block !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    /* Phone LS: lidt ned; lidt til venstre ift. forrige nudge */
-    transform: translate(3px, 8px) !important;
+    /* Phone LS: tydeligt til venstre + lidt ned i ovalen */
+    transform: translate(-18px, 8px) !important;
     transform-origin: center center !important;
     /* Overskrift: skarpere kontrast så Købajer læses før Kravling */
     filter: contrast(1.18) !important;
