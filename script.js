@@ -84,6 +84,36 @@ function mskComputeProjectsPhoneLandscapeFit(w, h) {
 	return MSK_PROJECTS_LANDSCAPE_FIT * c;
 }
 
+/** Aktiv phone-LS fit (CSS var → beregnet). Bruges til screen→local ring-mål. */
+function mskProjectsPhoneLandscapeFitNow() {
+	try {
+		const el =
+			document.querySelector('.brainstorm-container') || document.documentElement;
+		const v = parseFloat(getComputedStyle(el).getPropertyValue('--projectsLandscapeFit') || '');
+		if (Number.isFinite(v) && v > 0.05) return v;
+	} catch (_) {}
+	try {
+		const { w, h } = mskProjectsPhoneLandscapeUsableBox();
+		return mskComputeProjectsPhoneLandscapeFit(w, h);
+	} catch (_) {
+		return MSK_PROJECTS_LANDSCAPE_FIT;
+	}
+}
+
+/**
+ * getBoundingClientRect er i skærm-px EFTER container scale().
+ * Ring-tegningsmål skal være i ref-canvas (932×430) — ellers bliver Købajer/Twister
+ * forskellig på 13 vs 14 Pro Max.
+ */
+function mskPhoneLsClientSizeToLocal(w, h) {
+	const fit = mskProjectsPhoneLandscapeFitNow();
+	const f = fit > 0.05 ? fit : 1;
+	return {
+		w: Math.max(1, (Number(w) || 0) / f),
+		h: Math.max(1, (Number(h) || 0) / f),
+	};
+}
+
 function mskClearProjectsPhoneLandscapeRefCanvas() {
 	try {
 		document.documentElement.classList.remove('msk-projects-phone-ls-ref-canvas');
@@ -15134,13 +15164,23 @@ document.addEventListener('DOMContentLoaded', function() {
 						const bottom = Math.max(kTitleRect.bottom, kBadgeRect.bottom);
 						unionW = Math.max(1, right - left);
 						unionH = Math.max(1, bottom - top);
+						/* Phone LS: screen→local så ring = 14 Pro Max på alle modeller */
+						if (mskIsProjectsPhoneLandscapeViewport()) {
+							const loc = mskPhoneLsClientSizeToLocal(unionW, unionH);
+							unionW = loc.w;
+							unionH = loc.h;
+						}
 						const unionCenter = svgCenterFromRect(
 							currentSvg,
-							{ left, top, width: unionW, height: unionH },
+							{ left, top, width: Math.max(1, right - left), height: Math.max(1, bottom - top) },
 							containerRect
 						);
 						kCenterX = unionCenter.x;
 						kCenterY = unionCenter.y;
+					} else if (mskIsProjectsPhoneLandscapeViewport()) {
+						const loc = mskPhoneLsClientSizeToLocal(unionW, unionH);
+						unionW = loc.w;
+						unionH = loc.h;
 					}
 				} catch {}
 
@@ -15201,15 +15241,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: oval mere bred; højde holdt til titel+Kravling */
+				/* Phone LS: oval mere bred; clamp i REF-rum (ikke device innerWidth) */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
 					w *= 1.95;
 					h *= 1.42;
 					try {
-						const iw = window.innerWidth || 400;
-						const ih = window.innerHeight || 300;
-						const maxW = Math.round(iw * 0.46);
-						const maxH = Math.round(ih * 0.48);
+						const maxW = Math.round(MSK_PHONE_LS_REF_W * 0.46);
+						const maxH = Math.round(MSK_PHONE_LS_REF_H * 0.48);
 						let sFit = 1;
 						if (w > maxW) sFit = Math.min(sFit, maxW / w);
 						if (h > maxH) sFit = Math.min(sFit, maxH / h);
@@ -15490,6 +15528,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						);
 						twCenterX = unionCenter.x;
 						twCenterY = unionCenter.y;
+					} else if (mskIsProjectsPhoneLandscapeViewport()) {
+						/* Titel-mål i ref-canvas (ikke screen efter scale) */
+						const titleLocal = mskPhoneLsClientSizeToLocal(
+							twTitleRect.width || unionW,
+							twTitleRect.height || unionH
+						);
+						unionW = titleLocal.w;
+						unionH = titleLocal.h;
 					}
 				} catch {}
 				const twUseLs = landscapeMindmap && !ipadLandscapeRings;
@@ -15516,7 +15562,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					h *= 1 + (1.52 - 1) * pRing;
 				}
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: Twister smallere kun lodret; bredde som før */
+				/* Phone LS: Twister smallere kun lodret; bredde som før (mål allerede i ref-rum) */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
 					w *= 1.58;
 					h *= 0.98;
@@ -17498,7 +17544,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 00:16';
+		const stampText = 'update tirsdag 3 nov - klokken 00:28';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
