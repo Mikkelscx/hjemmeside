@@ -11145,12 +11145,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					try {
-						/* Phone LS: KØ-BAJER i venstre hjørne — hele ovalen synlig (ellers klippes Kravling ud) */
+						/* Phone LS: KØ-BAJER nede/venstre — inde på papiret så oval+tekst ikke klippes */
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
-							const kobRingHalfW = Math.round(Math.min(layoutW * 0.12, 100));
-							const kobRingHalfH = Math.round(Math.min(layoutH * 0.22, 90));
-							x = kobRingHalfW + 8;
-							y = layoutH - kobRingHalfH - 6;
+							const kobRingHalfW = Math.round(Math.min(layoutW * 0.14, 118));
+							const kobRingHalfH = Math.round(Math.min(layoutH * 0.26, 108));
+							x = kobRingHalfW + 22;
+							y = layoutH - kobRingHalfH - 10;
 						}
 					} catch (_) {}
 				}
@@ -15048,15 +15048,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: bred oval der stadig er høj nok til titel+Kravling */
+				/* Phone LS: oval høj nok til KØ-BAJER + Kravling; ikke for bred til venstre kant */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.72;
-					h *= 1.48;
+					w *= 1.58;
+					h *= 1.78;
 					try {
 						const iw = window.innerWidth || 400;
 						const ih = window.innerHeight || 300;
-						const maxW = Math.round(iw * 0.46);
-						const maxH = Math.round(ih * 0.50);
+						const maxW = Math.round(iw * 0.36);
+						const maxH = Math.round(ih * 0.58);
 						let sFit = 1;
 						if (w > maxW) sFit = Math.min(sFit, maxW / w);
 						if (h > maxH) sFit = Math.min(sFit, maxH / h);
@@ -15069,8 +15069,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				const drawCy = isProjectsPhoneWidth() ? kCenterY + s(4) : kCenterY;
 				let drawCx = kCenterX;
 				if (ipadLandscapeRings) drawCx -= s(14);
-				/* Kort LS: samme lille dy som computer — rotate-pivot SKAL være ringens centrum (ellers flytter 180° ringen op fra titlen) */
-				const kobajerCircleDy = mskIsProjectsPhoneLandscapeViewport() ? s(6) : s(10);
+				/* Phone LS: skub ovalen ned så den omslutter titel+Kravling */
+				const kobajerCircleDy = mskIsProjectsPhoneLandscapeViewport() ? s(24) : s(10);
 				const kobajerImgCy = drawCy + kobajerCircleDy;
 				image.setAttribute('x', String(drawCx - (w / 2)));
 				image.setAttribute('y', String(kobajerImgCy - (h / 2)));
@@ -17341,7 +17341,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 1 nov - klokken 18:35';
+		const stampText = 'update mandag 2 nov - klokken 01:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
