@@ -20393,6 +20393,17 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     text-align: center !important;
     letter-spacing: 0 !important;
 }
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"],
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] {
+    gap: 0 !important;
+    row-gap: 0 !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title--image,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title--image {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 0 !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline {
     display: flex !important;
@@ -20402,7 +20413,10 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     visibility: visible !important;
     opacity: 1 !important;
     position: relative !important;
-    margin-top: -8px !important;
+    /* scale() skrumper ikke layout-boksen — træk Kravling tæt ind under Købajer */
+    margin-top: -26px !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
     transform: none !important;
     z-index: 6 !important;
     pointer-events: none !important;
@@ -20414,11 +20428,11 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 4px !important;
-    row-gap: 4px !important;
+    gap: 1px !important;
+    row-gap: 1px !important;
     line-height: 1 !important;
     transform: scale(0.86) !important;
-    transform-origin: center center !important;
+    transform-origin: center top !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text > div + div,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .kobajer-kravling-2024-badge--inline .kobajer-kravling-2024-text > div + div {
