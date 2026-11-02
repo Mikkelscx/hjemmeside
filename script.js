@@ -63,7 +63,11 @@ const MSK_PROJECTS_IPAD_LS_LAYOUT_LEFT_PX = 0;
 /** Telefon landskab: ryk hele ellipse-mindmap mod venstre (px i layout-rum @ ref 932) */
 const MSK_PROJECTS_PHONE_LS_LAYOUT_LEFT_PX = 44;
 
-/** Brugbar phone-LS viewport (layout + evt. mindre visualViewport fra Safari-chrome). */
+/**
+ * Brugbar phone-LS viewport.
+ * Brug layout (client*) som primær — visualViewport fra Safari-chrome må IKKE krympe
+ * compositionen aggressivt (det gjorde 13 Pro Max for lille ift. 14 Pro Max-ref).
+ */
 function mskProjectsPhoneLandscapeUsableBox() {
 	const box = mskProjectsLayoutViewportBox();
 	let w = box.w;
@@ -71,33 +75,31 @@ function mskProjectsPhoneLandscapeUsableBox() {
 	try {
 		const vv = window.visualViewport;
 		if (vv && vv.width >= 280 && vv.height >= 220) {
-			w = Math.min(w, Math.round(vv.width));
-			h = Math.min(h, Math.round(vv.height));
+			const vw = Math.round(vv.width);
+			const vh = Math.round(vv.height);
+			/* Kun trim hvis vv er næsten samme størrelse (små insets) — ikke URL-bar-kollaps */
+			if (vw >= w * 0.94) w = Math.min(w, vw);
+			if (vh >= h * 0.94) h = Math.min(h, vh);
 		}
-	} catch (_) {}
-	try {
-		const cs = getComputedStyle(document.documentElement);
-		const safeL = parseFloat(cs.getPropertyValue('env(safe-area-inset-left)')) || 0;
-		const safeR = parseFloat(cs.getPropertyValue('env(safe-area-inset-right)')) || 0;
-		const safeT = parseFloat(cs.getPropertyValue('env(safe-area-inset-top)')) || 0;
-		const safeB = parseFloat(cs.getPropertyValue('env(safe-area-inset-bottom)')) || 0;
-		/* env() via getPropertyValue virker ikke alle steder — fallback via probe */
-		void safeL;
-		void safeR;
-		void safeT;
-		void safeB;
 	} catch (_) {}
 	return { w: Math.max(1, w), h: Math.max(1, h) };
 }
 
-/** Fit så 14 Pro Max-kompositionen (932×430 @ 0.88) passes ind i aktuelle telefon-LS. */
+/**
+ * Fit tæt på 14 Pro Max (0.88). Bredde vejer mest; højde må kun blødt trimme
+ * (undgå at Safari-chrome skalerer hele mindmap for småt).
+ */
 function mskComputeProjectsPhoneLandscapeFit(w, h) {
 	const iw = Math.max(1, w || MSK_PHONE_LS_REF_W);
 	const ih = Math.max(1, h || MSK_PHONE_LS_REF_H);
-	const contain = Math.min(iw / MSK_PHONE_LS_REF_W, ih / MSK_PHONE_LS_REF_H);
-	/* Ref ≈ 1.0 → 0.88. Mindre/højere chrome → lavere fit så intet klippes. */
-	const fit = MSK_PROJECTS_LANDSCAPE_FIT * Math.min(1, contain / 0.985);
-	return Math.max(0.7, Math.min(0.92, fit));
+	const wRatio = iw / MSK_PHONE_LS_REF_W;
+	const hRatio = ih / MSK_PHONE_LS_REF_H;
+	/* 70% bredde / 30% højde — 13 Pro Max (~926×428) ≈ samme størrelse som 14 Pro Max */
+	const blended = wRatio * 0.7 + hRatio * 0.3;
+	const contain = Math.min(1.02, Math.max(0.92, blended));
+	const fit = MSK_PROJECTS_LANDSCAPE_FIT * contain;
+	/* Gulv 0.84 — aldrig “miniatur”; loft 0.90 */
+	return Math.max(0.84, Math.min(0.9, fit));
 }
 
 function mskSyncProjectsPhoneLandscapeFit() {
@@ -17454,7 +17456,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 2 nov - klokken 23:55';
+		const stampText = 'update mandag 2 nov - klokken 23:58';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
