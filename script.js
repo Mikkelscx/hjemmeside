@@ -73,14 +73,18 @@ function mskProjectsPhoneLandscapeUsableBox() {
 }
 
 /**
- * Uniform scale: godkendt design-fit (0.88) × contain(viewport / 932×430).
- * Alle telefoner får samme proportioner som iPhone 14 Pro Max landscape.
+ * Uniform scale efter skærmens LÆNGDE (bredde i landskab).
+ * contain() lod højden styre → tom papirmargin i siderne på bredere telefoner.
+ * Nu: same ~88% bredde-udnyttelse som 14 Pro Max; let vertikal clip OK (overflow:hidden).
  */
 function mskComputeProjectsPhoneLandscapeFit(w, h) {
 	const iw = Math.max(1, w || MSK_PHONE_LS_REF_W);
 	const ih = Math.max(1, h || MSK_PHONE_LS_REF_H);
-	const contain = Math.min(iw / MSK_PHONE_LS_REF_W, ih / MSK_PHONE_LS_REF_H);
-	const c = Math.max(0.78, Math.min(1.02, contain));
+	/* Dæk mindst bredden (længden); cover hvis telefonen er “bredere” end 932×430 */
+	const byW = iw / MSK_PHONE_LS_REF_W;
+	const byH = ih / MSK_PHONE_LS_REF_H;
+	const cover = Math.max(byW, byH);
+	const c = Math.max(0.82, Math.min(1.12, cover));
 	return MSK_PROJECTS_LANDSCAPE_FIT * c;
 }
 
@@ -17544,7 +17548,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 00:28';
+		const stampText = 'update tirsdag 3 nov - klokken 00:34';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
