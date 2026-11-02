@@ -64,28 +64,41 @@ const MSK_PROJECTS_IPAD_LS_LAYOUT_LEFT_PX = 0;
 const MSK_PROJECTS_PHONE_LS_LAYOUT_LEFT_PX = 44;
 
 /**
- * Synlig phone-LS viewport (layout client*).
- * Reference-canvas (932×430) skalerer ensartet ind i denne boks — proportioner = 14 Pro Max.
+ * Synlig phone-LS viewport til scale.
+ * Brug mindste af layout vs visualViewport — Safari-chrome må ikke få mindmap til at “sprænge”.
  */
 function mskProjectsPhoneLandscapeUsableBox() {
 	const box = mskProjectsLayoutViewportBox();
-	return { w: Math.max(1, box.w), h: Math.max(1, box.h) };
+	let w = Math.max(1, box.w);
+	let h = Math.max(1, box.h);
+	try {
+		const vv = window.visualViewport;
+		if (vv && vv.width > 0 && vv.height > 0) {
+			w = Math.min(w, Math.round(vv.width));
+			h = Math.min(h, Math.round(vv.height));
+		}
+	} catch (_) {}
+	try {
+		const iw = Math.round(window.innerWidth || 0);
+		const ih = Math.round(window.innerHeight || 0);
+		if (iw > 0) w = Math.min(w, iw);
+		if (ih > 0) h = Math.min(h, ih);
+	} catch (_) {}
+	return { w: Math.max(1, w), h: Math.max(1, h) };
 }
 
 /**
- * Uniform scale efter skærmens LÆNGDE (bredde i landskab).
- * contain() lod højden styre → tom papirmargin i siderne på bredere telefoner.
- * Nu: same ~88% bredde-udnyttelse som 14 Pro Max; let vertikal clip OK (overflow:hidden).
+ * Uniform scale: sigt efter 14 Pro Max-bredde (×0.88), men ALDRIG højere end viewport.
+ * (cover alene blev for stort på 13 Pro Max / Safari → klippet)
  */
 function mskComputeProjectsPhoneLandscapeFit(w, h) {
 	const iw = Math.max(1, w || MSK_PHONE_LS_REF_W);
 	const ih = Math.max(1, h || MSK_PHONE_LS_REF_H);
-	/* Dæk mindst bredden (længden); cover hvis telefonen er “bredere” end 932×430 */
 	const byW = iw / MSK_PHONE_LS_REF_W;
 	const byH = ih / MSK_PHONE_LS_REF_H;
-	const cover = Math.max(byW, byH);
-	const c = Math.max(0.82, Math.min(1.12, cover));
-	return MSK_PROJECTS_LANDSCAPE_FIT * c;
+	/* Bredde som 14PM; højde må ikke klippes */
+	const fit = Math.min(MSK_PROJECTS_LANDSCAPE_FIT * byW, byH * 0.96);
+	return Math.max(0.72, Math.min(1.0, fit));
 }
 
 /** Aktiv phone-LS fit (CSS var → beregnet). Bruges til screen→local ring-mål. */
@@ -17548,7 +17561,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 00:34';
+		const stampText = 'update tirsdag 3 nov - klokken 00:53';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
