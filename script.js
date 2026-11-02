@@ -11163,10 +11163,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				node.style.setProperty('margin-left', '0', 'important');
 				node.style.setProperty('margin-top', '0', 'important');
 
-				// Center + tilt.
+				// Center + tilt (Købajer phone LS: 0° så titel+Kravling står lige).
+				let nodeTilt = tilts[i] ?? 0;
+				try {
+					if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
+						nodeTilt = 0;
+					}
+				} catch (_) {}
 				node.style.setProperty(
 					'transform',
-					`translate(-50%, -50%) rotate(${tilts[i] ?? 0}deg)`,
+					`translate(-50%, -50%) rotate(${nodeTilt}deg)`,
 					'important'
 				);
 
@@ -17341,7 +17347,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 2 nov - klokken 01:05';
+		const stampText = 'update mandag 2 nov - klokken 01:10';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
