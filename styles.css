@@ -20483,14 +20483,16 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title-img--kobajer,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
-    max-width: min(96px, 22vw) !important;
-    width: min(96px, 22vw) !important;
+    max-width: min(122px, 28vw) !important;
+    width: min(122px, 28vw) !important;
     display: block !important;
     margin-left: auto !important;
     margin-right: auto !important;
     /* webp-blæk er ~17px venstre for midten — kompensér så det flugter med Kravling */
-    transform: translateX(4px) !important;
+    transform: translateX(5px) !important;
     transform-origin: center center !important;
+    /* Overskrift: skarpere kontrast så Købajer læses før Kravling */
+    filter: contrast(1.18) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .kobajer-arrow,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container > .kobajer-kravling-2024-badge {

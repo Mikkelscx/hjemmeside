@@ -15058,14 +15058,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				w *= projectsDesktopRingMul;
 				h *= projectsDesktopRingMul;
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: oval høj nok til KØ-BAJER + Kravling; smallere kun lodret */
+				/* Phone LS: oval lidt bredere; højde holdt til titel+Kravling */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.58;
+					w *= 1.72;
 					h *= 1.42;
 					try {
 						const iw = window.innerWidth || 400;
 						const ih = window.innerHeight || 300;
-						const maxW = Math.round(iw * 0.36);
+						const maxW = Math.round(iw * 0.40);
 						const maxH = Math.round(ih * 0.48);
 						let sFit = 1;
 						if (w > maxW) sFit = Math.min(sFit, maxW / w);
@@ -17355,7 +17355,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 2 nov - klokken 02:16';
+		const stampText = 'update mandag 2 nov - klokken 02:19';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
