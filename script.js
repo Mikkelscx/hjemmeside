@@ -11149,8 +11149,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('kobajer')) {
 							const kobRingHalfW = Math.round(Math.min(layoutW * 0.14, 118));
 							const kobRingHalfH = Math.round(Math.min(layoutH * 0.26, 108));
-							x = kobRingHalfW + 22;
-							y = layoutH - kobRingHalfH - 10;
+							/* Phone LS: oval+indhold lidt ned og lidt til venstre */
+							x = kobRingHalfW + 8;
+							y = layoutH - kobRingHalfH + 4;
 						}
 					} catch (_) {}
 				}
@@ -17355,7 +17356,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 2 nov - klokken 14:33';
+		const stampText = 'update mandag 2 nov - klokken 15:24';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
