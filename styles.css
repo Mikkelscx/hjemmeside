@@ -20437,8 +20437,8 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 1px !important;
-    row-gap: 1px !important;
+    gap: 4px !important;
+    row-gap: 4px !important;
     line-height: 1 !important;
     transform: scale(0.86) !important;
     transform-origin: center top !important;
