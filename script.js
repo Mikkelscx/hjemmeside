@@ -15374,9 +15374,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					h *= 1 + (1.52 - 1) * pRing;
 				}
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: bredere Twister-cirkel — plads til større titel + D&AD */
+				/* Phone LS: Twister smallere kun vandret; højde uændret */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.58;
+					w *= 1.28;
 					h *= 1.40;
 				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
@@ -17356,7 +17356,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 2 nov - klokken 16:58';
+		const stampText = 'update mandag 2 nov - klokken 17:05';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
