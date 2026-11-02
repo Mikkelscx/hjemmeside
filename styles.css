@@ -20425,8 +20425,8 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     margin-left: 0 !important;
     margin-right: 0 !important;
     padding: 0 !important;
-    /* Samme vandrette nudge som Købajer-titel — undgå skrå forskydning */
-    transform: translateX(-18px) !important;
+    /* Lidt til højre ift. Købajer-titel (titel forbliver -18px) */
+    transform: translateX(-6px) !important;
     z-index: 6 !important;
     pointer-events: none !important;
     max-width: 96% !important;
