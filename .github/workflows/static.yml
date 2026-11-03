@@ -65,7 +65,8 @@ jobs:
           touch publish/.nojekyll
           # www.mikkelsc.dk hører til hjemmeside-Pages. min-hjemmeside må IKKE publicere CNAME
           # (ellers fejler Deploy på hjemmeside, og www bliver hængende på gammel build).
-          if [ "${GITHUB_REPOSITORY:-}" = "Mikkelscx/hjemmeside" ]; then
+          # Begge Pages-repos må publicere CNAME (kun én kan eje domænet ad gangen i GitHub).
+          if [ "${GITHUB_REPOSITORY:-}" = "Mikkelscx/hjemmeside" ] || [ "${GITHUB_REPOSITORY:-}" = "Mikkelscx/min-hjemmeside" ]; then
             printf 'www.mikkelsc.dk\n' > publish/CNAME
           else
             rm -f publish/CNAME
