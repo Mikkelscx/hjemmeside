@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!-- p502-deploy -->
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>TWISTER - Mikkel's Portfolio</title>
+    <script>
+    (function () {
+        var v = '20260924p502';
+        try {
+            var q = new URLSearchParams(location.search || '');
+            if (!q.has('preview') && q.get('v') !== v) {
+                q.set('v', v);
+                q.set('_t', String(Date.now()));
+                location.replace(location.pathname + '?' + q.toString() + (location.hash || ''));
+                return;
+            }
+        } catch (e) {}
+        window.mskAssetV = v;
+        document.write('<link rel="stylesheet" href="styles-' + v + '.css?v=' + v + '">');
+    })();
+    </script>
+    <noscript><link rel="stylesheet" href="styles.css"></noscript>
+    <style>
+        /* Kritiske Twister-styles — sikrer ramme/logo selv hvis cache midlertidigt misser CSS */
+        body.twister-page {
+            margin: 0 !important;
+            background: linear-gradient(135deg, #32CD32 0%, #32CD32 25%, #FF69B4 40%, #FFFACD 100%) !important;
+            min-height: 100dvh;
+            color: #333;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+        body.twister-page .navbar {
+            list-style: none;
+        }
+        body.twister-page .nav-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.25rem;
+            justify-content: center;
+        }
+        body.twister-page .nav-link {
+            color: #04230c !important;
+            text-decoration: none !important;
+            font-weight: 700;
+        }
+        body.twister-page .page-content.twister-content,
+        body.twister-page .page-content {
+            border-radius: 20px !important;
+            padding: 2rem 2rem 1rem !important;
+            margin: 5.5rem auto 2rem !important;
+            max-width: 1400px !important;
+            width: min(calc(100vw - 40px), 1400px) !important;
+            position: relative !important;
+            border: 3px solid transparent !important;
+            background:
+                linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)) padding-box,
+                conic-gradient(
+                    from 210deg,
+                    rgba(50, 205, 50, 0.95) 0%,
+                    rgba(50, 205, 50, 0.95) 26%,
+                    rgba(255, 105, 180, 0.95) 42%,
+                    rgba(255, 250, 205, 0.95) 72%,
+                    rgba(50, 205, 50, 0.95) 100%
+                ) border-box !important;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(255,255,255,0.35) inset !important;
+            box-sizing: border-box !important;
+            text-align: center !important;
+        }
+        body.twister-page .twister-logo {
+            max-width: min(300px, 70vw) !important;
+            width: auto !important;
+            height: auto !important;
+            display: block !important;
+            margin: 0 auto 1.5rem !important;
+        }
+        body.twister-page .campaign-steps {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+        @media (min-width: 769px) {
+            body.twister-page .campaign-steps {
+                grid-template-columns: 1fr 1fr 1fr !important;
+            }
+        }
+        body.twister-page .step-image {
+            max-width: 100% !important;
+            height: auto !important;
+            object-fit: contain !important;
+        }
+        /* Desktop Safari: tving dokument-scroll (html scroller; body overflow-y visible) */
+        @media (min-width: 1025px),
+               (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+            html {
+                overflow-x: hidden !important;
+                overflow-x: clip !important;
+                overflow-y: scroll !important;
+                overscroll-behavior-y: auto !important;
+                height: auto !important;
+                max-height: none !important;
+                position: static !important;
+            }
+            html body.twister-page,
+            body.twister-page {
+                overflow: visible !important;
+                overscroll-behavior-y: auto !important;
+                height: auto !important;
+                max-height: none !important;
+                position: relative !important;
+                inset: auto !important;
+            }
+            body.twister-page .campaign-steps {
+                grid-template-columns: 1fr 1fr 1fr !important;
+            }
+        }
+    </style>
+</head>
+<body class="twister-page">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">HJEM</a>
+                </li>
+                <li class="nav-item">
+                    <a href="projects.html" class="nav-link">PROJEKTER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html" class="nav-link">OM MIG</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#cv" class="nav-link">CV</a>
+                </li>
+                <li class="nav-item nav-item--hover-chapter">
+                    <a href="about.html#udmaerkelser" class="nav-link">UDMÆRKELSER</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">KONTAKT</a>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-universe.html" class="nav-link">MIT AI UNIVERS</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="page-content twister-content">
+        <div class="contact-info">
+            <img src="assets/twister-logo.webp" alt="Twister Logo" class="twister-logo">
+            
+            <h3>Lavet med:</h3>
+            <p>Caroline Berg Preisler &amp; Laura Høgsbro</p>
+
+            <h3>Award:</h3>
+            <p>D&amp;AD New Blood<br/>Wooden Pencil</p>
+
+            <h3>Brief</h3>
+            <p>Gør Twister til et ikon for altid – og ikke kun om sommeren.</p>
+
+            <h3>Problem</h3>
+            <p>Skandinaver har en større risiko for at få seasonal affective disorder (SAD) / vinterdepression.<br/>
+            Vinterdepression kan skyldes mangel på sollys.<br/>
+            Nogle af de mest almindelige symptomer er: Besvær med at tænke klart, træthed, vægtøgning og angst.</p>
+
+            <h3>Fakta</h3>
+            <p>I Danmark er der 170 regnvejrsdage om året og i gennemsnit kun 19 sommerdage om året.<br/>
+            1 ud af 10 danskere har symptomer på vinterdepression.</p>
+
+            <h3>Trend</h3>
+            <p>Saunagus er en hurtigt voksende wellness-trend, som er populær i de skandinaviske lande.</p>
+
+            <h3>Løsning</h3>
+            <p><strong>Twister Saunagus:</strong><br/>
+            Twister bringer sommerens varme ind i den koldeste og mørkeste tid på året.</p>
+            
+            <!-- YouTube Video -->
+            <h3>Kampagnevideo</h3>
+            <div class="video-container">
+                <video controls playsinline preload="metadata" poster="assets/Twister-thumb-31s.jpg">
+                    <source src="assets/Twister.mp4" type="video/mp4">
+                    Din browser understøtter ikke videoafspilning.
+                </video>
+            </div>
+            
+            <!-- Campaign Steps -->
+            <div class="campaign-steps">
+                <div class="step-column">
+                    <h4>Step 1</h4>
+                    <h5>1. februar</h5>
+                    <p>Kampagnestart. På årets mest sandsynligt kolde dag uddeler Twister is.<br/>
+                    Twistet er, at isen leder videre til en landingpage.</p>
+                    <img src="assets/Hand with ice.png?v=2" alt="Hand with ice" class="step-image">
+                </div>
+                <div class="step-column">
+                    <h4>Step 2</h4>
+                    <h5>Landingpage</h5>
+                    <p>Her kan deltagerne booke en session.</p>
+                    <img src="assets/calender sauna.png?v=2" alt="Saunakalender" class="step-image">
+                </div>
+                <div class="step-column">
+                    <h4>Step 3</h4>
+                    <h5>14.–31. februar</h5>
+                    <p>Kampagnens hovedevent: Saunagus-session.<br/>
+                    Deltagerne prøver Twister-saunaen.</p>
+                    <img src="assets/picture of sauna location.png" alt="Saunalokation" class="step-image">
+                </div>
+            </div>
+            
+            <!-- Elements Section -->
+            <h3>Elements</h3>
+            
+            <!-- Elements Grid -->
+            <div class="elements-grid">
+                <div class="element-box">
+                    <h4>Saunaen set i 180°</h4>
+                    <img src="assets/ice 180.png?v=2" alt="Sauna 180° view" class="element-image">
+                </div>
+                <div class="element-box">
+                    <h4>Æteriske olier</h4>
+                    <img src="assets/olier.png" alt="Etheric oils" class="element-image">
+                </div>
+                <div class="element-box">
+                    <h4>Håndklæder</h4>
+                    <img src="assets/towels.png" alt="Towels" class="element-image">
+                </div>
+                <div class="element-box">
+                    <h4>Isbillet</h4>
+                    <img src="assets/ice package.png" alt="Ice cream ticket" class="element-image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p502') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+    })();
+    </script>
+</body>
+</html> 

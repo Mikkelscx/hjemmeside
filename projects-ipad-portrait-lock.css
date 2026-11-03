@@ -1,0 +1,187 @@
+/**
+ * LÅST scope: iPad/tablet portræt — projects.html mindmap.
+ * Ændr KUN denne fil for tablet-portræt visuelle overrides og klik-lag.
+ * Loades EFTER styles.css så html.msk-projects-ipad-portrait vinder.
+ */
+
+/*
+ * Single page i portræt: ingen dokument-scroll (modstykke til landskab-no-scroll).
+ * Rører IKKE landscape.
+ */
+html.msk-projects-ipad-portrait-no-scroll,
+html.msk-projects-ipad-portrait {
+	overflow: hidden !important;
+	overscroll-behavior: none !important;
+	touch-action: pan-x pan-y pinch-zoom;
+	height: 100%;
+	max-height: 100dvh;
+}
+
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme {
+	overflow: hidden !important;
+	overscroll-behavior: none !important;
+	touch-action: pan-x pan-y pinch-zoom;
+	position: relative;
+	min-height: 100dvh;
+	height: 100dvh;
+	max-height: 100dvh;
+}
+
+/*
+ * Ét papirark (ikke åben notesbog med midter-søm).
+ * Media-query single-page rammer ikke altid iPad Pro 13 + DevTools-mus.
+ */
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme::before,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme::before {
+	display: block !important;
+	width: 100% !important;
+	left: 0 !important;
+	right: 0 !important;
+	top: 0 !important;
+	bottom: 0 !important;
+	height: 100% !important;
+	max-height: 100% !important;
+	min-height: 0 !important;
+	box-shadow: none !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme::after,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme::after {
+	display: none !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .right-margin,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .left-margin {
+	display: none !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+	display: flex !important;
+	height: 100% !important;
+	max-height: 100% !important;
+	min-height: 0 !important;
+	top: 0 !important;
+	bottom: 0 !important;
+}
+
+/* Ens linjer — ingen synlig midt-søm mellem halvdelene */
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half--left,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half--right {
+	background-image: repeating-linear-gradient(
+		to bottom,
+		transparent 0 22px,
+		rgba(210, 210, 210, 0.88) 22px 24px,
+		rgba(224, 224, 224, 0.62) 23px 25px
+	) !important;
+}
+
+/*
+ * Projekter → Om mig i portræt: fuld side (ikke 50vw højre blad).
+ * Landskab beholder åben-notesbog-layout.
+ */
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-under--left {
+	display: none !important;
+}
+
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-under--right {
+	left: 0 !important;
+	right: 0 !important;
+	width: 100vw !important;
+	height: 100% !important;
+	height: 100dvh !important;
+}
+
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-frame,
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-frame--left,
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-frame--right {
+	left: 0 !important;
+	width: 100vw !important;
+}
+
+html.msk-projects-ipad-portrait .projects-about-transition .projects-about-turn__flip {
+	left: 0 !important;
+	width: 100vw !important;
+	height: 100% !important;
+	height: 100dvh !important;
+	transform-origin: 0% 50%;
+}
+
+/* Update-stempel skal altid kunne ses i portræt (ikke klippet af no-scroll). */
+html.msk-projects-ipad-portrait .msk-build-stamp,
+html.msk-projects-ipad-portrait-no-scroll .msk-build-stamp {
+	position: fixed !important;
+	right: max(14px, env(safe-area-inset-right, 0px)) !important;
+	bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+	z-index: 500000 !important;
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+	position: fixed !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100dvh !important;
+	max-height: 100dvh !important;
+	min-height: 0 !important;
+	overflow: visible !important;
+}
+
+/* Streger m� ikke fange tap (fuldsk�rms-SVG l�  over noderne) */
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines image,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines path {
+	pointer-events: none !important;
+}
+
+/* Klikbare projekter: noder over streger, ringe over noder */
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node {
+	position: relative !important;
+	z-index: 25 !important;
+	pointer-events: auto !important;
+	cursor: pointer !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] {
+	cursor: not-allowed !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay {
+	z-index: 24 !important;
+	pointer-events: auto !important;
+	cursor: pointer;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .msk-portrait-ring-overlay[data-node-href*="brainfarts"] {
+	cursor: not-allowed;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+	transform: translate3d(0, -22px, 0) !important;
+	-webkit-transform: translate3d(0, -22px, 0) !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="naturli"] .project-node__title-img--naturli,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli {
+	transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(calc(1.95 * var(--pLabelMul, 1))) !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .project-node__title-img--repop,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
+	max-width: 100% !important;
+	width: 100% !important;
+	transform: translateY(32px) scale(1.22) !important;
+	transform-origin: center center !important;
+}
+
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="repop"] .kravling-nomineret-badge--inline,
+html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
+	transform: translateY(-46px) scale(1.14) !important;
+}
