@@ -20784,11 +20784,19 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     transform: translateY(0) scale(1.22) !important;
     transform-origin: center center !important;
 }
-/* Phone LS: Unge mod UV større tekst i cirklen */
+/* Phone LS: Unge mod UV — større tekst + oval */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"],
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="unge-mod-uv"] {
+    width: min(168px, 36vw) !important;
+    min-width: 0 !important;
+    max-width: min(168px, 36vw) !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
-    max-width: min(145px, 32vw) !important;
-    width: min(145px, 32vw) !important;
+    width: 148px !important;
+    max-width: none !important;
+    transform: translateY(0) scale(1.24) !important;
+    transform-origin: center center !important;
 }
 /* Phone LS: D&AD inde i TWISTER (som portræt) */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"],
