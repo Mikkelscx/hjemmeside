@@ -12316,7 +12316,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         visibility: hidden !important;
     }
     body.projects-page.sketchbook-theme .project-node .brainfarts-build__sign--inline {
-        /* Center it inside the BRAINFARTS circle */
+        /* Center it inside the BRAINFARTS circle — under tekst + rød streg */
         position: absolute;
         left: 50%;
         top: 52%;
@@ -12329,6 +12329,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         pointer-events: none;
         /* See-through, like it's drawn on paper */
         opacity: 0.62;
+        z-index: 2;
         /* keep crisp: Firefox bruger crisp-edges; WebKit optimize-contrast */
         image-rendering: crisp-edges;
         image-rendering: -webkit-optimize-contrast;
@@ -12336,7 +12337,28 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
-        z-index: 1;
+        z-index: 4;
+    }
+    body.projects-page.sketchbook-theme .project-node .brainfarts-construction-line--inline {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(-36deg);
+        display: block;
+        width: 92%;
+        max-width: none;
+        height: auto;
+        margin: 0;
+        pointer-events: none;
+        opacity: 0.9;
+        z-index: 8;
+        image-rendering: crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines .brainfarts-construction-line {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
     }
 
     /* Mobile Projects: make Kravling 2025 part of the REPOP circle (inline under the text) */
@@ -14503,13 +14525,34 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         height: auto !important;
         margin: 0 !important;
         pointer-events: none !important;
-        z-index: 6 !important;
+        z-index: 2 !important;
         image-rendering: crisp-edges;
         image-rendering: -webkit-optimize-contrast;
     }
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
-        z-index: 3;
+        z-index: 4;
+    }
+    body.projects-page.sketchbook-theme .project-node .brainfarts-construction-line--inline,
+    body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] .brainfarts-construction-line--inline {
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) rotate(-36deg) !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.9 !important;
+        width: 108% !important;
+        max-width: none !important;
+        height: auto !important;
+        margin: 0 !important;
+        pointer-events: none !important;
+        z-index: 8 !important;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines .brainfarts-construction-line {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
     }
 
     /* Phone LS short: D&AD/Kravling 2025 er inline — skjul fritstående + pile */
@@ -19477,13 +19520,33 @@ html body a[href="project1.html"]:hover {
         margin: 0;
         pointer-events: none;
         opacity: 0.52 !important;
-        z-index: 0;
+        z-index: 2;
         image-rendering: -webkit-optimize-contrast;
         filter: none;
     }
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
-        z-index: 1;
+        z-index: 4;
+    }
+    body.projects-page.sketchbook-theme .project-node .brainfarts-construction-line--inline {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(-36deg);
+        display: block !important;
+        visibility: visible !important;
+        width: 92%;
+        max-width: none;
+        height: auto;
+        margin: 0;
+        pointer-events: none;
+        opacity: 0.9;
+        z-index: 8;
+    }
+    body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines .brainfarts-construction-line {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
     }
 }
 
@@ -19496,9 +19559,20 @@ html body a[href="project1.html"]:hover {
         max-width: 72% !important;
         transform: translate(-50%, -50%) rotate(-1deg) !important;
         opacity: 0.9 !important;
-        z-index: 6 !important;
+        z-index: 2 !important;
         display: block !important;
         visibility: visible !important;
+    }
+    body.projects-page.sketchbook-theme .project-node .brainfarts-construction-line--inline,
+    body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] .brainfarts-construction-line--inline {
+        z-index: 8 !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.9 !important;
+    }
+    body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
+        position: relative;
+        z-index: 4;
     }
 }
 
@@ -20565,13 +20639,62 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     display: block !important;
     visibility: visible !important;
     opacity: 0.9 !important;
-    z-index: 6 !important;
+    z-index: 2 !important;
     width: min(76px, 17vw) !important;
     max-width: 72% !important;
     left: 50% !important;
     top: 56% !important;
     transform: translate(-50%, -50%) rotate(-1deg) !important;
     position: absolute !important;
+    pointer-events: none !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"] .project-node__title,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title {
+    position: relative !important;
+    z-index: 4 !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node .brainfarts-construction-line--inline,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-construction-line--inline {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 0.9 !important;
+    z-index: 8 !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) rotate(-36deg) !important;
+    width: 108% !important;
+    max-width: none !important;
+    height: auto !important;
+    pointer-events: none !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines .brainfarts-construction-line,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines .brainfarts-construction-line {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node .brainfarts-build__sign--inline,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
+    z-index: 2 !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="brainfarts"] .project-node__title,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title {
+    position: relative !important;
+    z-index: 4 !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node .brainfarts-construction-line--inline,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .brainfarts-construction-line--inline {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 0.9 !important;
+    z-index: 8 !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) rotate(-36deg) !important;
+    width: 92% !important;
+    max-width: none !important;
     pointer-events: none !important;
 }
 

@@ -1038,7 +1038,7 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 				if (tabletLandscape && !phoneLandscape) {
 					container
 						.querySelectorAll(
-							'.kravling-nomineret-badge--inline, .dandd-badge--inline, .kobajer-kravling-2024-badge--inline, .brainfarts-build__sign--inline'
+							'.kravling-nomineret-badge--inline, .dandd-badge--inline, .kobajer-kravling-2024-badge--inline, .brainfarts-build__sign--inline, .brainfarts-construction-line--inline'
 						)
 						.forEach((el) => {
 							try {
@@ -1431,7 +1431,7 @@ function mskApplyBrainfartsIpadLandscapeConstructionSign() {
 		if (!container || container.classList.contains('projects-mindmap--portrait')) return;
 		const bf = container.querySelector('a[href*="brainfarts"], .project-node[href*="brainfarts"]');
 		if (!bf) return;
-		bf.querySelectorAll('.brainfarts-build__sign--inline').forEach((el) => {
+		bf.querySelectorAll('.brainfarts-build__sign--inline, .brainfarts-construction-line--inline').forEach((el) => {
 			try {
 				el.remove();
 			} catch (_) {}
@@ -1552,14 +1552,25 @@ function mskClearTwisterIpadLandscapeTitleNudge() {
 	document.addEventListener('DOMContentLoaded', tick);
 })();
 
-/** Telefon landskab: “Under ombygning”-trekant inde i BRAINFARTS-cirklen. */
+/** Telefon LS + portræt: BRAINFARTS lag — rød streg øverst, tekst midt, trekant nederst. */
 function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 	try {
-		if (!mskIsProjectsPhoneLandscapeViewport() && !mskIsProjectsShortLandscapeViewport()) return;
+		const phoneLs =
+			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport()) ||
+			!!(typeof mskIsProjectsShortLandscapeViewport === 'function' && mskIsProjectsShortLandscapeViewport());
+		const phonePortrait =
+			!!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) ||
+			document.documentElement.classList.contains('msk-projects-phone-portrait');
+		if (!phoneLs && !phonePortrait) return;
 		const container = document.querySelector('.brainstorm-container');
 		if (!container) return;
 		const bf = container.querySelector('a[href*="brainfarts"], .project-node[href*="brainfarts"]');
 		if (!bf) return;
+		try {
+			bf.style.setProperty('position', 'relative', 'important');
+		} catch (_) {}
+
+		/* Lag 3 (nederst): trekant */
 		let img = bf.querySelector('.brainfarts-build__sign--inline');
 		if (!img) {
 			img = document.createElement('img');
@@ -1572,16 +1583,59 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		img.src = `assets/${encodeURIComponent('Under ombygning.webp')}`;
 		img.style.setProperty('display', 'block', 'important');
 		img.style.setProperty('visibility', 'visible', 'important');
-		img.style.setProperty('opacity', '0.88', 'important');
+		img.style.setProperty('opacity', phonePortrait ? '0.62' : '0.88', 'important');
 		img.style.setProperty('position', 'absolute', 'important');
 		img.style.setProperty('left', '50%', 'important');
-		img.style.setProperty('top', '56%', 'important');
+		img.style.setProperty('top', phonePortrait ? '52%' : '56%', 'important');
 		img.style.setProperty('transform', 'translate(-50%, -50%) rotate(-1deg)', 'important');
-		img.style.setProperty('width', '72px', 'important');
-		img.style.setProperty('max-width', '70%', 'important');
+		if (phoneLs) {
+			img.style.setProperty('width', '72px', 'important');
+			img.style.setProperty('max-width', '70%', 'important');
+		}
 		img.style.setProperty('height', 'auto', 'important');
-		img.style.setProperty('z-index', '6', 'important');
+		img.style.setProperty('z-index', '2', 'important');
 		img.style.setProperty('pointer-events', 'none', 'important');
+
+		/* Lag 2: titel over trekant */
+		const title = bf.querySelector('.project-node__title');
+		if (title) {
+			title.style.setProperty('position', 'relative', 'important');
+			title.style.setProperty('z-index', '4', 'important');
+		}
+
+		/* Lag 1 (øverst): rød streg som HTML overlay (SVG ligger bag noden) */
+		let line = bf.querySelector('.brainfarts-construction-line--inline');
+		if (!line) {
+			line = document.createElement('img');
+			line.className = 'brainfarts-construction-line--inline';
+			line.alt = '';
+			line.draggable = false;
+			line.setAttribute('aria-hidden', 'true');
+			bf.appendChild(line);
+		}
+		line.src = `assets/${encodeURIComponent('rød linje.webp')}`;
+		line.style.setProperty('display', 'block', 'important');
+		line.style.setProperty('visibility', 'visible', 'important');
+		line.style.setProperty('opacity', '0.9', 'important');
+		line.style.setProperty('position', 'absolute', 'important');
+		line.style.setProperty('left', '50%', 'important');
+		line.style.setProperty('top', '50%', 'important');
+		line.style.setProperty('transform', 'translate(-50%, -50%) rotate(-36deg)', 'important');
+		line.style.setProperty('width', phonePortrait ? '92%' : '108%', 'important');
+		line.style.setProperty('max-width', 'none', 'important');
+		line.style.setProperty('height', 'auto', 'important');
+		line.style.setProperty('z-index', '8', 'important');
+		line.style.setProperty('pointer-events', 'none', 'important');
+
+		/* Skjul SVG-kopi så vi ikke får dobbelt streg */
+		container.querySelectorAll('.brainfarts-construction-line').forEach((el) => {
+			try {
+				el.style.setProperty('display', 'none', 'important');
+				el.style.setProperty('visibility', 'hidden', 'important');
+				el.style.setProperty('opacity', '0', 'important');
+			} catch (_) {}
+		});
+
 		const build = container.querySelector('.brainfarts-build');
 		if (build) {
 			build.style.setProperty('display', 'none', 'important');
@@ -11614,6 +11668,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					bf.appendChild(img);
 				}
 				try {
+					mskEnsureBrainfartsPhoneLandscapeInlineSign();
+				} catch (_) {}
+				try {
 					mskApplyBrainfartsIpadLandscapeConstructionSign();
 				} catch (_) {}
 			} catch {}
@@ -17614,7 +17671,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 01:38';
+		const stampText = 'update tirsdag 3 nov - klokken 01:45';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
