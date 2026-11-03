@@ -1595,15 +1595,17 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		img.style.setProperty('z-index', '2', 'important');
 		img.style.setProperty('pointer-events', 'none', 'important');
 
-		/* Lag 2: titel over trekant — lidt op */
+		/* Lag: trekant nederst → rød streg → BRAINFARTS øverst */
 		const title = bf.querySelector('.project-node__title');
 		if (title) {
 			title.style.setProperty('position', 'relative', 'important');
-			title.style.setProperty('z-index', '4', 'important');
+			title.style.setProperty('z-index', '10', 'important');
 			title.style.setProperty('transform', 'translateY(-7px)', 'important');
 		}
+		try {
+			bf.style.setProperty('z-index', '20', 'important');
+		} catch (_) {}
 
-		/* Lag 1 (øverst): rød streg som HTML overlay (SVG ligger bag noden) */
 		let line = bf.querySelector('.brainfarts-construction-line--inline');
 		if (!line) {
 			line = document.createElement('img');
@@ -1625,7 +1627,7 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		line.style.setProperty('width', phonePortrait ? '98%' : '112%', 'important');
 		line.style.setProperty('max-width', 'none', 'important');
 		line.style.setProperty('height', 'auto', 'important');
-		line.style.setProperty('z-index', '8', 'important');
+		line.style.setProperty('z-index', '6', 'important');
 		line.style.setProperty('pointer-events', 'none', 'important');
 
 		/* Skjul SVG-kopi så vi ikke får dobbelt streg */
@@ -17672,7 +17674,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 03:54';
+		const stampText = 'update tirsdag 3 nov - klokken 04:31';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
