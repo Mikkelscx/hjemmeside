@@ -12338,7 +12338,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
         z-index: 10;
-        transform: translateY(-7px);
+        transform: translateY(-16px);
     }
     body.projects-page.sketchbook-theme .project-node .brainfarts-construction-line--inline {
         position: absolute;
