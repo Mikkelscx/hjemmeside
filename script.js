@@ -14562,7 +14562,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				const tabGapDistance = nodeRadius * 0.1;
+				/* Phone LS: forkort stregen lidt fra toppen (Repop-enden), så den ikke går ind under Kravling */
+				let tabGapDistance = nodeRadius * 0.1;
+				try {
+					if (mskIsProjectsPhoneLandscapeViewport()) {
+						tabGapDistance = nodeRadius * 0.1 + 16;
+					}
+				} catch (_) {}
 				const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
 
 				// Start from below the top of the brain, extended backward toward brain
@@ -17754,7 +17760,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 00:12';
+		const stampText = 'update onsdag 4 nov - klokken 00:15';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
