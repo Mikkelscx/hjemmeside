@@ -20795,7 +20795,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
     width: 148px !important;
     max-width: none !important;
-    transform: translateY(0) scale(1.24) !important;
+    transform: translateY(10px) scale(1.24) !important;
     transform-origin: center center !important;
 }
 /* Phone LS: D&AD inde i TWISTER (som portræt) */
