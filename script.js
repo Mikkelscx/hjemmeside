@@ -15870,10 +15870,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					byensStretchY *
 					assetS;
 				if (ipadLandscapeRings) bh *= ipadLsRingVertMul;
-				/* Phone LS: lidt større oval så den større titel fylder */
+				/* Phone LS: større oval så den større titel fylder */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					bw *= 1.18;
-					bh *= 1.1;
+					bw *= 1.38;
+					bh *= 1.28;
 				}
 				[bw, bh] = shrinkPhoneRing(bw, bh);
 				/* Kun ring/fill — ikke noden (tekst forbliver) */
@@ -17747,7 +17747,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 23:53';
+		const stampText = 'update tirsdag 3 nov - klokken 23:55';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
