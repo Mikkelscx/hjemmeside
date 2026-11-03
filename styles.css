@@ -12319,7 +12319,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         /* Center it inside the BRAINFARTS circle — under tekst + rød streg */
         position: absolute;
         left: 50%;
-        top: 42%;
+        top: 48%;
         transform: translate(-50%, -50%) rotate(-1deg);
         display: block;
         width: 58%;
@@ -12338,7 +12338,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
         z-index: 10;
-        transform: translateY(-12px);
+        transform: translateY(-4px);
     }
     body.projects-page.sketchbook-theme .project-node .brainfarts-construction-line--inline {
         position: absolute;
@@ -14517,7 +14517,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
         position: absolute !important;
         left: 50% !important;
-        top: 42% !important;
+        top: 48% !important;
         transform: translate(-50%, -50%) rotate(-1deg) !important;
         display: block !important;
         visibility: visible !important;
@@ -14534,7 +14534,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
         z-index: 10;
-        transform: translateY(-12px);
+        transform: translateY(-4px);
     }
     body.projects-page.sketchbook-theme .project-node .brainfarts-construction-line--inline,
     body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] .brainfarts-construction-line--inline {
@@ -19561,7 +19561,7 @@ html body a[href="project1.html"]:hover {
     body.projects-page.sketchbook-theme a.project-node[href*="brainfarts"] .brainfarts-build__sign--inline {
         width: 60% !important;
         max-width: none !important;
-        top: 42% !important;
+        top: 48% !important;
         transform: translate(-50%, -50%) rotate(-1deg) !important;
         opacity: 0.9 !important;
         z-index: 2 !important;
@@ -19580,7 +19580,7 @@ html body a[href="project1.html"]:hover {
     body.projects-page.sketchbook-theme .project-node[href*="brainfarts"] .project-node__title {
         position: relative;
         z-index: 10;
-        transform: translateY(-12px);
+        transform: translateY(-4px);
     }
 }
 
@@ -20651,7 +20651,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     width: 60% !important;
     max-width: none !important;
     left: 50% !important;
-    top: 42% !important;
+    top: 48% !important;
     transform: translate(-50%, -50%) rotate(-1deg) !important;
     position: absolute !important;
     pointer-events: none !important;
@@ -20664,7 +20664,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title {
     position: relative !important;
     z-index: 10 !important;
-    transform: translateY(-12px) !important;
+    transform: translateY(-4px) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts {
@@ -20696,7 +20696,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
     z-index: 2 !important;
     width: 58% !important;
     max-width: none !important;
-    top: 42% !important;
+    top: 48% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) rotate(-1deg) !important;
 }
@@ -20708,7 +20708,7 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title {
     position: relative !important;
     z-index: 10 !important;
-    transform: translateY(-12px) !important;
+    transform: translateY(-4px) !important;
 }
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--brainfarts,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="brainfarts"] .project-node__title-img--brainfarts {
