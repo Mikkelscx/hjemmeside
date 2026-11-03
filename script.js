@@ -103,8 +103,8 @@ function mskComputeProjectsPhoneLandscapeFitXY(w, h) {
 	const byH = ih / MSK_PHONE_LS_REF_H;
 	let fitX = MSK_PROJECTS_LANDSCAPE_FIT * byW;
 	fitX = Math.max(0.72, Math.min(0.98, fitX));
-	/* Lodret: max ~90% af synlig højde — aldrig større end fitX (14PM forbliver ens) */
-	let fitY = Math.min(fitX, byH * 0.9);
+	/* Lodret: inde i viewport; ekstra ~5% nip (p580) — ikke meget */
+	let fitY = Math.min(fitX, byH * 0.9) * 0.95;
 	fitY = Math.max(0.62, Math.min(fitY, fitX));
 	return { fitX, fitY };
 }
@@ -17608,7 +17608,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 01:27';
+		const stampText = 'update tirsdag 3 nov - klokken 01:29';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
