@@ -20619,13 +20619,13 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="kobajer"] .project-node__title-img--kobajer,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
     /* Fast px i ref-canvas (ikke vw — ellers 13/14 Pro Max divergerer) */
-    max-width: 122px !important;
-    width: 122px !important;
+    max-width: none !important;
+    width: 128px !important;
     display: block !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    /* Phone LS: tydeligt til venstre + lidt ned i ovalen */
-    transform: translate(-18px, 8px) !important;
+    /* Phone LS: overskrift — lidt større + til venstre/ned i ovalen */
+    transform: translate(-18px, 6px) scale(1.22) !important;
     transform-origin: center center !important;
     /* Overskrift: skarpere kontrast så Købajer læses før Kravling */
     filter: contrast(1.18) !important;
