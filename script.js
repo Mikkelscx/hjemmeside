@@ -1632,7 +1632,7 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		img.style.setProperty('opacity', phonePortrait ? '0.62' : '0.88', 'important');
 		img.style.setProperty('position', 'absolute', 'important');
 		img.style.setProperty('left', '50%', 'important');
-		img.style.setProperty('top', '38%', 'important');
+		img.style.setProperty('top', '28%', 'important');
 		img.style.setProperty('transform', 'translate(-50%, -50%) rotate(-1deg)', 'important');
 		/* Trekant i cirklen — lidt under “fyld” */
 		img.style.setProperty('width', phonePortrait ? '58%' : '60%', 'important');
@@ -1646,7 +1646,11 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		if (title) {
 			title.style.setProperty('position', 'relative', 'important');
 			title.style.setProperty('z-index', '10', 'important');
-			title.style.setProperty('transform', 'translateY(-28px)', 'important');
+			title.style.setProperty('transform', 'translateY(-48px)', 'important');
+		}
+		const titleImg = bf.querySelector('.project-node__title-img--brainfarts');
+		if (titleImg) {
+			titleImg.style.setProperty('transform', 'translateY(0)', 'important');
 		}
 		try {
 			bf.style.setProperty('z-index', '20', 'important');
@@ -11522,12 +11526,22 @@ document.addEventListener('DOMContentLoaded', function() {
 					'important'
 				);
 
-				// Move ONLY the label for BRAINFARTS a bit to the right (do not wipe image titles).
+				// BRAINFARTS-label: phone = op i cirklen; ellers let højre-nudge.
 				if (href.includes('brainfarts')) {
 					const title = node.querySelector('.project-node__title');
+					const phoneBf =
+						!!mskIsProjectsPhoneLandscapeViewport() ||
+						!!mskIsProjectsPhonePortraitViewport() ||
+						!!mskIsProjectsShortLandscapeViewport();
 					if (title) {
 						title.style.display = 'inline-block';
-						title.style.transform = 'translateX(3px)';
+						if (phoneBf) {
+							title.style.setProperty('transform', 'translateY(-48px)', 'important');
+							const titleImg = node.querySelector('.project-node__title-img--brainfarts');
+							if (titleImg) titleImg.style.setProperty('transform', 'translateY(0)', 'important');
+						} else {
+							title.style.transform = 'translateX(3px)';
+						}
 					} else {
 						let label = node.querySelector('.node-label');
 						if (!label) {
@@ -11538,7 +11552,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							node.appendChild(label);
 						}
 						label.style.display = 'inline-block';
-						label.style.transform = 'translateX(3px)';
+						label.style.transform = phoneBf ? 'translateY(-48px)' : 'translateX(3px)';
 					}
 				}
 			});
@@ -17720,7 +17734,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 16:52';
+		const stampText = 'update tirsdag 3 nov - klokken 16:55';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
