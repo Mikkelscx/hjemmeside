@@ -1586,21 +1586,21 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		img.style.setProperty('opacity', phonePortrait ? '0.62' : '0.88', 'important');
 		img.style.setProperty('position', 'absolute', 'important');
 		img.style.setProperty('left', '50%', 'important');
-		img.style.setProperty('top', phonePortrait ? '52%' : '56%', 'important');
+		img.style.setProperty('top', '50%', 'important');
 		img.style.setProperty('transform', 'translate(-50%, -50%) rotate(-1deg)', 'important');
-		if (phoneLs) {
-			img.style.setProperty('width', '72px', 'important');
-			img.style.setProperty('max-width', '70%', 'important');
-		}
+		/* Trekant fylder cirklen */
+		img.style.setProperty('width', phonePortrait ? '118%' : '122%', 'important');
+		img.style.setProperty('max-width', 'none', 'important');
 		img.style.setProperty('height', 'auto', 'important');
 		img.style.setProperty('z-index', '2', 'important');
 		img.style.setProperty('pointer-events', 'none', 'important');
 
-		/* Lag 2: titel over trekant */
+		/* Lag 2: titel over trekant — lidt op */
 		const title = bf.querySelector('.project-node__title');
 		if (title) {
 			title.style.setProperty('position', 'relative', 'important');
 			title.style.setProperty('z-index', '4', 'important');
+			title.style.setProperty('transform', 'translateY(-7px)', 'important');
 		}
 
 		/* Lag 1 (øverst): rød streg som HTML overlay (SVG ligger bag noden) */
@@ -1620,8 +1620,9 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		line.style.setProperty('position', 'absolute', 'important');
 		line.style.setProperty('left', '50%', 'important');
 		line.style.setProperty('top', '50%', 'important');
-		line.style.setProperty('transform', 'translate(-50%, -50%) rotate(-36deg)', 'important');
-		line.style.setProperty('width', phonePortrait ? '92%' : '108%', 'important');
+		/* Mere stejl: top-enden længere op */
+		line.style.setProperty('transform', 'translate(-50%, -50%) rotate(-50deg)', 'important');
+		line.style.setProperty('width', phonePortrait ? '98%' : '112%', 'important');
 		line.style.setProperty('max-width', 'none', 'important');
 		line.style.setProperty('height', 'auto', 'important');
 		line.style.setProperty('z-index', '8', 'important');
@@ -17671,7 +17672,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 01:45';
+		const stampText = 'update tirsdag 3 nov - klokken 01:50';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
