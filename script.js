@@ -15762,7 +15762,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
 				/* Phone LS: højere oval så TWISTER og D&AD ikke overlapper */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 1.58;
+					w *= 1.7;
 					h *= 1.36;
 				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
@@ -17742,7 +17742,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 22:01';
+		const stampText = 'update tirsdag 3 nov - klokken 22:11';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
