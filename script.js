@@ -11511,6 +11511,13 @@ document.addEventListener('DOMContentLoaded', function() {
 							y = layoutH - kobRingHalfH + 56;
 						}
 					} catch (_) {}
+					try {
+						/* Phone LS: Byens lidt ned — fri af MENU; streg følger node-rect i createConnectingLines */
+						if (mskIsProjectsPhoneLandscapeViewport() && href.includes('byens-landhandel')) {
+							y += Math.round(36 * scale);
+							y = Math.min(bandBottomClamp, y);
+						}
+					} catch (_) {}
 				}
 
 				node.style.setProperty('position', 'absolute', 'important');
@@ -17747,7 +17754,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 23:55';
+		const stampText = 'update tirsdag 3 nov - klokken 23:57';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
