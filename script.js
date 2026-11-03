@@ -15760,10 +15760,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					h *= 1 + (1.52 - 1) * pRing;
 				}
 				if (ipadLandscapeRings) h *= ipadLsRingVertMul;
-				/* Phone LS: bred oval + lidt ekstra højde så TWISTER + D&AD får luft foroven */
+				/* Phone LS: højere oval så TWISTER og D&AD ikke overlapper */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
 					w *= 1.58;
-					h *= 1.18;
+					h *= 1.38;
 				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
 				let circleDy = landscapeMindmap && !ipadLandscapeRings ? s(48) : s(20);
@@ -15774,9 +15774,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (mskIsProjectsShortLandscapeViewport()) {
 					circleDy -= s(46);
 				}
-				/* Phone LS: lidt op så ekstra højde ligger foroven om titel + D&AD */
+				/* Phone LS: mere op — ekstra højde foroven til titel, plads forneden til D&AD */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					circleDy = s(-8);
+					circleDy = s(-14);
 				}
 				/* iPad portræt mindmap: ring + fill lidt op */
 				if (ipadPortraitRings) {
@@ -17742,7 +17742,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 17:36';
+		const stampText = 'update tirsdag 3 nov - klokken 17:45';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

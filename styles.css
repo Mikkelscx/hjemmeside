@@ -14724,8 +14724,8 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     /* Phone LS: D&AD under TWISTER, inde i ovalen */
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline,
     html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .dandd-badge--inline {
-        top: 62% !important;
-        transform: translate(calc(-50% + 8px), -50%) scale(0.92) !important;
+        top: 78% !important;
+        transform: translate(calc(-50% + 8px), -50%) scale(0.88) !important;
         z-index: 6 !important;
     }
     body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="twister"] .dandd-badge--inline .dandd-logo,
@@ -20785,9 +20785,9 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
     position: absolute !important;
     left: 50% !important;
-    /* Under TWISTER-tekst, inde i ovalen (ring ankrer nu på node) */
-    top: 62% !important;
-    transform: translate(calc(-50% + 8px), -50%) scale(0.92) !important;
+    /* Under TWISTER — klar afstand så logo ikke ligger oven i teksten */
+    top: 78% !important;
+    transform: translate(calc(-50% + 8px), -50%) scale(0.88) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
     z-index: 6 !important;
@@ -20812,13 +20812,13 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title {
     position: relative;
     z-index: 3;
-    transform: translateY(-6px) !important;
+    transform: translateY(-22px) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--twister,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="twister"] .project-node__title-img--twister {
-    width: 156px !important;
-    max-width: 156px !important;
-    transform: translateY(4px) !important;
+    width: 132px !important;
+    max-width: 132px !important;
+    transform: translateY(0) !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
