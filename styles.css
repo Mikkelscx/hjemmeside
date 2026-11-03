@@ -7625,7 +7625,7 @@ body.projects-page.sketchbook-theme .brain .korn-asset {
     pointer-events: none;
     display: none;
     z-index: 2;
-    transform: translateY(-12px);
+    transform: translateY(-24px);
 }
 
 .kravling-nomineret-badge.is-sparking .kravling-sparks {
