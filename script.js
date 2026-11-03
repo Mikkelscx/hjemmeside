@@ -15763,7 +15763,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Phone LS: højere oval så TWISTER og D&AD ikke overlapper */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
 					w *= 1.58;
-					h *= 1.48;
+					h *= 1.34;
 				}
 				/* Kun ring + fill (ikke tekst): skub ned; desktop har eget offset når landscapeMindmap er false */
 				let circleDy = landscapeMindmap && !ipadLandscapeRings ? s(48) : s(20);
@@ -15776,7 +15776,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				/* Phone LS: mere op — ekstra højde foroven til titel, plads forneden til D&AD */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					circleDy = s(-18);
+					circleDy = s(-10);
 				}
 				/* iPad portræt mindmap: ring + fill lidt op */
 				if (ipadPortraitRings) {
@@ -17742,7 +17742,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 17:49';
+		const stampText = 'update tirsdag 3 nov - klokken 17:52';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
