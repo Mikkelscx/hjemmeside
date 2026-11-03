@@ -15980,9 +15980,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					durexIpadLsMulW = 1;
 					durexIpadLsMulH = 1;
 				} else if (mskIsProjectsPhoneLandscapeViewport()) {
-					/* Phone LS: større Durex-cirkel */
-					durexIpadLsMulW = 1.26;
-					durexIpadLsMulH = 1.22;
+					/* Phone LS: større Durex-cirkel (matcher større titel) */
+					durexIpadLsMulW = 1.44;
+					durexIpadLsMulH = 1.36;
 				}
 				const durexIpadDy = ipadPortraitRings ? s(8) : 0;
 				let dw =
@@ -17754,7 +17754,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 00:03';
+		const stampText = 'update onsdag 4 nov - klokken 00:06';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

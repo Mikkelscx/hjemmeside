@@ -20763,11 +20763,19 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     transform: translate(-4px, 2px) scale(1.28) !important;
     transform-origin: center center !important;
 }
-/* Phone LS: Durex større tekst i cirklen */
+/* Phone LS: Durex — lidt større tekst + plads i ovalen */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"],
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="durex"] {
+    width: min(168px, 36vw) !important;
+    min-width: 0 !important;
+    max-width: min(168px, 36vw) !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="durex"] .project-node__title-img--durex {
-    max-width: min(128px, 28vw) !important;
-    width: min(128px, 28vw) !important;
+    width: 142px !important;
+    max-width: none !important;
+    transform: translateY(0) scale(1.22) !important;
+    transform-origin: center center !important;
 }
 /* Phone LS: Unge mod UV større tekst i cirklen */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--unge-mod-uv,
