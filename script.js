@@ -9834,13 +9834,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					container &&
 					!container.classList.contains('projects-mindmap--portrait')
 				);
+			const phoneEllipse =
+				!!mskIsProjectsPhoneLandscapeViewport() || !!mskIsProjectsShortLandscapeViewport();
 			const href = ((node.getAttribute('href') || node.dataset.nodeHref || '') + '').toLowerCase();
-			/* Twister: ovalen skal sidde på nodens layout-centrum — ikke på title-img efter translateY. */
+			/*
+			 * Twister + phone LS: oval på nodens layout-centrum — ikke title efter translateY
+			 * (ellers følger cirklen med, når BRAINFARTS/trekant rykkes op).
+			 */
 			const titleImg =
 				ipadLs && !href.includes('twister')
 					? node.querySelector('.project-node__title-img')
 					: null;
-			const titleEl = node.querySelector('.project-node__title');
+			const titleEl =
+				phoneEllipse || href.includes('twister')
+					? null
+					: node.querySelector('.project-node__title');
 			const anchorRect = titleImg
 				? titleImg.getBoundingClientRect()
 				: titleEl
@@ -17734,7 +17742,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 16:55';
+		const stampText = 'update tirsdag 3 nov - klokken 16:58';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
