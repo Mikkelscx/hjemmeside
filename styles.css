@@ -20749,13 +20749,19 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     width: min(164px, 36vw) !important;
     max-width: min(164px, 36vw) !important;
 }
-/* Phone LS: NATURLI’ tekst en myg større + en myg op */
+/* Phone LS: NATURLI’ — større tekst i ovalen */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"],
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="naturli"] {
+    width: min(160px, 34vw) !important;
+    min-width: 0 !important;
+    max-width: min(160px, 34vw) !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--naturli,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli {
-    width: auto !important;
-    max-width: min(120px, 26vw) !important;
-    transform: translate(-5px, 3px) !important;
-    transform-origin: center center;
+    width: 140px !important;
+    max-width: none !important;
+    transform: translate(-4px, 2px) scale(1.28) !important;
+    transform-origin: center center !important;
 }
 /* Phone LS: Durex større tekst i cirklen */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--durex,
