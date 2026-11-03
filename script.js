@@ -15455,11 +15455,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				/* Phone LS: oval mere bred; clamp i REF-rum (ikke device innerWidth) */
 				let kobajerGrowLeftPx = 0;
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					w *= 2.22;
-					h *= 1.52;
+					/* Lidt større end før p639, men under “for meget” */
+					w *= 2.08;
+					h *= 1.46;
 					try {
-						const maxW = Math.round(MSK_PHONE_LS_REF_W * 0.54);
-						const maxH = Math.round(MSK_PHONE_LS_REF_H * 0.52);
+						const maxW = Math.round(MSK_PHONE_LS_REF_W * 0.5);
+						const maxH = Math.round(MSK_PHONE_LS_REF_H * 0.5);
 						let sFit = 1;
 						if (w > maxW) sFit = Math.min(sFit, maxW / w);
 						if (h > maxH) sFit = Math.min(sFit, maxH / h);
@@ -15467,7 +15468,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						h = Math.round(h * sFit);
 					} catch (_) {}
 					/* Ekstra bredde kun mod venstre hjørne (højre kant ca. uændret) */
-					kobajerGrowLeftPx = Math.round(w * 0.12);
+					kobajerGrowLeftPx = Math.round(w * 0.06);
 					w += kobajerGrowLeftPx;
 				}
 				[w, h] = shrinkPhoneRing(w, h);
@@ -17768,7 +17769,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 00:30';
+		const stampText = 'update onsdag 4 nov - klokken 00:32';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
