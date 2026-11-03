@@ -14395,7 +14395,7 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         z-index: 5 !important;
         visibility: visible !important;
         opacity: 1 !important;
-        transform: translate(-50%, -50%) scale(var(--projectsLandscapeFit, 0.88)) !important;
+        transform: translate(-50%, -50%) scale(var(--projectsLandscapeFit, 0.88), var(--projectsLandscapeFitY, var(--projectsLandscapeFit, 0.88))) !important;
         transform-origin: center center !important;
     }
     /* Lodret justering mod mindmap (papirlinjer — kun lille translate her) */
@@ -20360,6 +20360,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme {
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container,
 html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container {
     --projectsLandscapeFit: 0.88;
+    --projectsLandscapeFitY: 0.88;
     --projectsBrainSize: 102px;
     --phone-ls-ref-w: 932px;
     --phone-ls-ref-h: 430px;
@@ -20378,7 +20379,8 @@ html.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brain
     visibility: visible !important;
     opacity: 1 !important;
     z-index: 5 !important;
-    transform: translate(-50%, -50%) scale(var(--projectsLandscapeFit)) !important;
+    /* Y kan være < X så top/bund ikke klippes — længde (X) bevares */
+    transform: translate(-50%, -50%) scale(var(--projectsLandscapeFit), var(--projectsLandscapeFitY, var(--projectsLandscapeFit))) !important;
     transform-origin: center center !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .brain,

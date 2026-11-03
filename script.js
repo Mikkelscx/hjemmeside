@@ -92,30 +92,28 @@ function mskProjectsPhoneLandscapeUsableBox() {
 }
 
 /**
- * Uniform scale → 14 Pro Max (0.88 × contain).
- * Ekstra: hvis der er mere tom højde end tom længde, skru fit op (fyld længden)
- * uden at klippe højden — 14PM (lige margin) forbliver 0.88.
+ * Phone LS scale X/Y.
+ * fitX ≈ 14 Pro Max længde (0.88 × bredde).
+ * fitY ≤ fitX og altid inde i viewport-højde — formindsk KUN lodret når toppen/bunden klippes.
  */
-function mskComputeProjectsPhoneLandscapeFit(w, h) {
+function mskComputeProjectsPhoneLandscapeFitXY(w, h) {
 	const iw = Math.max(1, w || MSK_PHONE_LS_REF_W);
 	const ih = Math.max(1, h || MSK_PHONE_LS_REF_H);
 	const byW = iw / MSK_PHONE_LS_REF_W;
 	const byH = ih / MSK_PHONE_LS_REF_H;
-	const contain = Math.min(byW, byH);
-	let fit = MSK_PROJECTS_LANDSCAPE_FIT * contain;
-	const visualW = MSK_PHONE_LS_REF_W * fit;
-	const visualH = MSK_PHONE_LS_REF_H * fit;
-	const unusedW = iw - visualW;
-	const unusedH = ih - visualH;
-	/* Tom papir op/ned (længde uudnyttet relativt): vækst mod næsten fuld bredde */
-	if (unusedH > unusedW + 10) {
-		const grow = Math.min(byW * 0.97, byH * 0.95);
-		if (grow > fit) fit = grow;
-	}
-	return Math.max(0.72, Math.min(1.02, fit));
+	let fitX = MSK_PROJECTS_LANDSCAPE_FIT * byW;
+	fitX = Math.max(0.72, Math.min(0.98, fitX));
+	/* Lodret: max ~90% af synlig højde — aldrig større end fitX (14PM forbliver ens) */
+	let fitY = Math.min(fitX, byH * 0.9);
+	fitY = Math.max(0.62, Math.min(fitY, fitX));
+	return { fitX, fitY };
 }
 
-/** Aktiv phone-LS fit (CSS var → beregnet). Bruges til screen→local ring-mål. */
+function mskComputeProjectsPhoneLandscapeFit(w, h) {
+	return mskComputeProjectsPhoneLandscapeFitXY(w, h).fitX;
+}
+
+/** Aktiv phone-LS fitX (CSS var). */
 function mskProjectsPhoneLandscapeFitNow() {
 	try {
 		const el =
@@ -125,23 +123,39 @@ function mskProjectsPhoneLandscapeFitNow() {
 	} catch (_) {}
 	try {
 		const { w, h } = mskProjectsPhoneLandscapeUsableBox();
-		return mskComputeProjectsPhoneLandscapeFit(w, h);
+		return mskComputeProjectsPhoneLandscapeFitXY(w, h).fitX;
+	} catch (_) {
+		return MSK_PROJECTS_LANDSCAPE_FIT;
+	}
+}
+
+function mskProjectsPhoneLandscapeFitYNow() {
+	try {
+		const el =
+			document.querySelector('.brainstorm-container') || document.documentElement;
+		const v = parseFloat(getComputedStyle(el).getPropertyValue('--projectsLandscapeFitY') || '');
+		if (Number.isFinite(v) && v > 0.05) return v;
+	} catch (_) {}
+	try {
+		const { w, h } = mskProjectsPhoneLandscapeUsableBox();
+		return mskComputeProjectsPhoneLandscapeFitXY(w, h).fitY;
 	} catch (_) {
 		return MSK_PROJECTS_LANDSCAPE_FIT;
 	}
 }
 
 /**
- * getBoundingClientRect er i skærm-px EFTER container scale().
- * Ring-tegningsmål skal være i ref-canvas (932×430) — ellers bliver Købajer/Twister
- * forskellig på 13 vs 14 Pro Max.
+ * getBoundingClientRect er i skærm-px EFTER container scale(X,Y).
+ * Ring-mål i ref-canvas: del med fitX / fitY hver for sig.
  */
 function mskPhoneLsClientSizeToLocal(w, h) {
-	const fit = mskProjectsPhoneLandscapeFitNow();
-	const f = fit > 0.05 ? fit : 1;
+	const fx = mskProjectsPhoneLandscapeFitNow();
+	const fy = mskProjectsPhoneLandscapeFitYNow();
+	const sx = fx > 0.05 ? fx : 1;
+	const sy = fy > 0.05 ? fy : 1;
 	return {
-		w: Math.max(1, (Number(w) || 0) / f),
-		h: Math.max(1, (Number(h) || 0) / f),
+		w: Math.max(1, (Number(w) || 0) / sx),
+		h: Math.max(1, (Number(h) || 0) / sy),
 	};
 }
 
@@ -149,6 +163,7 @@ function mskClearProjectsPhoneLandscapeRefCanvas() {
 	try {
 		document.documentElement.classList.remove('msk-projects-phone-ls-ref-canvas');
 		document.documentElement.style.removeProperty('--projectsLandscapeFit');
+		document.documentElement.style.removeProperty('--projectsLandscapeFitY');
 		document.documentElement.style.removeProperty('--phone-ls-ref-w');
 		document.documentElement.style.removeProperty('--phone-ls-ref-h');
 	} catch (_) {}
@@ -178,6 +193,7 @@ function mskClearProjectsPhoneLandscapeRefCanvas() {
 			} catch (_) {}
 		});
 		container.style.removeProperty('--projectsLandscapeFit');
+		container.style.removeProperty('--projectsLandscapeFitY');
 	} catch (_) {}
 }
 
@@ -188,24 +204,31 @@ function mskSyncProjectsPhoneLandscapeFit() {
 			return MSK_PROJECTS_LANDSCAPE_FIT;
 		}
 		const { w, h } = mskProjectsPhoneLandscapeUsableBox();
-		const fit = mskComputeProjectsPhoneLandscapeFit(w, h);
-		const sFit = String(Math.round(fit * 1000) / 1000);
+		/* Højde til fitY: helst visualViewport (det der faktisk klipper i Safari) */
+		let hFit = h;
+		try {
+			const vv = window.visualViewport;
+			if (vv && vv.height > 40) hFit = Math.min(hFit, Math.round(vv.height));
+		} catch (_) {}
+		const { fitX, fitY } = mskComputeProjectsPhoneLandscapeFitXY(w, hFit);
+		const sFitX = String(Math.round(fitX * 1000) / 1000);
+		const sFitY = String(Math.round(fitY * 1000) / 1000);
 		const root = document.documentElement;
 		root.classList.add('msk-projects-phone-ls-ref-canvas');
-		root.style.setProperty('--projectsLandscapeFit', sFit);
+		root.style.setProperty('--projectsLandscapeFit', sFitX);
+		root.style.setProperty('--projectsLandscapeFitY', sFitY);
 		root.style.setProperty('--phone-ls-ref-w', `${MSK_PHONE_LS_REF_W}px`);
 		root.style.setProperty('--phone-ls-ref-h', `${MSK_PHONE_LS_REF_H}px`);
 		const container = document.querySelector('.brainstorm-container');
 		if (container) {
-			/* Lås canvas til 14 Pro Max — CSS scale() mapper til alle modeller */
+			/* Lås canvas til 14 Pro Max — scale(X,Y): Y kan være mindre så intet klippes */
 			container.style.setProperty('width', `${MSK_PHONE_LS_REF_W}px`, 'important');
 			container.style.setProperty('height', `${MSK_PHONE_LS_REF_H}px`, 'important');
 			container.style.setProperty('min-height', `${MSK_PHONE_LS_REF_H}px`, 'important');
 			container.style.setProperty('max-width', `${MSK_PHONE_LS_REF_W}px`, 'important');
 			container.style.setProperty('max-height', `${MSK_PHONE_LS_REF_H}px`, 'important');
-			/* fixed midt i synlig Safari-viewport (ikke layout-50% der kan sidde for højt) */
 			let cx = w / 2;
-			let cy = h / 2;
+			let cy = hFit / 2;
 			try {
 				const vv = window.visualViewport;
 				if (vv && vv.width > 40 && vv.height > 40) {
@@ -222,15 +245,16 @@ function mskSyncProjectsPhoneLandscapeFit() {
 			container.style.setProperty('z-index', '5', 'important');
 			container.style.setProperty('visibility', 'visible', 'important');
 			container.style.setProperty('opacity', '1', 'important');
-			container.style.setProperty('--projectsLandscapeFit', sFit);
+			container.style.setProperty('--projectsLandscapeFit', sFitX);
+			container.style.setProperty('--projectsLandscapeFitY', sFitY);
 			container.style.setProperty(
 				'transform',
-				`translate(-50%, -50%) scale(${sFit})`,
+				`translate(-50%, -50%) scale(${sFitX}, ${sFitY})`,
 				'important'
 			);
 			container.style.setProperty('transform-origin', 'center center', 'important');
 		}
-		return fit;
+		return fitX;
 	} catch (_) {
 		return MSK_PROJECTS_LANDSCAPE_FIT;
 	}
@@ -17584,7 +17608,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 01:02';
+		const stampText = 'update tirsdag 3 nov - klokken 01:27';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
