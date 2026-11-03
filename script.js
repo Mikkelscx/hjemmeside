@@ -1589,7 +1589,7 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		img.style.setProperty('top', '50%', 'important');
 		img.style.setProperty('transform', 'translate(-50%, -50%) rotate(-1deg)', 'important');
 		/* Trekant fylder cirklen */
-		img.style.setProperty('width', phonePortrait ? '84%' : '86%', 'important');
+		img.style.setProperty('width', phonePortrait ? '72%' : '74%', 'important');
 		img.style.setProperty('max-width', 'none', 'important');
 		img.style.setProperty('height', 'auto', 'important');
 		img.style.setProperty('z-index', '2', 'important');
@@ -17672,7 +17672,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 02:38';
+		const stampText = 'update tirsdag 3 nov - klokken 03:01';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
