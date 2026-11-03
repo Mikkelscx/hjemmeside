@@ -1632,7 +1632,7 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		img.style.setProperty('opacity', phonePortrait ? '0.62' : '0.88', 'important');
 		img.style.setProperty('position', 'absolute', 'important');
 		img.style.setProperty('left', '50%', 'important');
-		img.style.setProperty('top', '46%', 'important');
+		img.style.setProperty('top', '38%', 'important');
 		img.style.setProperty('transform', 'translate(-50%, -50%) rotate(-1deg)', 'important');
 		/* Trekant i cirklen — lidt under “fyld” */
 		img.style.setProperty('width', phonePortrait ? '58%' : '60%', 'important');
@@ -1646,7 +1646,7 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		if (title) {
 			title.style.setProperty('position', 'relative', 'important');
 			title.style.setProperty('z-index', '10', 'important');
-			title.style.setProperty('transform', 'translateY(-16px)', 'important');
+			title.style.setProperty('transform', 'translateY(-28px)', 'important');
 		}
 		try {
 			bf.style.setProperty('z-index', '20', 'important');
@@ -17720,7 +17720,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 16:44';
+		const stampText = 'update tirsdag 3 nov - klokken 16:52';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
