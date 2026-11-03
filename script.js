@@ -80,7 +80,11 @@ function mskProjectsPhoneLandscapeUsableBox() {
 	} catch (_) {}
 	try {
 		const vv = window.visualViewport;
-		if (vv && vv.width > 40 && vv.height > 40) {
+		/* Under browser-zoom krymper VV — må IKKE ændre usable box (ellers “bevæger” designet sig). */
+		const zoomed =
+			(typeof vv.scale === 'number' && vv.scale > 1.015) ||
+			!!(document.documentElement && document.documentElement.classList.contains('msk-browser-zoom-active'));
+		if (!zoomed && vv && vv.width > 40 && vv.height > 40) {
 			const vw = Math.round(vv.width);
 			const vh = Math.round(vv.height);
 			/* Kun når chrome æder markant plads — undgå kronisk under-scale */
@@ -203,7 +207,7 @@ function mskClearProjectsPhoneLandscapeRefCanvas() {
 	} catch (_) {}
 }
 
-/** Frys phone-LS composition under browser-zoom (pinch) — ellers “bevæger” designet sig. */
+/** Frys phone-LS composition under browser-zoom — ellers omskaleres/flyttes designet. */
 let mskPhoneLsFitFreeze = null;
 
 function mskSyncProjectsPhoneLandscapeFit() {
@@ -213,30 +217,36 @@ function mskSyncProjectsPhoneLandscapeFit() {
 			mskClearProjectsPhoneLandscapeRefCanvas();
 			return MSK_PROJECTS_LANDSCAPE_FIT;
 		}
-		const zoomed = !!mskIsBrowserPageZoomed();
-		const { w, h } = mskProjectsPhoneLandscapeUsableBox();
+		let zoomed = false;
+		try {
+			zoomed = !!mskIsBrowserPageZoomed();
+		} catch (_) {}
 		let fitX;
 		let fitY;
 		let cx;
 		let cy;
 		if (zoomed && mskPhoneLsFitFreeze) {
-			/* Behold samme scale + layout-center — ikke visualViewport (krymper/flytter ved zoom). */
 			fitX = mskPhoneLsFitFreeze.fitX;
 			fitY = mskPhoneLsFitFreeze.fitY;
 			cx = mskPhoneLsFitFreeze.cx;
 			cy = mskPhoneLsFitFreeze.cy;
 		} else {
-			/* Højde til fitY: visualViewport kun uden zoom (Safari-chrome), aldrig under pinch. */
-			let hFit = h;
+			/* Layout-viewport only — aldrig visualViewport her (zoom krymper VV). */
+			const box = mskProjectsLayoutViewportBox();
+			let w = Math.max(1, box.w);
+			let h = Math.max(1, box.h);
 			try {
-				const vv = window.visualViewport;
-				if (!zoomed && vv && vv.height > 40) hFit = Math.min(hFit, Math.round(vv.height));
+				const iw = Math.round(window.innerWidth || 0);
+				const ih = Math.round(window.innerHeight || 0);
+				if (iw > 0) w = Math.max(w, iw);
+				if (ih > 0) h = Math.max(h, ih);
 			} catch (_) {}
-			({ fitX, fitY } = mskComputeProjectsPhoneLandscapeFitXY(w, hFit));
+			({ fitX, fitY } = mskComputeProjectsPhoneLandscapeFitXY(w, h));
 			cx = w / 2;
-			cy = hFit / 2;
-			/* Centrér i layout-viewport — ikke VV-offset (pan under zoom). */
-			mskPhoneLsFitFreeze = { fitX, fitY, cx, cy };
+			cy = h / 2;
+			/* Opdater freeze kun når vi IKKE er zoomet — ellers forurener VV-krymp cache. */
+			if (!zoomed) mskPhoneLsFitFreeze = { fitX, fitY, cx, cy };
+			else if (!mskPhoneLsFitFreeze) mskPhoneLsFitFreeze = { fitX, fitY, cx, cy };
 		}
 		const sFitX = String(Math.round(fitX * 1000) / 1000);
 		const sFitY = String(Math.round(fitY * 1000) / 1000);
@@ -248,7 +258,6 @@ function mskSyncProjectsPhoneLandscapeFit() {
 		root.style.setProperty('--phone-ls-ref-h', `${MSK_PHONE_LS_REF_H}px`);
 		const container = document.querySelector('.brainstorm-container');
 		if (container) {
-			/* Lås canvas til 14 Pro Max — scale(X,Y): Y kan være mindre så intet klippes */
 			container.style.setProperty('width', `${MSK_PHONE_LS_REF_W}px`, 'important');
 			container.style.setProperty('height', `${MSK_PHONE_LS_REF_H}px`, 'important');
 			container.style.setProperty('min-height', `${MSK_PHONE_LS_REF_H}px`, 'important');
@@ -329,10 +338,19 @@ function mskIsBrowserPageZoomed() {
 
 function mskSyncBrowserZoomPanMode() {
 	try {
-		document.documentElement.classList.toggle('msk-browser-zoom-active', mskIsBrowserPageZoomed());
-		/* Phone LS: gen-anvend frossen/fit center efter zoom-klasse (CSS må ikke flytte composition). */
-		if (typeof mskSyncProjectsPhoneLandscapeFit === 'function' && mskIsProjectsPhoneLandscapeViewport()) {
-			mskSyncProjectsPhoneLandscapeFit();
+		const zoomed = !!mskIsBrowserPageZoomed();
+		const phoneLs =
+			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport()) ||
+			document.documentElement.classList.contains('msk-projects-phone-landscape') ||
+			document.documentElement.classList.contains('msk-projects-phone-ls-ref-canvas');
+		/*
+		 * Phone landscape: brug KUN native browser-zoom (forstørrelse).
+		 * Zoom-active unlocker scroll/position og får mindmap til at “bevæge sig” — det må ikke ske.
+		 */
+		document.documentElement.classList.toggle('msk-browser-zoom-active', zoomed && !phoneLs);
+		if (phoneLs) {
+			document.documentElement.classList.remove('msk-browser-zoom-active');
+			if (typeof mskSyncProjectsPhoneLandscapeFit === 'function') mskSyncProjectsPhoneLandscapeFit();
 		}
 	} catch (_) {}
 }
@@ -17690,7 +17708,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 04:41';
+		const stampText = 'update tirsdag 3 nov - klokken 05:12';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

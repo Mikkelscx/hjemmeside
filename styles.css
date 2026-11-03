@@ -20917,7 +20917,29 @@ html.msk-browser-zoom-active body.projects-page.sketchbook-theme .brainstorm-con
     max-height: none !important;
 }
 
-/* Phone landscape: zoom må IKKE flytte/omskalere ref-canvas — behold fixed + JS scale */
+/*
+ * Phone landscape + zoom: ingen unlock/reflow.
+ * Native zoom skal kun forstørre det låste 932×430-design — ikke flytte papir/mindmap.
+ */
+html.msk-projects-phone-landscape.msk-browser-zoom-active,
+html.msk-projects-phone-ls-ref-canvas.msk-browser-zoom-active {
+    overflow: hidden !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    position: fixed !important;
+    inset: 0 !important;
+    touch-action: pan-x pan-y pinch-zoom;
+}
+html.msk-projects-phone-landscape.msk-browser-zoom-active body.projects-page.sketchbook-theme,
+html.msk-projects-phone-ls-ref-canvas.msk-browser-zoom-active body.projects-page.sketchbook-theme {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    inset: 0 !important;
+    min-height: 0 !important;
+}
 html.msk-browser-zoom-active.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container,
 html.msk-browser-zoom-active.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container,
 html.msk-browser-zoom-active.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait,
@@ -20929,7 +20951,7 @@ html.msk-browser-zoom-active.msk-projects-phone-ls-ref-canvas body.projects-page
     min-height: var(--phone-ls-ref-h, 430px) !important;
     max-width: var(--phone-ls-ref-w, 932px) !important;
     max-height: var(--phone-ls-ref-h, 430px) !important;
-    /* left/top/transform sættes i JS og må ikke nulstilles til 0/0 */
+    /* left/top/transform sættes i JS — må ikke nulstilles */
 }
 
 /*
