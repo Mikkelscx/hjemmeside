@@ -15015,7 +15015,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				console.log('Creating BRAINFARTS circle image...');
 				/* Telefon-landskab: lidt bredere oval end computer-proportion */
 				const brainfartsRingScale = 0.78;
-				const bfShortLsStretchX = mskIsProjectsShortLandscapeViewport() ? 1.12 : 1;
+				const bfShortLsStretchX = mskIsProjectsShortLandscapeViewport() ? 1.24 : 1;
 				/* iPad portræt mindmap: ekstra vandret på ring + fill; rød linje sit eget step så den ikke vokser med.
 				 * preserveAspectRatio none på <image> — ellers default "meet" bevarer billedformat og æter ikke bw/bh uafhængigt. */
 				const bfIpadMulWRing = ipadPortraitRings ? 3.02 * pRing : 1;
@@ -17720,7 +17720,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 16:12';
+		const stampText = 'update tirsdag 3 nov - klokken 16:15';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
