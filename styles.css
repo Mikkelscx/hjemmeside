@@ -20821,6 +20821,20 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     transform: translateY(0) scale(1.12) !important;
     transform-origin: center center !important;
 }
+/* Phone LS: Byens Landhandel — større titel i ovalen */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"],
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="byens-landhandel"] {
+    width: min(168px, 36vw) !important;
+    min-width: 0 !important;
+    max-width: min(168px, 36vw) !important;
+}
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node__title-img--byens,
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="byens-landhandel"] .project-node__title-img--byens {
+    width: 148px !important;
+    max-width: none !important;
+    transform: translateY(0) scale(1.32) !important;
+    transform-origin: center center !important;
+}
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline {
     display: flex !important;
