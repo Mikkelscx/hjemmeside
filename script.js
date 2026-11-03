@@ -203,20 +203,41 @@ function mskClearProjectsPhoneLandscapeRefCanvas() {
 	} catch (_) {}
 }
 
+/** Frys phone-LS composition under browser-zoom (pinch) — ellers “bevæger” designet sig. */
+let mskPhoneLsFitFreeze = null;
+
 function mskSyncProjectsPhoneLandscapeFit() {
 	try {
 		if (!mskIsProjectsPhoneLandscapeViewport()) {
+			mskPhoneLsFitFreeze = null;
 			mskClearProjectsPhoneLandscapeRefCanvas();
 			return MSK_PROJECTS_LANDSCAPE_FIT;
 		}
+		const zoomed = !!mskIsBrowserPageZoomed();
 		const { w, h } = mskProjectsPhoneLandscapeUsableBox();
-		/* Højde til fitY: helst visualViewport (det der faktisk klipper i Safari) */
-		let hFit = h;
-		try {
-			const vv = window.visualViewport;
-			if (vv && vv.height > 40) hFit = Math.min(hFit, Math.round(vv.height));
-		} catch (_) {}
-		const { fitX, fitY } = mskComputeProjectsPhoneLandscapeFitXY(w, hFit);
+		let fitX;
+		let fitY;
+		let cx;
+		let cy;
+		if (zoomed && mskPhoneLsFitFreeze) {
+			/* Behold samme scale + layout-center — ikke visualViewport (krymper/flytter ved zoom). */
+			fitX = mskPhoneLsFitFreeze.fitX;
+			fitY = mskPhoneLsFitFreeze.fitY;
+			cx = mskPhoneLsFitFreeze.cx;
+			cy = mskPhoneLsFitFreeze.cy;
+		} else {
+			/* Højde til fitY: visualViewport kun uden zoom (Safari-chrome), aldrig under pinch. */
+			let hFit = h;
+			try {
+				const vv = window.visualViewport;
+				if (!zoomed && vv && vv.height > 40) hFit = Math.min(hFit, Math.round(vv.height));
+			} catch (_) {}
+			({ fitX, fitY } = mskComputeProjectsPhoneLandscapeFitXY(w, hFit));
+			cx = w / 2;
+			cy = hFit / 2;
+			/* Centrér i layout-viewport — ikke VV-offset (pan under zoom). */
+			mskPhoneLsFitFreeze = { fitX, fitY, cx, cy };
+		}
 		const sFitX = String(Math.round(fitX * 1000) / 1000);
 		const sFitY = String(Math.round(fitY * 1000) / 1000);
 		const root = document.documentElement;
@@ -233,15 +254,6 @@ function mskSyncProjectsPhoneLandscapeFit() {
 			container.style.setProperty('min-height', `${MSK_PHONE_LS_REF_H}px`, 'important');
 			container.style.setProperty('max-width', `${MSK_PHONE_LS_REF_W}px`, 'important');
 			container.style.setProperty('max-height', `${MSK_PHONE_LS_REF_H}px`, 'important');
-			let cx = w / 2;
-			let cy = hFit / 2;
-			try {
-				const vv = window.visualViewport;
-				if (vv && vv.width > 40 && vv.height > 40) {
-					cx = vv.offsetLeft + vv.width / 2;
-					cy = vv.offsetTop + vv.height / 2;
-				}
-			} catch (_) {}
 			container.style.setProperty('position', 'fixed', 'important');
 			container.style.setProperty('left', `${Math.round(cx)}px`, 'important');
 			container.style.setProperty('top', `${Math.round(cy)}px`, 'important');
@@ -318,6 +330,10 @@ function mskIsBrowserPageZoomed() {
 function mskSyncBrowserZoomPanMode() {
 	try {
 		document.documentElement.classList.toggle('msk-browser-zoom-active', mskIsBrowserPageZoomed());
+		/* Phone LS: gen-anvend frossen/fit center efter zoom-klasse (CSS må ikke flytte composition). */
+		if (typeof mskSyncProjectsPhoneLandscapeFit === 'function' && mskIsProjectsPhoneLandscapeViewport()) {
+			mskSyncProjectsPhoneLandscapeFit();
+		}
 	} catch (_) {}
 }
 
@@ -17674,7 +17690,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 04:31';
+		const stampText = 'update tirsdag 3 nov - klokken 04:41';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

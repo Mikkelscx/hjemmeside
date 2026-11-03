@@ -20917,6 +20917,21 @@ html.msk-browser-zoom-active body.projects-page.sketchbook-theme .brainstorm-con
     max-height: none !important;
 }
 
+/* Phone landscape: zoom må IKKE flytte/omskalere ref-canvas — behold fixed + JS scale */
+html.msk-browser-zoom-active.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-browser-zoom-active.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-browser-zoom-active.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait,
+html.msk-browser-zoom-active.msk-projects-phone-ls-ref-canvas body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+    position: fixed !important;
+    inset: auto !important;
+    width: var(--phone-ls-ref-w, 932px) !important;
+    height: var(--phone-ls-ref-h, 430px) !important;
+    min-height: var(--phone-ls-ref-h, 430px) !important;
+    max-width: var(--phone-ls-ref-w, 932px) !important;
+    max-height: var(--phone-ls-ref-h, 430px) !important;
+    /* left/top/transform sættes i JS og må ikke nulstilles til 0/0 */
+}
+
 /*
  * Desktop/computer: projektsider (case studies) skal altid kunne scrolle.
  * Safari/WebKit:
