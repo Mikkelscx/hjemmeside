@@ -1646,7 +1646,7 @@ function mskEnsureBrainfartsPhoneLandscapeInlineSign() {
 		if (title) {
 			title.style.setProperty('position', 'relative', 'important');
 			title.style.setProperty('z-index', '10', 'important');
-			title.style.setProperty('transform', 'translateY(-4px)', 'important');
+			title.style.setProperty('transform', 'translateY(6px)', 'important');
 		}
 		const titleImg = bf.querySelector('.project-node__title-img--brainfarts');
 		if (titleImg) {
@@ -11544,7 +11544,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (title) {
 						title.style.display = 'inline-block';
 						if (phoneBf) {
-							title.style.setProperty('transform', 'translateY(-4px)', 'important');
+							title.style.setProperty('transform', 'translateY(6px)', 'important');
 							const titleImg = node.querySelector('.project-node__title-img--brainfarts');
 							if (titleImg) titleImg.style.setProperty('transform', 'translateY(0)', 'important');
 						} else {
@@ -11560,7 +11560,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							node.appendChild(label);
 						}
 						label.style.display = 'inline-block';
-						label.style.transform = phoneBf ? 'translateY(-4px)' : 'translateX(3px)';
+						label.style.transform = phoneBf ? 'translateY(6px)' : 'translateX(3px)';
 					}
 				}
 			});
@@ -17742,7 +17742,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 17:06';
+		const stampText = 'update tirsdag 3 nov - klokken 17:22';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
