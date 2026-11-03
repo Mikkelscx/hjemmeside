@@ -231,20 +231,32 @@ function mskSyncProjectsPhoneLandscapeFit() {
 			cx = mskPhoneLsFitFreeze.cx;
 			cy = mskPhoneLsFitFreeze.cy;
 		} else {
-			/* Layout-viewport only — aldrig visualViewport her (zoom krymper VV). */
-			const box = mskProjectsLayoutViewportBox();
-			let w = Math.max(1, box.w);
-			let h = Math.max(1, box.h);
+			/* Samme centrering/scale som før zoom-fix — VV kun uden zoom. */
+			const { w, h } = mskProjectsPhoneLandscapeUsableBox();
+			let hFit = h;
 			try {
-				const iw = Math.round(window.innerWidth || 0);
-				const ih = Math.round(window.innerHeight || 0);
-				if (iw > 0) w = Math.max(w, iw);
-				if (ih > 0) h = Math.max(h, ih);
+				const vv = window.visualViewport;
+				if (!zoomed && vv && vv.height > 40 && !(typeof vv.scale === 'number' && vv.scale > 1.015)) {
+					hFit = Math.min(hFit, Math.round(vv.height));
+				}
 			} catch (_) {}
-			({ fitX, fitY } = mskComputeProjectsPhoneLandscapeFitXY(w, h));
+			({ fitX, fitY } = mskComputeProjectsPhoneLandscapeFitXY(w, hFit));
 			cx = w / 2;
-			cy = h / 2;
-			/* Opdater freeze kun når vi IKKE er zoomet — ellers forurener VV-krymp cache. */
+			cy = hFit / 2;
+			try {
+				const vv = window.visualViewport;
+				if (
+					!zoomed &&
+					vv &&
+					vv.width > 40 &&
+					vv.height > 40 &&
+					!(typeof vv.scale === 'number' && vv.scale > 1.015)
+				) {
+					cx = vv.offsetLeft + vv.width / 2;
+					cy = vv.offsetTop + vv.height / 2;
+				}
+			} catch (_) {}
+			/* Freeze kun uden zoom — undgå at VV-krymp overskriver den godkendte position. */
 			if (!zoomed) mskPhoneLsFitFreeze = { fitX, fitY, cx, cy };
 			else if (!mskPhoneLsFitFreeze) mskPhoneLsFitFreeze = { fitX, fitY, cx, cy };
 		}
@@ -17708,7 +17720,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 3 nov - klokken 05:12';
+		const stampText = 'update tirsdag 3 nov - klokken 05:28';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
