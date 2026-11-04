@@ -564,6 +564,10 @@ function mskIsTabletPortraitSinglePage() {
 		if (typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) {
 			return true;
 		}
+		/* Phone landscape: samme fulde one-page peel (ellers 50vw-notesbog → design “forsvinder”) */
+		if (typeof mskIsProjectsShortLandscapeViewport === 'function' && mskIsProjectsShortLandscapeViewport()) {
+			return true;
+		}
 		if (!window.matchMedia) return false;
 		const phonePortrait = window.matchMedia(
 			'(max-width: 640px) and (orientation: portrait)'
@@ -572,6 +576,15 @@ function mskIsTabletPortraitSinglePage() {
 			'(max-width: 640px) and (max-aspect-ratio: 1/1)'
 		);
 		if ((phonePortrait && phonePortrait.matches) || (phoneSquare && phoneSquare.matches)) {
+			return true;
+		}
+		const phoneLs = window.matchMedia(
+			'(max-width: 1024px) and (max-height: 520px) and (orientation: landscape)'
+		);
+		const phoneLsWide = window.matchMedia(
+			'(max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1)'
+		);
+		if ((phoneLs && phoneLs.matches) || (phoneLsWide && phoneLsWide.matches)) {
 			return true;
 		}
 		const portrait = window.matchMedia(
@@ -17918,7 +17931,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 23:31';
+		const stampText = 'update onsdag 4 nov - klokken 23:37';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
