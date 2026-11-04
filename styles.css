@@ -9423,7 +9423,8 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
         display: block !important;
         margin: 0 !important;
-        padding-top: 7px !important; /* samme baseline-fase som telefon portræt */
+        /* 50px page + 50px titel = 100px (4×25) — samme fase som tablet-portræt (padding-top:0) */
+        padding-top: 0 !important;
         padding-right: calc(min(150px, 22vw) + 16px) !important;
         min-width: 0;
         width: auto !important;
