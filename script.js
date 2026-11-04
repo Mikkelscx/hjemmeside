@@ -4716,23 +4716,25 @@ document.addEventListener('DOMContentLoaded', function() {
 				fx = flipEl._mskHoldFx + (cornerX - flipEl._mskHoldFx) * u;
 				fy = flipEl._mskHoldFy + (cornerY - flipEl._mskHoldFy) * u;
 			}
-		} else if (
+		}
+		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir);
+		fx = glued.fx;
+		fy = glued.fy;
+		/*
+		 * Phone LS / one-page Om mig→Kontakt: progress EFTER lim —
+		 * ellers limer mskGlueSpine tippen tilbage midt (~polaroid) selv når p stiger.
+		 * Ændrer ikke lim-slack (fælles standard); kun tip-føring fra drag-progress.
+		 */
+		if (
 			singlePagePaint &&
 			!flipEl._mskPaperAnim &&
 			flipEl.classList.contains('about-contact-turn__flip')
 		) {
-			/*
-			 * Phone LS / one-page: træk-progress (p) SKAL kunne føre peelen helt over —
-			 * finger+lim alene stopper ofte midt (~polaroid) mens p stadig stiger.
-			 */
 			const endX = dir < 0 ? -W : W * 2;
 			const progX = cornerX + (endX - cornerX) * p;
 			if (dir < 0) fx = Math.min(fx, progX);
 			else fx = Math.max(fx, progX);
 		}
-		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir);
-		fx = glued.fx;
-		fy = glued.fy;
 		if (!flipEl._mskPaperAnim) {
 			flipEl._mskHoldFx = fx;
 			flipEl._mskHoldFy = fy;
@@ -6925,11 +6927,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
 					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
+					let onePage = false;
+					try {
+						onePage = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+					} catch (_) {}
 
-					// Map drag distance to seam-aware progress:
-					// startX -> seam = 0..0.5, seam -> left edge = 0.5..1
 					let p = 0;
-					if (x >= startX) {
+					if (onePage) {
+						/* One-page (phone LS): lineært over hele bredden — ikke 50/50-notesbog-seam. */
+						const leftEdge = Math.max(8, vw * 0.04);
+						if (x >= startX) p = 0;
+						else p = Math.min(1, (startX - x) / Math.max(1, startX - leftEdge));
+					} else if (x >= startX) {
 						p = 0;
 					} else if (x >= seamX) {
 						const denom = Math.max(1, (startX - seamX));
@@ -18074,7 +18083,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 23:52';
+		const stampText = 'update onsdag 4 nov - klokken 23:54';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
