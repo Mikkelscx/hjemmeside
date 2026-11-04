@@ -9410,8 +9410,9 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
         margin: 0 !important;
-        font-size: clamp(1.35rem, 3.2vw, 1.85rem) !important;
-        letter-spacing: 0.5px;
+        /* Fyld de 2 ruled lines (50px) — samme skala-følelse som tablet LS */
+        font-size: clamp(1.95rem, 4.4vw, 2.55rem) !important;
+        letter-spacing: 0.55px;
         line-height: 50px !important; /* 2 × 25px */
         height: 50px !important;
         max-width: calc(100% - min(150px, 22vw) - 16px);
@@ -9451,12 +9452,14 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-title {
         margin: 0 !important;
         line-height: 50px !important;
-        font-size: clamp(1.55rem, 3.6vw, 2.2rem) !important;
+        height: 50px !important;
+        font-size: clamp(1.95rem, 4.4vw, 2.55rem) !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {
         margin-top: 25px !important;
         line-height: 50px !important;
-        font-size: clamp(1.35rem, 3.1vw, 1.95rem) !important;
+        height: 50px !important;
+        font-size: clamp(1.7rem, 3.8vw, 2.25rem) !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards {
