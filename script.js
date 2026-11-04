@@ -4721,14 +4721,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		fx = glued.fx;
 		fy = glued.fy;
 		/*
-		 * Phone LS / one-page Om mig→Kontakt: progress EFTER lim —
+		 * Phone LS / one-page (Om mig↔Kontakt): progress EFTER lim —
 		 * ellers limer mskGlueSpine tippen tilbage midt (~polaroid) selv når p stiger.
 		 * Ændrer ikke lim-slack (fælles standard); kun tip-føring fra drag-progress.
 		 */
 		if (
 			singlePagePaint &&
 			!flipEl._mskPaperAnim &&
-			flipEl.classList.contains('about-contact-turn__flip')
+			(flipEl.classList.contains('about-contact-turn__flip') ||
+				flipEl.classList.contains('contact-about-turn__flip'))
 		) {
 			const endX = dir < 0 ? -W : W * 2;
 			const progX = cornerX + (endX - cornerX) * p;
@@ -5018,6 +5019,49 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (ov && p > 0) ov.classList.add('swap-under-right');
 				} catch (_) {}
 				try { mskApplyAboutContactPortraitFullPage(flipEl.closest('.about-contact-transition') || turn); } catch (_) {}
+			}
+		}
+		/* Kontakt→Om mig: one-page — Om mig under skal fylde hele fladen */
+		if (flipEl.classList.contains('contact-about-turn__flip')) {
+			let singlePageCA = false;
+			try {
+				singlePageCA = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+			} catch (_) {}
+			if (singlePageCA) {
+				const turn = flipEl.parentElement;
+				const underLeft = turn && turn.querySelector('.contact-about-turn__under--left');
+				const underAbout = turn && turn.querySelector('.contact-about-turn__under--left .contact-about-turn__under-frame--about');
+				const underContactL = turn && turn.querySelector('.contact-about-turn__under--left .contact-about-turn__under-frame--contact');
+				if (underLeft) {
+					underLeft.style.setProperty('opacity', '1', 'important');
+					underLeft.style.setProperty('pointer-events', 'none', 'important');
+					underLeft.style.setProperty('left', '0px', 'important');
+					underLeft.style.setProperty('right', 'auto', 'important');
+					underLeft.style.setProperty('width', '100vw', 'important');
+					underLeft.style.setProperty('height', '100%', 'important');
+					underLeft.style.setProperty('z-index', '2', 'important');
+				}
+				if (underAbout) {
+					underAbout.style.setProperty('left', '0px', 'important');
+					underAbout.style.setProperty('right', 'auto', 'important');
+					underAbout.style.setProperty('width', '100vw', 'important');
+					underAbout.style.setProperty('min-width', '100vw', 'important');
+					underAbout.style.setProperty('opacity', '1', 'important');
+					underAbout.style.setProperty('visibility', 'visible', 'important');
+					underAbout.style.setProperty('display', 'block', 'important');
+					underAbout.style.setProperty('transform', 'none', 'important');
+					try { underAbout.classList.add('is-loaded'); } catch (_) {}
+				}
+				if (underContactL) {
+					underContactL.style.setProperty('opacity', '0', 'important');
+					underContactL.style.setProperty('visibility', 'hidden', 'important');
+					underContactL.style.setProperty('display', 'none', 'important');
+				}
+				try {
+					const ov = flipEl.closest('.contact-about-transition');
+					if (ov && p > 0) ov.classList.add('swap-under-left');
+				} catch (_) {}
+				try { mskApplyAboutContactPortraitFullPage(flipEl.closest('.contact-about-transition') || turn); } catch (_) {}
 			}
 		}
 		// Hold front uigennemsigtig under træk — fade kun i den sidste landingsfase.
@@ -7499,6 +7543,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				dragging = false;
 				if (rafId) cancelAnimationFrame(rafId);
 				rafId = 0;
+				try {
+					const c = document.querySelector('.msk-contact-about-drag-catcher');
+					if (c) c.remove();
+				} catch (_) {}
 				try { document.body.classList.remove(DRAG_CLASS, 'contact-about-flip-active', 'contact-about-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
 				mskParkPageTurnOverlay(overlay, flipEl);
@@ -7533,20 +7581,45 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const overlay = ensureOverlay();
 				overlay.classList.add('is-ready', 'is-turning');
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				const flipEl = overlay.querySelector('.contact-about-turn__flip');
-				if (flipEl) { flipEl._mskPaperCornerY = null; flipEl._mskHoldFx = null; flipEl._mskPaperSideBand = false; }
+				if (flipEl) {
+					flipEl._mskPaperCornerY = null;
+					flipEl._mskHoldFx = null;
+					flipEl._mskPaperSideBand = false;
+					flipEl._mskPaperTouch = null;
+					try {
+						if (typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()) {
+							flipEl._mskPaperEdgeDrag = false;
+						}
+					} catch (_) {}
+				}
 				try { mskPaperNotePointer(flipEl, e); } catch {}
+
+				const catcher = document.createElement('div');
+				catcher.className = 'msk-contact-about-drag-catcher';
+				catcher.setAttribute('aria-hidden', 'true');
+				catcher.style.cssText = 'position:fixed;inset:0;z-index:100000;background:transparent;pointer-events:auto;touch-action:none;';
+				try { document.body.appendChild(catcher); } catch (_) {}
+				try { catcher.setPointerCapture && catcher.setPointerCapture(e.pointerId); } catch (_) {}
 
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
 					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
+					let onePage = false;
+					try {
+						onePage = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+					} catch (_) {}
 
-					// The sheet follows the finger across the whole page.
-					// startX -> seam = 0..0.5, seam -> right edge = 0.5..1
 					let p = 0;
-					if (x <= startX) {
+					if (onePage) {
+						/* One-page (phone LS): lineært over hele bredden — ikke 50/50-seam. */
+						const rightEdge = Math.min(vw - 8, vw * 0.96);
+						if (x <= startX) p = 0;
+						else p = Math.min(1, (x - startX) / Math.max(1, rightEdge - startX));
+					} else if (x <= startX) {
 						p = 0;
 					} else if (x <= seamX) {
 						const denom = Math.max(1, (seamX - startX));
@@ -7572,6 +7645,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							ev.stopPropagation();
 						}
 					} catch {}
+					try {
+						if (catcher && catcher.parentNode) catcher.remove();
+					} catch (_) {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -18083,7 +18159,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 23:54';
+		const stampText = 'update onsdag 4 nov - klokken 23:57';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
