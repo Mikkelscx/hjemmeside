@@ -3402,12 +3402,45 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (html.classList.contains('phone-portrait-zoom-stable')) return true;
 			if (html.classList.contains('msk-projects-phone-portrait')) return true;
 			if (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) return true;
+			/* Phone landscape (fx 932×430): burger MENU — ikke tablet-kant-peel over MENU */
+			if (window.matchMedia && (
+				window.matchMedia('(max-width: 1024px) and (max-height: 520px) and (orientation: landscape)').matches ||
+				window.matchMedia('(max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1)').matches
+			)) return true;
 			const w = Math.round(window.innerWidth || 0);
-			return w > 0 && w <= 640;
+			const h = Math.round(window.innerHeight || 0);
+			if (w > 0 && w <= 640) return true;
+			if (w > 0 && h > 0 && w <= 1024 && h <= 520 && w >= h) return true;
+			return false;
 		} catch (_) {
 			return false;
 		}
 	}
+	/** MENU/burger skal altid vinde over peel-handle (handle har højere z-index). */
+	function mskPointerHitsNavChrome(e) {
+		try {
+			const t = e && e.target;
+			if (t && t.closest && t.closest('.navbar, .nav-toggle, .nav-menu, .nav-scrim')) return true;
+			const x = e && typeof e.clientX === 'number' ? e.clientX : NaN;
+			const y = e && typeof e.clientY === 'number' ? e.clientY : NaN;
+			if (!(x >= 0) || !(y >= 0)) return false;
+			const btn = document.querySelector('.nav-toggle');
+			if (btn) {
+				const cs = window.getComputedStyle ? window.getComputedStyle(btn) : null;
+				if (!cs || (cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0')) {
+					const r = btn.getBoundingClientRect();
+					if (r.width > 2 && r.height > 2 &&
+						x >= r.left - 4 && x <= r.right + 4 && y >= r.top - 4 && y <= r.bottom + 4) {
+						return true;
+					}
+				}
+			}
+			return false;
+		} catch (_) {
+			return false;
+		}
+	}
+	try { window.mskPointerHitsNavChrome = mskPointerHitsNavChrome; } catch (_) {}
 	function mskIsTabletPaperDrag() {
 		try {
 			/* Kant-peel kun tablet/desktop — telefon MENU bruger paper-paint (ikke kant-træk). */
@@ -3808,6 +3841,27 @@ document.addEventListener('DOMContentLoaded', function() {
 				h._mskLinkGuard = true;
 				h.addEventListener('pointerdown', (e) => {
 					if (!e) return;
+					/* MENU/burger under handle: stop peel, send klik videre */
+					if (typeof mskPointerHitsNavChrome === 'function' && mskPointerHitsNavChrome(e)) {
+						try { e.stopPropagation(); } catch (_) {}
+						try { e.stopImmediatePropagation(); } catch (_) {}
+						const btn = document.querySelector('.nav-toggle');
+						if (btn) {
+							const x0 = e.clientX;
+							const y0 = e.clientY;
+							const onUp = (ev) => {
+								window.removeEventListener('pointerup', onUp, true);
+								window.removeEventListener('pointercancel', onUp, true);
+								const dx = ((ev && ev.clientX) || 0) - x0;
+								const dy = ((ev && ev.clientY) || 0) - y0;
+								if (Math.hypot(dx, dy) > 22) return;
+								try { btn.click(); } catch (_) {}
+							};
+							window.addEventListener('pointerup', onUp, true);
+							window.addEventListener('pointercancel', onUp, true);
+						}
+						return;
+					}
 					const all = document.querySelectorAll('.page-turn-handle');
 					all.forEach((el) => { el.style.pointerEvents = 'none'; });
 					const under = document.elementFromPoint(e.clientX, e.clientY);
@@ -5258,6 +5312,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			function startDrag(e) {
 				if (dragging) return;
 				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
+				if (typeof mskPointerHitsNavChrome === 'function' && mskPointerHitsNavChrome(e)) return;
 				if (!e || e.button !== 0) return;
 				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 				e.preventDefault();
@@ -6215,6 +6270,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			function startDrag(e) {
 				if (dragging) return;
 				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
+				if (typeof mskPointerHitsNavChrome === 'function' && mskPointerHitsNavChrome(e)) return;
 				if (!e || e.button !== 0) return;
 				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 				e.preventDefault();
@@ -6661,6 +6717,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			function startDrag(e) {
 				if (dragging) return;
 				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
+				if (typeof mskPointerHitsNavChrome === 'function' && mskPointerHitsNavChrome(e)) return;
 				if (!e || e.button !== 0) return;
 				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 				e.preventDefault();
@@ -7265,6 +7322,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			function startDrag(e) {
 				if (dragging) return;
 				if (typeof mskIsPhoneMenuNavOnly === 'function' && mskIsPhoneMenuNavOnly()) return;
+				if (typeof mskPointerHitsNavChrome === 'function' && mskPointerHitsNavChrome(e)) return;
 				if (!e || e.button !== 0) return;
 				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 				e.preventDefault();
@@ -17833,7 +17891,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 22:37';
+		const stampText = 'update onsdag 4 nov - klokken 22:41';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

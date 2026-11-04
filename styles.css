@@ -609,8 +609,10 @@ img {
     }
 }
 
-/* Telefon: ingen kant-træk — MENU bladre = paper-paint (JS), CSS rotateY slås fra. */
-@media (max-width: 640px) {
+/* Telefon (+ kort landscape): ingen kant-træk — MENU bladre = paper-paint (JS), CSS rotateY slås fra. */
+@media (max-width: 640px),
+       (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+       (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
     .page-turn-handle,
     .corner-fold-hints {
         display: none !important;
@@ -11391,7 +11393,8 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         padding-right: env(safe-area-inset-right, 0px);
         height: var(--navBarTotal);
         box-sizing: border-box;
-        z-index: 5000;
+        /* Over page-turn-handle (12000) — MENU skal altid kunne trykkes */
+        z-index: 25000;
         /* Ingen streg/skygge under header i burger-layout (gælder også DevTools iPad med pointer: fine) */
         background: transparent !important;
         border-bottom: none !important;
@@ -11423,6 +11426,9 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     body .nav-toggle {
         appearance: none;
         -webkit-appearance: none;
+        position: relative;
+        z-index: 25001;
+        pointer-events: auto;
         background: var(--navToggleBg);
         border: 1px solid var(--navToggleBorder);
         border-radius: 10px;
