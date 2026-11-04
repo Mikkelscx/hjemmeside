@@ -20874,20 +20874,21 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
     opacity: 1 !important;
     position: absolute !important;
     left: 50% !important;
-    top: 88% !important;
-    transform: translate(-50%, -50%) scale(1.28) !important;
+    /* Lidt længere nede i den forlængede oval */
+    top: 90% !important;
+    transform: translate(-50%, -50%) scale(1.4) !important;
     transform-origin: 50% 50% !important;
     pointer-events: none !important;
     z-index: 6 !important;
     text-align: center !important;
     line-height: 1 !important;
     gap: 0 !important;
-    max-width: min(96%, 170px) !important;
+    max-width: min(96%, 180px) !important;
     width: max-content !important;
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line1 {
-    font-size: 14px !important;
+    font-size: 15.5px !important;
     font-weight: 400 !important;
     -webkit-text-stroke: 0 !important;
     text-shadow: none !important;
@@ -20896,7 +20897,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line2 {
-    font-size: 14px !important;
+    font-size: 15.5px !important;
     font-weight: 400 !important;
     -webkit-text-stroke: 0 !important;
     text-shadow: none !important;
@@ -20905,7 +20906,7 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstor
 }
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3,
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="repop"] .kravling-nomineret-badge--inline .kravling-line3 {
-    font-size: 20px !important;
+    font-size: 22px !important;
     font-weight: 400 !important;
     -webkit-text-stroke: 0 !important;
     text-shadow: none !important;

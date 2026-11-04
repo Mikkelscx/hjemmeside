@@ -14596,11 +14596,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				/* Phone LS: forkort stregen yderligere fra toppen (Repop-enden) */
+				/* Phone LS: streg lidt ned (mere gap ved cirklen) — plads til større oval forneden */
 				let tabGapDistance = nodeRadius * 0.1;
 				try {
 					if (mskIsProjectsPhoneLandscapeViewport()) {
-						tabGapDistance = nodeRadius * 0.1 + 38;
+						tabGapDistance = nodeRadius * 0.1 + 52;
 					}
 				} catch (_) {}
 				const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
@@ -15303,7 +15303,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					} else if (mskIsProjectsPhoneLandscapeViewport()) {
 						/* Phone LS: større REPOP-cirkel (matcher større titel + Kravling) */
 						repopLsMulW = 1.5;
-						repopLsMulH = 1.26;
+						repopLsMulH = 1.36;
 					} else if (
 						landscapeMindmap &&
 						window.matchMedia &&
@@ -15329,14 +15329,21 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				[w, h] = shrinkPhoneRing(w, h);
 
+				/* Phone LS: vokse kun nedad — plads til større Kravling; topkant uændret */
+				let repGrowDownPx = 0;
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					repGrowDownPx = Math.round(h * 0.1);
+					h += repGrowDownPx;
+				}
+				const repImgCy = repCenterY + repGrowDownPx / 2;
 				image.setAttribute('x', String(repCenterX - (w / 2) - s(-3)));
-				image.setAttribute('y', String(repCenterY - (h / 2)));
+				image.setAttribute('y', String(repCenterY - h / 2 + repGrowDownPx / 2));
 				image.setAttribute('width', String(w));
 				image.setAttribute('height', String(h));
 				image.setAttribute('preserveAspectRatio', 'none');
 				image.setAttribute('opacity', '0.8');
 				image.setAttribute('visibility', 'visible');
-				image.setAttribute('transform', `rotate(180 ${repCenterX} ${repCenterY})`);
+				image.setAttribute('transform', `rotate(180 ${repCenterX} ${repImgCy})`);
 				image.style.pointerEvents = 'auto';
 				image.style.display = 'block';
 				image.style.visibility = 'visible';
@@ -15348,7 +15355,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const fill = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
 				fill.setAttribute('cx', String(repCenterX - s(1)));
-				let repFillCy = repCenterY - s(2);
+				let repFillCy = repCenterY - s(2) + repGrowDownPx / 2;
 				try {
 					const iwDesk = mskViewportSize().w || 0;
 					if (
@@ -17814,7 +17821,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 15:19';
+		const stampText = 'update onsdag 4 nov - klokken 15:38';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
