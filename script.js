@@ -3395,28 +3395,42 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	// Paper curl on computer, tablet and phone.
-	/** Telefon: ingen kant-træk — MENU må stadig bladre (paper-paint, ikke rå rotateY). */
+	/** Telefon portræt: ingen kant-træk — MENU må stadig bladre (paper-paint, ikke rå rotateY). */
 	function mskIsPhoneMenuNavOnly() {
 		try {
 			const html = document.documentElement;
 			if (html.classList.contains('phone-portrait-zoom-stable')) return true;
 			if (html.classList.contains('msk-projects-phone-portrait')) return true;
 			if (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) return true;
-			/* Phone landscape (fx 932×430): burger MENU — ikke tablet-kant-peel over MENU */
-			if (window.matchMedia && (
-				window.matchMedia('(max-width: 1024px) and (max-height: 520px) and (orientation: landscape)').matches ||
-				window.matchMedia('(max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1)').matches
-			)) return true;
 			const w = Math.round(window.innerWidth || 0);
-			const h = Math.round(window.innerHeight || 0);
-			if (w > 0 && w <= 640) return true;
-			if (w > 0 && h > 0 && w <= 1024 && h <= 520 && w >= h) return true;
-			return false;
+			return w > 0 && w <= 640;
 		} catch (_) {
 			return false;
 		}
 	}
-	/** MENU/burger skal altid vinde over peel-handle (handle har højere z-index). */
+	/** Synlig burger: top-offset så peel-handle ikke dækker MENU. */
+	function mskNavMenuPeelCutTopPx() {
+		try {
+			const btn = document.querySelector('.nav-toggle');
+			if (!btn) return 0;
+			const cs = window.getComputedStyle ? window.getComputedStyle(btn) : null;
+			if (cs && (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0')) return 0;
+			let top = 56;
+			try {
+				const raw = getComputedStyle(document.documentElement).getPropertyValue('--navBarTotal');
+				const n = parseFloat(raw);
+				if (n > 20) top = n;
+			} catch (_) {}
+			try {
+				const r = btn.getBoundingClientRect();
+				if (r.bottom > 8) top = Math.max(top, r.bottom);
+			} catch (_) {}
+			return Math.round(top + 14);
+		} catch (_) {
+			return 0;
+		}
+	}
+	/** MENU/burger-zone — peel må ikke starte her (handle kan ligge ovenpå). */
 	function mskPointerHitsNavChrome(e) {
 		try {
 			const t = e && e.target;
@@ -3425,22 +3439,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			const y = e && typeof e.clientY === 'number' ? e.clientY : NaN;
 			if (!(x >= 0) || !(y >= 0)) return false;
 			const btn = document.querySelector('.nav-toggle');
-			if (btn) {
-				const cs = window.getComputedStyle ? window.getComputedStyle(btn) : null;
-				if (!cs || (cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0')) {
-					const r = btn.getBoundingClientRect();
-					if (r.width > 2 && r.height > 2 &&
-						x >= r.left - 4 && x <= r.right + 4 && y >= r.top - 4 && y <= r.bottom + 4) {
-						return true;
-					}
-				}
-			}
+			if (!btn) return false;
+			const cs = window.getComputedStyle ? window.getComputedStyle(btn) : null;
+			if (cs && (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0')) return false;
+			const r = btn.getBoundingClientRect();
+			if (!(r.width > 2 && r.height > 2)) return false;
+			const padX = 22;
+			const padY = 18;
+			let zoneBottom = r.bottom + padY;
+			try {
+				const nav = document.querySelector('.navbar');
+				if (nav) zoneBottom = Math.max(zoneBottom, nav.getBoundingClientRect().bottom + padY);
+			} catch (_) {}
+			const zoneRight = Math.max(r.right + padX, 176);
+			if (x <= zoneRight && y <= zoneBottom) return true;
 			return false;
 		} catch (_) {
 			return false;
 		}
 	}
 	try { window.mskPointerHitsNavChrome = mskPointerHitsNavChrome; } catch (_) {}
+	try { window.mskNavMenuPeelCutTopPx = mskNavMenuPeelCutTopPx; } catch (_) {}
 	function mskIsTabletPaperDrag() {
 		try {
 			/* Kant-peel kun tablet/desktop — telefon MENU bruger paper-paint (ikke kant-træk). */
@@ -3911,31 +3930,39 @@ document.addEventListener('DOMContentLoaded', function() {
 				h.style.top = '0px';
 				h.style.height = '100%';
 				h.style.width = '50vw';
-				if (h.classList.contains('page-turn-handle--left')) {
-					h.style.left = '0px';
-					h.style.right = 'auto';
-					h.style.clipPath = 'polygon(0 0, ' + corner + 'px 0, ' + corner + 'px ' + corner + 'px, ' + side + 'px ' + corner + 'px, ' + side + 'px calc(100% - ' + corner + 'px), ' + corner + 'px calc(100% - ' + corner + 'px), ' + corner + 'px calc(100% - ' + foot + 'px), 100% calc(100% - ' + foot + 'px), 100% 100%, 0 100%)';
+			if (h.classList.contains('page-turn-handle--left')) {
+				h.style.left = '0px';
+				h.style.right = 'auto';
+				h.style.clipPath = 'polygon(0 0, ' + corner + 'px 0, ' + corner + 'px ' + corner + 'px, ' + side + 'px ' + corner + 'px, ' + side + 'px calc(100% - ' + corner + 'px), ' + corner + 'px calc(100% - ' + corner + 'px), ' + corner + 'px calc(100% - ' + foot + 'px), 100% calc(100% - ' + foot + 'px), 100% 100%, 0 100%)';
 				} else if (h.classList.contains('page-turn-handle--right')) {
 					h.style.right = '0px';
 					h.style.left = 'auto';
 					h.style.clipPath = 'polygon(calc(100% - ' + corner + 'px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(100% - ' + foot + 'px), calc(100% - ' + corner + 'px) calc(100% - ' + foot + 'px), calc(100% - ' + corner + 'px) calc(100% - ' + corner + 'px), calc(100% - ' + side + 'px) calc(100% - ' + corner + 'px), calc(100% - ' + side + 'px) ' + corner + 'px, calc(100% - ' + corner + 'px) ' + corner + 'px)';
 				}
-				return;
+			} else {
+				h.style.width = w + 'px';
+				const corner = Math.max(w, Math.round(Math.hypot(viewW, window.innerHeight || 800) / 6.5));
+				h.style.top = '0px';
+				h.style.height = '100%';
+				h.style.width = corner + 'px';
+				if (h.classList.contains('page-turn-handle--left')) {
+					h.style.left = '0px';
+					h.style.right = 'auto';
+					h.style.clipPath = 'polygon(0 0, ' + corner + 'px 0, ' + corner + 'px ' + corner + 'px, ' + w + 'px ' + corner + 'px, ' + w + 'px calc(100% - ' + corner + 'px), ' + corner + 'px calc(100% - ' + corner + 'px), ' + corner + 'px 100%, 0 100%)';
+				} else if (h.classList.contains('page-turn-handle--right')) {
+					h.style.right = '0px';
+					h.style.left = 'auto';
+					h.style.clipPath = 'polygon(calc(100% - ' + corner + 'px) 0, 100% 0, 100% 100%, calc(100% - ' + corner + 'px) 100%, calc(100% - ' + corner + 'px) calc(100% - ' + corner + 'px), calc(100% - ' + w + 'px) calc(100% - ' + corner + 'px), calc(100% - ' + w + 'px) ' + corner + 'px, calc(100% - ' + corner + 'px) ' + corner + 'px)';
+				}
 			}
-			h.style.width = w + 'px';
-			const corner = Math.max(w, Math.round(Math.hypot(viewW, window.innerHeight || 800) / 6.5));
-			h.style.top = '0px';
-			h.style.height = '100%';
-			h.style.width = corner + 'px';
-			if (h.classList.contains('page-turn-handle--left')) {
-				h.style.left = '0px';
-				h.style.right = 'auto';
-				h.style.clipPath = 'polygon(0 0, ' + corner + 'px 0, ' + corner + 'px ' + corner + 'px, ' + w + 'px ' + corner + 'px, ' + w + 'px calc(100% - ' + corner + 'px), ' + corner + 'px calc(100% - ' + corner + 'px), ' + corner + 'px 100%, 0 100%)';
-			} else if (h.classList.contains('page-turn-handle--right')) {
-				h.style.right = '0px';
-				h.style.left = 'auto';
-				h.style.clipPath = 'polygon(calc(100% - ' + corner + 'px) 0, 100% 0, 100% 100%, calc(100% - ' + corner + 'px) 100%, calc(100% - ' + corner + 'px) calc(100% - ' + corner + 'px), calc(100% - ' + w + 'px) calc(100% - ' + corner + 'px), calc(100% - ' + w + 'px) ' + corner + 'px, calc(100% - ' + corner + 'px) ' + corner + 'px)';
-			}
+			/* Burger synlig (phone LS m.m.): frihold MENU — peel starter under menu-zonen */
+			try {
+				const cut = typeof mskNavMenuPeelCutTopPx === 'function' ? mskNavMenuPeelCutTopPx() : 0;
+				if (cut > 0 && h.classList.contains('page-turn-handle--left')) {
+					h.style.top = cut + 'px';
+					h.style.height = 'calc(100% - ' + cut + 'px)';
+				}
+			} catch (_) {}
 		});
 	}
 	window.addEventListener('resize', () => { try { mskSizePaperHandles(); } catch {} });
@@ -17891,7 +17918,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 22:41';
+		const stampText = 'update onsdag 4 nov - klokken 23:31';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

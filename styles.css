@@ -609,10 +609,8 @@ img {
     }
 }
 
-/* Telefon (+ kort landscape): ingen kant-træk — MENU bladre = paper-paint (JS), CSS rotateY slås fra. */
-@media (max-width: 640px),
-       (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
-       (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
+/* Telefon portræt: ingen kant-træk — MENU bladre = paper-paint (JS). */
+@media (max-width: 640px) {
     .page-turn-handle,
     .corner-fold-hints {
         display: none !important;
@@ -621,6 +619,12 @@ img {
         height: 0 !important;
         opacity: 0 !important;
     }
+}
+
+/* Telefon (+ kort landscape): MENU paper-paint helpers. Phone LS beholder peel uden for MENU-zonen. */
+@media (max-width: 640px),
+       (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+       (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
     .projects-about-transition.is-turning,
     .about-projects-transition.is-turning,
     .about-contact-transition.is-turning,
