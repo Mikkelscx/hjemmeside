@@ -14578,11 +14578,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				/* Phone LS: forkort stregen lidt mere fra toppen (Repop-enden) */
+				/* Phone LS: forkort stregen yderligere fra toppen (Repop-enden) */
 				let tabGapDistance = nodeRadius * 0.1;
 				try {
 					if (mskIsProjectsPhoneLandscapeViewport()) {
-						tabGapDistance = nodeRadius * 0.1 + 24;
+						tabGapDistance = nodeRadius * 0.1 + 38;
 					}
 				} catch (_) {}
 				const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
@@ -14737,9 +14737,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (mskIsProjectsShortLandscapeViewport()) {
 					extensionAmount = nodeRadius * 2.04 + 14;
 				}
-				/* Phone LS: forlæng lidt kun mod Twister-cirklen */
+				/* Phone LS: forlæng yderligere kun mod Twister-cirklen */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					extensionAmount = nodeRadius * 0.48;
+					extensionAmount = nodeRadius * 0.78;
 				}
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount - 30; // Move line up by 30px
@@ -17796,7 +17796,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 01:26';
+		const stampText = 'update onsdag 4 nov - klokken 01:38';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
