@@ -4902,6 +4902,49 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (underAbout) underAbout.style.setProperty('opacity', '1', 'important');
 			}
 		}
+		/* Om mig→Kontakt: one-page (inkl. phone LS) — Kontakt under skal fylde hele fladen, ikke -50vw */
+		if (flipEl.classList.contains('about-contact-turn__flip')) {
+			let singlePage = false;
+			try {
+				singlePage = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+			} catch (_) {}
+			if (singlePage) {
+				const turn = flipEl.parentElement;
+				const underRight = turn && turn.querySelector('.about-contact-turn__under--right');
+				const underContact = turn && turn.querySelector('.about-contact-turn__under--right .about-contact-turn__under-frame--contact');
+				const underAboutR = turn && turn.querySelector('.about-contact-turn__under--right .about-contact-turn__under-frame--about');
+				if (underRight) {
+					underRight.style.setProperty('opacity', '1', 'important');
+					underRight.style.setProperty('pointer-events', 'none', 'important');
+					underRight.style.setProperty('left', '0px', 'important');
+					underRight.style.setProperty('right', 'auto', 'important');
+					underRight.style.setProperty('width', '100vw', 'important');
+					underRight.style.setProperty('height', '100%', 'important');
+					underRight.style.setProperty('z-index', '2', 'important');
+				}
+				if (underContact) {
+					underContact.style.setProperty('left', '0px', 'important');
+					underContact.style.setProperty('right', 'auto', 'important');
+					underContact.style.setProperty('width', '100vw', 'important');
+					underContact.style.setProperty('min-width', '100vw', 'important');
+					underContact.style.setProperty('opacity', '1', 'important');
+					underContact.style.setProperty('visibility', 'visible', 'important');
+					underContact.style.setProperty('display', 'block', 'important');
+					underContact.style.setProperty('transform', 'none', 'important');
+					try { underContact.classList.add('is-loaded'); } catch (_) {}
+				}
+				if (underAboutR) {
+					underAboutR.style.setProperty('opacity', '0', 'important');
+					underAboutR.style.setProperty('visibility', 'hidden', 'important');
+					underAboutR.style.setProperty('display', 'none', 'important');
+				}
+				try {
+					const ov = flipEl.closest('.about-contact-transition');
+					if (ov && p > 0) ov.classList.add('swap-under-right');
+				} catch (_) {}
+				try { mskApplyAboutContactPortraitFullPage(flipEl.closest('.about-contact-transition') || turn); } catch (_) {}
+			}
+		}
 		// Hold front uigennemsigtig under træk — fade kun i den sidste landingsfase.
 		const land = (flipEl._mskPaperAnim && p > 0.92) ? Math.max(0, 1 - (p - 0.92) / 0.08) : 1;
 		curl.front.style.setProperty('opacity', String(land), 'important');
@@ -17931,7 +17974,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 23:37';
+		const stampText = 'update onsdag 4 nov - klokken 23:43';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
