@@ -223,7 +223,10 @@ let mskPhoneLsFitFreeze = null;
 
 function mskSyncProjectsPhoneLandscapeFit() {
 	try {
-		if (!mskIsProjectsPhoneLandscapeViewport()) {
+		/* Kun Projekter — må ikke sætte phone-LS ref-canvas på Om mig/Kontakt */
+		const onProjects =
+			!!(document.body && document.body.classList && document.body.classList.contains('projects-page'));
+		if (!onProjects || !mskIsProjectsPhoneLandscapeViewport()) {
 			mskPhoneLsFitFreeze = null;
 			mskClearProjectsPhoneLandscapeRefCanvas();
 			return MSK_PROJECTS_LANDSCAPE_FIT;
@@ -362,10 +365,13 @@ function mskIsBrowserPageZoomed() {
 function mskSyncBrowserZoomPanMode() {
 	try {
 		const zoomed = !!mskIsBrowserPageZoomed();
+		const onProjects =
+			!!(document.body && document.body.classList && document.body.classList.contains('projects-page'));
 		const phoneLs =
-			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport()) ||
-			document.documentElement.classList.contains('msk-projects-phone-landscape') ||
-			document.documentElement.classList.contains('msk-projects-phone-ls-ref-canvas');
+			onProjects &&
+			(!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport()) ||
+				document.documentElement.classList.contains('msk-projects-phone-landscape') ||
+				document.documentElement.classList.contains('msk-projects-phone-ls-ref-canvas'));
 		/*
 		 * Phone landscape: brug KUN native browser-zoom (forstørrelse).
 		 * Zoom-active unlocker scroll/position og får mindmap til at “bevæge sig” — det må ikke ske.
@@ -374,6 +380,12 @@ function mskSyncBrowserZoomPanMode() {
 		if (phoneLs) {
 			document.documentElement.classList.remove('msk-browser-zoom-active');
 			if (typeof mskSyncProjectsPhoneLandscapeFit === 'function') mskSyncProjectsPhoneLandscapeFit();
+		} else if (!onProjects) {
+			/* Ryd projects-LS klasser der kan have lækket til Om mig/Kontakt */
+			try {
+				mskClearProjectsPhoneLandscapeRefCanvas();
+				document.documentElement.classList.remove('msk-projects-phone-landscape');
+			} catch (_) {}
 		}
 	} catch (_) {}
 }
@@ -17821,7 +17833,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 15:42';
+		const stampText = 'update onsdag 4 nov - klokken 17:04';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

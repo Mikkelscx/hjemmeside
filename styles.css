@@ -9298,6 +9298,192 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     }
 }
 
+/*
+ * OM MIG: telefon landskab (≤1024 × ≤520) — bio/CV på 25px-papirstreger.
+ * Portræt/tablet har dedikeret gitter-lock; uden denne blok arver phone LS kun
+ * max-width:1024 (padding 64px + desktop-nudge) og glider af stregerne.
+ */
+@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+       (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
+    html:has(body.about-sketchbook-page.sketchbook-theme) {
+        background-color: #f5f5f0 !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme {
+        position: relative;
+        background: #f5f5f0 !important;
+        overflow-x: hidden;
+        overflow-y: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        min-height: var(--sketchPaperMinH, 100dvh);
+    }
+    body.about-sketchbook-page.sketchbook-theme::before {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
+        background-color: #f5f5f0 !important;
+        box-shadow: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme::after {
+        display: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .right-margin {
+        display: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        min-height: var(--sketchPaperMinH, 100dvh) !important;
+        /* Projekter phone LS flytter linjer 6px — må ikke lække hertil */
+        transform: none !important;
+        -webkit-transform: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer__half--left,
+    body.about-sketchbook-page.sketchbook-theme .msk-paper-lines-layer__half--right {
+        background-position-y: 0 !important;
+        background-size: 100% 25px !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .left-margin {
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 14px !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook {
+        margin-top: 0 !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto !important;
+        align-content: start !important;
+        min-height: auto !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
+        min-height: 0 !important;
+        height: auto !important;
+        display: block !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left {
+        position: relative !important;
+        box-sizing: border-box !important;
+        /* 2×25px under MENU; left clear of rød margen @ 14px */
+        padding: 50px 18px 24px 40px !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right {
+        box-sizing: border-box !important;
+        padding: 25px 18px 28px 40px !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .polaroid.polaroid--about.polaroid--about-main {
+        position: absolute !important;
+        top: 50px !important;
+        right: 18px !important;
+        left: auto !important;
+        float: none !important;
+        width: min(150px, 22vw) !important;
+        max-width: min(150px, 22vw) !important;
+        margin: 0 !important;
+        z-index: 9 !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__photo-spacer {
+        display: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__content {
+        display: block !important;
+        width: auto !important;
+        max-width: none !important;
+        overflow: visible !important;
+        position: relative;
+        z-index: 8;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__title {
+        margin: 0 !important;
+        font-size: clamp(1.35rem, 3.2vw, 1.85rem) !important;
+        letter-spacing: 0.5px;
+        line-height: 50px !important; /* 2 × 25px */
+        height: 50px !important;
+        max-width: calc(100% - min(150px, 22vw) - 16px);
+        overflow: visible !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__clear-after-photo {
+        display: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text {
+        display: block !important;
+        margin: 0 !important;
+        padding-top: 7px !important; /* samme baseline-fase som telefon portræt */
+        padding-right: calc(min(150px, 22vw) + 16px) !important;
+        min-width: 0;
+        width: auto !important;
+        max-width: none !important;
+        font-size: 16px !important;
+        line-height: 25px !important;
+        -webkit-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--down-1,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--down-1.about-sketchbook__p--up-2,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p.about-sketchbook__p--nudge-down {
+        margin: 0 0 25px 0 !important;
+        padding: 0 !important;
+        font-size: 16px !important;
+        line-height: 25px !important;
+        transform: none !important;
+        clear: none !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p:last-of-type {
+        margin-bottom: 0 !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-title {
+        margin: 0 !important;
+        line-height: 50px !important;
+        font-size: clamp(1.55rem, 3.6vw, 2.2rem) !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {
+        margin-top: 25px !important;
+        line-height: 50px !important;
+        font-size: clamp(1.35rem, 3.1vw, 1.95rem) !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards {
+        font-size: 16px !important;
+        line-height: 25px !important;
+        margin-top: 0 !important;
+        -webkit-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv p,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 25px !important;
+        font-size: 16px !important;
+        white-space: normal;
+    }
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards-block {
+        position: static !important;
+        transform: none !important;
+        margin-top: 25px !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        width: 100% !important;
+    }
+}
+
 /* (OM MIG) sketchbook/polaroid layout reverted */
 
 /* Kontakt page: match Projekter sketchbook look */
@@ -20430,7 +20616,7 @@ html.msk-projects-ipad-landscape-no-scroll body.projects-page.sketchbook-theme .
 /*
  * Telefon landskab (p461): bredere ellipse end p460, stadig under p457-clip.
  */
-html.msk-projects-phone-landscape,
+/* Kun Projekter — må ikke låse scroll på Om mig/Kontakt hvis klassen lækker */
 html.msk-projects-phone-landscape body.projects-page.sketchbook-theme {
     overflow-x: hidden !important;
     overflow-y: hidden !important;
