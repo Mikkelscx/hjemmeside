@@ -14600,7 +14600,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				let tabGapDistance = nodeRadius * 0.1;
 				try {
 					if (mskIsProjectsPhoneLandscapeViewport()) {
-						tabGapDistance = nodeRadius * 0.1 + 52;
+						tabGapDistance = nodeRadius * 0.1 + 64;
 					}
 				} catch (_) {}
 				const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
@@ -15302,7 +15302,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						repopLsMulH = 1;
 					} else if (mskIsProjectsPhoneLandscapeViewport()) {
 						/* Phone LS: større REPOP-cirkel (matcher større titel + Kravling) */
-						repopLsMulW = 1.5;
+						repopLsMulW = 1.58;
 						repopLsMulH = 1.36;
 					} else if (
 						landscapeMindmap &&
@@ -15322,7 +15322,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				let repopStretchX = phonePortraitRings ? 1.04 : 1.12;
 				if (ipadPortraitRings) repopStretchX = 1.92 * pRing;
 				else if (ipadLandscapeRings) repopStretchX = 1.12;
-				else if (mskIsProjectsPhoneLandscapeViewport()) repopStretchX = 1.26;
+				else if (mskIsProjectsPhoneLandscapeViewport()) repopStretchX = 1.32;
 				w *= repopStretchX;
 				if (ipadLandscapeRings) {
 					h *= ipadLsRingVertMul;
@@ -17821,7 +17821,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 15:38';
+		const stampText = 'update onsdag 4 nov - klokken 15:42';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
