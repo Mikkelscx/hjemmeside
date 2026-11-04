@@ -63,8 +63,8 @@ jobs:
           # Altid kanoniske filer
           cp -f script.js styles.css publish/
           touch publish/.nojekyll
-          # www.mikkelsc.dk hører til hjemmeside-Pages.
-          if [ "${GITHUB_REPOSITORY:-}" = "Mikkelscx/hjemmeside" ]; then
+          # www følger min-hjemmeside (hjemmeside uden CNAME — undgå Deploy-konflikt).
+          if [ "${GITHUB_REPOSITORY:-}" = "Mikkelscx/min-hjemmeside" ]; then
             printf 'www.mikkelsc.dk\n' > publish/CNAME
           else
             rm -f publish/CNAME
