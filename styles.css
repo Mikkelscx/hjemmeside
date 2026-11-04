@@ -9449,17 +9449,17 @@ body.about-sketchbook-page.sketchbook-theme .polaroid--about .polaroid__clip-img
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--left .about-sketchbook__text p:last-of-type {
         margin-bottom: 0 !important;
     }
-    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-title {
+    /* CV + Udmærkelser: samme 2-linjers fylde som «HVEM ER MIKKEL» */
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-title,
+    body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {
         margin: 0 !important;
         line-height: 50px !important;
         height: 50px !important;
         font-size: clamp(1.95rem, 4.4vw, 2.55rem) !important;
+        letter-spacing: 0.55px;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__page--right .about-sketchbook__right-mid-title {
         margin-top: 25px !important;
-        line-height: 50px !important;
-        height: 50px !important;
-        font-size: clamp(1.7rem, 3.8vw, 2.25rem) !important;
     }
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__cv,
     body.about-sketchbook-page.sketchbook-theme .about-sketchbook__awards {
