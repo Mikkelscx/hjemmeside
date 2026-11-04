@@ -3502,6 +3502,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			return false;
 		}
 	}
+	/** Phone LS / one-page: mere “papir-modstand” tidligt — samme langsomme peel-feel som venstre side. */
+	function mskPhoneLsPeelEase(raw) {
+		const p = Math.max(0, Math.min(1, Number(raw) || 0));
+		try {
+			if (typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()) {
+				/* ease-in: langsom start, fuld peel ved kanten */
+				return Math.pow(p, 1.42);
+			}
+		} catch (_) {}
+		return p;
+	}
 	/**
 	 * Telefon MENU: samme papir-peel som tablet-drag (bladre), ikke flad translateX.
 	 * sign -1 = Projekter→Om mig (højre hjørne), +1 = Om mig→Projekter (venstre hjørne).
@@ -4721,9 +4732,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		fx = glued.fx;
 		fy = glued.fy;
 		/*
-		 * Phone LS / one-page (Om mig↔Kontakt): progress EFTER lim —
-		 * ellers limer mskGlueSpine tippen tilbage midt (~polaroid) selv når p stiger.
-		 * Ændrer ikke lim-slack (fælles standard); kun tip-føring fra drag-progress.
+		 * Phone LS / one-page (Om mig↔Kontakt): blød unlock EFTER lim.
+		 * Venstre peel (finger+lim) føles langsommere — match det: tip følger lim/finger
+		 * tidligt, progress låser kun gradvist op (fuld peel ved p→1). Ikke lim-slack.
 		 */
 		if (
 			singlePagePaint &&
@@ -4733,8 +4744,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		) {
 			const endX = dir < 0 ? -W : W * 2;
 			const progX = cornerX + (endX - cornerX) * p;
-			if (dir < 0) fx = Math.min(fx, progX);
-			else fx = Math.max(fx, progX);
+			const unlock = p * p; /* sent i trækket = mere progress, tidligt = venstre-feel */
+			const mix = 0.22 + 0.78 * unlock;
+			if (dir < 0) {
+				const want = Math.min(fx, progX);
+				fx = fx + (want - fx) * mix;
+			} else {
+				const want = Math.max(fx, progX);
+				fx = fx + (want - fx) * mix;
+			}
 		}
 		if (!flipEl._mskPaperAnim) {
 			flipEl._mskHoldFx = fx;
@@ -6978,10 +6996,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					let p = 0;
 					if (onePage) {
-						/* One-page (phone LS): lineært over hele bredden — ikke 50/50-notesbog-seam. */
+						/* One-page (phone LS): fuld bredde + ease = langsom venstre-peel-feel. */
 						const leftEdge = Math.max(8, vw * 0.04);
 						if (x >= startX) p = 0;
 						else p = Math.min(1, (startX - x) / Math.max(1, startX - leftEdge));
+						p = mskPhoneLsPeelEase(p);
 					} else if (x >= startX) {
 						p = 0;
 					} else if (x >= seamX) {
@@ -7615,10 +7634,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					let p = 0;
 					if (onePage) {
-						/* One-page (phone LS): lineært over hele bredden — ikke 50/50-seam. */
+						/* One-page (phone LS): fuld bredde + ease = langsom venstre-peel-feel. */
 						const rightEdge = Math.min(vw - 8, vw * 0.96);
 						if (x <= startX) p = 0;
 						else p = Math.min(1, (x - startX) / Math.max(1, rightEdge - startX));
+						p = mskPhoneLsPeelEase(p);
 					} else if (x <= startX) {
 						p = 0;
 					} else if (x <= seamX) {
@@ -18159,7 +18179,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 23:57';
+		const stampText = 'update torsdag 5 nov - klokken 00:02';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
