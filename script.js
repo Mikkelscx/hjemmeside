@@ -87,9 +87,9 @@ function mskProjectsPhoneLandscapeUsableBox() {
 		if (!zoomed && vv && vv.width > 40 && vv.height > 40) {
 			const vw = Math.round(vv.width);
 			const vh = Math.round(vv.height);
-			/* Kun når chrome æder markant plads — undgå kronisk under-scale */
-			if (vw < w * 0.9) w = vw;
-			if (vh < h * 0.9) h = vh;
+			/* Brug altid synlig VV-højde — Safari-chrome må ikke ignoreres (ellers klippes Repop/Twister). */
+			if (vw > 0) w = Math.min(w, vw);
+			if (vh > 0) h = Math.min(h, vh);
 		}
 	} catch (_) {}
 	return { w: Math.max(1, w), h: Math.max(1, h) };
@@ -115,14 +115,23 @@ function mskComputeProjectsPhoneLandscapeFitXY(w, h) {
 	let fitY = fitX * refFitRatio;
 	const scaledW = MSK_PHONE_LS_REF_W * fitX;
 	const scaledH = MSK_PHONE_LS_REF_H * fitY;
+	/* Lidt lodret luft (Safari top/bund) — 14 Pro Max-ref fylder ~0.823 og forbliver uændret. */
+	const hContain = Math.max(1, ih * 0.9);
 	const s = Math.min(
 		1,
 		scaledW > 0 ? iw / scaledW : 1,
-		scaledH > 0 ? ih / scaledH : 1
+		scaledH > 0 ? hContain / scaledH : 1
 	);
 	if (s < 1) {
 		fitX *= s;
 		fitY *= s;
+	}
+	/* Hvis mindmap stadig fylder for meget lodret: nip begge akser ens (behold ratio). */
+	const fillY = ih > 0 ? (MSK_PHONE_LS_REF_H * fitY) / ih : 0;
+	if (fillY > 0.825) {
+		const nipFill = 0.825 / fillY;
+		fitX *= nipFill;
+		fitY *= nipFill;
 	}
 	fitX = Math.max(0.6, Math.min(0.98, fitX));
 	fitY = Math.max(0.55, Math.min(fitY, fitX));
@@ -17813,7 +17822,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 02:02';
+		const stampText = 'update onsdag 4 nov - klokken 02:14';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
