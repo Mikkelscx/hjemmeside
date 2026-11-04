@@ -87,8 +87,9 @@ function mskProjectsPhoneLandscapeUsableBox() {
 		if (!zoomed && vv && vv.width > 40 && vv.height > 40) {
 			const vw = Math.round(vv.width);
 			const vh = Math.round(vv.height);
-			/* Brug altid synlig VV-højde — Safari-chrome må ikke ignoreres (ellers klippes Repop/Twister). */
-			if (vw > 0) w = Math.min(w, vw);
+			/* Bredde (længde): behold layout/inner — VV kun hvis chrome æder markant. */
+			if (vw > 0 && vw < w * 0.9) w = vw;
+			/* Højde: altid synlig VV, så top/bund ikke klippes. */
 			if (vh > 0) h = Math.min(h, vh);
 		}
 	} catch (_) {}
@@ -97,44 +98,34 @@ function mskProjectsPhoneLandscapeUsableBox() {
 
 /**
  * Phone LS scale X/Y.
+ * fitX følger bredden (længden) — den må ikke krympes bare fordi højden er stram.
+ * fitY følger ref-ratio, men må kun sænkes hvis indholdet ellers klippes lodret.
  * På 932×430 (14 Pro Max-ref) er resultatet uændret.
- * På andre telefoner: behold samme fitY/fitX-forhold som ref (ingen ekstra lodret squash);
- * hvis viewport er for lille, formindsk begge akser ens (contain).
  */
 function mskComputeProjectsPhoneLandscapeFitXY(w, h) {
 	const iw = Math.max(1, w || MSK_PHONE_LS_REF_W);
 	const ih = Math.max(1, h || MSK_PHONE_LS_REF_H);
 	const byW = iw / MSK_PHONE_LS_REF_W;
 	const nip = 0.985;
-	/* fitY/fitX ved 932×430 under den godkendte formel (0.88 × 0.95 efter nip-ratio) */
+	/* fitY/fitX ved 932×430 under den godkendte formel */
 	const refFitRatio = 0.95;
 	let fitX = MSK_PROJECTS_LANDSCAPE_FIT * byW;
 	fitX = Math.max(0.72, Math.min(0.98, fitX));
 	fitX *= nip;
 	fitX = Math.max(0.7, Math.min(0.98, fitX));
-	let fitY = fitX * refFitRatio;
-	const scaledW = MSK_PHONE_LS_REF_W * fitX;
-	const scaledH = MSK_PHONE_LS_REF_H * fitY;
-	/* Lidt lodret luft (Safari top/bund) — 14 Pro Max-ref fylder ~0.823 og forbliver uændret. */
-	const hContain = Math.max(1, ih * 0.9);
-	const s = Math.min(
-		1,
-		scaledW > 0 ? iw / scaledW : 1,
-		scaledH > 0 ? hContain / scaledH : 1
-	);
-	if (s < 1) {
-		fitX *= s;
-		fitY *= s;
+	/* Cap kun hvis bredden ellers overflow’er — ikke pga. højde */
+	const maxFitX = iw / MSK_PHONE_LS_REF_W;
+	if (Number.isFinite(maxFitX) && maxFitX > 0.05 && fitX > maxFitX) {
+		fitX = maxFitX;
 	}
-	/* Hvis mindmap stadig fylder for meget lodret: nip begge akser ens (behold ratio). */
-	const fillY = ih > 0 ? (MSK_PHONE_LS_REF_H * fitY) / ih : 0;
-	if (fillY > 0.825) {
-		const nipFill = 0.825 / fillY;
-		fitX *= nipFill;
-		fitY *= nipFill;
+	let fitY = fitX * refFitRatio;
+	/* Kun fitY: lidt lodret luft til Safari — fitX (længden) forbliver */
+	const maxFitY = (ih * 0.92) / MSK_PHONE_LS_REF_H;
+	if (Number.isFinite(maxFitY) && maxFitY > 0.05 && fitY > maxFitY) {
+		fitY = maxFitY;
 	}
 	fitX = Math.max(0.6, Math.min(0.98, fitX));
-	fitY = Math.max(0.55, Math.min(fitY, fitX));
+	fitY = Math.max(0.55, Math.min(0.98, fitY));
 	return { fitX, fitY };
 }
 
@@ -17822,7 +17813,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 02:14';
+		const stampText = 'update onsdag 4 nov - klokken 15:10';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
