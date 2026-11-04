@@ -1359,6 +1359,9 @@ function mskProjectsScheduleOrientationRelayout() {
 		try {
 			window.__mskProjectsBypassSpokeFreeze = true;
 			window.__mskProjectsForceLayout = true;
+			window.__mskProjectsRelayoutNow = true;
+			mskProjectsMindmapLastLayoutIw = -1;
+			mskProjectsMindmapLastLayoutIh = -1;
 		} catch (_) {}
 		mskProjectsMindmapRelayoutAfterTabletOrientation(true);
 	};
@@ -1378,20 +1381,14 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 		document.documentElement.style.setProperty('--vw', w + 'px');
 	} catch (_) {}
 	try {
-		mskSketchbookPaperLinesDraw();
+		/* Genopbyg laget helt — residual inline/CSS efter LS kan gøre linjerne usynlige. */
+		const oldLayer = document.getElementById('msk-paper-lines-layer');
+		if (oldLayer) oldLayer.remove();
+		const oldCanvas = document.getElementById('msk-sketch-paper-lines');
+		if (oldCanvas) oldCanvas.remove();
 	} catch (_) {}
 	try {
-		const layer = document.getElementById('msk-paper-lines-layer');
-		if (!layer) return;
-		layer.style.removeProperty('display');
-		layer.style.removeProperty('opacity');
-		layer.style.removeProperty('visibility');
-		layer.style.removeProperty('height');
-		layer.style.removeProperty('min-height');
-		layer.style.removeProperty('max-height');
-		layer.style.removeProperty('width');
-		layer.style.removeProperty('transform');
-		layer.style.removeProperty('-webkit-transform');
+		mskSketchbookPaperLinesDraw();
 	} catch (_) {}
 }
 
@@ -1438,6 +1435,10 @@ function mskProjectsPhoneOrientFollowUpRelayout(kind) {
 				window.__mskProjectsBypassSpokeFreeze = true;
 				window.__mskProjectsForceLayout = true;
 				window.__mskProjectsRelayoutNow = true;
+				try {
+					mskProjectsMindmapLastLayoutIw = -1;
+					mskProjectsMindmapLastLayoutIh = -1;
+				} catch (_) {}
 				if (typeof window.__mskProjectsRelayout === 'function') {
 					window.__mskProjectsRelayout(true);
 				}
@@ -17253,12 +17254,50 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						const sizeChanged = !!mskProjectsMindmapLayoutResizeMeaningful(false);
 						let layoutChanged = !!(sizeChanged || (force && !alreadyPainted));
+						let phoneOrient = false;
+						try {
+							phoneOrient = !!(
+								document.documentElement.classList.contains('msk-projects-phone-landscape') ||
+								document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+								(typeof mskIsProjectsPhoneLandscapeViewport === 'function' &&
+									mskIsProjectsPhoneLandscapeViewport()) ||
+								(typeof mskIsProjectsPhonePortraitViewport === 'function' &&
+									mskIsProjectsPhonePortraitViewport())
+							);
+						} catch (_) {
+							phoneOrient = false;
+						}
 						try {
 							if (window.__mskProjectsForceLayout) {
 								layoutChanged = true;
 								window.__mskProjectsForceLayout = false;
 								mskProjectsMindmapLastLayoutIw = -1;
 								mskProjectsMindmapLastLayoutIh = -1;
+							}
+						} catch (_) {}
+						/*
+						 * Telefon rotation: force=true SKAL genplacere + genopbygge streger.
+						 * Clear sletter .dynamic-mindmap-line; (force && !alreadyPainted) early-return
+						 * lod dem mangle (LS→portræt uden linjer, portræt→LS kun REPOP/NATURLI).
+						 */
+						if (force && phoneOrient) {
+							layoutChanged = true;
+							try {
+								mskProjectsMindmapLastLayoutIw = -1;
+								mskProjectsMindmapLastLayoutIh = -1;
+							} catch (_) {}
+						}
+						try {
+							if (
+								phoneOrient &&
+								document.documentElement.classList.contains('msk-projects-phone-landscape')
+							) {
+								const nodes = document.querySelectorAll('.brainstorm-container a.project-node');
+								let missingLeft = false;
+								nodes.forEach((n) => {
+									if (!n.style.left) missingLeft = true;
+								});
+								if (missingLeft || nodes.length === 0) layoutChanged = true;
 							}
 						} catch (_) {}
 						try {
@@ -17281,7 +17320,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							layoutChanged ||
 							(!ipadLs && mskProjectsMindmapNeedsGraphicRebuild()) ||
 							(force && mskIsProjectsPortraitTouchGridMode()) ||
-							(force && ipadLs && !alreadyPainted);
+							(force && ipadLs && !alreadyPainted) ||
+							(force && phoneOrient);
 						if (!layoutChanged && !needsGraphics && alreadyPainted) return;
 
 						if (layoutChanged) {
@@ -18346,7 +18386,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 00:48';
+		const stampText = 'update torsdag 5 nov - klokken 00:51';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
