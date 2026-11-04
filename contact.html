@@ -9,12 +9,14 @@
     <title>Contact - Mikkel's Portfolio</title>
     <script>
     (function () {
-        var v = '20260924p673';
+        var v = '20260924p674';
         try {
             var q = new URLSearchParams(location.search || '');
             if (q.has('preview')) {
                 document.documentElement.classList.add('transition-preview');
                 document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+                /* FOUC: skjul computer-navbar før CSS-fil loader i peel-iframes */
+                document.write('<style id="msk-preview-nav-fouc">html.transition-preview .navbar,html.transition-preview .nav-toggle,html.transition-preview .nav-menu,html.transition-preview .nav-scrim,html.transition-preview .edge-nav{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style>');
             } else if (q.get('v') !== v) {
                 q.set('v', v);
                 q.set('_t', String(Date.now()));
@@ -404,7 +406,7 @@
 
     <script>
     (function () {
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p673') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p674') + '.js"><\/script>');
     })();
     </script>
 </body>

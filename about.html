@@ -10,11 +10,15 @@
     <script>
     /* GitHub Pages cacher HTML i ~10 min — tving frisk about-URL så Om mig ikke hænger. */
     (function () {
-        var v = '20260924p673';
+        var v = '20260924p674';
         try {
             var q = new URLSearchParams(location.search || '');
             var phonePage = q.get('phonePage');
             if (q.has('preview')) document.documentElement.classList.add('transition-preview');
+            /* FOUC: skjul computer-navbar før CSS-fil loader i peel-iframes */
+            if (q.has('preview')) {
+                document.write('<style id="msk-preview-nav-fouc">html.transition-preview .navbar,html.transition-preview .nav-toggle,html.transition-preview .nav-menu,html.transition-preview .nav-scrim,html.transition-preview .edge-nav{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style>');
+            }
             if (phonePage === 'cv') {
                 document.documentElement.classList.add('msk-about-phone-page-cv', 'msk-about-phone-cv');
             }
@@ -362,7 +366,7 @@
     (function () {
         /* Preview-iframes SKAL loade script (navbar-bladre skal vise rigtigt design).
            transition-preview i script.js blokerer nestede peels — kant-peel er stadig slået fra på telefon. */
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p673') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p674') + '.js?v=' + (window.mskAssetV || '') + '"><\/script>');
     })();
     </script>
 </body>

@@ -3796,6 +3796,45 @@ body.ai-close-active .navbar {
     pointer-events: none;
 }
 
+/*
+ * Phone / phone LS: computer-navbar må IKKE flashe under peel.
+ * Flip-active beholder ellers .navbar synlig (desktop) — her skjules den helt.
+ */
+@media (max-width: 640px),
+       (max-width: 640px) and (max-aspect-ratio: 1/1),
+       (max-width: 1024px) and (max-height: 520px) and (orientation: landscape),
+       (max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1) {
+    body.projects-about-flip-active .navbar,
+    body.projects-about-dragging .navbar,
+    body.about-projects-flip-active .navbar,
+    body.about-projects-dragging .navbar,
+    body.about-contact-flip-active .navbar,
+    body.about-contact-dragging .navbar,
+    body.contact-about-flip-active .navbar,
+    body.contact-about-dragging .navbar,
+    body.projects-about-flip-active .nav-toggle,
+    body.projects-about-dragging .nav-toggle,
+    body.about-projects-flip-active .nav-toggle,
+    body.about-projects-dragging .nav-toggle,
+    body.about-contact-flip-active .nav-toggle,
+    body.about-contact-dragging .nav-toggle,
+    body.contact-about-flip-active .nav-toggle,
+    body.contact-about-dragging .nav-toggle,
+    body.projects-about-flip-active .nav-menu,
+    body.about-projects-flip-active .nav-menu,
+    body.about-contact-flip-active .nav-menu,
+    body.contact-about-flip-active .nav-menu,
+    body.projects-about-flip-active .nav-scrim,
+    body.about-projects-flip-active .nav-scrim,
+    body.about-contact-flip-active .nav-scrim,
+    body.contact-about-flip-active .nav-scrim {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transition: none !important;
+    }
+}
+
 .cp-turn {
     position: absolute;
     inset: 0;
