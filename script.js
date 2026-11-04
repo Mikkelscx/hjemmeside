@@ -96,27 +96,20 @@ function mskProjectsPhoneLandscapeUsableBox() {
 }
 
 /**
- * Phone LS scale X/Y.
- * fitX ≈ 14 Pro Max længde (0.88 × bredde).
- * fitY ≤ fitX og altid inde i viewport-højde — formindsk KUN lodret når toppen/bunden klippes.
+ * Phone LS scale X/Y — ALTID uniform contain.
+ * Non-uniform fitY≠fitX smadrede compositionen på rigtige telefoner (streger ≠ 14 Pro Max-ref).
+ * Hele 932×430-canvas skalerer ens, så det altid ligner den godkendte DevTools-reference.
  */
 function mskComputeProjectsPhoneLandscapeFitXY(w, h) {
 	const iw = Math.max(1, w || MSK_PHONE_LS_REF_W);
 	const ih = Math.max(1, h || MSK_PHONE_LS_REF_H);
 	const byW = iw / MSK_PHONE_LS_REF_W;
 	const byH = ih / MSK_PHONE_LS_REF_H;
-	let fitX = MSK_PROJECTS_LANDSCAPE_FIT * byW;
-	fitX = Math.max(0.72, Math.min(0.98, fitX));
-	/* Lodret: inde i viewport; ekstra ~5% nip (p580) */
-	let fitY = Math.min(fitX, byH * 0.9) * 0.95;
-	fitY = Math.max(0.62, Math.min(fitY, fitX));
-	/* p581: begge akser en anelse mindre — samme nip */
-	const nip = 0.985;
-	fitX *= nip;
-	fitY *= nip;
-	fitX = Math.max(0.7, Math.min(0.98, fitX));
-	fitY = Math.max(0.6, Math.min(fitY, fitX));
-	return { fitX, fitY };
+	let fit = MSK_PROJECTS_LANDSCAPE_FIT * Math.min(byW, byH);
+	fit = Math.max(0.62, Math.min(0.98, fit));
+	fit *= 0.985;
+	fit = Math.max(0.6, Math.min(0.98, fit));
+	return { fitX: fit, fitY: fit };
 }
 
 function mskComputeProjectsPhoneLandscapeFit(w, h) {
@@ -13212,6 +13205,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		/* Kort landscape: tykkelse < 1 — stadig tydelig ift. bobler */
 		const lineThicknessMul = mskIsProjectsShortLandscapeViewport() ? 0.55 : 1;
 		const lineH = (base) => Math.max(12, Math.round(Number(base) * lineThicknessMul));
+		/* Phone LS: getBoundingClientRect er skærm-px efter scale — radius skal være i SVG-lokal (ref 932). */
+		const localRadiusFromClientRect = (rect) => {
+			if (!rect) return 0;
+			try {
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					const s = mskPhoneLsClientSizeToLocal(rect.width, rect.height);
+					return Math.min(s.w, s.h) / 2;
+				}
+			} catch (_) {}
+			return Math.min(rect.width, rect.height) / 2;
+		};
 
 		// Portrait mobile: 4 streger hjerte→Durex/Unge/Twister/Kø + 4 cirkel→cirkel (Rep↔Dur …); ikke 8 radiale fra desktop-gren.
 		try {
@@ -14184,7 +14188,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineEndY = pts.lineEndY;
 				} else {
 					// Start from slightly backward of the brain center (extending toward brain)
-					const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+					const brainRadius = localRadiusFromClientRect(brainRect);
 					const deltaX = nodeX - centerX;
 					const deltaY = nodeY - centerY;
 					const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
@@ -14194,7 +14198,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					brainStartY = centerY - (deltaY / distance) * brainExtension;
 					
 					// Calculate end point - extend closer to/past the BRAINFARTS node
-					const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+					const nodeRadius = localRadiusFromClientRect(nodeRect);
 					let bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 2.82 : 1.28;
 					/* Phone LS: forkort kun fra cirkel-enden */
 					if (mskIsProjectsPhoneLandscapeViewport()) {
@@ -14259,7 +14263,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				console.log(`✓ KØ-BAJER detected at index ${index} - creating Linje 4.webp asset line`);
 				
 				// Start from slightly backward of the brain center (extending toward brain)
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+				const brainRadius = localRadiusFromClientRect(brainRect);
 				const deltaX = nodeX - centerX;
 				const deltaY = nodeY - centerY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
@@ -14269,7 +14273,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brainStartY = centerY - (deltaY / distance) * brainExtension;
 				
 				// Calculate end point - extend to/past the KØ-BAJER node
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+				const nodeRadius = localRadiusFromClientRect(nodeRect);
 				// Kort mobil-landscape: længere ud mod Kø-Bajer-boblen
 				const kobShortLs = mskIsProjectsShortLandscapeViewport();
 				let extensionMul = kobShortLs ? 2.02 : desktopProjectsWide ? 1.92 : 1.36;
@@ -14325,7 +14329,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brainCenterY = centerY;
 				
 				// Calculate end point - stop before reaching the DUREX node
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+				const nodeRadius = localRadiusFromClientRect(nodeRect);
 				const deltaX = nodeX - brainCenterX;
 				const deltaY = nodeY - brainCenterY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
@@ -14405,7 +14409,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				
 				// Calculate end point - extend closer to/past the UNGE MOD UV node
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+				const nodeRadius = localRadiusFromClientRect(nodeRect);
 				const deltaX = nodeX - brainCenterX;
 				const deltaY = nodeY - brainCenterY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
@@ -14417,7 +14421,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				lineEndX += ungeLineShiftLeft;
 				
 				// Add gap from brain center, then extend backward toward brain
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+				const brainRadius = localRadiusFromClientRect(brainRect);
 				const brainGapDistance = nodeRadius * 0.4; // Gap from brain center
 				const initialBrainStartX = brainCenterX + (deltaX / distance) * brainGapDistance;
 				const initialBrainStartY = brainCenterY + (deltaY / distance) * brainGapDistance;
@@ -14508,20 +14512,49 @@ document.addEventListener('DOMContentLoaded', function() {
 					// Anchor the line under a specific letter instead of dead-center.
 					// "Byens Landhandel": the user wants the line connected under the "e" in "Byens",
 					// so we aim a bit left-of-center and slightly lower than the node center.
-					let byensAnchorX = nodeRect.left - containerRect.left + nodeRect.width * 0.44;
-					let byensAnchorY = nodeRect.top - containerRect.top + nodeRect.height * 0.78;
+					let byensAnchorFracX = 0.44;
+					let byensAnchorFracY = 0.78;
+					/* Phone LS: peg mere direkte mod cirkel-centrum */
+					if (mskIsProjectsPhoneLandscapeViewport()) {
+						byensAnchorFracX = 0.56;
+						byensAnchorFracY = 0.58;
+					}
+					const byensAnchorClientX = nodeRect.left + nodeRect.width * byensAnchorFracX;
+					const byensAnchorClientY = nodeRect.top + nodeRect.height * byensAnchorFracY;
+					let byensAnchorX;
+					let byensAnchorY;
+					try {
+						const ap = mskSvgPointFromClientPx(
+							currentSvg,
+							byensAnchorClientX,
+							byensAnchorClientY
+						);
+						byensAnchorX = ap.x;
+						byensAnchorY = ap.y;
+					} catch (_) {
+						byensAnchorX = nodeRect.left - containerRect.left + nodeRect.width * byensAnchorFracX;
+						byensAnchorY = nodeRect.top - containerRect.top + nodeRect.height * byensAnchorFracY;
+					}
 
 					// Start from below the top of the brain, then extend slightly toward the brain
 					const initialBrainStartX = centerX;
-					const initialBrainStartY = brainRect.top - containerRect.top + 50; // Below top of brain
+					let initialBrainStartY;
+					try {
+						const brainTopLocal = mskSvgPointFromClientPx(
+							currentSvg,
+							brainRect.left + brainRect.width / 2,
+							brainRect.top
+						);
+						initialBrainStartY = brainTopLocal.y + 50;
+					} catch (_) {
+						initialBrainStartY = brainRect.top - containerRect.top + 50;
+					}
 
 					// End further toward the tab (extend a bit past the tab center)
-					const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+					const nodeRadius = localRadiusFromClientRect(nodeRect);
 					let nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
-					/* Phone LS: forlæng + peg mere direkte mod cirkel-centrum */
+					/* Phone LS: forlæng kun op mod cirklen */
 					if (mskIsProjectsPhoneLandscapeViewport()) {
-						byensAnchorX = nodeRect.left - containerRect.left + nodeRect.width * 0.56;
-						byensAnchorY = nodeRect.top - containerRect.top + nodeRect.height * 0.58;
 						nodeExtension = nodeRadius * 0.7;
 					}
 					const deltaX = byensAnchorX - initialBrainStartX;
@@ -14531,7 +14564,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					lineEndY = byensAnchorY + (deltaY / distance) * nodeExtension;
 
 					// Extend backward from the initial start point to make the line longer toward the brain
-					const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+					const brainRadius = localRadiusFromClientRect(brainRect);
 					let brainExtension = brainRadius * 0.28;
 					brainStartX = initialBrainStartX - (deltaX / distance) * brainExtension;
 					brainStartY = initialBrainStartY - (deltaY / distance) * brainExtension;
@@ -14584,7 +14617,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeHrefRepop = (node.getAttribute('href') || '').toLowerCase();
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+				const nodeRadius = localRadiusFromClientRect(nodeRect);
 				/* Phone LS: forkort stregen yderligere fra toppen (Repop-enden) */
 				let tabGapDistance = nodeRadius * 0.1;
 				try {
@@ -14592,11 +14625,21 @@ document.addEventListener('DOMContentLoaded', function() {
 						tabGapDistance = nodeRadius * 0.1 + 38;
 					}
 				} catch (_) {}
-				const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
+				const brainRadiusLine = localRadiusFromClientRect(brainRect);
 
 				// Start from below the top of the brain, extended backward toward brain
 				const initialBrainStartX = centerX;
-				let initialBrainStartY = brainRect.top - containerRect.top + 50;
+				let initialBrainStartY;
+				try {
+					const brainTopLocal = mskSvgPointFromClientPx(
+						currentSvg,
+						brainRect.left + brainRect.width / 2,
+						brainRect.top
+					);
+					initialBrainStartY = brainTopLocal.y + 50;
+				} catch (_) {
+					initialBrainStartY = brainRect.top - containerRect.top + 50;
+				}
 				let brainExtension = brainRadiusLine * 0.32;
 				let repopLineHpx;
 				let repopLineLenMul = desktopProjectsWide ? 0.99 : 0.92;
@@ -14676,7 +14719,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brainCenterY = centerY;
 				
 				// Calculate end point - extend closer to/past the NATURLI' node
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+				const nodeRadius = localRadiusFromClientRect(nodeRect);
 				const deltaX = nodeX - brainCenterX;
 				const deltaY = nodeY - brainCenterY;
 				const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
@@ -14728,7 +14771,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				console.log(`✓ TWISTER detected at index ${index} - creating Linje 3.webp asset line`);
 				
 				// Start from outside the brain (add gap from brain center)
-				const brainRadius = Math.min(brainRect.width, brainRect.height) / 2;
+				const brainRadius = localRadiusFromClientRect(brainRect);
 				const brainGapDistance = brainRadius * 0.45; // Start closer to brain (longer line)
 				const deltaX = nodeX - centerX;
 				const deltaY = nodeY - centerY;
@@ -14737,7 +14780,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				const brainStartY = centerY + (deltaY / distance) * brainGapDistance - 30; // Move line up by 30px
 				
 				// Calculate end point - extend to/past the TWISTER node
-				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
+				const nodeRadius = localRadiusFromClientRect(nodeRect);
 				// Extend past the node center for a longer line (længere ud mod TWISTER-boblen)
 				let extensionAmount = nodeRadius * 1.82;
 				/* Kort mobil-landscape: hjernen → TWISTER — lidt længere end default (afstemt — ikke for lang) */
@@ -17803,7 +17846,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 01:41';
+		const stampText = 'update onsdag 4 nov - klokken 01:52';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
