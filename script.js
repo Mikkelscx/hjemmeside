@@ -4641,12 +4641,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (
 			singlePagePaint &&
 			(flipEl.classList.contains('about-contact-turn__flip') ||
-				flipEl.classList.contains('contact-about-turn__flip'))
+				flipEl.classList.contains('contact-about-turn__flip') ||
+				flipEl.classList.contains('about-projects-turn__flip') ||
+				flipEl.classList.contains('projects-about-turn__flip'))
 		) {
 			try {
 				const ov =
 					(flipEl.closest &&
-						(flipEl.closest('.about-contact-transition') || flipEl.closest('.contact-about-transition'))) ||
+						(flipEl.closest('.about-contact-transition') ||
+							flipEl.closest('.contact-about-transition') ||
+							flipEl.closest('.about-projects-transition') ||
+							flipEl.closest('.projects-about-transition'))) ||
 					host;
 				mskApplyAboutContactPortraitFullPage(ov);
 			} catch (_) {}
@@ -4694,7 +4699,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			 * Kant-træk midt på højre side limer peelen for tidligt (stopper “ved polaroid”).
 			 */
 			let forceCorner = flipEl.classList.contains('contact-about-turn__flip');
-			if (!forceCorner && flipEl.classList.contains('about-contact-turn__flip')) {
+			if (
+				!forceCorner &&
+				(flipEl.classList.contains('about-contact-turn__flip') ||
+					flipEl.classList.contains('about-projects-turn__flip') ||
+					flipEl.classList.contains('projects-about-turn__flip'))
+			) {
 				try {
 					forceCorner = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
 				} catch (_) {}
@@ -4732,19 +4742,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		fx = glued.fx;
 		fy = glued.fy;
 		/*
-		 * Phone LS / one-page (Om mig↔Kontakt): blød unlock EFTER lim.
-		 * Venstre peel (finger+lim) føles langsommere — match det: tip følger lim/finger
-		 * tidligt, progress låser kun gradvist op (fuld peel ved p→1). Ikke lim-slack.
+		 * Phone LS / one-page: blød unlock EFTER lim (Om mig↔Kontakt + Om mig↔Projekter).
+		 * Tip følger lim/finger tidligt; progress låser gradvist op til fuld peel. Ikke lim-slack.
 		 */
 		if (
 			singlePagePaint &&
 			!flipEl._mskPaperAnim &&
 			(flipEl.classList.contains('about-contact-turn__flip') ||
-				flipEl.classList.contains('contact-about-turn__flip'))
+				flipEl.classList.contains('contact-about-turn__flip') ||
+				flipEl.classList.contains('about-projects-turn__flip') ||
+				flipEl.classList.contains('projects-about-turn__flip'))
 		) {
 			const endX = dir < 0 ? -W : W * 2;
 			const progX = cornerX + (endX - cornerX) * p;
-			const unlock = p * p; /* sent i trækket = mere progress, tidligt = venstre-feel */
+			const unlock = p * p; /* sent i trækket = mere progress, tidligt = papir-feel */
 			const mix = 0.22 + 0.78 * unlock;
 			if (dir < 0) {
 				const want = Math.min(fx, progX);
@@ -5547,6 +5558,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				let overlay = document.querySelector('.projects-about-transition');
 				if (!overlay) overlay = ensureOverlay();
 				try { overlay.classList.remove('swap-under-right', 'swap-flip-mid', 'is-ready', 'is-turning'); } catch {}
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				const flipEl = overlay.querySelector('.projects-about-turn__flip');
 				if (flipEl) {
 					flipEl._mskPaperCornerY = null;
@@ -5598,10 +5610,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
 					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
+					let onePage = false;
+					try {
+						onePage = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+					} catch (_) {}
 
-					// Right page to left: startX -> seam (0..0.5), then seam -> left edge (0.5..1)
 					let p = 0;
-					if (x >= startX) {
+					if (onePage) {
+						const leftEdge = Math.max(8, vw * 0.04);
+						if (x >= startX) p = 0;
+						else p = Math.min(1, (startX - x) / Math.max(1, startX - leftEdge));
+						p = mskPhoneLsPeelEase(p);
+					} else if (x >= startX) {
 						p = 0;
 					} else if (x >= seamX) {
 						const denom = Math.max(1, (startX - seamX));
@@ -6475,6 +6495,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				dragging = false;
 				if (rafId) cancelAnimationFrame(rafId);
 				rafId = 0;
+				try {
+					const c = document.querySelector('.msk-about-projects-drag-catcher');
+					if (c) c.remove();
+				} catch (_) {}
 				try { document.body.classList.remove(DRAG_CLASS, 'about-projects-flip-active', 'about-projects-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
 				mskParkPageTurnOverlay(overlay, flipEl);
@@ -6519,6 +6543,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				try { overlay.classList.remove('swap-flip-mid', 'swap-under-right', 'swap-under-left'); } catch {}
 				overlay.classList.add('is-ready', 'is-turning');
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				// Ensure we mark frames as loaded during drag too (so CSS can fade them in).
 				try {
 					const frames = Array.from(overlay.querySelectorAll('iframe'));
@@ -6532,6 +6557,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					flipEl._mskPaperCornerY = null;
 					flipEl._mskHoldFx = null;
 					flipEl._mskPaperSideBand = false;
+					flipEl._mskPaperTouch = null;
+					try {
+						if (typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()) {
+							flipEl._mskPaperEdgeDrag = false;
+						}
+					} catch (_) {}
 					try {
 						const curl = flipEl._mskLiveCurl;
 						if (curl && curl.front) curl.front.style.removeProperty('opacity');
@@ -6539,16 +6570,31 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				try { mskPaperNotePointer(flipEl, e); } catch {}
 
+				const catcher = document.createElement('div');
+				catcher.className = 'msk-about-projects-drag-catcher';
+				catcher.setAttribute('aria-hidden', 'true');
+				catcher.style.cssText = 'position:fixed;inset:0;z-index:100000;background:transparent;pointer-events:auto;touch-action:none;';
+				try { document.body.appendChild(catcher); } catch (_) {}
+				try { catcher.setPointerCapture && catcher.setPointerCapture(e.pointerId); } catch (_) {}
+
 				function onMove(ev) {
 					if (!dragging) return;
 					const x = (ev && typeof ev.clientX === 'number') ? ev.clientX : startX;
 					const vw = mskViewportSize().w || window.innerWidth || 1;
 					const seamX = vw * 0.5;
+					let onePage = false;
+					try {
+						onePage = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+					} catch (_) {}
 
-					// Match Projects -> About drag distance:
-					// startX -> seam (0..0.5), then seam -> right edge (0.5..1)
 					let p = 0;
-					if (x <= startX) {
+					if (onePage) {
+						/* Phone LS: fuld bredde + ease — kan trækkes helt ud (ikke stop midt). */
+						const rightEdge = Math.min(vw - 8, vw * 0.96);
+						if (x <= startX) p = 0;
+						else p = Math.min(1, (x - startX) / Math.max(1, rightEdge - startX));
+						p = mskPhoneLsPeelEase(p);
+					} else if (x <= startX) {
 						p = 0;
 					} else if (x <= seamX) {
 						const denom = Math.max(1, (seamX - startX));
@@ -6577,6 +6623,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							ev.stopPropagation();
 						}
 					} catch {}
+					try {
+						if (catcher && catcher.parentNode) catcher.remove();
+					} catch (_) {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -18179,7 +18228,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 00:02';
+		const stampText = 'update torsdag 5 nov - klokken 00:21';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
