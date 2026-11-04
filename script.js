@@ -119,8 +119,9 @@ function mskComputeProjectsPhoneLandscapeFitXY(w, h) {
 		fitX = maxFitX;
 	}
 	let fitY = fitX * refFitRatio;
-	/* Kun fitY: lidt lodret luft til Safari — fitX (længden) forbliver */
-	const maxFitY = (ih * 0.92) / MSK_PHONE_LS_REF_H;
+	/* Kun fitY: mere lodret luft til Safari-chrome — fitX (længden) forbliver.
+	 * 0.85: 14 Pro Max-ref (fitY≈0.823) uændret; rigtig telefon får lidt mere top/bund. */
+	const maxFitY = (ih * 0.85) / MSK_PHONE_LS_REF_H;
 	if (Number.isFinite(maxFitY) && maxFitY > 0.05 && fitY > maxFitY) {
 		fitY = maxFitY;
 	}
@@ -17813,7 +17814,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 15:10';
+		const stampText = 'update onsdag 4 nov - klokken 15:16';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
