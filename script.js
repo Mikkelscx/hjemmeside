@@ -5504,7 +5504,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				dragging = false;
 				if (rafId) cancelAnimationFrame(rafId);
 				rafId = 0;
-				try { mskPhonePeelNavLock(false); } catch (_) {}
 				try { document.body.classList.remove(DRAG_CLASS, 'projects-about-flip-active'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
 				try {
@@ -5555,11 +5554,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				const body = document.body;
 				body.classList.add(DRAG_CLASS);
 				body.style.overflow = 'hidden';
-				try {
-					if (typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()) {
-						mskPhonePeelNavLock(true);
-					}
-				} catch (_) {}
 
 				let overlay = document.querySelector('.projects-about-transition');
 				if (!overlay) overlay = ensureOverlay();
@@ -6505,7 +6499,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					const c = document.querySelector('.msk-about-projects-drag-catcher');
 					if (c) c.remove();
 				} catch (_) {}
-				try { mskPhonePeelNavLock(false); } catch (_) {}
 				try { document.body.classList.remove(DRAG_CLASS, 'about-projects-flip-active', 'about-projects-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
 				mskParkPageTurnOverlay(overlay, flipEl);
@@ -6533,11 +6526,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				const body = document.body;
 				body.classList.add('about-projects-flip-active', 'about-projects-flipping', DRAG_CLASS);
 				body.style.overflow = 'hidden';
-				try {
-					if (typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()) {
-						mskPhonePeelNavLock(true);
-					}
-				} catch (_) {}
 
 				// Genbrug snap/preload-overlay — fjern den ikke (ellers nulstilles folden midt i grebet).
 				let overlay = document.querySelector('.about-projects-transition');
@@ -6987,7 +6975,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					const c = document.querySelector('.msk-about-contact-drag-catcher');
 					if (c) c.remove();
 				} catch (_) {}
-				try { mskPhonePeelNavLock(false); } catch (_) {}
 				try { document.body.classList.remove(DRAG_CLASS, 'about-contact-flip-active', 'about-contact-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
 				mskParkPageTurnOverlay(overlay, flipEl);
@@ -7014,11 +7001,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				const body = document.body;
 				body.classList.add('about-contact-flip-active', 'about-contact-flipping', DRAG_CLASS);
 				body.style.overflow = 'hidden';
-				try {
-					if (typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()) {
-						mskPhonePeelNavLock(true);
-					}
-				} catch (_) {}
 
 				try {
 					const old = document.querySelector('.about-contact-transition');
@@ -7633,7 +7615,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					const c = document.querySelector('.msk-contact-about-drag-catcher');
 					if (c) c.remove();
 				} catch (_) {}
-				try { mskPhonePeelNavLock(false); } catch (_) {}
 				try { document.body.classList.remove(DRAG_CLASS, 'contact-about-flip-active', 'contact-about-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
 				mskParkPageTurnOverlay(overlay, flipEl);
@@ -7660,11 +7641,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				const body = document.body;
 				body.classList.add('contact-about-flip-active', 'contact-about-flipping', DRAG_CLASS);
 				body.style.overflow = 'hidden';
-				try {
-					if (typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()) {
-						mskPhonePeelNavLock(true);
-					}
-				} catch (_) {}
 
 				try {
 					const old = document.querySelector('.contact-about-transition');
@@ -18252,7 +18228,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 00:26';
+		const stampText = 'update torsdag 5 nov - klokken 00:41';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
