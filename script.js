@@ -4626,9 +4626,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			const fromTop = gy;
 			const fromBot = H - gy;
 			const cornerGrab = fromOuter <= reach && (fromTop <= reach || fromBot <= reach);
-			// Kontakt is one centered sheet. A vertical crease cuts the cards,
-			// so this page always leafs from the nearest corner.
-			flipEl._mskPaperEdgeDrag = flipEl.classList.contains('contact-about-turn__flip') ? false : !cornerGrab;
+			/*
+			 * Kontakt one-page (+ phone LS Om mig→Kontakt): altid hjørne-bladre.
+			 * Kant-træk midt på højre side limer peelen for tidligt (stopper “ved polaroid”).
+			 */
+			let forceCorner = flipEl.classList.contains('contact-about-turn__flip');
+			if (!forceCorner && flipEl.classList.contains('about-contact-turn__flip')) {
+				try {
+					forceCorner = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+				} catch (_) {}
+			}
+			flipEl._mskPaperEdgeDrag = forceCorner ? false : !cornerGrab;
 			if (flipEl._mskPaperEdgeDrag) flipEl._mskPaperCornerY = gy;
 			else flipEl._mskPaperCornerY = fromTop <= fromBot ? 0 : H;
 		}
@@ -6785,6 +6793,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				dragging = false;
 				if (rafId) cancelAnimationFrame(rafId);
 				rafId = 0;
+				try {
+					const c = document.querySelector('.msk-about-contact-drag-catcher');
+					if (c) c.remove();
+				} catch (_) {}
 				try { document.body.classList.remove(DRAG_CLASS, 'about-contact-flip-active', 'about-contact-flipping'); } catch {}
 				try { document.body.style.overflow = ''; } catch {}
 				mskParkPageTurnOverlay(overlay, flipEl);
@@ -6819,9 +6831,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const overlay = ensureOverlay();
 				overlay.classList.add('is-ready', 'is-turning');
+				try { mskApplyAboutContactPortraitFullPage(overlay); } catch (_) {}
 				const flipEl = overlay.querySelector('.about-contact-turn__flip');
-				if (flipEl) { flipEl._mskPaperCornerY = null; flipEl._mskHoldFx = null; flipEl._mskPaperSideBand = false; }
+				if (flipEl) {
+					flipEl._mskPaperCornerY = null;
+					flipEl._mskHoldFx = null;
+					flipEl._mskPaperSideBand = false;
+					flipEl._mskPaperTouch = null;
+					/* One-page: start i hjørne — undgå midt-kant der limer peelen for tidligt */
+					try {
+						if (typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage()) {
+							flipEl._mskPaperEdgeDrag = false;
+						}
+					} catch (_) {}
+				}
 				try { mskPaperNotePointer(flipEl, e); } catch {}
+
+				/* Full-screen catcher: ellers mister peelen pointer midt over iframes/polaroid */
+				const catcher = document.createElement('div');
+				catcher.className = 'msk-about-contact-drag-catcher';
+				catcher.setAttribute('aria-hidden', 'true');
+				catcher.style.cssText = 'position:fixed;inset:0;z-index:100000;background:transparent;pointer-events:auto;touch-action:none;';
+				try { document.body.appendChild(catcher); } catch (_) {}
+				try { catcher.setPointerCapture && catcher.setPointerCapture(e.pointerId); } catch (_) {}
 
 				function onMove(ev) {
 					if (!dragging) return;
@@ -6858,6 +6890,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							ev.stopPropagation();
 						}
 					} catch {}
+					try {
+						if (catcher && catcher.parentNode) catcher.remove();
+					} catch (_) {}
 					window.removeEventListener('pointermove', onMove, true);
 					window.removeEventListener('pointerup', onUp, true);
 					window.removeEventListener('pointercancel', onUp, true);
@@ -17974,7 +18009,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 23:43';
+		const stampText = 'update onsdag 4 nov - klokken 23:45';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
