@@ -14508,8 +14508,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					// Anchor the line under a specific letter instead of dead-center.
 					// "Byens Landhandel": the user wants the line connected under the "e" in "Byens",
 					// so we aim a bit left-of-center and slightly lower than the node center.
-					const byensAnchorX = nodeRect.left - containerRect.left + nodeRect.width * 0.44;
-					const byensAnchorY = nodeRect.top - containerRect.top + nodeRect.height * 0.78;
+					let byensAnchorX = nodeRect.left - containerRect.left + nodeRect.width * 0.44;
+					let byensAnchorY = nodeRect.top - containerRect.top + nodeRect.height * 0.78;
 
 					// Start from below the top of the brain, then extend slightly toward the brain
 					const initialBrainStartX = centerX;
@@ -14518,9 +14518,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					// End further toward the tab (extend a bit past the tab center)
 					const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 					let nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
-					/* Phone LS: forlæng kun op mod cirklen */
+					/* Phone LS: forlæng + peg mere direkte mod cirkel-centrum */
 					if (mskIsProjectsPhoneLandscapeViewport()) {
-						nodeExtension = nodeRadius * 0.48;
+						byensAnchorX = nodeRect.left - containerRect.left + nodeRect.width * 0.56;
+						byensAnchorY = nodeRect.top - containerRect.top + nodeRect.height * 0.58;
+						nodeExtension = nodeRadius * 0.7;
 					}
 					const deltaX = byensAnchorX - initialBrainStartX;
 					const deltaY = byensAnchorY - initialBrainStartY;
@@ -14537,6 +14539,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (mskIsProjectsShortLandscapeViewport()) {
 						brainStartX -= 22;
 						brainStartY += 24;
+					}
+					/* Phone LS: finjustér vinkel så stregen peger mere direkte op i Byens-cirklen */
+					if (mskIsProjectsPhoneLandscapeViewport()) {
+						brainStartX += 12;
+						brainStartY -= 16;
 					}
 
 					angle = Math.atan2(lineEndY - brainStartY, lineEndX - brainStartX) * 180 / Math.PI;
@@ -17796,7 +17803,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 01:38';
+		const stampText = 'update onsdag 4 nov - klokken 01:41';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
