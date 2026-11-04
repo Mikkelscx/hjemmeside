@@ -97,25 +97,35 @@ function mskProjectsPhoneLandscapeUsableBox() {
 
 /**
  * Phone LS scale X/Y.
- * fitX ≈ 14 Pro Max længde (0.88 × bredde).
- * fitY ≤ fitX og altid inde i viewport-højde — formindsk KUN lodret når toppen/bunden klippes.
+ * På 932×430 (14 Pro Max-ref) er resultatet uændret.
+ * På andre telefoner: behold samme fitY/fitX-forhold som ref (ingen ekstra lodret squash);
+ * hvis viewport er for lille, formindsk begge akser ens (contain).
  */
 function mskComputeProjectsPhoneLandscapeFitXY(w, h) {
 	const iw = Math.max(1, w || MSK_PHONE_LS_REF_W);
 	const ih = Math.max(1, h || MSK_PHONE_LS_REF_H);
 	const byW = iw / MSK_PHONE_LS_REF_W;
-	const byH = ih / MSK_PHONE_LS_REF_H;
+	const nip = 0.985;
+	/* fitY/fitX ved 932×430 under den godkendte formel (0.88 × 0.95 efter nip-ratio) */
+	const refFitRatio = 0.95;
 	let fitX = MSK_PROJECTS_LANDSCAPE_FIT * byW;
 	fitX = Math.max(0.72, Math.min(0.98, fitX));
-	/* Lodret: inde i viewport; ekstra ~5% nip (p580) */
-	let fitY = Math.min(fitX, byH * 0.9) * 0.95;
-	fitY = Math.max(0.62, Math.min(fitY, fitX));
-	/* p581: begge akser en anelse mindre — samme nip */
-	const nip = 0.985;
 	fitX *= nip;
-	fitY *= nip;
 	fitX = Math.max(0.7, Math.min(0.98, fitX));
-	fitY = Math.max(0.6, Math.min(fitY, fitX));
+	let fitY = fitX * refFitRatio;
+	const scaledW = MSK_PHONE_LS_REF_W * fitX;
+	const scaledH = MSK_PHONE_LS_REF_H * fitY;
+	const s = Math.min(
+		1,
+		scaledW > 0 ? iw / scaledW : 1,
+		scaledH > 0 ? ih / scaledH : 1
+	);
+	if (s < 1) {
+		fitX *= s;
+		fitY *= s;
+	}
+	fitX = Math.max(0.6, Math.min(0.98, fitX));
+	fitY = Math.max(0.55, Math.min(fitY, fitX));
 	return { fitX, fitY };
 }
 
@@ -17803,7 +17813,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 01:55';
+		const stampText = 'update onsdag 4 nov - klokken 02:02';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
