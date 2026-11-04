@@ -14195,7 +14195,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					
 					// Calculate end point - extend closer to/past the BRAINFARTS node
 					const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-					const bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 2.82 : 1.28;
+					let bfExtensionMul = bfShortLs ? 2.06 : desktopProjectsWide ? 2.82 : 1.28;
+					/* Phone LS: forkort kun fra cirkel-enden */
+					if (mskIsProjectsPhoneLandscapeViewport()) {
+						bfExtensionMul = 1.42;
+					}
 					const extensionAmount = nodeRadius * bfExtensionMul;
 					lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 					lineEndY = nodeY + (deltaY / distance) * extensionAmount;
@@ -14268,7 +14272,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 				// Kort mobil-landscape: længere ud mod Kø-Bajer-boblen
 				const kobShortLs = mskIsProjectsShortLandscapeViewport();
-				const extensionMul = kobShortLs ? 2.02 : desktopProjectsWide ? 1.92 : 1.36;
+				let extensionMul = kobShortLs ? 2.02 : desktopProjectsWide ? 1.92 : 1.36;
+				/* Phone LS: forkort kun fra cirkel-enden */
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					extensionMul = 1.48;
+				}
 				const extensionAmount = nodeRadius * extensionMul;
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount;
@@ -14329,7 +14337,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const lineEndY = nodeY - (deltaY / distance) * gapDistance;
 				
 				// Add gap from brain center (smaller gap => longer toward brain)
-				const brainGapDistance = nodeRadius * 0.08; // Smaller gap => longer toward brain
+				let brainGapDistance = nodeRadius * 0.08; // Smaller gap => longer toward brain
+				/* Phone LS: forlæng lidt mod hjernen */
+				if (mskIsProjectsPhoneLandscapeViewport()) {
+					brainGapDistance = nodeRadius * 0.02;
+				}
 				const brainStartX = brainCenterX + (deltaX / distance) * brainGapDistance;
 				const brainStartY = brainCenterY + (deltaY / distance) * brainGapDistance;
 				
@@ -14506,6 +14518,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					// End further toward the tab (extend a bit past the tab center)
 					const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
 					let nodeExtension = nodeRadius * (desktopProjectsWide ? 0.58 : 0.25);
+					/* Phone LS: forlæng kun op mod cirklen */
+					if (mskIsProjectsPhoneLandscapeViewport()) {
+						nodeExtension = nodeRadius * 0.48;
+					}
 					const deltaX = byensAnchorX - initialBrainStartX;
 					const deltaY = byensAnchorY - initialBrainStartY;
 					const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
@@ -14562,11 +14578,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			const nodeVisualKeyRepop = (node.dataset.visualKey || '').toLowerCase();
 			if (nodeVisualKeyRepop === 'repop' || nodeTextRepop === 'REPOP BY DEPOP' || nodeHrefRepop.includes('repop')) {
 				const nodeRadius = Math.min(nodeRect.width, nodeRect.height) / 2;
-				/* Phone LS: forkort stregen lidt fra toppen (Repop-enden), så den ikke går ind under Kravling */
+				/* Phone LS: forkort stregen lidt mere fra toppen (Repop-enden) */
 				let tabGapDistance = nodeRadius * 0.1;
 				try {
 					if (mskIsProjectsPhoneLandscapeViewport()) {
-						tabGapDistance = nodeRadius * 0.1 + 16;
+						tabGapDistance = nodeRadius * 0.1 + 24;
 					}
 				} catch (_) {}
 				const brainRadiusLine = Math.min(brainRect.width, brainRect.height) / 2;
@@ -14721,9 +14737,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (mskIsProjectsShortLandscapeViewport()) {
 					extensionAmount = nodeRadius * 2.04 + 14;
 				}
-				/* Phone LS: lidt kortere streg — stop nær boblekanten */
+				/* Phone LS: forlæng lidt kun mod Twister-cirklen */
 				if (mskIsProjectsPhoneLandscapeViewport()) {
-					extensionAmount = nodeRadius * 0.22;
+					extensionAmount = nodeRadius * 0.48;
 				}
 				const lineEndX = nodeX + (deltaX / distance) * extensionAmount;
 				const lineEndY = nodeY + (deltaY / distance) * extensionAmount - 30; // Move line up by 30px
@@ -17780,7 +17796,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 00:51';
+		const stampText = 'update onsdag 4 nov - klokken 01:18';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
