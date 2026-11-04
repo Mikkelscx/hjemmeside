@@ -636,6 +636,16 @@ function mskApplyAboutContactPortraitFullPage(root) {
 	if (!root || !mskIsTabletPortraitSinglePage()) return;
 	try {
 		root.querySelectorAll(
+			'.about-contact-turn, .contact-about-turn, .about-projects-turn, .projects-about-turn, .about-biocv-turn'
+		).forEach((el) => {
+			el.style.setProperty('left', '0px', 'important');
+			el.style.setProperty('right', '0px', 'important');
+			el.style.setProperty('top', '0px', 'important');
+			el.style.setProperty('bottom', '0px', 'important');
+			el.style.setProperty('width', '100%', 'important');
+			el.style.setProperty('height', '100%', 'important');
+		});
+		root.querySelectorAll(
 			'.about-contact-turn__under, .contact-about-turn__under, .about-contact-turn__flip, .contact-about-turn__flip, ' +
 			'.about-projects-turn__under, .about-projects-turn__flip, ' +
 			'.projects-about-under, .projects-about-turn__flip, ' +
@@ -643,7 +653,12 @@ function mskApplyAboutContactPortraitFullPage(root) {
 		).forEach((el) => {
 			el.style.setProperty('left', '0px', 'important');
 			el.style.setProperty('right', 'auto', 'important');
+			el.style.setProperty('top', '0px', 'important');
 			el.style.setProperty('width', '100vw', 'important');
+			el.style.setProperty('min-width', '100vw', 'important');
+			el.style.setProperty('max-width', 'none', 'important');
+			el.style.setProperty('height', '100%', 'important');
+			el.style.setProperty('min-height', '100%', 'important');
 		});
 		root.querySelectorAll(
 			'.about-contact-turn__frame, .contact-about-turn__frame, ' +
@@ -651,7 +666,10 @@ function mskApplyAboutContactPortraitFullPage(root) {
 			'.about-biocv-frame'
 		).forEach((fr) => {
 			fr.style.setProperty('left', '0px', 'important');
+			fr.style.setProperty('right', 'auto', 'important');
 			fr.style.setProperty('width', '100vw', 'important');
+			fr.style.setProperty('min-width', '100vw', 'important');
+			fr.style.setProperty('transform', 'none', 'important');
 		});
 		/* Skjul non-reveal halves (match CSS one-page peel). Reveal stays visible:
 		 * Projekter→Om mig / Om mig→Kontakt: under--right
@@ -4604,14 +4622,48 @@ document.addEventListener('DOMContentLoaded', function() {
 		flipEl.style.background = 'transparent';
 		const host = flipEl.parentElement;
 		if (host) host.style.overflow = 'hidden';
+		/* One-page (phone LS): tving fuld flade FØR W/H — ellers peeles kun 50vw og “stopper ved polaroid” */
+		let singlePagePaint = false;
+		try {
+			singlePagePaint = !!(typeof mskIsTabletPortraitSinglePage === 'function' && mskIsTabletPortraitSinglePage());
+		} catch (_) {}
+		if (
+			singlePagePaint &&
+			(flipEl.classList.contains('about-contact-turn__flip') ||
+				flipEl.classList.contains('contact-about-turn__flip'))
+		) {
+			try {
+				const ov =
+					(flipEl.closest &&
+						(flipEl.closest('.about-contact-transition') || flipEl.closest('.contact-about-transition'))) ||
+					host;
+				mskApplyAboutContactPortraitFullPage(ov);
+			} catch (_) {}
+			try {
+				flipEl.style.setProperty('left', '0px', 'important');
+				flipEl.style.setProperty('top', '0px', 'important');
+				flipEl.style.setProperty('width', '100vw', 'important');
+				flipEl.style.setProperty('min-width', '100vw', 'important');
+				flipEl.style.setProperty('height', '100%', 'important');
+				flipEl.style.setProperty('min-height', '100%', 'important');
+			} catch (_) {}
+		}
 		if (!curl) {
 			flipEl.style.transform = 'rotateY(' + (dir * 180 * p).toFixed(2) + 'deg)';
 			flipEl._mskPaperP = p;
 			flipEl._mskPaperSign = dir;
 			return true;
 		}
-		const W = Math.max(1, flipEl.offsetWidth || 0);
-		const H = Math.max(1, flipEl.offsetHeight || 0);
+		const W = Math.max(
+			1,
+			flipEl.offsetWidth || 0,
+			(singlePagePaint && (window.innerWidth || 0)) || 0
+		);
+		const H = Math.max(
+			1,
+			flipEl.offsetHeight || 0,
+			(singlePagePaint && (window.innerHeight || 0)) || 0
+		);
 		const box = flipEl.getBoundingClientRect();
 		const py = (typeof flipEl._mskPaperTy === 'number') ? flipEl._mskPaperTy - box.top : H * 0.9;
 		const cornerX = dir < 0 ? W : 0;
@@ -4664,6 +4716,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				fx = flipEl._mskHoldFx + (cornerX - flipEl._mskHoldFx) * u;
 				fy = flipEl._mskHoldFy + (cornerY - flipEl._mskHoldFy) * u;
 			}
+		} else if (
+			singlePagePaint &&
+			!flipEl._mskPaperAnim &&
+			flipEl.classList.contains('about-contact-turn__flip')
+		) {
+			/*
+			 * Phone LS / one-page: træk-progress (p) SKAL kunne føre peelen helt over —
+			 * finger+lim alene stopper ofte midt (~polaroid) mens p stadig stiger.
+			 */
+			const endX = dir < 0 ? -W : W * 2;
+			const progX = cornerX + (endX - cornerX) * p;
+			if (dir < 0) fx = Math.min(fx, progX);
+			else fx = Math.max(fx, progX);
 		}
 		const glued = mskGlueSpine(cornerX, cornerY, fx, fy, W, H, dir);
 		fx = glued.fx;
@@ -18009,7 +18074,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 4 nov - klokken 23:45';
+		const stampText = 'update onsdag 4 nov - klokken 23:52';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
