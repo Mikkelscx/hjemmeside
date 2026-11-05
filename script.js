@@ -1968,6 +1968,7 @@ function mskProjectsPhoneOrientRevealIfReady(allowSoftPortrait) {
 		try {
 			mskProjectsOrientSettleGen += 1;
 		} catch (_) {}
+		mskPhoneOrientLayoutFrozen = true;
 		return true;
 	} catch (_) {
 		return false;
@@ -1984,9 +1985,12 @@ try {
  * Skjul indtil godkendt LS eller portræt er klar — aldrig midlertidig/forkert frame.
  */
 let mskProjectsOrientSettleGen = 0;
+/** Efter godkendt reveal: ingen flere clear/redraw (synligt streg-hop). */
+let mskPhoneOrientLayoutFrozen = false;
 function mskProjectsScheduleOrientationRelayout() {
 	const gen = ++mskProjectsOrientSettleGen;
 	const t0 = Date.now();
+	mskPhoneOrientLayoutFrozen = false;
 	try {
 		mskEnsurePhonePaperLineNudge();
 	} catch (_) {}
@@ -2037,6 +2041,7 @@ function mskProjectsScheduleOrientationRelayout() {
 	} catch (_) {}
 	const paintPass = () => {
 		if (gen !== mskProjectsOrientSettleGen) return;
+		if (mskPhoneOrientLayoutFrozen) return;
 		const root = document.documentElement;
 		/* Allerede afsløret OK design — ingen clear/redraw (det flash’er streger). */
 		if (
@@ -2045,6 +2050,7 @@ function mskProjectsScheduleOrientationRelayout() {
 		) {
 			try {
 				if (typeof mskProjectsPhoneOrientIsBroken === 'function' && !mskProjectsPhoneOrientIsBroken()) {
+					mskPhoneOrientLayoutFrozen = true;
 					return;
 				}
 			} catch (_) {
@@ -2057,6 +2063,7 @@ function mskProjectsScheduleOrientationRelayout() {
 		try {
 			mskProjectsPhoneOrientHidePending();
 		} catch (_) {}
+		if (gen !== mskProjectsOrientSettleGen || mskPhoneOrientLayoutFrozen) return;
 		try {
 			window.__mskProjectsBypassSpokeFreeze = true;
 			window.__mskProjectsForceLayout = true;
@@ -2067,9 +2074,11 @@ function mskProjectsScheduleOrientationRelayout() {
 		try {
 			mskProjectsMindmapRelayoutAfterTabletOrientation(true);
 		} catch (_) {}
+		if (gen !== mskProjectsOrientSettleGen || mskPhoneOrientLayoutFrozen) return;
 		try {
 			mskProjectsPhoneOrientHealthRepair();
 		} catch (_) {}
+		if (gen !== mskProjectsOrientSettleGen || mskPhoneOrientLayoutFrozen) return;
 		try {
 			const deviceP = mskDeviceOrientationIsPortrait();
 			if (deviceP === false && typeof mskSyncProjectsPhoneLandscapeFit === 'function') {
@@ -2091,8 +2100,10 @@ function mskProjectsScheduleOrientationRelayout() {
 				}
 			}
 		} catch (_) {}
+		if (gen !== mskProjectsOrientSettleGen || mskPhoneOrientLayoutFrozen) return;
 		try {
-			const soft = Date.now() - t0 > 900;
+			/* Ét settle-vindue: afslør først efter ~500ms så layout er færdigt — undgå race med senere paintPass. */
+			const soft = Date.now() - t0 > 500;
 			mskProjectsPhoneOrientRevealIfReady(soft);
 		} catch (_) {}
 	};
@@ -2115,10 +2126,10 @@ function mskProjectsScheduleOrientationRelayout() {
 			return;
 		}
 		paintPass();
-		/* Færre passes + stop efter reveal — undgå streg-flash. */
-		[80, 220, 500, 900, 1500].forEach((ms) => {
+		/* Få passes; efter reveal er layout frozen. */
+		[120, 400, 700].forEach((ms) => {
 			window.setTimeout(() => {
-				if (gen !== mskProjectsOrientSettleGen) return;
+				if (gen !== mskProjectsOrientSettleGen || mskPhoneOrientLayoutFrozen) return;
 				paintPass();
 			}, ms);
 		});
@@ -2314,6 +2325,7 @@ function mskProjectsPhoneOrientFollowUpRelayout(kind) {
 		window.setTimeout(() => {
 			try {
 				if (!document.body || !document.body.classList.contains('projects-page')) return;
+				if (mskPhoneOrientLayoutFrozen) return;
 				const root = document.documentElement;
 				/* Synligt OK design: ingen force-redraw (flash’er streger). */
 				if (
@@ -2322,6 +2334,7 @@ function mskProjectsPhoneOrientFollowUpRelayout(kind) {
 					typeof mskProjectsPhoneOrientIsBroken === 'function' &&
 					!mskProjectsPhoneOrientIsBroken()
 				) {
+					mskPhoneOrientLayoutFrozen = true;
 					return;
 				}
 				const wantLs = kind === 'phone-ls';
@@ -19364,7 +19377,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 00:50';
+		const stampText = 'update fredag 6 nov - klokken 00:53';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
