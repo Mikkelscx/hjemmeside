@@ -1988,6 +1988,9 @@ function mskProjectsScheduleOrientationRelayout() {
 	const gen = ++mskProjectsOrientSettleGen;
 	const t0 = Date.now();
 	try {
+		mskEnsurePhonePaperLineNudge();
+	} catch (_) {}
+	try {
 		mskProjectsPhoneOrientHidePending();
 	} catch (_) {}
 	try {
@@ -2126,8 +2129,32 @@ try {
 	window.mskProjectsScheduleOrientationRelayout = mskProjectsScheduleOrientationRelayout;
 } catch (_) {}
 
+/** Seed papir-nudge tidligt (også i phone LS), så LS↔PT ikke skifter transform. */
+function mskEnsurePhonePaperLineNudge() {
+	try {
+		const de = document.documentElement;
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		const phone =
+			de.classList.contains('msk-projects-phone-portrait') ||
+			de.classList.contains('msk-projects-phone-landscape') ||
+			!!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) ||
+			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport());
+		if (!phone) return;
+		if (de.style.getPropertyValue('--mskPaperLineNudge')) return;
+		let mul = parseFloat(de.style.getPropertyValue('--pLabelMul') || '');
+		if (!(mul > 0.05 && mul < 3)) {
+			/* Match projects-phone-portrait-profiles REF (~390/1024*0.98). */
+			mul = (390 / 1024) * 0.98;
+		}
+		de.style.setProperty('--mskPaperLineNudge', Math.round(-22 * mul * 100) / 100 + 'px');
+	} catch (_) {}
+}
+
 /** Papirlinjer + højde efter rotation — ellers forsvinder linje-designet (LS→portræt). */
 function mskEnsureProjectsPaperLinesAfterOrient() {
+	try {
+		mskEnsurePhonePaperLineNudge();
+	} catch (_) {}
 	try {
 		const de = document.documentElement;
 		const vv = window.visualViewport;
@@ -2156,9 +2183,12 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 		}
 		h = Math.round(h);
 		w = Math.round(w);
-		de.style.setProperty('--sketchPaperMinH', h + 'px');
-		de.style.setProperty('--vh', h + 'px');
-		de.style.setProperty('--vw', w + 'px');
+		/* Under orient-pending: undgå at ændre --sketchPaperMinH (kan reflow’e synlige papirstreger). */
+		if (!de.classList.contains('msk-projects-phone-orient-pending')) {
+			de.style.setProperty('--sketchPaperMinH', h + 'px');
+			de.style.setProperty('--vh', h + 'px');
+			de.style.setProperty('--vw', w + 'px');
+		}
 	} catch (_) {}
 	try {
 		const oldCanvas = document.getElementById('msk-sketch-paper-lines');
@@ -2413,12 +2443,13 @@ function mskProjectsMindmapRelayoutAfterTabletOrientation(force) {
 				'msk-projects-phone-ls-ref-canvas',
 				'msk-mindmap-booting'
 			);
+			/* Ikke mindmap-painted her — RevealIfReady styrer afsløring (undgår streg-hop midt i settle). */
 			root.classList.add(
 				'msk-projects-phone-portrait',
 				'msk-projects-phone-portrait-no-scroll',
-				'msk-projects-mindmap-painted',
 				'phone-portrait-zoom-stable'
 			);
+			root.classList.remove('msk-projects-mindmap-painted');
 			try {
 				if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
 					mskApplyPhonePortraitProfileDocument();
@@ -19253,7 +19284,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 22:29';
+		const stampText = 'update fredag 6 nov - klokken 00:44';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

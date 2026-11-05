@@ -20802,6 +20802,11 @@ html.msk-projects-phone-landscape body.projects-page.sketchbook-theme {
     overflow-x: hidden !important;
     overflow-y: hidden !important;
 }
+/* Samme papir-nudge som phone portræt — undgår at notesbog-stregerne hopper LS↔PT. */
+html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+    transform: translate3d(0, var(--mskPaperLineNudge, 0px), 0) !important;
+    -webkit-transform: translate3d(0, var(--mskPaperLineNudge, 0px), 0) !important;
+}
 /*
  * Phone LS: låst 14 Pro Max-canvas (932×430), fixed midt i viewport.
  * (absolute ift. body kollapsede højden → mindmap forsvandt uden for overflow:hidden)

@@ -226,6 +226,19 @@
 		html.style.setProperty('--phone-col-inset-adj', String(f.colInsetAdj));
 		html.style.setProperty('--phone-node-max-vw', String(f.nodeMaxVw));
 		html.style.setProperty('--phone-nudge-mul', String(f.nudgeMul));
+		/*
+		 * Papir-nudge: sæt én gang pr. side-load. Samme værdi i LS + portræt
+		 * (ellers hopper notesbog-stregerne synligt ved rotation).
+		 */
+		try {
+			if (!html.style.getPropertyValue('--mskPaperLineNudge')) {
+				const nextNudge = -22 * (Number(f.labelMul) || MSK_PHONE_REF_LABEL_MUL);
+				html.style.setProperty(
+					'--mskPaperLineNudge',
+					Math.round(nextNudge * 100) / 100 + 'px'
+				);
+			}
+		} catch (_) {}
 		html.dataset.phoneW = String(f.w);
 		html.dataset.phoneH = String(f.h);
 		html.dataset.phoneWRatio = String(Math.round(f.wRatio * 1000) / 1000);

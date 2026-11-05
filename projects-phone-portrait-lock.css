@@ -230,7 +230,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	cursor: not-allowed;
 }
 
-/* Papirlinjer: tving laget synligt + fyldt (iOS mistede ofte flex-halvdele efter rotation). */
+/* Papirlinjer: tving laget synligt + fyldt (iOS mistede ofte flex-halvdele efter rotation).
+ * Nudge via --mskPaperLineNudge (sat i JS) — SAMME værdi i phone LS, så linjerne ikke hopper ved rotation. */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
 	display: flex !important;
 	visibility: visible !important;
@@ -243,8 +244,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-
 	min-height: 100dvh !important;
 	min-height: -webkit-fill-available !important;
 	z-index: 2 !important;
-	transform: translate3d(0, calc(-22px * var(--pLabelMul, 1)), 0) !important;
-	-webkit-transform: translate3d(0, calc(-22px * var(--pLabelMul, 1)), 0) !important;
+	transform: translate3d(0, var(--mskPaperLineNudge, 0px), 0) !important;
+	-webkit-transform: translate3d(0, var(--mskPaperLineNudge, 0px), 0) !important;
 }
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half {
 	display: block !important;
