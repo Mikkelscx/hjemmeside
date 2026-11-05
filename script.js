@@ -473,6 +473,16 @@ function mskSanitizedViewportSize() {
 
 function mskIsProjectsShortLandscapeViewport() {
 	try {
+		/* Enhed i portræt: aldrig “kort landscape” — ellers LS→PT forbliver skjult (stuck 932×430). */
+		try {
+			if (
+				document.body &&
+				document.body.classList.contains('projects-page') &&
+				mskDeviceOrientationIsPortrait() === true
+			) {
+				return false;
+			}
+		} catch (_) {}
 		/* Samme breakpoint som CSS (short landscape + --projectsLandscapeFit), så JS og styles matcher altid. */
 		if (window.matchMedia) {
 			const mqA = window.matchMedia(
@@ -481,7 +491,9 @@ function mskIsProjectsShortLandscapeViewport() {
 			const mqB = window.matchMedia(
 				'(max-width: 1024px) and (max-height: 520px) and (min-aspect-ratio: 1/1)'
 			);
-			if ((mqA && mqA.matches) || (mqB && mqB.matches)) return true;
+			/* mqB alene må ikke vinde når enheden er portræt (stuck LS-dims). */
+			if (mqA && mqA.matches) return true;
+			if (mqB && mqB.matches && mskDeviceOrientationIsPortrait() !== true) return true;
 		}
 		/* iOS stuck: orientation landskab men innerHeight stadig >520 — brug effektive dims. */
 		try {
@@ -739,6 +751,16 @@ function mskIpadPortraitLineLock(section) {
 function mskIsProjectsPhoneLandscapeViewport() {
 	try {
 		if (mskIsProjectsTabletLandscapeViewport()) return false;
+		/* Enhed portræt: aldrig phone LS (ellers forsvinder designet ved LS→PT). */
+		try {
+			if (
+				document.body &&
+				document.body.classList.contains('projects-page') &&
+				mskDeviceOrientationIsPortrait() === true
+			) {
+				return false;
+			}
+		} catch (_) {}
 		if (mskIsProjectsShortLandscapeViewport()) return true;
 		/* iOS stuck dims: enhed landskab men inner* stadig højt → tving phone LS. */
 		try {
@@ -761,6 +783,18 @@ function mskIsProjectsPhonePortraitViewport() {
 	try {
 		if (mskIsProjectsTabletLandscapeViewport()) return false;
 		if (mskIsProjectsTabletPortraitViewport()) return false;
+		/* Device portræt vinder over stuck LS-dims / short-landscape false positives. */
+		try {
+			if (
+				document.body &&
+				document.body.classList.contains('projects-page') &&
+				mskDeviceOrientationIsPortrait() === true
+			) {
+				const box = mskProjectsPhoneOrientEffectiveBox();
+				const shortSide = Math.min(box.w, box.h);
+				if (shortSide <= 640) return true;
+			}
+		} catch (_) {}
 		if (mskIsProjectsPhoneLandscapeViewport()) return false;
 		let iw = Math.round(Math.max(1, window.innerWidth || 0));
 		let ih = Math.round(Math.max(1, window.innerHeight || 0));
@@ -769,7 +803,7 @@ function mskIsProjectsPhonePortraitViewport() {
 				const box = mskProjectsPhoneOrientEffectiveBox();
 				iw = box.w;
 				ih = box.h;
-				if (box.landscape) return false;
+				if (box.landscape && mskDeviceOrientationIsPortrait() !== true) return false;
 			}
 		} catch (_) {}
 		if (iw > 640) return false;
@@ -1650,10 +1684,16 @@ function mskProjectsPhoneOrientHealthRepair() {
 		let phonePt =
 			!phoneLs &&
 			!!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport());
-		/* Dims kan stadig være stuck — stol på device orientation. */
-		if (!phoneLs && !phonePt) {
-			if (deviceP === false || iw > ih + 16) phoneLs = true;
-			else if (deviceP === true || ih > iw + 16) phonePt = true;
+		/* Device vinder over stuck inner* — ellers LS→PT aldrig forlader landskab. */
+		if (deviceP === true) {
+			phoneLs = false;
+			phonePt = true;
+		} else if (deviceP === false) {
+			phoneLs = true;
+			phonePt = false;
+		} else if (!phoneLs && !phonePt) {
+			if (iw > ih + 16) phoneLs = true;
+			else if (ih > iw + 16) phonePt = true;
 		}
 		if (!phoneLs && !phonePt) return;
 		mskEnsureProjectsPaperLinesAfterOrient();
@@ -1792,9 +1832,6 @@ function mskProjectsPhoneOrientReadyToReveal() {
 		if (!document.body || !document.body.classList.contains('projects-page')) return true;
 		const root = document.documentElement;
 		if (!root.classList.contains('msk-projects-phone-orient-pending')) return true;
-		if (typeof mskProjectsPhoneOrientIsBroken === 'function' && mskProjectsPhoneOrientIsBroken()) {
-			return false;
-		}
 		const box = mskProjectsPhoneOrientEffectiveBox();
 		const iw = Math.max(1, box.w || window.innerWidth || 1);
 		const ih = Math.max(1, box.h || window.innerHeight || 1);
@@ -1802,6 +1839,9 @@ function mskProjectsPhoneOrientReadyToReveal() {
 		const wantPortrait = deviceP === true;
 		const wantLandscape = deviceP === false;
 		if (!wantPortrait && !wantLandscape) return false;
+		/* Mode-mismatch = ikke klar (fuld isBroken blokerer ellers forever mens vi maler). */
+		if (wantPortrait && root.classList.contains('msk-projects-phone-landscape')) return false;
+		if (wantLandscape && root.classList.contains('msk-projects-phone-portrait')) return false;
 		const c = document.querySelector('.brainstorm-container');
 		if (!c) return false;
 		const nodes = document.querySelectorAll('.brainstorm-container a.project-node');
@@ -1811,20 +1851,21 @@ function mskProjectsPhoneOrientReadyToReveal() {
 		let maxB = -Infinity;
 		let minL = Infinity;
 		let maxR = -Infinity;
-		let visible = 0;
+		let measured = 0;
 		nodes.forEach((n) => {
 			if (n.style.left) positioned += 1;
 			const r = n.getBoundingClientRect();
-			if (r.width < 2 && r.height < 2) return;
-			visible += 1;
+			/* visibility:hidden under pending — mål stadig geometri (ikke kræv “visible”). */
+			if (r.width < 1 && r.height < 1) return;
+			measured += 1;
 			minT = Math.min(minT, r.top);
 			maxB = Math.max(maxB, r.bottom);
 			minL = Math.min(minL, r.left);
 			maxR = Math.max(maxR, r.right);
 		});
-		if (visible < 6) return false;
-		const spanH = maxB - minT;
-		const spanW = maxR - minL;
+		if (measured < 6 && positioned < 6) return false;
+		const spanH = Number.isFinite(maxB - minT) ? maxB - minT : 0;
+		const spanW = Number.isFinite(maxR - minL) ? maxR - minL : 0;
 		const svg = document.querySelector('.connecting-lines');
 		const dyn = svg
 			? svg.querySelectorAll(
@@ -1840,10 +1881,10 @@ function mskProjectsPhoneOrientReadyToReveal() {
 			if (root.classList.contains('msk-projects-phone-ls-ref-canvas')) return false;
 			if (!c.classList.contains('projects-mindmap--portrait')) return false;
 			if (positioned < 6) return false;
-			if (spanH < ih * 0.55) return false;
-			if (spanW > iw * 0.98 && spanH < ih * 0.5) return false;
+			/* Afvis kun klassisk squashed ~430px-bånd — ikke kræv 55% (safe-area/nav). */
+			if (spanH > 0 && spanH < Math.min(ih * 0.38, 480)) return false;
 			const ch = c.getBoundingClientRect().height;
-			if (ch > 40 && ch < ih * 0.55) return false;
+			if (ch > 40 && ch < Math.min(ih * 0.38, 480)) return false;
 			const cw = c.getBoundingClientRect().width;
 			if (cw > 40 && Math.abs(cw - 932) < 8 && Math.abs(ch - 430) < 8) return false;
 			return true;
@@ -1886,11 +1927,34 @@ function mskProjectsPhoneOrientReadyToReveal() {
 }
 
 /** Afslør KUN når ReadyToReveal — aldrig force af broken/midlertidig design. */
-function mskProjectsPhoneOrientRevealIfReady() {
+function mskProjectsPhoneOrientRevealIfReady(allowSoftPortrait) {
 	try {
 		const root = document.documentElement;
 		if (!root.classList.contains('msk-projects-phone-orient-pending')) return;
-		if (!mskProjectsPhoneOrientReadyToReveal()) return;
+		let ok = mskProjectsPhoneOrientReadyToReveal();
+		/* Efter flere passes: blød portræt-afsløring hvis grid er malet (undgå blank forever). */
+		if (!ok && allowSoftPortrait && mskDeviceOrientationIsPortrait() === true) {
+			const c = document.querySelector('.brainstorm-container');
+			const positioned = document.querySelectorAll(
+				'.brainstorm-container a.project-node[style*="left"]'
+			).length;
+			const svg = document.querySelector('.connecting-lines');
+			const dyn = svg
+				? svg.querySelectorAll(
+						'image.dynamic-mindmap-line, .dynamic-mindmap-line, .msk-portrait-ring-overlay, image.hand-drawn-frame'
+					).length
+				: 0;
+			ok = !!(
+				root.classList.contains('msk-projects-phone-portrait') &&
+				!root.classList.contains('msk-projects-phone-landscape') &&
+				!root.classList.contains('msk-projects-phone-ls-ref-canvas') &&
+				c &&
+				c.classList.contains('projects-mindmap--portrait') &&
+				positioned >= 6 &&
+				dyn >= 4
+			);
+		}
+		if (!ok) return;
 		const c = document.querySelector('.brainstorm-container');
 		if (c) {
 			c.style.removeProperty('opacity');
@@ -1987,9 +2051,25 @@ function mskProjectsScheduleOrientationRelayout() {
 			if (deviceP === false && typeof mskSyncProjectsPhoneLandscapeFit === 'function') {
 				mskSyncProjectsPhoneLandscapeFit();
 			}
+			if (deviceP === true) {
+				try {
+					if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
+						mskApplyPhonePortraitProfileDocument();
+					}
+				} catch (_) {}
+				try {
+					mskApplyProjectsPortraitPhoneCanvasStyles();
+				} catch (_) {}
+				const c = document.querySelector('.brainstorm-container');
+				if (c) {
+					c.classList.add('projects-mindmap--portrait');
+					c.classList.remove('projects-mindmap--phone-canvas');
+				}
+			}
 		} catch (_) {}
 		try {
-			mskProjectsPhoneOrientRevealIfReady();
+			const soft = Date.now() - t0 > 1200;
+			mskProjectsPhoneOrientRevealIfReady(soft);
 		} catch (_) {}
 	};
 	const step = () => {
@@ -2004,14 +2084,14 @@ function mskProjectsScheduleOrientationRelayout() {
 		const tall = ih > iw + 16;
 		const wide = iw > ih + 16;
 		let dimsReady = tall || wide || !!box.stuck;
-		if (deviceP === true) dimsReady = tall || !!box.stuck;
+		if (deviceP === true) dimsReady = true; /* device portræt: mal med det samme (stuck LS-dims OK) */
 		else if (deviceP === false) dimsReady = wide || !!box.stuck;
 		if (!dimsReady && Date.now() - t0 < 900) {
 			window.requestAnimationFrame(step);
 			return;
 		}
 		paintPass();
-		/* Flere passes — afslør KUN via ReadyToReveal (ingen force af broken). */
+		/* Flere passes — soft portræt-reveal efter ~1.2s så designet ikke forsvinder forever. */
 		[60, 160, 320, 600, 1000, 1600, 2400, 3200].forEach((ms) => {
 			window.setTimeout(() => {
 				if (gen !== mskProjectsOrientSettleGen) return;
@@ -19119,7 +19199,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 15:14';
+		const stampText = 'update torsdag 5 nov - klokken 22:16';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
