@@ -2129,7 +2129,7 @@ try {
 	window.mskProjectsScheduleOrientationRelayout = mskProjectsScheduleOrientationRelayout;
 } catch (_) {}
 
-/** Seed papir-nudge tidligt (også i phone LS), så LS↔PT ikke skifter transform. */
+/** Seed papir-nudge + stabil cover-størrelse (max-side) — uændret ved LS↔PT. */
 function mskEnsurePhonePaperLineNudge() {
 	try {
 		const de = document.documentElement;
@@ -2140,13 +2140,29 @@ function mskEnsurePhonePaperLineNudge() {
 			!!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) ||
 			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport());
 		if (!phone) return;
-		if (de.style.getPropertyValue('--mskPaperLineNudge')) return;
-		let mul = parseFloat(de.style.getPropertyValue('--pLabelMul') || '');
-		if (!(mul > 0.05 && mul < 3)) {
-			/* Match projects-phone-portrait-profiles REF (~390/1024*0.98). */
-			mul = (390 / 1024) * 0.98;
+		if (!de.style.getPropertyValue('--mskPaperLineNudge')) {
+			let mul = parseFloat(de.style.getPropertyValue('--pLabelMul') || '');
+			if (!(mul > 0.05 && mul < 3)) {
+				/* Match projects-phone-portrait-profiles REF (~390/1024*0.98). */
+				mul = (390 / 1024) * 0.98;
+			}
+			de.style.setProperty('--mskPaperLineNudge', Math.round(-22 * mul * 100) / 100 + 'px');
 		}
-		de.style.setProperty('--mskPaperLineNudge', Math.round(-22 * mul * 100) / 100 + 'px');
+		/* Lås cover til mindst max(skærmkanter) — må gerne vokse, aldrig skrumpe ved rotation. */
+		const side = Math.ceil(
+			Math.max(
+				window.innerWidth || 0,
+				window.innerHeight || 0,
+				(window.screen && window.screen.width) || 0,
+				(window.screen && window.screen.height) || 0,
+				932,
+				1024
+			)
+		);
+		const prev = parseFloat(de.style.getPropertyValue('--mskPaperCover') || '') || 0;
+		if (!(prev >= side)) {
+			de.style.setProperty('--mskPaperCover', side + 'px');
+		}
 	} catch (_) {}
 }
 
@@ -2201,6 +2217,10 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 		 */
 		let layer = document.getElementById('msk-paper-lines-layer');
 		let needDraw = !layer;
+		const phonePaperEarly =
+			document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+			document.documentElement.classList.contains('msk-projects-phone-landscape') ||
+			document.documentElement.classList.contains('msk-projects-phone-orient-pending');
 		if (layer) {
 			const halves = layer.querySelectorAll('.msk-paper-lines-layer__half');
 			const half = halves[0];
@@ -2212,7 +2232,18 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 			if (!half || halves.length < 2 || hbg.indexOf('repeating-linear-gradient') === -1) {
 				needDraw = true;
 			} else if (visible) {
-				/* Allerede tegnet og synligt — rør ikke styles (iOS flash). */
+				/* Allerede tegnet — kun lås phone cover-geometri (ingen background-touch). */
+				if (phonePaperEarly) {
+					const cover =
+						document.documentElement.style.getPropertyValue('--mskPaperCover') || '100vmax';
+					layer.style.setProperty('inset', 'auto', 'important');
+					layer.style.setProperty('left', '0', 'important');
+					layer.style.setProperty('top', '0', 'important');
+					layer.style.setProperty('width', cover, 'important');
+					layer.style.setProperty('height', cover, 'important');
+					layer.style.setProperty('min-width', cover, 'important');
+					layer.style.setProperty('min-height', cover, 'important');
+				}
 				return;
 			}
 		}
@@ -2224,17 +2255,35 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 			layer = document.getElementById('msk-paper-lines-layer');
 		}
 		if (!layer) return;
-		/* Kun synlighed/størrelse — ikke background-image hvis gradient allerede findes. */
+		const phonePaper =
+			document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+			document.documentElement.classList.contains('msk-projects-phone-landscape') ||
+			document.documentElement.classList.contains('msk-projects-phone-orient-pending');
+		/* Kun synlighed — phone: aldrig inset/100% (det skifter størrelse ved rotation = streg-hop). */
 		layer.style.setProperty('display', 'flex', 'important');
 		layer.style.setProperty('visibility', 'visible', 'important');
 		layer.style.setProperty('opacity', '1', 'important');
 		layer.style.setProperty('z-index', '2', 'important');
 		layer.style.setProperty('position', 'fixed', 'important');
-		layer.style.setProperty('inset', '0', 'important');
-		layer.style.setProperty('width', '100%', 'important');
-		layer.style.setProperty('height', '100%', 'important');
-		layer.style.setProperty('min-height', '100dvh', 'important');
 		layer.style.setProperty('pointer-events', 'none', 'important');
+		if (phonePaper) {
+			const cover =
+				document.documentElement.style.getPropertyValue('--mskPaperCover') || '100vmax';
+			layer.style.setProperty('inset', 'auto', 'important');
+			layer.style.setProperty('left', '0', 'important');
+			layer.style.setProperty('top', '0', 'important');
+			layer.style.setProperty('right', 'auto', 'important');
+			layer.style.setProperty('bottom', 'auto', 'important');
+			layer.style.setProperty('width', cover, 'important');
+			layer.style.setProperty('height', cover, 'important');
+			layer.style.setProperty('min-width', cover, 'important');
+			layer.style.setProperty('min-height', cover, 'important');
+		} else {
+			layer.style.setProperty('inset', '0', 'important');
+			layer.style.setProperty('width', '100%', 'important');
+			layer.style.setProperty('height', '100%', 'important');
+			layer.style.setProperty('min-height', '100dvh', 'important');
+		}
 		layer.querySelectorAll('.msk-paper-lines-layer__half').forEach((el) => {
 			const cur = el.style.backgroundImage || '';
 			if (cur.indexOf('repeating-linear-gradient') === -1) {
@@ -3308,11 +3357,38 @@ function mskSketchbookPaperLinesDraw() {
 						lastSketchPaperMinHPx = paperH;
 					}
 				} else if (sketch && projectsPage) {
-					/* Projekter: papirhøjde = synlig viewport (aldrig oppustet rh/bred kant) */
-					const paperH = Math.round(Math.max(200, window.innerHeight || 0));
-					if (paperH !== lastSketchPaperMinHPx) {
-						document.documentElement.style.setProperty('--sketchPaperMinH', paperH + 'px');
-						lastSketchPaperMinHPx = paperH;
+					const pendingOrient = document.documentElement.classList.contains(
+						'msk-projects-phone-orient-pending'
+					);
+					const phoneOrient =
+						document.documentElement.classList.contains('msk-projects-phone-portrait') ||
+						document.documentElement.classList.contains('msk-projects-phone-landscape');
+					if (pendingOrient) {
+						/* Frys papir-CSS-vars under rotation — ellers hopper notesbog-stregerne. */
+					} else if (phoneOrient) {
+						try {
+							mskEnsurePhonePaperLineNudge();
+						} catch (_) {}
+						/* Phone: papircover er --mskPaperCover; hold --sketchPaperMinH på max-side (ingen shrink). */
+						const paperH = Math.round(
+							Math.max(
+								200,
+								window.innerWidth || 0,
+								window.innerHeight || 0,
+								lastSketchPaperMinHPx || 0
+							)
+						);
+						if (paperH !== lastSketchPaperMinHPx) {
+							document.documentElement.style.setProperty('--sketchPaperMinH', paperH + 'px');
+							lastSketchPaperMinHPx = paperH;
+						}
+					} else {
+						/* Desktop/tablet: papirhøjde = synlig viewport */
+						const paperH = Math.round(Math.max(200, window.innerHeight || 0));
+						if (paperH !== lastSketchPaperMinHPx) {
+							document.documentElement.style.setProperty('--sketchPaperMinH', paperH + 'px');
+							lastSketchPaperMinHPx = paperH;
+						}
 					}
 				} else if (sketch && rh >= 80) {
 					if (rh !== lastSketchPaperMinHPx) {
@@ -3323,7 +3399,11 @@ function mskSketchbookPaperLinesDraw() {
 					document.documentElement.style.removeProperty('--sketchPaperMinH');
 					lastSketchPaperMinHPx = -1;
 				}
-				mskSketchbookPaperLinesDraw();
+				const skipPaperDraw =
+					document.documentElement.classList.contains('msk-projects-phone-orient-pending');
+				if (!skipPaperDraw) {
+					mskSketchbookPaperLinesDraw();
+				}
 			} catch {}
 		});
 	}
@@ -19284,7 +19364,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 00:44';
+		const stampText = 'update fredag 6 nov - klokken 00:50';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

@@ -231,18 +231,22 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 }
 
 /* Papirlinjer: tving laget synligt + fyldt (iOS mistede ofte flex-halvdele efter rotation).
- * Nudge via --mskPaperLineNudge (sat i JS) — SAMME værdi i phone LS, så linjerne ikke hopper ved rotation. */
+ * Stabil cover = 100vmax (max-side) top-left — samme px i LS og portræt, så stregerne ikke hopper. */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
 	display: flex !important;
 	visibility: visible !important;
 	opacity: 1 !important;
 	pointer-events: none !important;
 	position: fixed !important;
-	inset: 0 !important;
-	width: 100% !important;
-	height: 100% !important;
-	min-height: 100dvh !important;
-	min-height: -webkit-fill-available !important;
+	inset: auto !important;
+	left: 0 !important;
+	top: 0 !important;
+	right: auto !important;
+	bottom: auto !important;
+	width: var(--mskPaperCover, 100vmax) !important;
+	height: var(--mskPaperCover, 100vmax) !important;
+	min-width: var(--mskPaperCover, 100vmax) !important;
+	min-height: var(--mskPaperCover, 100vmax) !important;
 	z-index: 2 !important;
 	transform: translate3d(0, var(--mskPaperLineNudge, 0px), 0) !important;
 	-webkit-transform: translate3d(0, var(--mskPaperLineNudge, 0px), 0) !important;
