@@ -1346,30 +1346,154 @@ function mskProjectsMindmapClearPortraitGridArtifacts() {
 	} catch (_) {}
 }
 
+/**
+ * iOS Safari: body position:fixed + 100dvh (phone-portrait-no-scroll) fryser ofte
+ * innerWidth/innerHeight ved rotation → portræt-layout bliver hængende i landskab
+ * (kun REPOP/NATURLI), og LS-canvas 430px bliver hængende i portræt (squashed top).
+ * Lås op FØR vi måler/tegner.
+ */
+function mskProjectsPhoneOrientUnlockViewport() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		const root = document.documentElement;
+		const body = document.body;
+		const deviceP = mskDeviceOrientationIsPortrait();
+		const iw = window.innerWidth || 0;
+		const ih = window.innerHeight || 0;
+		const wantLandscape = deviceP === false || iw > ih + 16;
+		/* Fjern fixed/no-scroll der fryser iOS-viewport — behold LS-canvas hvis vi er på vej til/i landskab. */
+		root.classList.remove(
+			'msk-projects-phone-portrait-no-scroll',
+			'msk-projects-ipad-portrait-no-scroll',
+			'msk-projects-ipad-landscape-no-scroll'
+		);
+		[
+			'position',
+			'width',
+			'height',
+			'max-height',
+			'min-height',
+			'inset',
+			'top',
+			'left',
+			'right',
+			'bottom',
+			'overflow',
+			'overflow-x',
+			'overflow-y',
+		].forEach((p) => {
+			try {
+				body.style.removeProperty(p);
+			} catch (_) {}
+			try {
+				root.style.removeProperty(p);
+			} catch (_) {}
+		});
+		if (!wantLandscape) {
+			try {
+				mskPhoneLsFitFreeze = null;
+			} catch (_) {}
+			try {
+				mskClearProjectsPhoneLandscapeRefCanvas();
+			} catch (_) {}
+			const c = document.querySelector('.brainstorm-container');
+			if (c) {
+				[
+					'width',
+					'height',
+					'min-height',
+					'max-width',
+					'max-height',
+					'left',
+					'top',
+					'right',
+					'bottom',
+					'position',
+					'margin',
+					'transform',
+					'transform-origin',
+				].forEach((p) => {
+					try {
+						c.style.removeProperty(p);
+					} catch (_) {}
+				});
+			}
+		}
+		try {
+			void body.offsetHeight;
+		} catch (_) {}
+	} catch (_) {}
+}
+try {
+	window.mskProjectsPhoneOrientUnlockViewport = mskProjectsPhoneOrientUnlockViewport;
+} catch (_) {}
+
 /** Telefon: er mindmap/papir “ødelagt” efter rotation? */
 function mskProjectsPhoneOrientIsBroken() {
 	try {
 		if (!document.body || !document.body.classList.contains('projects-page')) return false;
+		const deviceP = mskDeviceOrientationIsPortrait();
+		const iw = window.innerWidth || 0;
+		const ih = window.innerHeight || 0;
+		const wide = iw > ih + 16;
+		const tall = ih > iw + 16;
+		const root = document.documentElement;
+		/* Enhed landskab men HTML stadig portræt (video: sideværts kun REPOP/NATURLI). */
+		if (deviceP === false && root.classList.contains('msk-projects-phone-portrait')) return true;
+		if (deviceP === true && root.classList.contains('msk-projects-phone-landscape')) return true;
+		if (wide && root.classList.contains('msk-projects-phone-portrait')) return true;
+		if (tall && root.classList.contains('msk-projects-phone-landscape')) return true;
+
 		const phoneLs =
 			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport()) ||
-			document.documentElement.classList.contains('msk-projects-phone-landscape');
+			root.classList.contains('msk-projects-phone-landscape') ||
+			(deviceP === false && wide);
 		const phonePt =
 			!!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) ||
-			document.documentElement.classList.contains('msk-projects-phone-portrait');
+			root.classList.contains('msk-projects-phone-portrait') ||
+			(deviceP === true && tall);
 		if (!phoneLs && !phonePt) return false;
 		const nodes = document.querySelectorAll('.brainstorm-container a.project-node');
 		if (!nodes.length) return true;
 		let missingLeft = 0;
+		let minT = Infinity;
+		let maxB = -Infinity;
+		let minL = Infinity;
+		let maxR = -Infinity;
+		let visible = 0;
 		nodes.forEach((n) => {
 			if (!n.style.left) missingLeft += 1;
+			const r = n.getBoundingClientRect();
+			if (r.width < 2 && r.height < 2) return;
+			visible += 1;
+			minT = Math.min(minT, r.top);
+			maxB = Math.max(maxB, r.bottom);
+			minL = Math.min(minL, r.left);
+			maxR = Math.max(maxR, r.right);
 		});
 		if (phoneLs && missingLeft > 0) return true;
 		const svg = document.querySelector('.connecting-lines');
 		const dyn = svg
-			? svg.querySelectorAll('image.dynamic-mindmap-line, .dynamic-mindmap-line, .msk-portrait-ring-overlay').length
+			? svg.querySelectorAll('image.dynamic-mindmap-line, .dynamic-mindmap-line, .msk-portrait-ring-overlay')
+					.length
 			: 0;
 		if (dyn < 4) return true;
+		const spanH = maxB - minT;
+		const spanW = maxR - minL;
+		/* LS→portræt: mindmap klemt i ~430px-bånd øverst mens papir er fuldt højt. */
+		if (phonePt && visible >= 4 && spanH > 0 && spanH < ih * 0.42) return true;
+		/* Portræt→LS: kun top-noder synlige / for smal span. */
+		if (phoneLs && visible >= 2 && spanW > 0 && spanW < iw * 0.42) return true;
 		if (phonePt) {
+			const c = document.querySelector('.brainstorm-container');
+			if (c) {
+				const ch = c.getBoundingClientRect().height;
+				if (ch > 40 && ch < ih * 0.55) return true;
+				const tr = c.style.transform || '';
+				if (tr.indexOf('scale(') !== -1) return true;
+				const hs = parseFloat(c.style.height || c.style.maxHeight || '');
+				if (Number.isFinite(hs) && hs > 0 && hs < ih * 0.55) return true;
+			}
 			const paper = document.getElementById('msk-paper-lines-layer');
 			if (!paper) return true;
 			const cs = window.getComputedStyle(paper);
@@ -1380,6 +1504,10 @@ function mskProjectsPhoneOrientIsBroken() {
 			if (!half) return true;
 			const bg = window.getComputedStyle(half).backgroundImage || '';
 			if (!bg || bg === 'none') return true;
+		}
+		if (phoneLs) {
+			const c = document.querySelector('.brainstorm-container');
+			if (c && c.classList.contains('projects-mindmap--portrait')) return true;
 		}
 		return false;
 	} catch (_) {
@@ -1394,21 +1522,44 @@ function mskProjectsPhoneOrientHealthRepair() {
 		if (!document.body || !document.body.classList.contains('projects-page')) return;
 		if (!mskProjectsPhoneOrientIsBroken()) return;
 		window.__mskPhoneOrientHealthRepairing = true;
-		const phoneLs =
+		try {
+			mskProjectsPhoneOrientUnlockViewport();
+		} catch (_) {}
+		const deviceP = mskDeviceOrientationIsPortrait();
+		const iw = window.innerWidth || 0;
+		const ih = window.innerHeight || 0;
+		let phoneLs =
 			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport());
-		const phonePt =
+		let phonePt =
 			!phoneLs &&
 			!!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport());
+		/* Dims kan stadig være stuck — stol på device orientation. */
+		if (!phoneLs && !phonePt) {
+			if (deviceP === false || iw > ih + 16) phoneLs = true;
+			else if (deviceP === true || ih > iw + 16) phonePt = true;
+		}
 		if (!phoneLs && !phonePt) return;
 		mskEnsureProjectsPaperLinesAfterOrient();
 		if (phoneLs) {
 			try {
 				mskPhoneLsFitFreeze = null;
 			} catch (_) {}
+			document.documentElement.classList.remove(
+				'msk-projects-phone-portrait',
+				'msk-projects-phone-portrait-no-scroll',
+				'phone-portrait-zoom-stable'
+			);
+			document.documentElement.classList.add('msk-projects-phone-landscape', 'msk-projects-mindmap-painted');
 			try {
 				if (mskProjectsMindmapHasPortraitGridArtifacts()) {
 					mskProjectsMindmapClearPortraitGridArtifacts();
 				}
+			} catch (_) {}
+			try {
+				mskClearPhonePortraitProfileDocument();
+			} catch (_) {}
+			try {
+				mskClearProjectsPortraitPhoneCanvasStyles();
 			} catch (_) {}
 			try {
 				mskSyncProjectsPhoneLandscapeFit();
@@ -1464,9 +1615,11 @@ function mskProjectsPhoneOrientHealthRepair() {
 		document.documentElement.dispatchEvent(new CustomEvent('msk-relayout-projects-mindmap'));
 		mskEnsureProjectsPaperLinesAfterOrient();
 	} catch (_) {}
-	try {
-		window.__mskPhoneOrientHealthRepairing = false;
-	} catch (_) {}
+	finally {
+		try {
+			window.__mskPhoneOrientHealthRepairing = false;
+		} catch (_) {}
+	}
 }
 try {
 	window.mskProjectsPhoneOrientHealthRepair = mskProjectsPhoneOrientHealthRepair;
@@ -1480,8 +1633,15 @@ let mskProjectsOrientSettleGen = 0;
 function mskProjectsScheduleOrientationRelayout() {
 	const gen = ++mskProjectsOrientSettleGen;
 	const t0 = Date.now();
+	/* Først unlock — ellers forbliver inner* stuck på forrige orientering (iOS). */
+	try {
+		mskProjectsPhoneOrientUnlockViewport();
+	} catch (_) {}
 	const step = () => {
 		if (gen !== mskProjectsOrientSettleGen) return;
+		try {
+			mskProjectsPhoneOrientUnlockViewport();
+		} catch (_) {}
 		const iw = window.innerWidth || 0;
 		const ih = window.innerHeight || 0;
 		const deviceP = mskDeviceOrientationIsPortrait();
@@ -1490,7 +1650,8 @@ function mskProjectsScheduleOrientationRelayout() {
 		let ready = tall || wide;
 		if (deviceP === true) ready = tall;
 		else if (deviceP === false) ready = wide;
-		if (!ready && Date.now() - t0 < 900) {
+		/* Giv Safari tid til at slippe fixed-lock; unlock gentaget hver frame. */
+		if (!ready && Date.now() - t0 < 1400) {
 			window.requestAnimationFrame(step);
 			return;
 		}
@@ -1505,6 +1666,28 @@ function mskProjectsScheduleOrientationRelayout() {
 		try {
 			mskProjectsPhoneOrientHealthRepair();
 		} catch (_) {}
+		/* Ekstra passes — iOS opdaterer ofte dims først efter 1. layout. */
+		[120, 320, 700, 1200].forEach((ms) => {
+			window.setTimeout(() => {
+				if (gen !== mskProjectsOrientSettleGen) return;
+				try {
+					mskProjectsPhoneOrientUnlockViewport();
+				} catch (_) {}
+				try {
+					window.__mskProjectsBypassSpokeFreeze = true;
+					window.__mskProjectsForceLayout = true;
+					window.__mskProjectsRelayoutNow = true;
+					mskProjectsMindmapLastLayoutIw = -1;
+					mskProjectsMindmapLastLayoutIh = -1;
+				} catch (_) {}
+				try {
+					mskProjectsMindmapRelayoutAfterTabletOrientation(true);
+				} catch (_) {}
+				try {
+					mskProjectsPhoneOrientHealthRepair();
+				} catch (_) {}
+			}, ms);
+		});
 	};
 	window.requestAnimationFrame(step);
 }
@@ -18548,7 +18731,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 01:05';
+		const stampText = 'update torsdag 5 nov - klokken 01:14';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
