@@ -483,6 +483,23 @@ function mskIsProjectsShortLandscapeViewport() {
 			);
 			if ((mqA && mqA.matches) || (mqB && mqB.matches)) return true;
 		}
+		/* iOS stuck: orientation landskab men innerHeight stadig >520 — brug effektive dims. */
+		try {
+			if (document.body && document.body.classList.contains('projects-page')) {
+				const deviceP = mskDeviceOrientationIsPortrait();
+				if (deviceP === false) {
+					const box = mskProjectsPhoneOrientEffectiveBox();
+					const longSide = Math.max(box.w, box.h);
+					const shortSide = Math.min(box.w, box.h);
+					if (
+						longSide <= MSK_PROJECTS_LANDSCAPE_MAX_W &&
+						shortSide <= MSK_PROJECTS_LANDSCAPE_MAX_H
+					) {
+						return true;
+					}
+				}
+			}
+		} catch (_) {}
 		/* Fallback: inner* kort/lang (fx uden matchMedia) */
 		let iw = Math.round(Math.max(1, window.innerWidth || 0));
 		let ih = Math.round(Math.max(1, window.innerHeight || 0));
@@ -718,14 +735,43 @@ function mskIpadPortraitLineLock(section) {
 	return null;
 }
 
+/** Projekter: telefon landskab (kort viewport) — ellipse om hjernen, ikke portræt-grid. */
+function mskIsProjectsPhoneLandscapeViewport() {
+	try {
+		if (mskIsProjectsTabletLandscapeViewport()) return false;
+		if (mskIsProjectsShortLandscapeViewport()) return true;
+		/* iOS stuck dims: enhed landskab men inner* stadig højt → tving phone LS. */
+		try {
+			if (!document.body || !document.body.classList.contains('projects-page')) return false;
+			const box = mskProjectsPhoneOrientEffectiveBox();
+			if (!box.landscape) return false;
+			const shortSide = Math.min(box.w, box.h);
+			const longSide = Math.max(box.w, box.h);
+			return shortSide <= MSK_PROJECTS_LANDSCAPE_MAX_H && longSide <= MSK_PROJECTS_LANDSCAPE_MAX_W;
+		} catch (_) {
+			return false;
+		}
+	} catch (_) {
+		return false;
+	}
+}
+
 /** Projekter: telefon portræt (≤640px) — samme 2+2 / hjernen / 2+2 grid som tablet portræt. */
 function mskIsProjectsPhonePortraitViewport() {
 	try {
 		if (mskIsProjectsTabletLandscapeViewport()) return false;
 		if (mskIsProjectsTabletPortraitViewport()) return false;
-		if (mskIsProjectsShortLandscapeViewport()) return false;
-		const iw = Math.round(Math.max(1, window.innerWidth || 0));
-		const ih = Math.round(Math.max(1, window.innerHeight || 0));
+		if (mskIsProjectsPhoneLandscapeViewport()) return false;
+		let iw = Math.round(Math.max(1, window.innerWidth || 0));
+		let ih = Math.round(Math.max(1, window.innerHeight || 0));
+		try {
+			if (document.body && document.body.classList.contains('projects-page')) {
+				const box = mskProjectsPhoneOrientEffectiveBox();
+				iw = box.w;
+				ih = box.h;
+				if (box.landscape) return false;
+			}
+		} catch (_) {}
 		if (iw > 640) return false;
 		try {
 			if (
@@ -737,16 +783,6 @@ function mskIsProjectsPhonePortraitViewport() {
 			}
 		} catch (_) {}
 		return ih > iw + 8;
-	} catch (_) {
-		return false;
-	}
-}
-
-/** Projekter: telefon landskab (kort viewport) — ellipse om hjernen, ikke portræt-grid. */
-function mskIsProjectsPhoneLandscapeViewport() {
-	try {
-		if (mskIsProjectsTabletLandscapeViewport()) return false;
-		return !!mskIsProjectsShortLandscapeViewport();
 	} catch (_) {
 		return false;
 	}
@@ -790,6 +826,12 @@ function mskIsProjectsPortraitGridDocumentMode() {
 /** Stabilt layout-mål til portræt-grid — KUN synlig viewport (inner*), aldrig clientHeight/papir. */
 function mskProjectsPortraitLayoutViewportPx() {
 	try {
+		try {
+			if (document.body && document.body.classList.contains('projects-page')) {
+				const box = mskProjectsPhoneOrientEffectiveBox();
+				if (box && box.w > 0 && box.h > 0) return { w: box.w, h: box.h };
+			}
+		} catch (_) {}
 		const iw = Math.round(Math.max(1, window.innerWidth || 1));
 		const ih = Math.round(Math.max(1, window.innerHeight || 1));
 		return { w: iw, h: ih };
@@ -994,8 +1036,64 @@ function mskDeviceOrientationIsPortrait() {
 			if (a === 90) return false;
 		}
 	} catch (_) {}
+	try {
+		if (window.matchMedia) {
+			if (window.matchMedia('(orientation: landscape)').matches) return false;
+			if (window.matchMedia('(orientation: portrait)').matches) return true;
+		}
+	} catch (_) {}
 	return null;
 }
+
+/**
+ * Telefon Projekter: effektiv W/H når iOS har frosne inner* (video-bug).
+ * Bytter akser hvis enheden siger landskab men vinduet stadig er højt (og omvendt).
+ */
+function mskProjectsPhoneOrientEffectiveBox() {
+	try {
+		let iw = Math.round(Math.max(1, window.innerWidth || 0));
+		let ih = Math.round(Math.max(1, window.innerHeight || 0));
+		try {
+			const vv = window.visualViewport;
+			if (vv && vv.width > 40 && vv.height > 40) {
+				iw = Math.round(Math.max(1, Math.min(iw, Math.round(vv.width))));
+				ih = Math.round(Math.max(1, Math.min(ih, Math.round(vv.height))));
+			}
+		} catch (_) {}
+		const deviceP = mskDeviceOrientationIsPortrait();
+		const wantLandscape = deviceP === false;
+		const wantPortrait = deviceP === true;
+		if (wantLandscape && ih > iw + 16) {
+			const longSide = Math.max(iw, ih);
+			const shortSide = Math.min(iw, ih);
+			return { w: longSide, h: shortSide, stuck: true, landscape: true, portrait: false };
+		}
+		if (wantPortrait && iw > ih + 16) {
+			const longSide = Math.max(iw, ih);
+			const shortSide = Math.min(iw, ih);
+			return { w: shortSide, h: longSide, stuck: true, landscape: false, portrait: true };
+		}
+		const landscape = iw > ih + 16;
+		return {
+			w: iw,
+			h: ih,
+			stuck: false,
+			landscape,
+			portrait: !landscape && ih > iw + 8,
+		};
+	} catch (_) {
+		return {
+			w: Math.round(Math.max(1, window.innerWidth || 1)),
+			h: Math.round(Math.max(1, window.innerHeight || 1)),
+			stuck: false,
+			landscape: false,
+			portrait: true,
+		};
+	}
+}
+try {
+	window.mskProjectsPhoneOrientEffectiveBox = mskProjectsPhoneOrientEffectiveBox;
+} catch (_) {}
 
 /**
  * DevTools iPad landskab: orientation: landscape matcher, men innerWidth/innerHeight kan stadig være byttet (1024×1366).
@@ -1433,10 +1531,11 @@ function mskProjectsPhoneOrientIsBroken() {
 	try {
 		if (!document.body || !document.body.classList.contains('projects-page')) return false;
 		const deviceP = mskDeviceOrientationIsPortrait();
-		const iw = window.innerWidth || 0;
-		const ih = window.innerHeight || 0;
-		const wide = iw > ih + 16;
-		const tall = ih > iw + 16;
+		const box = mskProjectsPhoneOrientEffectiveBox();
+		const iw = box.w || window.innerWidth || 0;
+		const ih = box.h || window.innerHeight || 0;
+		const wide = iw > ih + 16 || box.landscape;
+		const tall = ih > iw + 16 || box.portrait;
 		const root = document.documentElement;
 		/* Enhed landskab men HTML stadig portræt (video: sideværts kun REPOP/NATURLI). */
 		if (deviceP === false && root.classList.contains('msk-projects-phone-portrait')) return true;
@@ -1447,11 +1546,11 @@ function mskProjectsPhoneOrientIsBroken() {
 		const phoneLs =
 			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport()) ||
 			root.classList.contains('msk-projects-phone-landscape') ||
-			(deviceP === false && wide);
+			(deviceP === false && (wide || box.stuck));
 		const phonePt =
 			!!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) ||
 			root.classList.contains('msk-projects-phone-portrait') ||
-			(deviceP === true && tall);
+			(deviceP === true && (tall || box.stuck));
 		if (!phoneLs && !phonePt) return false;
 		const nodes = document.querySelectorAll('.brainstorm-container a.project-node');
 		if (!nodes.length) return true;
@@ -1645,21 +1744,52 @@ function mskProjectsScheduleOrientationRelayout() {
 	try {
 		mskProjectsPhoneOrientUnlockViewport();
 	} catch (_) {}
+	/* Tving mode med det samme ud fra device — vent ikke på stuck inner*. */
+	try {
+		if (document.body && document.body.classList.contains('projects-page')) {
+			const deviceP = mskDeviceOrientationIsPortrait();
+			const root = document.documentElement;
+			if (deviceP === false) {
+				root.classList.remove(
+					'msk-projects-phone-portrait',
+					'msk-projects-phone-portrait-no-scroll',
+					'phone-portrait-zoom-stable'
+				);
+				root.classList.add('msk-projects-phone-landscape');
+				try {
+					if (mskProjectsMindmapHasPortraitGridArtifacts()) {
+						mskProjectsMindmapClearPortraitGridArtifacts();
+					}
+				} catch (_) {}
+			} else if (deviceP === true) {
+				root.classList.remove('msk-projects-phone-landscape', 'msk-projects-phone-ls-ref-canvas');
+				root.classList.add(
+					'msk-projects-phone-portrait',
+					'msk-projects-phone-portrait-no-scroll',
+					'phone-portrait-zoom-stable'
+				);
+				try {
+					mskClearProjectsPhoneLandscapeRefCanvas();
+				} catch (_) {}
+			}
+		}
+	} catch (_) {}
 	const step = () => {
 		if (gen !== mskProjectsOrientSettleGen) return;
 		try {
 			mskProjectsPhoneOrientUnlockViewport();
 		} catch (_) {}
-		const iw = window.innerWidth || 0;
-		const ih = window.innerHeight || 0;
+		const box = mskProjectsPhoneOrientEffectiveBox();
+		const iw = box.w || window.innerWidth || 0;
+		const ih = box.h || window.innerHeight || 0;
 		const deviceP = mskDeviceOrientationIsPortrait();
 		const tall = ih > iw + 16;
 		const wide = iw > ih + 16;
-		let ready = tall || wide;
-		if (deviceP === true) ready = tall;
-		else if (deviceP === false) ready = wide;
+		let ready = tall || wide || !!box.stuck;
+		if (deviceP === true) ready = tall || !!box.stuck;
+		else if (deviceP === false) ready = wide || !!box.stuck;
 		/* Giv Safari tid til at slippe fixed-lock; unlock gentaget hver frame. */
-		if (!ready && Date.now() - t0 < 1400) {
+		if (!ready && Date.now() - t0 < 900) {
 			window.requestAnimationFrame(step);
 			return;
 		}
@@ -1675,7 +1805,7 @@ function mskProjectsScheduleOrientationRelayout() {
 			mskProjectsPhoneOrientHealthRepair();
 		} catch (_) {}
 		/* Ekstra passes — iOS opdaterer ofte dims først efter 1. layout. */
-		[120, 320, 700, 1200].forEach((ms) => {
+		[80, 200, 450, 900].forEach((ms) => {
 			window.setTimeout(() => {
 				if (gen !== mskProjectsOrientSettleGen) return;
 				try {
@@ -18797,7 +18927,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 01:48';
+		const stampText = 'update torsdag 5 nov - klokken 01:56';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
