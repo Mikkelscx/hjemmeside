@@ -230,16 +230,44 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	cursor: not-allowed;
 }
 
-/* Linjer ligger på body::before (styles.css) — skjul laget så vi ikke får dobbelte streger / iOS-flex-bug. */
+/* Papirlinjer: tving laget synligt + fyldt (iOS mistede ofte flex-halvdele efter rotation). */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
-	display: none !important;
-	visibility: hidden !important;
-	opacity: 0 !important;
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
 	pointer-events: none !important;
+	position: fixed !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 100dvh !important;
+	min-height: -webkit-fill-available !important;
+	z-index: 2 !important;
+	transform: translate3d(0, calc(-22px * var(--pLabelMul, 1)), 0) !important;
+	-webkit-transform: translate3d(0, calc(-22px * var(--pLabelMul, 1)), 0) !important;
 }
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half {
-	visibility: hidden !important;
-	opacity: 0 !important;
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	flex: 1 1 50% !important;
+	width: 50% !important;
+	height: 100% !important;
+	min-height: 100% !important;
+	background-repeat: repeat !important;
+	background-size: 100% 25px !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half--left,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half--right {
+	background-image: repeating-linear-gradient(
+		to bottom,
+		transparent 0,
+		transparent 22px,
+		rgba(208, 208, 208, 0.88) 22px,
+		rgba(208, 208, 208, 0.88) 24px,
+		rgba(224, 224, 224, 0.62) 24px,
+		rgba(224, 224, 224, 0.62) 25px
+	) !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .left-margin {

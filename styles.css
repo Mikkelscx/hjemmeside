@@ -12430,13 +12430,16 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         height: auto !important;
         min-height: 100dvh !important;
         box-shadow: none !important;
-        background-color: #f5f5f0 !important;
+        background: #f5f5f0 !important;
         background-image:
             repeating-linear-gradient(
                 to bottom,
-                transparent 0 22px,
-                rgba(208, 208, 208, 0.88) 22px 24px,
-                rgba(224, 224, 224, 0.62) 23px 25px
+                transparent 0,
+                transparent 22px,
+                rgba(208, 208, 208, 0.88) 22px,
+                rgba(208, 208, 208, 0.88) 24px,
+                rgba(224, 224, 224, 0.62) 24px,
+                rgba(224, 224, 224, 0.62) 25px
             ),
             radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%) !important;
         background-size: 100% 25px, 100% 100% !important;
@@ -21430,4 +21433,49 @@ html.transition-preview .msk-build-stamp {
     letter-spacing: 0.01em;
     color: rgba(40, 32, 24, 0.72);
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/*
+ * Telefon portræt papirlinjer — sidste ord (udenfor nested @media).
+ * Både ::before + layer, så linjer ikke kan forsvinde efter orientation.
+ */
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::before {
+    background-color: #f5f5f0 !important;
+    background-image:
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 22px,
+            rgba(208, 208, 208, 0.88) 22px,
+            rgba(208, 208, 208, 0.88) 24px,
+            rgba(224, 224, 224, 0.62) 24px,
+            rgba(224, 224, 224, 0.62) 25px
+        ),
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%) !important;
+    background-size: 100% 25px, 100% 100% !important;
+    background-repeat: repeat, no-repeat !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+}
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half--left,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half--right {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 22px,
+        rgba(208, 208, 208, 0.88) 22px,
+        rgba(208, 208, 208, 0.88) 24px,
+        rgba(224, 224, 224, 0.62) 24px,
+        rgba(224, 224, 224, 0.62) 25px
+    ) !important;
+    background-size: 100% 25px !important;
+    background-repeat: repeat !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }

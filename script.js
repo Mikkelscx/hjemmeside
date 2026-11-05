@@ -1494,12 +1494,23 @@ function mskProjectsPhoneOrientIsBroken() {
 				const hs = parseFloat(c.style.height || c.style.maxHeight || '');
 				if (Number.isFinite(hs) && hs > 0 && hs < ih * 0.55) return true;
 			}
-			/* Telefon portræt: papirlinjer er på body::before (ikke #msk-paper-lines-layer). */
+			/* Telefon portræt: papirlinjer på layer og/eller ::before. */
 			try {
 				const beforeBg = window.getComputedStyle(document.body, '::before').backgroundImage || '';
-				if (!beforeBg || beforeBg === 'none' || beforeBg.indexOf('repeating-linear-gradient') === -1) {
-					return true;
+				const beforeOk = !!(beforeBg && beforeBg !== 'none' && beforeBg.indexOf('repeating-linear-gradient') !== -1);
+				const paper = document.getElementById('msk-paper-lines-layer');
+				let layerOk = false;
+				if (paper) {
+					const pcs = window.getComputedStyle(paper);
+					const half = paper.querySelector('.msk-paper-lines-layer__half');
+					const hbg = half ? window.getComputedStyle(half).backgroundImage || '' : '';
+					layerOk =
+						pcs.display !== 'none' &&
+						pcs.visibility !== 'hidden' &&
+						parseFloat(pcs.opacity || '1') > 0.05 &&
+						!!(hbg && hbg !== 'none' && hbg.indexOf('repeating-linear-gradient') !== -1);
 				}
+				if (!beforeOk && !layerOk) return true;
 			} catch (_) {}
 		}
 		if (phoneLs) {
@@ -1750,25 +1761,23 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 		layer.style.setProperty('height', '100%', 'important');
 		layer.style.setProperty('min-height', '100dvh', 'important');
 		layer.style.setProperty('pointer-events', 'none', 'important');
+		/* Ældre Safari: undgå to-positions color stops (transparent 0 22px). */
 		const gradL =
-			'repeating-linear-gradient(to bottom, transparent 0 22px, rgba(208,208,208,0.88) 22px 24px, rgba(224,224,224,0.62) 23px 25px)';
+			'repeating-linear-gradient(to bottom, transparent 0, transparent 22px, rgba(208,208,208,0.88) 22px, rgba(208,208,208,0.88) 24px, rgba(224,224,224,0.62) 24px, rgba(224,224,224,0.62) 25px)';
 		const gradR =
-			'repeating-linear-gradient(to bottom, transparent 0 22px, rgba(213,213,213,0.88) 22px 24px, rgba(224,224,224,0.62) 23px 25px)';
-		layer.querySelectorAll('.msk-paper-lines-layer__half--left').forEach((el) => {
-			el.style.setProperty('background-image', gradL, 'important');
+			'repeating-linear-gradient(to bottom, transparent 0, transparent 22px, rgba(213,213,213,0.88) 22px, rgba(213,213,213,0.88) 24px, rgba(224,224,224,0.62) 24px, rgba(224,224,224,0.62) 25px)';
+		layer.querySelectorAll('.msk-paper-lines-layer__half').forEach((el) => {
+			const isLeft = el.classList.contains('msk-paper-lines-layer__half--left');
+			el.style.setProperty('display', 'block', 'important');
+			el.style.setProperty('background-image', isLeft ? gradL : gradR, 'important');
 			el.style.setProperty('background-size', '100% 25px', 'important');
 			el.style.setProperty('background-repeat', 'repeat', 'important');
 			el.style.setProperty('opacity', '1', 'important');
 			el.style.setProperty('visibility', 'visible', 'important');
+			el.style.setProperty('height', '100%', 'important');
 			el.style.setProperty('min-height', '100%', 'important');
-		});
-		layer.querySelectorAll('.msk-paper-lines-layer__half--right').forEach((el) => {
-			el.style.setProperty('background-image', gradR, 'important');
-			el.style.setProperty('background-size', '100% 25px', 'important');
-			el.style.setProperty('background-repeat', 'repeat', 'important');
-			el.style.setProperty('opacity', '1', 'important');
-			el.style.setProperty('visibility', 'visible', 'important');
-			el.style.setProperty('min-height', '100%', 'important');
+			el.style.setProperty('flex', '1 1 50%', 'important');
+			el.style.setProperty('width', '50%', 'important');
 		});
 	} catch (_) {}
 }
@@ -18788,7 +18797,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 01:24';
+		const stampText = 'update torsdag 5 nov - klokken 01:48';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
