@@ -1930,7 +1930,7 @@ function mskProjectsPhoneOrientReadyToReveal() {
 function mskProjectsPhoneOrientRevealIfReady(allowSoftPortrait) {
 	try {
 		const root = document.documentElement;
-		if (!root.classList.contains('msk-projects-phone-orient-pending')) return;
+		if (!root.classList.contains('msk-projects-phone-orient-pending')) return false;
 		let ok = mskProjectsPhoneOrientReadyToReveal();
 		/* Efter flere passes: blød portræt-afsløring hvis grid er malet (undgå blank forever). */
 		if (!ok && allowSoftPortrait && mskDeviceOrientationIsPortrait() === true) {
@@ -1954,7 +1954,7 @@ function mskProjectsPhoneOrientRevealIfReady(allowSoftPortrait) {
 				dyn >= 4
 			);
 		}
-		if (!ok) return;
+		if (!ok) return false;
 		const c = document.querySelector('.brainstorm-container');
 		if (c) {
 			c.style.removeProperty('opacity');
@@ -1964,7 +1964,14 @@ function mskProjectsPhoneOrientRevealIfReady(allowSoftPortrait) {
 		root.classList.remove('msk-projects-phone-orient-pending', 'msk-mindmap-booting');
 		root.classList.add('msk-projects-mindmap-painted');
 		root.dataset.mskMindmapRevealed = '1';
-	} catch (_) {}
+		/* Stop resterende settle-passes — ellers clear/redraw af streger = synlig flash. */
+		try {
+			mskProjectsOrientSettleGen += 1;
+		} catch (_) {}
+		return true;
+	} catch (_) {
+		return false;
+	}
 }
 try {
 	window.mskProjectsPhoneOrientHidePending = mskProjectsPhoneOrientHidePending;
@@ -2027,6 +2034,20 @@ function mskProjectsScheduleOrientationRelayout() {
 	} catch (_) {}
 	const paintPass = () => {
 		if (gen !== mskProjectsOrientSettleGen) return;
+		const root = document.documentElement;
+		/* Allerede afsløret OK design — ingen clear/redraw (det flash’er streger). */
+		if (
+			!root.classList.contains('msk-projects-phone-orient-pending') &&
+			root.classList.contains('msk-projects-mindmap-painted')
+		) {
+			try {
+				if (typeof mskProjectsPhoneOrientIsBroken === 'function' && !mskProjectsPhoneOrientIsBroken()) {
+					return;
+				}
+			} catch (_) {
+				return;
+			}
+		}
 		try {
 			mskProjectsPhoneOrientUnlockViewport();
 		} catch (_) {}
@@ -2068,7 +2089,7 @@ function mskProjectsScheduleOrientationRelayout() {
 			}
 		} catch (_) {}
 		try {
-			const soft = Date.now() - t0 > 1200;
+			const soft = Date.now() - t0 > 900;
 			mskProjectsPhoneOrientRevealIfReady(soft);
 		} catch (_) {}
 	};
@@ -2091,8 +2112,8 @@ function mskProjectsScheduleOrientationRelayout() {
 			return;
 		}
 		paintPass();
-		/* Flere passes — soft portræt-reveal efter ~1.2s så designet ikke forsvinder forever. */
-		[60, 160, 320, 600, 1000, 1600, 2400, 3200].forEach((ms) => {
+		/* Færre passes + stop efter reveal — undgå streg-flash. */
+		[80, 220, 500, 900, 1500].forEach((ms) => {
 			window.setTimeout(() => {
 				if (gen !== mskProjectsOrientSettleGen) return;
 				paintPass();
@@ -2140,18 +2161,28 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 		de.style.setProperty('--vw', w + 'px');
 	} catch (_) {}
 	try {
-		/* Genopbyg laget helt — residual inline/CSS efter LS kan gøre linjerne usynlige. */
-		const oldLayer = document.getElementById('msk-paper-lines-layer');
-		if (oldLayer) oldLayer.remove();
 		const oldCanvas = document.getElementById('msk-sketch-paper-lines');
 		if (oldCanvas) oldCanvas.remove();
 	} catch (_) {}
 	try {
-		mskSketchbookPaperLinesDraw();
-	} catch (_) {}
-	/* iOS: tving synlige linjer inline — CSS alene kan miste gradient efter unlock/rotation. */
-	try {
-		const layer = document.getElementById('msk-paper-lines-layer');
+		/*
+		 * Genbrug eksisterende papir-lag — full remove/recreate hvert settle-pass
+		 * flash’er synlige notesbog-streger under LS→portræt (mindmap er skjult, papir ikke).
+		 */
+		let layer = document.getElementById('msk-paper-lines-layer');
+		let needDraw = !layer;
+		if (layer) {
+			const half = layer.querySelector('.msk-paper-lines-layer__half');
+			const hbg = half ? (window.getComputedStyle(half).backgroundImage || '') : '';
+			if (!half || hbg.indexOf('repeating-linear-gradient') === -1) needDraw = true;
+		}
+		if (needDraw) {
+			try {
+				if (layer) layer.remove();
+			} catch (_) {}
+			mskSketchbookPaperLinesDraw();
+			layer = document.getElementById('msk-paper-lines-layer');
+		}
 		if (!layer) return;
 		layer.style.setProperty('display', 'flex', 'important');
 		layer.style.setProperty('visibility', 'visible', 'important');
@@ -2163,7 +2194,6 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 		layer.style.setProperty('height', '100%', 'important');
 		layer.style.setProperty('min-height', '100dvh', 'important');
 		layer.style.setProperty('pointer-events', 'none', 'important');
-		/* Ældre Safari: undgå to-positions color stops (transparent 0 22px). */
 		const gradL =
 			'repeating-linear-gradient(to bottom, transparent 0, transparent 22px, rgba(208,208,208,0.88) 22px, rgba(208,208,208,0.88) 24px, rgba(224,224,224,0.62) 24px, rgba(224,224,224,0.62) 25px)';
 		const gradR =
@@ -19199,7 +19229,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 22:16';
+		const stampText = 'update torsdag 5 nov - klokken 22:22';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
