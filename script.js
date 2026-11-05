@@ -2221,6 +2221,16 @@ function mskProjectsPhoneOrientFollowUpRelayout(kind) {
 		window.setTimeout(() => {
 			try {
 				if (!document.body || !document.body.classList.contains('projects-page')) return;
+				const root = document.documentElement;
+				/* Synligt OK design: ingen force-redraw (flash’er streger). */
+				if (
+					!root.classList.contains('msk-projects-phone-orient-pending') &&
+					root.classList.contains('msk-projects-mindmap-painted') &&
+					typeof mskProjectsPhoneOrientIsBroken === 'function' &&
+					!mskProjectsPhoneOrientIsBroken()
+				) {
+					return;
+				}
 				const wantLs = kind === 'phone-ls';
 				const isLs = !!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport());
 				const isPt = !!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport());
@@ -19229,7 +19239,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 22:22';
+		const stampText = 'update torsdag 5 nov - klokken 22:24';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
