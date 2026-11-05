@@ -1670,6 +1670,7 @@ function mskProjectsPhoneOrientIsBroken() {
 function mskProjectsPhoneOrientHealthRepair() {
 	try {
 		if (window.__mskPhoneOrientHealthRepairing) return;
+		if (mskPhoneOrientLayoutFrozen) return;
 		if (!document.body || !document.body.classList.contains('projects-page')) return;
 		if (!mskProjectsPhoneOrientIsBroken()) return;
 		window.__mskPhoneOrientHealthRepairing = true;
@@ -19377,7 +19378,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 00:53';
+		const stampText = 'update fredag 6 nov - klokken 00:54';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
