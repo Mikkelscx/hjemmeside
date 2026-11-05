@@ -1733,6 +1733,136 @@ try {
 } catch (_) {}
 
 /**
+ * Telefon: skjul mindmap under rotation (LS→portræt viser ellers squashed ~430px-bånd).
+ * Papirlinjer på body forbliver synlige — kun brainstorm-container skjules.
+ */
+function mskProjectsPhoneOrientHidePending() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return;
+		const root = document.documentElement;
+		const phone =
+			root.classList.contains('msk-projects-phone-portrait') ||
+			root.classList.contains('msk-projects-phone-landscape') ||
+			!!(typeof mskIsProjectsPhonePortraitViewport === 'function' && mskIsProjectsPhonePortraitViewport()) ||
+			!!(typeof mskIsProjectsPhoneLandscapeViewport === 'function' && mskIsProjectsPhoneLandscapeViewport());
+		if (!phone) {
+			/* Midt i rotation: dims stuck — stadig phone-side hvis short side ≤640-ish. */
+			const box = mskProjectsPhoneOrientEffectiveBox();
+			const shortSide = Math.min(box.w, box.h);
+			if (shortSide > 640) return;
+		}
+		root.classList.add('msk-projects-phone-orient-pending');
+		root.classList.remove('msk-projects-mindmap-painted');
+		root.classList.add('msk-mindmap-booting');
+	} catch (_) {}
+}
+
+/** Telefon: er mindmap klar nok til at vise efter rotation? */
+function mskProjectsPhoneOrientReadyToReveal() {
+	try {
+		if (!document.body || !document.body.classList.contains('projects-page')) return true;
+		const root = document.documentElement;
+		if (!root.classList.contains('msk-projects-phone-orient-pending')) return true;
+		if (typeof mskProjectsPhoneOrientIsBroken === 'function' && mskProjectsPhoneOrientIsBroken()) {
+			return false;
+		}
+		const box = mskProjectsPhoneOrientEffectiveBox();
+		const iw = Math.max(1, box.w || window.innerWidth || 1);
+		const ih = Math.max(1, box.h || window.innerHeight || 1);
+		const deviceP = mskDeviceOrientationIsPortrait();
+		const wantPortrait = deviceP === true || (!!box.portrait && deviceP !== false);
+		const wantLandscape = deviceP === false || (!!box.landscape && deviceP !== true);
+		const c = document.querySelector('.brainstorm-container');
+		if (!c) return false;
+		const nodes = document.querySelectorAll('.brainstorm-container a.project-node');
+		if (nodes.length < 6) return false;
+		let positioned = 0;
+		let minT = Infinity;
+		let maxB = -Infinity;
+		let minL = Infinity;
+		let maxR = -Infinity;
+		let visible = 0;
+		nodes.forEach((n) => {
+			if (n.style.left) positioned += 1;
+			const r = n.getBoundingClientRect();
+			if (r.width < 2 && r.height < 2) return;
+			visible += 1;
+			minT = Math.min(minT, r.top);
+			maxB = Math.max(maxB, r.bottom);
+			minL = Math.min(minL, r.left);
+			maxR = Math.max(maxR, r.right);
+		});
+		if (visible < 6) return false;
+		const spanH = maxB - minT;
+		const spanW = maxR - minL;
+		const svg = document.querySelector('.connecting-lines');
+		const dyn = svg
+			? svg.querySelectorAll(
+					'image.dynamic-mindmap-line, .dynamic-mindmap-line, .msk-portrait-ring-overlay, image.hand-drawn-frame'
+				).length
+			: 0;
+		if (dyn < 4) return false;
+		if (wantPortrait) {
+			if (!c.classList.contains('projects-mindmap--portrait')) return false;
+			if (positioned < 6) return false;
+			/* Squashed LS-bånd i portræt: span/container stadig ~430px. */
+			if (spanH < ih * 0.55) return false;
+			const ch = c.getBoundingClientRect().height;
+			if (ch > 40 && ch < ih * 0.55) return false;
+			return true;
+		}
+		if (wantLandscape) {
+			if (c.classList.contains('projects-mindmap--portrait')) return false;
+			if (spanW < iw * 0.5) return false;
+			return true;
+		}
+		return false;
+	} catch (_) {
+		return false;
+	}
+}
+
+function mskProjectsPhoneOrientRevealIfReady(force) {
+	try {
+		const root = document.documentElement;
+		if (!root.classList.contains('msk-projects-phone-orient-pending')) return;
+		const ok = mskProjectsPhoneOrientReadyToReveal();
+		if (!ok && !force) return;
+		/* Force: undgå at vise klassisk squashed ~430px-bånd — hellere papir. */
+		if (!ok && force) {
+			try {
+				const box = mskProjectsPhoneOrientEffectiveBox();
+				const ih = Math.max(1, box.h || window.innerHeight || 1);
+				const nodes = document.querySelectorAll('.brainstorm-container a.project-node');
+				let minT = Infinity;
+				let maxB = -Infinity;
+				let visible = 0;
+				nodes.forEach((n) => {
+					const r = n.getBoundingClientRect();
+					if (r.width < 2 && r.height < 2) return;
+					visible += 1;
+					minT = Math.min(minT, r.top);
+					maxB = Math.max(maxB, r.bottom);
+				});
+				const spanH = maxB - minT;
+				const deviceP = mskDeviceOrientationIsPortrait();
+				if ((deviceP === true || box.portrait) && visible >= 4 && spanH > 0 && spanH < ih * 0.45) {
+					return;
+				}
+			} catch (_) {}
+		}
+		root.classList.remove('msk-projects-phone-orient-pending', 'msk-mindmap-booting');
+		root.classList.add('msk-projects-mindmap-painted');
+		root.dataset.mskMindmapRevealed = '1';
+	} catch (_) {}
+}
+try {
+	window.mskProjectsPhoneOrientHidePending = mskProjectsPhoneOrientHidePending;
+	window.mskProjectsPhoneOrientRevealIfReady = mskProjectsPhoneOrientRevealIfReady;
+	window.mskProjectsPhoneOrientReadyToReveal = mskProjectsPhoneOrientReadyToReveal;
+} catch (_) {}
+
+/**
  * Ét relayout når rotationen er faldet til ro.
  * Tegn ikke mens enheden siger portræt men vinduet stadig er bredt — det giver tomme cirkler og en kæmpe pil.
  */
@@ -1740,6 +1870,10 @@ let mskProjectsOrientSettleGen = 0;
 function mskProjectsScheduleOrientationRelayout() {
 	const gen = ++mskProjectsOrientSettleGen;
 	const t0 = Date.now();
+	/* Skjul med det samme — ellers flash’er squashed LS-bånd / sideværts portræt. */
+	try {
+		mskProjectsPhoneOrientHidePending();
+	} catch (_) {}
 	/* Først unlock — ellers forbliver inner* stuck på forrige orientering (iOS). */
 	try {
 		mskProjectsPhoneOrientUnlockViewport();
@@ -1772,12 +1906,18 @@ function mskProjectsScheduleOrientationRelayout() {
 					mskClearProjectsPhoneLandscapeRefCanvas();
 				} catch (_) {}
 			}
+			/* Hold pending efter mode-skift (unlock/classList må ikke vise forkert frame). */
+			root.classList.add('msk-projects-phone-orient-pending');
+			root.classList.remove('msk-projects-mindmap-painted');
 		}
 	} catch (_) {}
 	const step = () => {
 		if (gen !== mskProjectsOrientSettleGen) return;
 		try {
 			mskProjectsPhoneOrientUnlockViewport();
+		} catch (_) {}
+		try {
+			mskProjectsPhoneOrientHidePending();
 		} catch (_) {}
 		const box = mskProjectsPhoneOrientEffectiveBox();
 		const iw = box.w || window.innerWidth || 0;
@@ -1804,8 +1944,11 @@ function mskProjectsScheduleOrientationRelayout() {
 		try {
 			mskProjectsPhoneOrientHealthRepair();
 		} catch (_) {}
+		try {
+			mskProjectsPhoneOrientRevealIfReady(false);
+		} catch (_) {}
 		/* Ekstra passes — iOS opdaterer ofte dims først efter 1. layout. */
-		[80, 200, 450, 900].forEach((ms) => {
+		[80, 200, 450, 900, 1400].forEach((ms) => {
 			window.setTimeout(() => {
 				if (gen !== mskProjectsOrientSettleGen) return;
 				try {
@@ -1824,8 +1967,22 @@ function mskProjectsScheduleOrientationRelayout() {
 				try {
 					mskProjectsPhoneOrientHealthRepair();
 				} catch (_) {}
+				try {
+					/* Først ved 1.4s: force (stadig ikke hvis squashed bånd). */
+					mskProjectsPhoneOrientRevealIfReady(ms >= 1400);
+				} catch (_) {}
 			}, ms);
 		});
+		/* Sidste udvej: vis noget efter 2.2s så siden ikke bliver blank for evigt. */
+		window.setTimeout(() => {
+			if (gen !== mskProjectsOrientSettleGen) return;
+			try {
+				const root = document.documentElement;
+				if (!root.classList.contains('msk-projects-phone-orient-pending')) return;
+				root.classList.remove('msk-projects-phone-orient-pending', 'msk-mindmap-booting');
+				root.classList.add('msk-projects-mindmap-painted');
+			} catch (_) {}
+		}, 2200);
 	};
 	window.requestAnimationFrame(step);
 }
@@ -18927,7 +19084,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 01:56';
+		const stampText = 'update torsdag 5 nov - klokken 14:19';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

@@ -10872,8 +10872,8 @@ html.msk-projects-phone-portrait {
     /*
      * Telefon portræt: fuld viewport (som iPad) — elementer skaleres via --pLabelMul + --projectsBrainSize.
      */
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+    html.msk-projects-phone-portrait:not(.msk-projects-phone-orient-pending) body.projects-page.sketchbook-theme .brainstorm-container,
+    html.msk-projects-phone-portrait:not(.msk-projects-phone-orient-pending) body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
         --projectsSx: 1 !important;
         --projectsSy: 1 !important;
         --projectsBrainSize: clamp(68px, calc(121px * (100vw / 390 * 0.52 + 100dvh / 844 * 0.48)), 178px) !important;
@@ -12495,21 +12495,32 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         max-height: 100dvh !important;
         min-height: 100dvh !important;
     }
-    html.msk-projects-phone-portrait-no-scroll body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+    /*
+     * Telefon rotation: skjul mindmap indtil portrait/LS layout er klar.
+     * Ellers flash’er det squashed LS-bånd (~430px) i portræt (video).
+     * Papirlinjer på body::before / paper-layer forbliver synlige.
+     */
+    html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container,
+    html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container * {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    html.msk-projects-phone-portrait-no-scroll:not(.msk-projects-phone-orient-pending) body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
         z-index: 3 !important;
     }
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
-    html.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container {
+    html.msk-projects-phone-portrait:not(.msk-projects-phone-orient-pending) body.projects-page.sketchbook-theme .brainstorm-container,
+    html.msk-projects-phone-landscape:not(.msk-projects-phone-orient-pending) body.projects-page.sketchbook-theme .brainstorm-container {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
     }
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain,
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node,
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+    html.msk-projects-phone-portrait:not(.msk-projects-phone-orient-pending) body.projects-page.sketchbook-theme .brainstorm-container .brain,
+    html.msk-projects-phone-portrait:not(.msk-projects-phone-orient-pending) body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+    html.msk-projects-phone-portrait:not(.msk-projects-phone-orient-pending) body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
     html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain,
     html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node,
     html.msk-projects-ipad-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node {
@@ -21486,4 +21497,18 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-
     background-repeat: repeat !important;
     opacity: 1 !important;
     visibility: visible !important;
+}
+
+/* Sidste ord: skjul mindmap under telefon-rotation (vinder over phone LS/portrait visibility). */
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-phone-orient-pending.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-phone-orient-pending.msk-projects-phone-landscape body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .brain,
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .project-node,
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines * {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
