@@ -12420,7 +12420,8 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
     }
 
     /* Telefon portræt: samme enkelt-side notesbog som iPad portræt.
-     * Papirlinjer også på ::before — fallback når #msk-paper-lines-layer forsvinder efter rotation. */
+     * ::before = kun papirfarve. Vandrette linjer KUN på #msk-paper-lines-layer
+     * (ellers dobbelt-linjer / “for mange linjer”). */
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::before {
         width: 100% !important;
         left: 0 !important;
@@ -12431,19 +12432,13 @@ body.projects-page.sketchbook-theme .brainstorm-container .brain {
         min-height: 100dvh !important;
         box-shadow: none !important;
         background: #f5f5f0 !important;
-        background-image:
-            repeating-linear-gradient(
-                to bottom,
-                transparent 0,
-                transparent 22px,
-                rgba(208, 208, 208, 0.88) 22px,
-                rgba(208, 208, 208, 0.88) 24px,
-                rgba(224, 224, 224, 0.62) 24px,
-                rgba(224, 224, 224, 0.62) 25px
-            ),
-            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%) !important;
-        background-size: 100% 25px, 100% 100% !important;
-        background-repeat: repeat, no-repeat !important;
+        background-image: radial-gradient(
+            circle at 20% 20%,
+            rgba(255, 255, 255, 0.1) 0%,
+            transparent 50%
+        ) !important;
+        background-size: 100% 100% !important;
+        background-repeat: no-repeat !important;
     }
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::after {
         display: none !important;
@@ -21456,23 +21451,17 @@ html.transition-preview .msk-build-stamp {
 
 /*
  * Telefon portræt papirlinjer — sidste ord (udenfor nested @media).
- * Både ::before + layer, så linjer ikke kan forsvinde efter orientation.
+ * Én kilde: #msk-paper-lines-layer. ::before uden ruled lines (ellers dobbelt).
  */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme::before {
     background-color: #f5f5f0 !important;
-    background-image:
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0,
-            transparent 22px,
-            rgba(208, 208, 208, 0.88) 22px,
-            rgba(208, 208, 208, 0.88) 24px,
-            rgba(224, 224, 224, 0.62) 24px,
-            rgba(224, 224, 224, 0.62) 25px
-        ),
-        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%) !important;
-    background-size: 100% 25px, 100% 100% !important;
-    background-repeat: repeat, no-repeat !important;
+    background-image: radial-gradient(
+        circle at 20% 20%,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 50%
+    ) !important;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat !important;
 }
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
     display: flex !important;
