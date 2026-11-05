@@ -2166,15 +2166,25 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 	} catch (_) {}
 	try {
 		/*
-		 * Genbrug eksisterende papir-lag — full remove/recreate hvert settle-pass
-		 * flash’er synlige notesbog-streger under LS→portræt (mindmap er skjult, papir ikke).
+		 * Genbrug papir-lag — never remove/recreate eller re-set background-image
+		 * under settle (flash’er synlige notesbog-streger LS→portræt).
 		 */
 		let layer = document.getElementById('msk-paper-lines-layer');
 		let needDraw = !layer;
 		if (layer) {
-			const half = layer.querySelector('.msk-paper-lines-layer__half');
-			const hbg = half ? (window.getComputedStyle(half).backgroundImage || '') : '';
-			if (!half || hbg.indexOf('repeating-linear-gradient') === -1) needDraw = true;
+			const halves = layer.querySelectorAll('.msk-paper-lines-layer__half');
+			const half = halves[0];
+			const hbg = half ? (half.style.backgroundImage || window.getComputedStyle(half).backgroundImage || '') : '';
+			const visible =
+				layer.style.visibility !== 'hidden' &&
+				layer.style.display !== 'none' &&
+				layer.style.opacity !== '0';
+			if (!half || halves.length < 2 || hbg.indexOf('repeating-linear-gradient') === -1) {
+				needDraw = true;
+			} else if (visible) {
+				/* Allerede tegnet og synligt — rør ikke styles (iOS flash). */
+				return;
+			}
 		}
 		if (needDraw) {
 			try {
@@ -2184,6 +2194,7 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 			layer = document.getElementById('msk-paper-lines-layer');
 		}
 		if (!layer) return;
+		/* Kun synlighed/størrelse — ikke background-image hvis gradient allerede findes. */
 		layer.style.setProperty('display', 'flex', 'important');
 		layer.style.setProperty('visibility', 'visible', 'important');
 		layer.style.setProperty('opacity', '1', 'important');
@@ -2194,16 +2205,19 @@ function mskEnsureProjectsPaperLinesAfterOrient() {
 		layer.style.setProperty('height', '100%', 'important');
 		layer.style.setProperty('min-height', '100dvh', 'important');
 		layer.style.setProperty('pointer-events', 'none', 'important');
-		const gradL =
-			'repeating-linear-gradient(to bottom, transparent 0, transparent 22px, rgba(208,208,208,0.88) 22px, rgba(208,208,208,0.88) 24px, rgba(224,224,224,0.62) 24px, rgba(224,224,224,0.62) 25px)';
-		const gradR =
-			'repeating-linear-gradient(to bottom, transparent 0, transparent 22px, rgba(213,213,213,0.88) 22px, rgba(213,213,213,0.88) 24px, rgba(224,224,224,0.62) 24px, rgba(224,224,224,0.62) 25px)';
 		layer.querySelectorAll('.msk-paper-lines-layer__half').forEach((el) => {
-			const isLeft = el.classList.contains('msk-paper-lines-layer__half--left');
+			const cur = el.style.backgroundImage || '';
+			if (cur.indexOf('repeating-linear-gradient') === -1) {
+				const isLeft = el.classList.contains('msk-paper-lines-layer__half--left');
+				const gradL =
+					'repeating-linear-gradient(to bottom, transparent 0, transparent 22px, rgba(208,208,208,0.88) 22px, rgba(208,208,208,0.88) 24px, rgba(224,224,224,0.62) 24px, rgba(224,224,224,0.62) 25px)';
+				const gradR =
+					'repeating-linear-gradient(to bottom, transparent 0, transparent 22px, rgba(213,213,213,0.88) 22px, rgba(213,213,213,0.88) 24px, rgba(224,224,224,0.62) 24px, rgba(224,224,224,0.62) 25px)';
+				el.style.setProperty('background-image', isLeft ? gradL : gradR, 'important');
+				el.style.setProperty('background-size', '100% 25px', 'important');
+				el.style.setProperty('background-repeat', 'repeat', 'important');
+			}
 			el.style.setProperty('display', 'block', 'important');
-			el.style.setProperty('background-image', isLeft ? gradL : gradR, 'important');
-			el.style.setProperty('background-size', '100% 25px', 'important');
-			el.style.setProperty('background-repeat', 'repeat', 'important');
 			el.style.setProperty('opacity', '1', 'important');
 			el.style.setProperty('visibility', 'visible', 'important');
 			el.style.setProperty('height', '100%', 'important');
@@ -19239,7 +19253,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 22:24';
+		const stampText = 'update torsdag 5 nov - klokken 22:29';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
