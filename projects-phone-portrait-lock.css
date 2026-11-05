@@ -230,17 +230,16 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	cursor: not-allowed;
 }
 
+/* Linjer ligger på body::before (styles.css) — skjul laget så vi ikke får dobbelte streger / iOS-flex-bug. */
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
-	display: flex !important;
-	visibility: visible !important;
-	opacity: 1 !important;
+	display: none !important;
+	visibility: hidden !important;
+	opacity: 0 !important;
 	pointer-events: none !important;
-	transform: translate3d(0, calc(-22px * var(--pLabelMul, 1)), 0) !important;
-	-webkit-transform: translate3d(0, calc(-22px * var(--pLabelMul, 1)), 0) !important;
 }
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half {
-	visibility: visible !important;
-	opacity: 1 !important;
+	visibility: hidden !important;
+	opacity: 0 !important;
 }
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .left-margin {
