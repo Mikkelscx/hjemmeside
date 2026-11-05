@@ -1352,6 +1352,10 @@ function mskProjectsMindmapClearPortraitGridArtifacts() {
 		const svg = document.querySelector('.connecting-lines');
 		const brain = document.querySelector('.brain');
 		const nodes = document.querySelectorAll('.project-node');
+		/* Under rotation: behold hide — ellers flash’er flow-layout (kun REPOP/NATURLI sideværts). */
+		const orientPending = document.documentElement.classList.contains(
+			'msk-projects-phone-orient-pending'
+		);
 
 		if (container) {
 			container.querySelectorAll('.msk-portrait-ring-overlay').forEach((el) => {
@@ -1377,12 +1381,20 @@ function mskProjectsMindmapClearPortraitGridArtifacts() {
 				'max-height',
 				'overflow',
 			].forEach((prop) => {
+				if (orientPending && (prop === 'opacity' || prop === 'visibility' || prop === 'pointer-events')) {
+					return;
+				}
 				try {
 					container.style.removeProperty(prop);
 				} catch (_) {}
 			});
 			container.classList.remove('projects-mindmap--portrait', 'projects-mindmap--phone-canvas');
 			container.removeAttribute('data-msk-portrait-canvas');
+			if (orientPending) {
+				container.style.setProperty('opacity', '0', 'important');
+				container.style.setProperty('visibility', 'hidden', 'important');
+				container.style.setProperty('pointer-events', 'none', 'important');
+			}
 		}
 		if (svg) {
 			try {
@@ -1725,6 +1737,12 @@ function mskProjectsPhoneOrientHealthRepair() {
 		}
 		document.documentElement.dispatchEvent(new CustomEvent('msk-relayout-projects-mindmap'));
 		mskEnsureProjectsPaperLinesAfterOrient();
+		/* Clear/relayout kan have fjernet hide — genopret pending-skjul med det samme. */
+		try {
+			if (document.documentElement.classList.contains('msk-projects-phone-orient-pending')) {
+				mskProjectsPhoneOrientHidePending();
+			}
+		} catch (_) {}
 	} catch (_) {}
 	finally {
 		try {
@@ -1832,7 +1850,7 @@ function mskProjectsPhoneOrientReadyToReveal() {
 		}
 
 		if (wantLandscape) {
-			/* Godkendt phone LS (14 Pro Max ref-canvas) — ikke sideværts portræt. */
+			/* Godkendt phone LS (14 Pro Max ref-canvas) — ikke sideværts portræt / flow-rest. */
 			if (!root.classList.contains('msk-projects-phone-landscape')) return false;
 			if (root.classList.contains('msk-projects-phone-portrait')) return false;
 			if (c.classList.contains('projects-mindmap--portrait')) return false;
@@ -1844,10 +1862,21 @@ function mskProjectsPhoneOrientReadyToReveal() {
 				} catch (_) {}
 				if (!root.classList.contains('msk-projects-phone-ls-ref-canvas')) return false;
 			}
-			/* Sideværts portræt: smal span ift. landskabsbredde, eller næsten fuld højde. */
-			if (spanW < iw * 0.55) return false;
-			if (spanH > ih * 0.88 && spanW < iw * 0.72) return false;
-			if (positioned >= 6 && spanW < iw * 0.45) return false;
+			const brain = document.querySelector('.brainstorm-container .brain');
+			if (!brain) return false;
+			const br = brain.getBoundingClientRect();
+			if (br.width < 8 || br.height < 8) return false;
+			const bcx = br.left + br.width / 2;
+			const bcy = br.top + br.height / 2;
+			/* Hjernen midt i LS — flow-rest efter clear sidder typisk til venstre. */
+			if (Math.abs(bcx - iw / 2) > iw * 0.22) return false;
+			if (Math.abs(bcy - ih / 2) > ih * 0.3) return false;
+			/* Sideværts portræt / kun venstre kolonne (REPOP+NATURLI). */
+			if (spanW < iw * 0.62) return false;
+			if (spanH < ih * 0.42) return false;
+			if (maxR < iw * 0.62) return false;
+			if (minL > iw * 0.38) return false;
+			if (spanH > ih * 0.88 && spanW < iw * 0.75) return false;
 			return true;
 		}
 		return false;
@@ -19090,7 +19119,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 5 nov - klokken 15:08';
+		const stampText = 'update torsdag 5 nov - klokken 15:14';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

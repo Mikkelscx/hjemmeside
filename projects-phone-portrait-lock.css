@@ -758,14 +758,16 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 }
 /* (p335) margin styres af .projects-mindmap--portrait-reglen ovenfor — undgå konflikt */
 
-/* Rotation pending: skjul forkert frame (vinder over visibility:visible ovenfor). */
+/* Rotation pending: skjul forkert frame + nav (vinder over visibility:visible ovenfor). */
 html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container,
 html.msk-projects-phone-orient-pending.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
 html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .brain,
 html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .project-node,
 html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
 html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines,
-html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines * {
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .brainstorm-container .connecting-lines *,
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .navbar,
+html.msk-projects-phone-orient-pending body.projects-page.sketchbook-theme .msk-build-stamp {
 	opacity: 0 !important;
 	visibility: hidden !important;
 	pointer-events: none !important;
