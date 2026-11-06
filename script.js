@@ -11746,12 +11746,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		 * Telefon: ringe lidt større end labels — ikke så store at ovalerne dominerer (p334).
 		 */
 		if (phonePortraitRing) {
-			/*
-			 * p421: Twister + Købajer — spids/hale pegede væk fra hjernen (som på screenshot).
-			 * Spejlvend så de peger indad som Durex/Unge.
-			 */
-			if (key === 'twister') flipX = !flipX;
-			if (key === 'kobajer') flipX = !flipX;
+			/* Twister + Købajer: brug lock flipX (ingen ekstra phone-spejl — p421 vendte dem forkert). */
 			if (key === 'repop') {
 				/*
 				 * Højde er god (p345). Bredde skal omslutte titel+Kravling i siderne (p346).
@@ -19723,7 +19718,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 01:41';
+		const stampText = 'update fredag 6 nov - klokken 14:23';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
