@@ -15372,41 +15372,48 @@ document.addEventListener('DOMContentLoaded', function() {
 								if (href.includes('twister')) twEdge = rr;
 							}
 						} catch (_) {}
-						const twTopR = pt(twEdge, 'top');
-						const twMidR = pt(twEdge, 'center');
+						const twNodeTop = pt(twiRect, 'top');
+						const twNodeMid = pt(twiRect, 'center');
+						const twRingTop = pt(twEdge, 'top');
 						let inX = svgScale(14);
-						let clear = svgScale(16);
-						let leftNudge = svgScale(78);
-						let liftY = svgScale(14);
+						let clear = svgScale(10);
+						let leftNudge = svgScale(28);
+						let liftY = svgScale(8);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 18);
-							const qL = mskSvgPointFromClientPx(currentSvg, 86, 0);
-							const qU = mskSvgPointFromClientPx(currentSvg, 0, 16);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
+							const qL = mskSvgPointFromClientPx(currentSvg, 32, 0);
+							const qU = mskSvgPointFromClientPx(currentSvg, 0, 10);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
 							leftNudge = Math.abs(qL.x - p0.x) || leftNudge;
 							liftY = Math.abs(qU.y - p0.y) || liftY;
 						} catch (_) {}
-						/* Start under venstre hjerne-kant; mere til venstre + lidt op */
+						/* Start under venstre hjerne-kant. */
 						a.x = brainLeft.x + inX;
 						a.y = brainBottom.y - svgScale(8) - liftY;
+						/*
+						 * Store HTML-ringe når næsten ind i hjernen efter LS→PT — brug node-top
+						 * når ring-top er for tæt på hjernen (ellers stub under hjernen).
+						 */
+						const ringGap = Math.hypot(twRingTop.x - a.x, twRingTop.y - a.y);
+						const nodeGap = Math.hypot(twNodeTop.x - a.x, twNodeTop.y - a.y);
+						const useNode = ringGap < Math.max(svgScale(100), nodeGap * 0.55);
+						const endTop = useNode ? twNodeTop : twRingTop;
+						const endMid = useNode ? twNodeMid : pt(twEdge, 'center');
 						b = {
-							x: twMidR.x - leftNudge,
-							y: twTopR.y - clear - liftY,
+							x: endMid.x - leftNudge,
+							y: endTop.y - clear,
 						};
-						/* LS→PT kan kollapse a≈b (kort stub under hjernen) — stræk mod node-centrum. */
+						/* Altid stræk til ~82% af node-centrum (svgScale(150) er for lavt efter portraitScale). */
 						try {
-							const minLen = svgScale(150);
-							let dx = b.x - a.x;
-							let dy = b.y - a.y;
-							let dist = Math.hypot(dx, dy) || 0;
-							if (dist < minLen) {
-								dx = twMidR.x - a.x;
-								dy = twMidR.y - a.y;
-								dist = Math.hypot(dx, dy) || 1;
-								const target = Math.max(minLen, dist * 0.9);
+							const dx = twNodeMid.x - a.x;
+							const dy = twNodeMid.y - a.y;
+							const dist = Math.hypot(dx, dy) || 1;
+							const target = dist * 0.82;
+							const cur = Math.hypot(b.x - a.x, b.y - a.y) || 0;
+							if (cur < target * 0.92) {
 								b.x = a.x + (dx / dist) * target;
 								b.y = a.y + (dy / dist) * target;
 							}
@@ -15419,10 +15426,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 140);
-							twBrainLineH = Math.max(svgScale(260), Math.abs(t1.y - t0.y) || svgScale(260));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 96);
+							twBrainLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
 						} catch (_) {
-							twBrainLineH = svgScale(260);
+							twBrainLineH = svgScale(120);
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -15724,8 +15731,9 @@ document.addEventListener('DOMContentLoaded', function() {
 								if (href.includes('kobajer')) kobEdge = rr;
 							}
 						} catch (_) {}
-						const kobTopR = pt(kobEdge, 'top');
-						const kobMidR = pt(kobEdge, 'center');
+						const kobNodeTop = pt(kobRect, 'top');
+						const kobNodeMid = pt(kobRect, 'center');
+						const kobRingTop = pt(kobEdge, 'top');
 						let inX = svgScale(14);
 						let clear = svgScale(10);
 						try {
@@ -15737,19 +15745,21 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						a.x = brainRight.x - inX;
 						a.y = brainBottom.y - svgScale(8);
-						b.x = kobMidR.x - inX * 0.35;
-						b.y = kobTopR.y - clear;
-						/* LS→PT stub-guard: hvis a≈b, stræk mod Købajer-centrum. */
+						const ringGap = Math.hypot(kobRingTop.x - a.x, kobRingTop.y - a.y);
+						const nodeGap = Math.hypot(kobNodeTop.x - a.x, kobNodeTop.y - a.y);
+						const useNode = ringGap < Math.max(svgScale(100), nodeGap * 0.55);
+						const endTop = useNode ? kobNodeTop : kobRingTop;
+						const endMid = useNode ? kobNodeMid : pt(kobEdge, 'center');
+						b.x = endMid.x - inX * 0.35;
+						b.y = endTop.y - clear;
+						/* Altid stræk til ~82% af node-centrum (svgScale(150) er for lavt efter portraitScale). */
 						try {
-							const minLen = svgScale(150);
-							let dx = b.x - a.x;
-							let dy = b.y - a.y;
-							let dist = Math.hypot(dx, dy) || 0;
-							if (dist < minLen) {
-								dx = kobMidR.x - a.x;
-								dy = kobMidR.y - a.y;
-								dist = Math.hypot(dx, dy) || 1;
-								const target = Math.max(minLen, dist * 0.9);
+							const dx = kobNodeMid.x - a.x;
+							const dy = kobNodeMid.y - a.y;
+							const dist = Math.hypot(dx, dy) || 1;
+							const target = dist * 0.82;
+							const cur = Math.hypot(b.x - a.x, b.y - a.y) || 0;
+							if (cur < target * 0.92) {
 								b.x = a.x + (dx / dist) * target;
 								b.y = a.y + (dy / dist) * target;
 							}
@@ -15761,10 +15771,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 120);
-							kobBrainLineH = Math.max(svgScale(220), Math.abs(t1.y - t0.y) || svgScale(220));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 96);
+							kobBrainLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
 						} catch (_) {
-							kobBrainLineH = svgScale(220);
+							kobBrainLineH = svgScale(120);
 						}
 					}
 					lineImg(kobBrainAsset, a, b, kobBrainLineH, {
@@ -19669,7 +19679,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 01:36';
+		const stampText = 'update fredag 6 nov - klokken 01:38';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
