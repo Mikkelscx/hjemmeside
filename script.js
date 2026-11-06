@@ -15462,7 +15462,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						twBrainGapA = 0;
 						twBrainGapB = svgScale(4);
 						twBrainLenMul = 1.05;
-						twBrainMirror = true;
+						/* Spejlvend ift. tidligere phone-mirror (stregerne vendte forkert). */
+						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
@@ -15807,7 +15808,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						kobBrainGapA = 0;
 						kobBrainGapB = 0;
 						kobBrainLenMul = 1.12;
-						kobBrainMirror = true;
+						/* Spejlvend ift. tidligere phone-mirror (stregerne vendte forkert). */
+						kobBrainMirror = false;
 						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
@@ -19719,7 +19721,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 14:30';
+		const stampText = 'update fredag 6 nov - klokken 14:41';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
