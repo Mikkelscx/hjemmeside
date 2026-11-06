@@ -1849,9 +1849,12 @@ function mskProjectsPhoneOrientLinesMatchNodes() {
 		lines.forEach((line) => {
 			const lr = line.getBoundingClientRect();
 			if (lr.width < 2 && lr.height < 2) return;
+			/* Asset-streger: width = længde, height = tykkelse — bbox.span lyver efter rotate. */
+			const attrLen = parseFloat(line.getAttribute('width') || '0') || 0;
 			lineRects.push({
 				lr,
 				span: Math.max(lr.width, lr.height),
+				attrLen,
 				cx: lr.left + lr.width / 2,
 				cy: lr.top + lr.height / 2,
 			});
@@ -1870,13 +1873,15 @@ function mskProjectsPhoneOrientLinesMatchNodes() {
 			const my = (bcy + ny) / 2;
 			const spokeLen = Math.hypot(nx - bcx, ny - bcy) || 1;
 			const tol = Math.max(48, Math.min(110, spokeLen * 0.45));
+			const underBrain = href.indexOf('twister') !== -1 || href.indexOf('kobajer') !== -1;
 			const hit = lineRects.some((item) => {
 				const nearMid = Math.hypot(item.cx - mx, item.cy - my) <= tol;
-				/* Under-hjernen: afvis korte stubs (skal nå et godt stykke af spoke-længden). */
-				if (href.indexOf('twister') !== -1 || href.indexOf('kobajer') !== -1) {
-					return nearMid && item.span >= spokeLen * 0.42;
+				if (!nearMid) return false;
+				/* Under-hjernen: kræv ægte streg-længde (ikke stub med stor bbox efter rotate). */
+				if (underBrain) {
+					return item.attrLen >= spokeLen * 0.55;
 				}
-				return nearMid;
+				return true;
 			});
 			if (hit) {
 				matched += 1;
@@ -11389,6 +11394,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			const h = Math.round(Math.max(1, container.clientHeight || cr.height || window.innerHeight || 667));
 			svg.setAttribute('width', String(w));
 			svg.setAttribute('height', String(h));
+			/* viewBox holder SVG-user units = CSS px efter LS→PT (ellers stub-streger under hjernen). */
+			svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
 			svg.style.setProperty('width', '100%', 'important');
 			svg.style.setProperty('height', '100%', 'important');
 			svg.style.setProperty('overflow', 'visible', 'important');
@@ -15341,6 +15348,21 @@ document.addEventListener('DOMContentLoaded', function() {
 							x: twMidR.x - leftNudge,
 							y: twTopR.y - clear - liftY,
 						};
+						/* LS→PT kan kollapse a≈b (kort stub under hjernen) — stræk mod node-centrum. */
+						try {
+							const minLen = svgScale(150);
+							let dx = b.x - a.x;
+							let dy = b.y - a.y;
+							let dist = Math.hypot(dx, dy) || 0;
+							if (dist < minLen) {
+								dx = twMidR.x - a.x;
+								dy = twMidR.y - a.y;
+								dist = Math.hypot(dx, dy) || 1;
+								const target = Math.max(minLen, dist * 0.9);
+								b.x = a.x + (dx / dist) * target;
+								b.y = a.y + (dy / dist) * target;
+							}
+						} catch (_) {}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
 						twBrainGapB = svgScale(4);
@@ -15629,6 +15651,21 @@ document.addEventListener('DOMContentLoaded', function() {
 						a.y = brainBottom.y - svgScale(8);
 						b.x = kobMidR.x - inX * 0.35;
 						b.y = kobTopR.y - clear;
+						/* LS→PT stub-guard: hvis a≈b, stræk mod Købajer-centrum. */
+						try {
+							const minLen = svgScale(150);
+							let dx = b.x - a.x;
+							let dy = b.y - a.y;
+							let dist = Math.hypot(dx, dy) || 0;
+							if (dist < minLen) {
+								dx = kobMidR.x - a.x;
+								dy = kobMidR.y - a.y;
+								dist = Math.hypot(dx, dy) || 1;
+								const target = Math.max(minLen, dist * 0.9);
+								b.x = a.x + (dx / dist) * target;
+								b.y = a.y + (dy / dist) * target;
+							}
+						} catch (_) {}
 						kobBrainGapA = 0;
 						kobBrainGapB = 0;
 						kobBrainLenMul = 1.12;
@@ -19514,7 +19551,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 01:25';
+		const stampText = 'update fredag 6 nov - klokken 01:30';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
