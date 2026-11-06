@@ -1955,6 +1955,21 @@ function mskProjectsPhoneOrientReadyToReveal() {
 			if (ch > 40 && ch < Math.min(ih * 0.38, 480)) return false;
 			const cw = c.getBoundingClientRect().width;
 			if (cw > 40 && Math.abs(cw - 932) < 8 && Math.abs(ch - 430) < 8) return false;
+			/* Ring-overlays skal findes før Twister/Købajer-streger under hjernen er korrekte. */
+			try {
+				const rings = c.querySelectorAll('.msk-portrait-ring-overlay.hand-drawn-frame');
+				if (rings.length < 6) return false;
+				let hasTw = false;
+				let hasKob = false;
+				rings.forEach((r) => {
+					const href = (r.dataset.nodeHref || '').toLowerCase();
+					if (href.indexOf('twister') !== -1) hasTw = true;
+					if (href.indexOf('kobajer') !== -1) hasKob = true;
+				});
+				if (!hasTw || !hasKob) return false;
+			} catch (_) {
+				return false;
+			}
 			/* Streger skal følge noder — ellers freeze midt i “streger i luften”. */
 			if (!mskProjectsPhoneOrientLinesMatchNodes()) return false;
 			return true;
@@ -12182,8 +12197,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					try {
 						mskEnsureKobajerPhoneLandscapeInlineBadge();
 					} catch (_) {}
-					createConnectingLines(redrawOpts);
-					createHandDrawnFrames(redrawOpts);
+					mskPaintProjectsMindmapLinesAndFrames(redrawOpts);
 					mskProjectsMindmapMarkGraphicsBuilt();
 				}
 				positionBrainfartsBuildNote();
@@ -14706,6 +14720,26 @@ document.addEventListener('DOMContentLoaded', function() {
 			);
 			mskProjectsIpadLsLockMindmapSpoke(line);
 		} catch (_) {}
+	}
+
+	/**
+	 * Phone/tablet portræt: HTML-ringe FØRST, derefter streger.
+	 * Twister+Købajer under hjernen bruger ring-top som anker — tegnes linjer før ringe,
+	 * bliver de to streger forkerte (og freeze efter LS→PT låser dem).
+	 */
+	function mskPaintProjectsMindmapLinesAndFrames(redrawOpts) {
+		const opts = redrawOpts || { force: true };
+		let portraitHtmlRings = false;
+		try {
+			portraitHtmlRings = !!mskShouldUsePortraitHtmlRings();
+		} catch (_) {}
+		if (portraitHtmlRings) {
+			createHandDrawnFrames(opts);
+			createConnectingLines(opts);
+		} else {
+			createConnectingLines(opts);
+			createHandDrawnFrames(opts);
+		}
 	}
 
 	// Create connecting lines from brain to nodes
@@ -18175,8 +18209,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			try {
 				mskEnsureKobajerPhoneLandscapeInlineBadge();
 			} catch (_) {}
-			createConnectingLines(redrawOpts);
-			createHandDrawnFrames(redrawOpts);
+			mskPaintProjectsMindmapLinesAndFrames(redrawOpts);
 			mskProjectsMindmapMarkGraphicsBuilt();
 			try {
 				if (
@@ -18400,8 +18433,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								const svg = document.querySelector('.connecting-lines');
 								if (svg) delete svg.dataset.mskDynamicGraphicsBuilt;
 							} catch (_) {}
-							createConnectingLines(redrawOpts);
-							createHandDrawnFrames(redrawOpts);
+							mskPaintProjectsMindmapLinesAndFrames(redrawOpts);
 							mskProjectsMindmapMarkGraphicsBuilt();
 						}
 						positionBrainfartsBuildNote();
@@ -19450,7 +19482,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 01:14';
+		const stampText = 'update fredag 6 nov - klokken 01:20';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
