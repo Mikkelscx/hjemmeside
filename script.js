@@ -1827,6 +1827,73 @@ function mskProjectsPhoneOrientHidePending() {
 	} catch (_) {}
 }
 
+/**
+ * Streger skal ramme noder (ellers freeze efter forkert paint = “streger i luften”).
+ * Matcher line-bbox midtpunkt mod hjerne↔node midtpunkt.
+ */
+function mskProjectsPhoneOrientLinesMatchNodes() {
+	try {
+		const brain = document.querySelector('.brainstorm-container .brain');
+		const nodes = document.querySelectorAll('.brainstorm-container a.project-node');
+		const lines = document.querySelectorAll(
+			'.brainstorm-container .connecting-lines image.dynamic-mindmap-line, .brainstorm-container .connecting-lines .dynamic-mindmap-line'
+		);
+		if (!brain || nodes.length < 6 || lines.length < 4) return false;
+		const br = brain.getBoundingClientRect();
+		if (br.width < 4 || br.height < 4) return false;
+		const bcx = br.left + br.width / 2;
+		const bcy = br.top + br.height / 2;
+		const lineRects = [];
+		lines.forEach((line) => {
+			const lr = line.getBoundingClientRect();
+			if (lr.width < 2 && lr.height < 2) return;
+			lineRects.push(lr);
+		});
+		if (lineRects.length < 4) return false;
+		let matched = 0;
+		nodes.forEach((n) => {
+			const r = n.getBoundingClientRect();
+			if (r.width < 4 || r.height < 4) return;
+			const nx = r.left + r.width / 2;
+			const ny = r.top + r.height / 2;
+			const mx = (bcx + nx) / 2;
+			const my = (bcy + ny) / 2;
+			const spokeLen = Math.hypot(nx - bcx, ny - bcy) || 1;
+			const tol = Math.max(48, Math.min(110, spokeLen * 0.45));
+			const hit = lineRects.some((lr) => {
+				const lcx = lr.left + lr.width / 2;
+				const lcy = lr.top + lr.height / 2;
+				return Math.hypot(lcx - mx, lcy - my) <= tol;
+			});
+			if (hit) matched += 1;
+		});
+		return matched >= 4;
+	} catch (_) {
+		return false;
+	}
+}
+
+/** Efter endelig phone-portræt node-layout: tving streg-rebuild (ellers peger LS-streger forbi). */
+function mskProjectsPhoneOrientForceSpokeRebuild() {
+	try {
+		const svg = document.querySelector('.brainstorm-container .connecting-lines');
+		if (svg) {
+			try {
+				delete svg.dataset.mskDynamicGraphicsBuilt;
+			} catch (_) {}
+		}
+		window.__mskProjectsBypassSpokeFreeze = true;
+		window.__mskProjectsForceLayout = true;
+		window.__mskProjectsRelayoutNow = true;
+		mskProjectsMindmapLastLayoutIw = -1;
+		mskProjectsMindmapLastLayoutIh = -1;
+		if (typeof window.__mskProjectsRelayout === 'function') {
+			window.__mskProjectsRelayout(true);
+		}
+		document.documentElement.dispatchEvent(new CustomEvent('msk-relayout-projects-mindmap'));
+	} catch (_) {}
+}
+
 /** Telefon: kun true når layout matcher godkendt LS eller godkendt portræt. */
 function mskProjectsPhoneOrientReadyToReveal() {
 	try {
@@ -1888,6 +1955,8 @@ function mskProjectsPhoneOrientReadyToReveal() {
 			if (ch > 40 && ch < Math.min(ih * 0.38, 480)) return false;
 			const cw = c.getBoundingClientRect().width;
 			if (cw > 40 && Math.abs(cw - 932) < 8 && Math.abs(ch - 430) < 8) return false;
+			/* Streger skal følge noder — ellers freeze midt i “streger i luften”. */
+			if (!mskProjectsPhoneOrientLinesMatchNodes()) return false;
 			return true;
 		}
 
@@ -1933,7 +2002,7 @@ function mskProjectsPhoneOrientRevealIfReady(allowSoftPortrait) {
 		const root = document.documentElement;
 		if (!root.classList.contains('msk-projects-phone-orient-pending')) return false;
 		let ok = mskProjectsPhoneOrientReadyToReveal();
-		/* Efter flere passes: blød portræt-afsløring hvis grid er malet (undgå blank forever). */
+		/* Efter flere passes: blød portræt-afsløring — stadig kræv streger der matcher noder. */
 		if (!ok && allowSoftPortrait && mskDeviceOrientationIsPortrait() === true) {
 			const c = document.querySelector('.brainstorm-container');
 			const positioned = document.querySelectorAll(
@@ -1952,7 +2021,8 @@ function mskProjectsPhoneOrientRevealIfReady(allowSoftPortrait) {
 				c &&
 				c.classList.contains('projects-mindmap--portrait') &&
 				positioned >= 6 &&
-				dyn >= 4
+				dyn >= 4 &&
+				mskProjectsPhoneOrientLinesMatchNodes()
 			);
 		}
 		if (!ok) return false;
@@ -2099,12 +2169,14 @@ function mskProjectsScheduleOrientationRelayout() {
 					c.classList.add('projects-mindmap--portrait');
 					c.classList.remove('projects-mindmap--phone-canvas');
 				}
+				/* Profil kan flytte noder EFTER første streg-paint — rebuild mens stadig skjult. */
+				mskProjectsPhoneOrientForceSpokeRebuild();
 			}
 		} catch (_) {}
 		if (gen !== mskProjectsOrientSettleGen || mskPhoneOrientLayoutFrozen) return;
 		try {
-			/* Ét settle-vindue: afslør først efter ~500ms så layout er færdigt — undgå race med senere paintPass. */
-			const soft = Date.now() - t0 > 500;
+			/* Soft først efter streger har haft tid til at matche noder. */
+			const soft = Date.now() - t0 > 900;
 			mskProjectsPhoneOrientRevealIfReady(soft);
 		} catch (_) {}
 	};
@@ -2127,8 +2199,8 @@ function mskProjectsScheduleOrientationRelayout() {
 			return;
 		}
 		paintPass();
-		/* Få passes; efter reveal er layout frozen. */
-		[120, 400, 700].forEach((ms) => {
+		/* Flere passes mens skjult indtil streger matcher — så freeze. */
+		[100, 280, 520, 800, 1200].forEach((ms) => {
 			window.setTimeout(() => {
 				if (gen !== mskProjectsOrientSettleGen || mskPhoneOrientLayoutFrozen) return;
 				paintPass();
@@ -19378,7 +19450,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 00:54';
+		const stampText = 'update fredag 6 nov - klokken 01:14';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
