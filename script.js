@@ -1904,9 +1904,18 @@ function mskProjectsPhoneOrientLinesMatchNodes() {
 			const hit = lineRects.some((item) => {
 				const nearMid = Math.hypot(item.cx - mx, item.cy - my) <= tol;
 				if (!nearMid) return false;
-				/* Under-hjernen: kræv ægte streg-længde (ikke stub med stor bbox efter rotate). */
+				/* Under-hjernen: længde måles fra ansigt-kant (ikke kornkrans) — ca. spoke − 0.45*face. */
 				if (underBrain) {
-					return item.attrLen >= spokeLen * 0.5;
+					let face = Math.min(br.width, br.height);
+					try {
+						const cssBrain = getComputedStyle(document.documentElement)
+							.getPropertyValue('--projectsBrainSize')
+							.trim();
+						const facePx = parseFloat(cssBrain) || 0;
+						if (facePx > 40 && facePx < face) face = facePx;
+					} catch (_) {}
+					const edgeSpoke = Math.max(48, spokeLen - face * 0.45);
+					return item.attrLen >= edgeSpoke * 0.55;
 				}
 				return true;
 			});
@@ -15150,10 +15159,45 @@ document.addEventListener('DOMContentLoaded', function() {
 				};
 
 				const bRect = currentBrain.getBoundingClientRect();
-				const brainTop = pt(bRect, 'top');
-				const brainBottom = pt(bRect, 'bottom');
-				const brainLeft = pt(bRect, 'left');
-				const brainRight = pt(bRect, 'right');
+				/*
+				 * .brain bbox inkluderer kornkrans (~200px) mens ansigtet er --projectsBrainSize (~141).
+				 * Under-hjerne-streger skal starte ved ansigt-kanten — ellers stubs efter LS→PT.
+				 */
+				let brainFaceRect = bRect;
+				try {
+					let facePx = 0;
+					const cssBrain = getComputedStyle(document.documentElement)
+						.getPropertyValue('--projectsBrainSize')
+						.trim();
+					facePx = parseFloat(cssBrain) || 0;
+					if (!(facePx > 40)) {
+						const faceEl =
+							currentBrain.querySelector('img, svg, .brain__face, .brain-face') || null;
+						if (faceEl) {
+							const fr = faceEl.getBoundingClientRect();
+							facePx = Math.min(fr.width, fr.height) || 0;
+						}
+					}
+					if (facePx > 40 && facePx < Math.min(bRect.width, bRect.height) * 0.92) {
+						const cx = bRect.left + bRect.width / 2;
+						const cy = bRect.top + bRect.height / 2;
+						const half = facePx / 2;
+						brainFaceRect = {
+							left: cx - half,
+							top: cy - half,
+							right: cx + half,
+							bottom: cy + half,
+							width: facePx,
+							height: facePx,
+						};
+					}
+				} catch (_) {
+					brainFaceRect = bRect;
+				}
+				const brainTop = pt(brainFaceRect, 'top');
+				const brainBottom = pt(brainFaceRect, 'bottom');
+				const brainLeft = pt(brainFaceRect, 'left');
+				const brainRight = pt(brainFaceRect, 'right');
 
 				const repRect = repop && repop.getBoundingClientRect();
 				const natRect = naturli && naturli.getBoundingClientRect();
@@ -19679,7 +19723,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 01:38';
+		const stampText = 'update fredag 6 nov - klokken 01:41';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
