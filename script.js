@@ -1863,6 +1863,33 @@ function mskProjectsPhoneOrientLinesMatchNodes() {
 		let matched = 0;
 		let twOk = false;
 		let kobOk = false;
+		const nodeBy = (part) => {
+			for (let i = 0; i < nodes.length; i++) {
+				const h = (nodes[i].getAttribute('href') || '').toLowerCase();
+				if (h.indexOf(part) !== -1) return nodes[i];
+			}
+			return null;
+		};
+		const chainOk = (fromPart, toPart) => {
+			const a = nodeBy(fromPart);
+			const b = nodeBy(toPart);
+			if (!a || !b) return false;
+			const ar = a.getBoundingClientRect();
+			const br = b.getBoundingClientRect();
+			if (ar.width < 4 || br.width < 4) return false;
+			const ax = ar.left + ar.width / 2;
+			const ay = ar.top + ar.height / 2;
+			const bx = br.left + br.width / 2;
+			const by = br.top + br.height / 2;
+			const mx = (ax + bx) / 2;
+			const my = (ay + by) / 2;
+			const gap = Math.hypot(bx - ax, by - ay) || 1;
+			const tol = Math.max(40, Math.min(100, gap * 0.5));
+			return lineRects.some((item) => {
+				if (Math.hypot(item.cx - mx, item.cy - my) > tol) return false;
+				return item.attrLen >= Math.max(56, gap * 0.28);
+			});
+		};
 		nodes.forEach((n) => {
 			const r = n.getBoundingClientRect();
 			if (r.width < 4 || r.height < 4) return;
@@ -1879,7 +1906,7 @@ function mskProjectsPhoneOrientLinesMatchNodes() {
 				if (!nearMid) return false;
 				/* Under-hjernen: kræv ægte streg-længde (ikke stub med stor bbox efter rotate). */
 				if (underBrain) {
-					return item.attrLen >= spokeLen * 0.55;
+					return item.attrLen >= spokeLen * 0.5;
 				}
 				return true;
 			});
@@ -1889,7 +1916,9 @@ function mskProjectsPhoneOrientLinesMatchNodes() {
 				if (href.indexOf('kobajer') !== -1) kobOk = true;
 			}
 		});
-		return matched >= 4 && twOk && kobOk;
+		const brfOk = chainOk('twister', 'brainfarts');
+		const byeOk = chainOk('kobajer', 'byens');
+		return matched >= 4 && twOk && kobOk && brfOk && byeOk;
 	} catch (_) {
 		return false;
 	}
@@ -15071,14 +15100,19 @@ document.addEventListener('DOMContentLoaded', function() {
 					const ey = by - uy * gapB;
 					let len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2)) * lenMul * mindmapLineLenMul;
 					if (len < 6) return;
+					/* Telefon: tykkelse må ikke overstige længde (ellers stub/klat efter LS→PT). */
+					let strokeH = heightPx;
+					if (phoneLinesOnly && strokeH > len * 0.92) {
+						strokeH = Math.max(svgScale(28), len * 0.72);
+					}
 					let angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI + angleOffsetDeg;
 					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 					img.setAttribute('href', assetPath);
 					img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', assetPath);
 					img.setAttribute('x', String(sx));
-					img.setAttribute('y', String(sy - (heightPx / 2)));
+					img.setAttribute('y', String(sy - (strokeH / 2)));
 					img.setAttribute('width', String(len));
-					img.setAttribute('height', String(heightPx));
+					img.setAttribute('height', String(strokeH));
 					img.setAttribute('opacity', '1');
 					img.setAttribute('preserveAspectRatio', 'none');
 					/* mirror: vandret spejl af streg-asset omkring midtpunkt (hver streg for sig) */
@@ -15099,6 +15133,20 @@ document.addEventListener('DOMContentLoaded', function() {
 					img.style.imageRendering = 'crisp-edges';
 					img.style.filter = 'none';
 					currentSvg.appendChild(img);
+				};
+
+				/* LS→PT: ring-webp’er overlapper ofte — brug node-kanter når ring-gap er for lille. */
+				const phoneChainEnds = (ringA, ringB, nodeA, nodeB, kindA, kindB, minGap) => {
+					const need = minGap != null ? minGap : svgScale(72);
+					const tryPair = (ra, rb) => {
+						if (!ra || !rb || ra.width < 4 || rb.width < 4) return null;
+						const a = pt(ra, kindA);
+						const b = pt(rb, kindB);
+						const d = Math.hypot(b.x - a.x, b.y - a.y);
+						if (d < need) return null;
+						return { a, b, dist: d };
+					};
+					return tryPair(ringA, ringB) || tryPair(nodeA, nodeB) || null;
 				};
 
 				const bRect = currentBrain.getBoundingClientRect();
@@ -15419,7 +15467,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: nederste venstre streg større — ind til synlig oval + tykkere (p436) */
+					/* Telefon: Twister→Brainfarts — undgå stub når ringe overlapper efter LS→PT */
 					try {
 						if (phoneLinesOnly) {
 							let twEdge = twiRect;
@@ -15434,25 +15482,65 @@ document.addEventListener('DOMContentLoaded', function() {
 									if (href.includes('brainfarts')) brfEdge = rr;
 								}
 							} catch (_) {}
-							const ta = pt(twEdge, 'bottom');
-							const tb = pt(brfEdge, 'top');
-							let inset = svgScale(10);
+							const minGap = svgScale(88);
+							const ends = phoneChainEnds(
+								twEdge,
+								brfEdge,
+								twiRect,
+								brfRect,
+								'bottom',
+								'top',
+								minGap
+							);
+							let clear = svgScale(6);
 							try {
 								const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-								const p1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
-								inset = Math.abs(p1.y - p0.y) || inset;
+								const p1 = mskSvgPointFromClientPx(currentSvg, 0, 8);
+								clear = Math.abs(p1.y - p0.y) || clear;
 							} catch (_) {}
-							a = { x: ta.x, y: ta.y - inset };
-							b = { x: tb.x, y: tb.y + inset };
+							if (ends) {
+								a = { x: ends.a.x, y: ends.a.y + clear };
+								b = { x: ends.b.x, y: ends.b.y - clear };
+							} else {
+								const ta = pt(twiRect, 'bottom');
+								const tb = pt(brfRect, 'top');
+								const mid = pt(brfRect, 'center');
+								a = { x: ta.x, y: ta.y + clear };
+								b = { x: tb.x, y: tb.y - clear };
+								let dist = Math.hypot(b.x - a.x, b.y - a.y) || 0;
+								if (dist < minGap) {
+									const dx = mid.x - a.x;
+									const dy = mid.y - a.y;
+									dist = Math.hypot(dx, dy) || 1;
+									const target = Math.max(minGap, dist * 0.88);
+									b.x = a.x + (dx / dist) * target;
+									b.y = a.y + (dy / dist) * target;
+								}
+							}
+							/* Stub-guard hvis clear åd længden. */
+							try {
+								let dx = b.x - a.x;
+								let dy = b.y - a.y;
+								let dist = Math.hypot(dx, dy) || 0;
+								if (dist < minGap) {
+									const mid = pt(brfRect, 'center');
+									dx = mid.x - a.x;
+									dy = mid.y - a.y;
+									dist = Math.hypot(dx, dy) || 1;
+									const target = Math.max(minGap, dist * 0.88);
+									b.x = a.x + (dx / dist) * target;
+									b.y = a.y + (dy / dist) * target;
+								}
+							} catch (_) {}
 							twBrfGapA = 0;
 							twBrfGapB = 0;
-							twBrfLenMul = 1.48;
+							twBrfLenMul = 1.12;
 							try {
 								const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-								const t1 = mskSvgPointFromClientPx(currentSvg, 0, 170);
-								twBrfLineH = Math.max(svgScale(300), Math.abs(t1.y - t0.y) || svgScale(300));
+								const t1 = mskSvgPointFromClientPx(currentSvg, 0, 96);
+								twBrfLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
 							} catch (_) {
-								twBrfLineH = Math.max(twBrfLineH, svgScale(300));
+								twBrfLineH = svgScale(120);
 							}
 						}
 					} catch (_) {}
@@ -15758,7 +15846,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					if (phoneLinesOnly) {
 						/*
-						 * Kø→Byens: ring-webp padding gør bbox for “kort” — træk til synlig oval (p406).
+						 * Kø→Byens: efter LS→PT overlapper ringe ofte (~20px gap) → 12px stub.
+						 * Brug node-kanter når ring-gap er for lille; stub-guard + tykkelses-cap.
 						 */
 						let kobEdge = kobRect;
 						let byeEdge = byeRect;
@@ -15772,29 +15861,58 @@ document.addEventListener('DOMContentLoaded', function() {
 								if (href.includes('byens')) byeEdge = rr;
 							}
 						} catch (_) {}
-						const ka = pt(kobEdge, 'bottom');
-						const kb = pt(byeEdge, 'top');
-						/* p435: klaring udenfor ringe som Twister→Brainfarts (matcher DevTools) */
+						const minGap = svgScale(88);
+						const ends = phoneChainEnds(
+							kobEdge,
+							byeEdge,
+							kobRect,
+							byeRect,
+							'bottom',
+							'top',
+							minGap
+						);
 						let clear = svgScale(4);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 5);
 							clear = Math.abs(p1.y - p0.y) || clear;
 						} catch (_) {}
-						a.x = ka.x;
-						b.x = ka.x;
-						a.y = ka.y + clear;
-						b.y = kb.y - clear;
+						if (ends) {
+							a.x = ends.a.x;
+							b.x = ends.a.x;
+							a.y = ends.a.y + clear;
+							b.y = ends.b.y - clear;
+						} else {
+							const ka = pt(kobRect, 'bottom');
+							const kb = pt(byeRect, 'top');
+							a.x = ka.x;
+							b.x = ka.x;
+							a.y = ka.y + clear;
+							b.y = kb.y - clear;
+						}
+						try {
+							let dx = b.x - a.x;
+							let dy = b.y - a.y;
+							let dist = Math.hypot(dx, dy) || 0;
+							if (dist < minGap) {
+								const mid = pt(byeRect, 'center');
+								dx = mid.x - a.x;
+								dy = mid.y - a.y;
+								dist = Math.hypot(dx, dy) || 1;
+								const target = Math.max(minGap, dist * 0.88);
+								b.x = a.x;
+								b.y = a.y + (dy / dist) * target;
+							}
+						} catch (_) {}
 						kobByeLineGapA = 0;
 						kobByeLineGapB = 0;
-						kobByeLenMul = 1.22;
-						/* Tykkere/tydeligere streg — større end lock-skala (~99px) (p409) */
+						kobByeLenMul = 1.12;
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 140);
-							kobByeLineH = Math.max(kobByeLineH * 1.35, Math.abs(t1.y - t0.y) || svgScale(320));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 96);
+							kobByeLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
 						} catch (_) {
-							kobByeLineH = Math.max(kobByeLineH * 1.35, svgScale(320));
+							kobByeLineH = svgScale(120);
 						}
 					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
@@ -19551,7 +19669,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 01:30';
+		const stampText = 'update fredag 6 nov - klokken 01:36';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
