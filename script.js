@@ -1830,6 +1830,8 @@ function mskProjectsPhoneOrientHidePending() {
 /**
  * Streger skal ramme noder (ellers freeze efter forkert paint = “streger i luften”).
  * Matcher line-bbox midtpunkt mod hjerne↔node midtpunkt.
+ * Kræver særligt Twister + Købajer (de 2 under hjernen) — ellers kan 4 øvre streger
+ * “bestå” mens under-hjernen stadig er korte stubs efter LS→PT.
  */
 function mskProjectsPhoneOrientLinesMatchNodes() {
 	try {
@@ -1847,27 +1849,42 @@ function mskProjectsPhoneOrientLinesMatchNodes() {
 		lines.forEach((line) => {
 			const lr = line.getBoundingClientRect();
 			if (lr.width < 2 && lr.height < 2) return;
-			lineRects.push(lr);
+			lineRects.push({
+				lr,
+				span: Math.max(lr.width, lr.height),
+				cx: lr.left + lr.width / 2,
+				cy: lr.top + lr.height / 2,
+			});
 		});
 		if (lineRects.length < 4) return false;
 		let matched = 0;
+		let twOk = false;
+		let kobOk = false;
 		nodes.forEach((n) => {
 			const r = n.getBoundingClientRect();
 			if (r.width < 4 || r.height < 4) return;
+			const href = (n.getAttribute('href') || '').toLowerCase();
 			const nx = r.left + r.width / 2;
 			const ny = r.top + r.height / 2;
 			const mx = (bcx + nx) / 2;
 			const my = (bcy + ny) / 2;
 			const spokeLen = Math.hypot(nx - bcx, ny - bcy) || 1;
 			const tol = Math.max(48, Math.min(110, spokeLen * 0.45));
-			const hit = lineRects.some((lr) => {
-				const lcx = lr.left + lr.width / 2;
-				const lcy = lr.top + lr.height / 2;
-				return Math.hypot(lcx - mx, lcy - my) <= tol;
+			const hit = lineRects.some((item) => {
+				const nearMid = Math.hypot(item.cx - mx, item.cy - my) <= tol;
+				/* Under-hjernen: afvis korte stubs (skal nå et godt stykke af spoke-længden). */
+				if (href.indexOf('twister') !== -1 || href.indexOf('kobajer') !== -1) {
+					return nearMid && item.span >= spokeLen * 0.42;
+				}
+				return nearMid;
 			});
-			if (hit) matched += 1;
+			if (hit) {
+				matched += 1;
+				if (href.indexOf('twister') !== -1) twOk = true;
+				if (href.indexOf('kobajer') !== -1) kobOk = true;
+			}
 		});
-		return matched >= 4;
+		return matched >= 4 && twOk && kobOk;
 	} catch (_) {
 		return false;
 	}
@@ -2172,6 +2189,9 @@ function mskProjectsScheduleOrientationRelayout() {
 			}
 			if (deviceP === true) {
 				try {
+					mskClearProjectsPhoneLandscapeRefCanvas();
+				} catch (_) {}
+				try {
 					if (typeof mskApplyPhonePortraitProfileDocument === 'function') {
 						mskApplyPhonePortraitProfileDocument();
 					}
@@ -2183,9 +2203,21 @@ function mskProjectsScheduleOrientationRelayout() {
 				if (c) {
 					c.classList.add('projects-mindmap--portrait');
 					c.classList.remove('projects-mindmap--phone-canvas');
+					/* Sørg for fuld portræt-højde før under-hjerne-streger (ellers stubs). */
+					try {
+						c.style.setProperty('width', '100%', 'important');
+						c.style.setProperty('height', '100%', 'important');
+						c.style.setProperty('min-height', '100%', 'important');
+						c.style.setProperty('max-height', 'none', 'important');
+						c.style.setProperty('transform', 'none', 'important');
+					} catch (_) {}
 				}
-				/* Profil kan flytte noder EFTER første streg-paint — rebuild mens stadig skjult. */
-				mskProjectsPhoneOrientForceSpokeRebuild();
+				/* Kun rebuild når canvas er høj nok — ellers tegnes Twister/Købajer som stubs. */
+				const cr = c ? c.getBoundingClientRect() : null;
+				const ih = window.innerHeight || 0;
+				if (cr && cr.height >= Math.min(ih * 0.55, 480)) {
+					mskProjectsPhoneOrientForceSpokeRebuild();
+				}
 			}
 		} catch (_) {}
 		if (gen !== mskProjectsOrientSettleGen || mskPhoneOrientLayoutFrozen) return;
@@ -19482,7 +19514,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 01:20';
+		const stampText = 'update fredag 6 nov - klokken 01:25';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
