@@ -15107,8 +15107,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (len < 6) return;
 					/* Telefon: tykkelse må ikke overstige længde (ellers stub/klat efter LS→PT). */
 					let strokeH = heightPx;
-					if (phoneLinesOnly && strokeH > len * 0.92) {
+					if (phoneLinesOnly && !opts.allowThickStroke && strokeH > len * 0.92) {
 						strokeH = Math.max(svgScale(28), len * 0.72);
+					} else if (phoneLinesOnly && opts.allowThickStroke && strokeH > len * 1.35) {
+						strokeH = Math.max(svgScale(36), len * 1.05);
 					}
 					let angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI + angleOffsetDeg;
 					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -15416,18 +15418,18 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twNodeMid = pt(twiRect, 'center');
 						const twRingTop = pt(twEdge, 'top');
 						let inX = svgScale(14);
-						let clear = svgScale(8);
-						let liftY = svgScale(8);
+						let clear = svgScale(10);
+						let liftY = svgScale(22);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 10);
-							const qU = mskSvgPointFromClientPx(currentSvg, 0, 10);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
+							const qU = mskSvgPointFromClientPx(currentSvg, 0, 26);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
 							liftY = Math.abs(qU.y - p0.y) || liftY;
 						} catch (_) {}
-						/* Start under venstre hjerne-kant. */
+						/* Start under venstre hjerne-kant — trukket lidt op. */
 						a.x = brainLeft.x + inX;
 						a.y = brainBottom.y - svgScale(8) - liftY;
 						/*
@@ -15438,28 +15440,28 @@ document.addEventListener('DOMContentLoaded', function() {
 						const nodeGap = Math.hypot(twNodeTop.x - a.x, twNodeTop.y - a.y);
 						const useNode = ringGap < Math.max(svgScale(100), nodeGap * 0.55);
 						const aim = useNode ? twNodeMid : pt(twEdge, 'center');
-						/* Sigte mod centrum — lidt ind i ovalen, ikke oppe i venstre hjørne. */
+						/* Kortere sigte mod centrum + hele stregen lidt op. */
 						const dx0 = aim.x - a.x;
 						const dy0 = aim.y - a.y;
 						const dist0 = Math.hypot(dx0, dy0) || 1;
-						const target = dist0 * 0.88;
+						const target = dist0 * 0.72;
 						b = {
 							x: a.x + (dx0 / dist0) * target,
-							y: a.y + (dy0 / dist0) * target,
+							y: a.y + (dy0 / dist0) * target - svgScale(10),
 						};
 						twBrainAngleOffset = 6;
 						twBrainGapA = 0;
 						twBrainGapB = clear;
-						twBrainLenMul = 1.05;
+						twBrainLenMul = 0.94;
 						/* Spejlvend ift. tidligere phone-mirror (stregerne vendte forkert). */
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 96);
-							twBrainLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 150);
+							twBrainLineH = Math.max(svgScale(168), Math.abs(t1.y - t0.y) || svgScale(168));
 						} catch (_) {
-							twBrainLineH = svgScale(120);
+							twBrainLineH = svgScale(168);
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -15468,6 +15470,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						lenMul: twBrainLenMul,
 						angleOffsetDeg: twBrainAngleOffset,
 						mirror: twBrainMirror,
+						allowThickStroke: phoneLinesOnly,
 					});
 				}
 				if (twiRect && brfRect) {
@@ -19710,7 +19713,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 7 nov - klokken 12:18';
+		const stampText = 'update lørdag 7 nov - klokken 12:21';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
