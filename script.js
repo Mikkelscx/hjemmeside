@@ -15400,7 +15400,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p442: nederste ende mere til venstre + hele stregen lidt op.
+						 * Peg mere direkte mod Twister-centrum (tidligere leftNudge trak enden for langt ud).
 						 */
 						let twEdge = twiRect;
 						try {
@@ -15416,51 +15416,40 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twNodeMid = pt(twiRect, 'center');
 						const twRingTop = pt(twEdge, 'top');
 						let inX = svgScale(14);
-						let clear = svgScale(10);
-						let leftNudge = svgScale(28);
+						let clear = svgScale(8);
 						let liftY = svgScale(8);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
-							const qL = mskSvgPointFromClientPx(currentSvg, 32, 0);
+							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 10);
 							const qU = mskSvgPointFromClientPx(currentSvg, 0, 10);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
-							leftNudge = Math.abs(qL.x - p0.x) || leftNudge;
 							liftY = Math.abs(qU.y - p0.y) || liftY;
 						} catch (_) {}
 						/* Start under venstre hjerne-kant. */
 						a.x = brainLeft.x + inX;
 						a.y = brainBottom.y - svgScale(8) - liftY;
 						/*
-						 * Store HTML-ringe når næsten ind i hjernen efter LS→PT — brug node-top
+						 * Store HTML-ringe når næsten ind i hjernen efter LS→PT — brug node
 						 * når ring-top er for tæt på hjernen (ellers stub under hjernen).
 						 */
 						const ringGap = Math.hypot(twRingTop.x - a.x, twRingTop.y - a.y);
 						const nodeGap = Math.hypot(twNodeTop.x - a.x, twNodeTop.y - a.y);
 						const useNode = ringGap < Math.max(svgScale(100), nodeGap * 0.55);
-						const endTop = useNode ? twNodeTop : twRingTop;
-						const endMid = useNode ? twNodeMid : pt(twEdge, 'center');
+						const aim = useNode ? twNodeMid : pt(twEdge, 'center');
+						/* Sigte mod centrum — lidt ind i ovalen, ikke oppe i venstre hjørne. */
+						const dx0 = aim.x - a.x;
+						const dy0 = aim.y - a.y;
+						const dist0 = Math.hypot(dx0, dy0) || 1;
+						const target = dist0 * 0.88;
 						b = {
-							x: endMid.x - leftNudge,
-							y: endTop.y - clear,
+							x: a.x + (dx0 / dist0) * target,
+							y: a.y + (dy0 / dist0) * target,
 						};
-						/* Altid stræk til ~82% af node-centrum (svgScale(150) er for lavt efter portraitScale). */
-						try {
-							const dx = twNodeMid.x - a.x;
-							const dy = twNodeMid.y - a.y;
-							const dist = Math.hypot(dx, dy) || 1;
-							const target = dist * 0.82;
-							const cur = Math.hypot(b.x - a.x, b.y - a.y) || 0;
-							if (cur < target * 0.92) {
-								b.x = a.x + (dx / dist) * target;
-								b.y = a.y + (dy / dist) * target;
-							}
-						} catch (_) {}
-						twBrainAngleOffset = 0;
+						twBrainAngleOffset = 6;
 						twBrainGapA = 0;
-						twBrainGapB = svgScale(4);
+						twBrainGapB = clear;
 						twBrainLenMul = 1.05;
 						/* Spejlvend ift. tidligere phone-mirror (stregerne vendte forkert). */
 						twBrainMirror = false;
@@ -19721,7 +19710,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 6 nov - klokken 15:47';
+		const stampText = 'update lørdag 7 nov - klokken 12:18';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
