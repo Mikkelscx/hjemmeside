@@ -15109,8 +15109,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					let strokeH = heightPx;
 					if (phoneLinesOnly && !opts.allowThickStroke && strokeH > len * 0.92) {
 						strokeH = Math.max(svgScale(28), len * 0.72);
-					} else if (phoneLinesOnly && opts.allowThickStroke && strokeH > len * 1.35) {
-						strokeH = Math.max(svgScale(36), len * 1.05);
+					} else if (phoneLinesOnly && opts.allowThickStroke && strokeH > len * 1.85) {
+						strokeH = Math.max(svgScale(48), len * 1.45);
 					}
 					let angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI + angleOffsetDeg;
 					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -15419,19 +15419,19 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twRingTop = pt(twEdge, 'top');
 						let inX = svgScale(14);
 						let clear = svgScale(10);
-						let liftY = svgScale(22);
+						let dropY = svgScale(14);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
 							const q1 = mskSvgPointFromClientPx(currentSvg, 0, 12);
-							const qU = mskSvgPointFromClientPx(currentSvg, 0, 26);
+							const qD = mskSvgPointFromClientPx(currentSvg, 0, 16);
 							inX = Math.abs(p1.x - p0.x) || inX;
 							clear = Math.abs(q1.y - p0.y) || clear;
-							liftY = Math.abs(qU.y - p0.y) || liftY;
+							dropY = Math.abs(qD.y - p0.y) || dropY;
 						} catch (_) {}
-						/* Start under venstre hjerne-kant — trukket lidt op. */
+						/* Start under venstre hjerne-kant — lidt mere ned. */
 						a.x = brainLeft.x + inX;
-						a.y = brainBottom.y - svgScale(8) - liftY;
+						a.y = brainBottom.y - svgScale(4) + dropY;
 						/*
 						 * Store HTML-ringe når næsten ind i hjernen efter LS→PT — brug node
 						 * når ring-top er for tæt på hjernen (ellers stub under hjernen).
@@ -15440,14 +15440,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						const nodeGap = Math.hypot(twNodeTop.x - a.x, twNodeTop.y - a.y);
 						const useNode = ringGap < Math.max(svgScale(100), nodeGap * 0.55);
 						const aim = useNode ? twNodeMid : pt(twEdge, 'center');
-						/* Kortere sigte mod centrum + hele stregen lidt op. */
+						/* Kortere sigte mod centrum + hele stregen lidt ned. */
 						const dx0 = aim.x - a.x;
 						const dy0 = aim.y - a.y;
 						const dist0 = Math.hypot(dx0, dy0) || 1;
 						const target = dist0 * 0.72;
 						b = {
 							x: a.x + (dx0 / dist0) * target,
-							y: a.y + (dy0 / dist0) * target - svgScale(10),
+							y: a.y + (dy0 / dist0) * target + svgScale(8),
 						};
 						twBrainAngleOffset = 6;
 						twBrainGapA = 0;
@@ -15458,10 +15458,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 150);
-							twBrainLineH = Math.max(svgScale(168), Math.abs(t1.y - t0.y) || svgScale(168));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 210);
+							twBrainLineH = Math.max(svgScale(220), Math.abs(t1.y - t0.y) || svgScale(220));
 						} catch (_) {
-							twBrainLineH = svgScale(168);
+							twBrainLineH = svgScale(220);
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -19713,7 +19713,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 7 nov - klokken 12:21';
+		const stampText = 'update lørdag 7 nov - klokken 12:26';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
