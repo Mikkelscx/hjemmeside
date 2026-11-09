@@ -15921,18 +15921,25 @@ document.addEventListener('DOMContentLoaded', function() {
 							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 5);
 							clear = Math.abs(p1.y - p0.y) || clear;
 						} catch (_) {}
+						/* Hele Kø→Byens lidt op (møde Købajer-ringen bedre). */
+						let liftUp = svgScale(16);
+						try {
+							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 18);
+							liftUp = Math.abs(p1.y - p0.y) || liftUp;
+						} catch (_) {}
 						if (ends) {
 							a.x = ends.a.x;
 							b.x = ends.a.x;
-							a.y = ends.a.y + clear;
-							b.y = ends.b.y - clear;
+							a.y = ends.a.y + clear - liftUp;
+							b.y = ends.b.y - clear - liftUp;
 						} else {
 							const ka = pt(kobRect, 'bottom');
 							const kb = pt(byeRect, 'top');
 							a.x = ka.x;
 							b.x = ka.x;
-							a.y = ka.y + clear;
-							b.y = kb.y - clear;
+							a.y = ka.y + clear - liftUp;
+							b.y = kb.y - clear - liftUp;
 						}
 						try {
 							let dx = b.x - a.x;
@@ -19713,7 +19720,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 7 nov - klokken 12:28';
+		const stampText = 'update mandag 9 nov - klokken 12:48';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
