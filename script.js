@@ -15035,6 +15035,20 @@ document.addEventListener('DOMContentLoaded', function() {
 					const clear = phoneLineClear(Math.max(4, Math.round(minPx * 0.4)));
 					return Math.max(gap, clear);
 				};
+				/* Samme vandrette tykkelse som godkendt Kø→Byens (p720) — alle phone-portræt-streger. */
+				const MSK_PHONE_SPOKE_STROKE_CSS = 155;
+				const phoneSpokeStrokeH = () => {
+					try {
+						const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+						const t1 = mskSvgPointFromClientPx(currentSvg, 0, MSK_PHONE_SPOKE_STROKE_CSS);
+						return Math.max(
+							MSK_PHONE_SPOKE_STROKE_CSS,
+							Math.abs(t1.y - t0.y) || MSK_PHONE_SPOKE_STROKE_CSS
+						);
+					} catch (_) {
+						return MSK_PHONE_SPOKE_STROKE_CSS;
+					}
+				};
 				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
 				const portraitUnderBrainStrokePullUp =
 					portraitGridLines ? svgScale(16) : 0;
@@ -15105,12 +15119,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					const ey = by - uy * gapB;
 					let len = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2)) * lenMul * mindmapLineLenMul;
 					if (len < 6) return;
-					/* Telefon: tykkelse må ikke overstige længde (ellers stub/klat efter LS→PT). */
-					let strokeH = heightPx;
-					if (phoneLinesOnly && !opts.allowThickStroke && strokeH > len * 0.92) {
-						strokeH = Math.max(svgScale(28), len * 0.72);
-					}
-					/* allowThickStroke: ingen cap — ellers ædes Twister-tykkelse på korte streger. */
+					/*
+					 * Telefon-portræt: alle streger samme tykkelse som Kø→Byens (ingen thin-cap).
+					 * Tablet/desktop beholder heightPx uændret.
+					 */
+					let strokeH = phoneLinesOnly ? phoneSpokeStrokeH() : heightPx;
 					let angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI + angleOffsetDeg;
 					const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
 					img.setAttribute('href', assetPath);
@@ -19740,7 +19753,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 9 nov - klokken 18:53';
+		const stampText = 'update mandag 9 nov - klokken 18:58';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
