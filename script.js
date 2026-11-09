@@ -15939,11 +15939,11 @@ document.addEventListener('DOMContentLoaded', function() {
 							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 5);
 							clear = Math.abs(p1.y - p0.y) || clear;
 						} catch (_) {}
-						/* Kø→Byens lidt ned ift. p710-lift (telefon-portræt). */
-						let dropY = svgScale(6);
+						/* Kø→Byens: lidt ned (mindre end p716) + tykkere vandret (telefon-portræt). */
+						let dropY = svgScale(2);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 8);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 3);
 							dropY = Math.abs(p1.y - p0.y) || dropY;
 						} catch (_) {}
 						if (ends) {
@@ -15976,12 +15976,13 @@ document.addEventListener('DOMContentLoaded', function() {
 						kobByeLineGapA = 0;
 						kobByeLineGapB = 0;
 						kobByeLenMul = 1.12;
+						/* Lodret streg: height = vandret tykkelse — ægte CSS-px uden stroke-cap. */
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 96);
-							kobByeLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 52);
+							kobByeLineH = Math.max(52, Math.abs(t1.y - t0.y) || 52);
 						} catch (_) {
-							kobByeLineH = svgScale(120);
+							kobByeLineH = 52;
 						}
 					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
@@ -15989,6 +15990,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						gapA: kobByeLineGapA,
 						gapB: kobByeLineGapB,
 						lenMul: kobByeLenMul,
+						allowThickStroke: phoneLinesOnly,
 					});
 				}
 
@@ -19738,7 +19740,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 9 nov - klokken 18:39';
+		const stampText = 'update mandag 9 nov - klokken 18:43';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
