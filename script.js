@@ -15939,25 +15939,25 @@ document.addEventListener('DOMContentLoaded', function() {
 							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 5);
 							clear = Math.abs(p1.y - p0.y) || clear;
 						} catch (_) {}
-						/* Hele Kø→Byens lidt op (møde Købajer-ringen bedre). */
-						let liftUp = svgScale(16);
+						/* Kø→Byens lidt ned ift. p710-lift (telefon-portræt). */
+						let dropY = svgScale(6);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 18);
-							liftUp = Math.abs(p1.y - p0.y) || liftUp;
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, 8);
+							dropY = Math.abs(p1.y - p0.y) || dropY;
 						} catch (_) {}
 						if (ends) {
 							a.x = ends.a.x;
 							b.x = ends.a.x;
-							a.y = ends.a.y + clear - liftUp;
-							b.y = ends.b.y - clear - liftUp;
+							a.y = ends.a.y + clear + dropY;
+							b.y = ends.b.y - clear + dropY;
 						} else {
 							const ka = pt(kobRect, 'bottom');
 							const kb = pt(byeRect, 'top');
 							a.x = ka.x;
 							b.x = ka.x;
-							a.y = ka.y + clear - liftUp;
-							b.y = kb.y - clear - liftUp;
+							a.y = ka.y + clear + dropY;
+							b.y = kb.y - clear + dropY;
 						}
 						try {
 							let dx = b.x - a.x;
@@ -19738,7 +19738,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 9 nov - klokken 18:35';
+		const stampText = 'update mandag 9 nov - klokken 18:39';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
