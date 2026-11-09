@@ -15035,8 +15035,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					const clear = phoneLineClear(Math.max(4, Math.round(minPx * 0.4)));
 					return Math.max(gap, clear);
 				};
-				/* Samme vandrette tykkelse som godkendt Kø→Byens (p720) — alle phone-portræt-streger. */
-				const MSK_PHONE_SPOKE_STROKE_CSS = 155;
+				/* Samme vandrette tykkelse på alle phone-portræt-streger (tykkere end p721). */
+				const MSK_PHONE_SPOKE_STROKE_CSS = 210;
 				const phoneSpokeStrokeH = () => {
 					try {
 						const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
@@ -15992,10 +15992,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						/* Lodret streg: height = vandret tykkelse — ægte CSS-px uden stroke-cap. */
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 155);
-							kobByeLineH = Math.max(155, Math.abs(t1.y - t0.y) || 155);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 210);
+							kobByeLineH = Math.max(210, Math.abs(t1.y - t0.y) || 210);
 						} catch (_) {
-							kobByeLineH = 155;
+							kobByeLineH = 210;
 						}
 					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
@@ -19753,7 +19753,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 9 nov - klokken 18:58';
+		const stampText = 'update mandag 9 nov - klokken 19:03';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
