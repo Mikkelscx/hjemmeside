@@ -15979,10 +15979,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						/* Lodret streg: height = vandret tykkelse — ægte CSS-px uden stroke-cap. */
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 52);
-							kobByeLineH = Math.max(52, Math.abs(t1.y - t0.y) || 52);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 78);
+							kobByeLineH = Math.max(78, Math.abs(t1.y - t0.y) || 78);
 						} catch (_) {
-							kobByeLineH = 52;
+							kobByeLineH = 78;
 						}
 					}
 					/* lenMul ganges kun med mindmapLineLenMul i lineImg — ikke underBrainLineLenMul (0.77), ellers blev strækket næsten usynligt */
@@ -19740,7 +19740,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 9 nov - klokken 18:43';
+		const stampText = 'update mandag 9 nov - klokken 18:49';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
