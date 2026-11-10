@@ -12805,7 +12805,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						/* Telefon-portræt: Twister (cirkel + indhold) lidt mere til højre */
 						if (phonePortraitGrid && p.key === 'twister') {
-							x += Math.round(20 * scale * nudgeMul);
+							x += Math.round(38 * scale * nudgeMul);
 						}
 						/* Repop: længere ind så den større oval ikke klipper i venstre kant */
 						if (p.key === 'repop') x += Math.round(48 * scale * nudgeMul);
@@ -15053,6 +15053,17 @@ document.addEventListener('DOMContentLoaded', function() {
 						return MSK_PHONE_SPOKE_STROKE_CSS;
 					}
 				};
+				/* De 4 streger over hjernen: fælles lift (telefon-portræt). */
+				const phoneUpperChainLiftY = () => {
+					if (!phoneLinesOnly) return 0;
+					try {
+						const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+						const p1 = mskSvgPointFromClientPx(currentSvg, 0, 16);
+						return Math.abs(p1.y - p0.y) || svgScale(14);
+					} catch (_) {
+						return svgScale(14);
+					}
+				};
 				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
 				const portraitUnderBrainStrokePullUp =
 					portraitGridLines ? svgScale(16) : 0;
@@ -15286,6 +15297,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						repDurexA = { x: ra.x, y: ra.y - inset };
 						repDurexB = { x: rb.x, y: rb.y + inset };
+						const liftY = phoneUpperChainLiftY();
+						repDurexA.y -= liftY;
+						repDurexB.y -= liftY;
 						repDurexGapA = 0;
 						repDurexGapB = 0;
 						repDurexLenMul = 1.48;
@@ -15351,6 +15365,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						durexGapB = phoneGapOut(durexGapB, 16);
 						/* p435: længere ind mod hjerne (matcher DevTools på Safari) */
 						durexLenMul = Math.max(durexLenMul, 1.32);
+						const liftY = phoneUpperChainLiftY();
+						a.y -= liftY;
+						b.y -= liftY;
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 							const t1 = mskSvgPointFromClientPx(currentSvg, 0, 160);
@@ -15693,6 +15710,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						natUngA = { x: na.x, y: na.y - inset };
 						natUngB = { x: nb.x, y: nb.y + inset };
+						const liftY = phoneUpperChainLiftY();
+						natUngA.y -= liftY;
+						natUngB.y -= liftY;
 						natUngGapA = 0;
 						natUngGapB = 0;
 						natUngLenMul = 1.48;
@@ -15750,6 +15770,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						ungeGapB = phoneGapOut(ungeGapB, 16);
 						/* p435: længere ind mod hjerne (matcher DevTools på Safari) */
 						ungeLenMul = Math.max(ungeLenMul, 1.32);
+						const liftY = phoneUpperChainLiftY();
+						a.y -= liftY;
+						b.y -= liftY;
 					}
 					lineImg('assets/linje 5.webp', a, b, ungeLineH, {
 						gapA: ungeGapA,
@@ -19768,7 +19791,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 9 nov - klokken 19:15';
+		const stampText = 'update tirsdag 10 nov - klokken 09:50';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
