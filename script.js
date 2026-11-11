@@ -15064,15 +15064,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						return svgScale(14);
 					}
 				};
-				/* Kun de 2 øverste (Rep↔Dur, Nat↔Ung): ekstra lift (lidt — p728 var for meget). */
+				/* Kun de 2 øverste (Rep↔Dur, Nat↔Ung): ekstra lift (p729 stadig lidt højt). */
 				const phoneTopTwoSpokesExtraLiftY = () => {
 					if (!phoneLinesOnly) return 0;
 					try {
 						const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-						const p1 = mskSvgPointFromClientPx(currentSvg, 0, 7);
-						return Math.abs(p1.y - p0.y) || svgScale(6);
+						const p1 = mskSvgPointFromClientPx(currentSvg, 0, 3);
+						return Math.abs(p1.y - p0.y) || svgScale(3);
 					} catch (_) {
-						return svgScale(6);
+						return svgScale(3);
 					}
 				};
 				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
@@ -19802,7 +19802,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 11 nov - klokken 12:02';
+		const stampText = 'update onsdag 11 nov - klokken 12:56';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
