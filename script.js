@@ -15311,6 +15311,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						const liftY = phoneUpperChainLiftY() + phoneTopTwoSpokesExtraLiftY();
 						repDurexA.y -= liftY;
 						repDurexB.y -= liftY;
+						/* Kun Rep↔Dur: lidt ned ift. den fælles top-lift. */
+						let dropY = svgScale(5);
+						try {
+							const d0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+							const d1 = mskSvgPointFromClientPx(currentSvg, 0, 5);
+							dropY = Math.abs(d1.y - d0.y) || dropY;
+						} catch (_) {}
+						repDurexA.y += dropY;
+						repDurexB.y += dropY;
 						repDurexGapA = 0;
 						repDurexGapB = 0;
 						repDurexLenMul = 1.48;
@@ -19802,7 +19811,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 11 nov - klokken 12:56';
+		const stampText = 'update onsdag 11 nov - klokken 13:01';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
