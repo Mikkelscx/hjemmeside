@@ -15064,6 +15064,17 @@ document.addEventListener('DOMContentLoaded', function() {
 						return svgScale(14);
 					}
 				};
+				/* Kun de 2 øverste (Rep↔Dur, Nat↔Ung): ekstra lift. */
+				const phoneTopTwoSpokesExtraLiftY = () => {
+					if (!phoneLinesOnly) return 0;
+					try {
+						const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
+						const p1 = mskSvgPointFromClientPx(currentSvg, 0, 14);
+						return Math.abs(p1.y - p0.y) || svgScale(12);
+					} catch (_) {
+						return svgScale(12);
+					}
+				};
 				/* Kun portræt-grid: træk hjernestregerne til Twister/Kø-Bajer lidt op (matcher højere noder) */
 				const portraitUnderBrainStrokePullUp =
 					portraitGridLines ? svgScale(16) : 0;
@@ -15297,7 +15308,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						repDurexA = { x: ra.x, y: ra.y - inset };
 						repDurexB = { x: rb.x, y: rb.y + inset };
-						const liftY = phoneUpperChainLiftY();
+						const liftY = phoneUpperChainLiftY() + phoneTopTwoSpokesExtraLiftY();
 						repDurexA.y -= liftY;
 						repDurexB.y -= liftY;
 						repDurexGapA = 0;
@@ -15710,7 +15721,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						natUngA = { x: na.x, y: na.y - inset };
 						natUngB = { x: nb.x, y: nb.y + inset };
-						const liftY = phoneUpperChainLiftY();
+						const liftY = phoneUpperChainLiftY() + phoneTopTwoSpokesExtraLiftY();
 						natUngA.y -= liftY;
 						natUngB.y -= liftY;
 						natUngGapA = 0;
@@ -19791,7 +19802,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update tirsdag 10 nov - klokken 09:50';
+		const stampText = 'update onsdag 11 nov - klokken 12:00';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
