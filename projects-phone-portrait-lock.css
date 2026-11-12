@@ -395,8 +395,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	width: 100% !important;
 	max-width: none !important;
 	height: auto !important;
-	/* Tydeligt større i cirklen (p736 — p735 ramte ikke pga. href-case) */
-	transform: translateY(calc(8px * var(--phone-portrait-scale, 0.37))) scale(2.05) !important;
+	/* Større i cirklen — p736 (2.05) var for meget */
+	transform: translateY(calc(8px * var(--phone-portrait-scale, 0.37))) scale(1.55) !important;
 	transform-origin: center center !important;
 }
 
