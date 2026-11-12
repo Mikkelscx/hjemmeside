@@ -10972,8 +10972,8 @@ html.msk-projects-phone-portrait {
         width: 88% !important;
         max-width: 100% !important;
     }
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="naturli"] .project-node__title-img--naturli,
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="naturli"] .project-node__title-img--naturli {
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[data-visual-key="naturli"] .project-node__title-img--naturli {
         width: 100% !important;
         max-width: 100% !important;
     }
@@ -11029,8 +11029,10 @@ html.msk-projects-phone-portrait {
         transform-origin: center center !important;
     }
 
-    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="naturli"] .project-node__title-img--naturli,
-    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli {
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
+    body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="Naturli"] .project-node__title-img--naturli,
+    body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="Naturli"] .project-node__title-img--naturli {
         transform: translateY(calc(10px * var(--pLabelMul, 1))) scale(calc(1.95 * var(--pLabelMul, 1))) !important;
     }
 

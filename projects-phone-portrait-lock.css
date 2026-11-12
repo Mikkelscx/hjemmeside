@@ -371,33 +371,32 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	text-shadow: none !important;
 }
 
-/* NATURLI — tablet fill-scale (ingen dobbelt pLabelMul på scale) */
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="naturli"],
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"],
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="naturli"],
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="naturli"] {
-	/* Lidt bredere tekstflade ift. bredere ring (p417) */
-	width: min(calc(280px * var(--phone-portrait-scale, 0.37)), 38vw) !important;
-	min-width: min(calc(280px * var(--phone-portrait-scale, 0.37)), 38vw) !important;
-	max-width: min(calc(280px * var(--phone-portrait-scale, 0.37)), 38vw) !important;
+/* NATURLI — href er "Naturli'.html" (stor N); brug data-visual-key + Naturli */
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"],
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"],
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[data-visual-key="naturli"],
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[data-visual-key="naturli"] {
+	width: min(calc(300px * var(--phone-portrait-scale, 0.37)), 42vw) !important;
+	min-width: min(calc(300px * var(--phone-portrait-scale, 0.37)), 42vw) !important;
+	max-width: min(calc(300px * var(--phone-portrait-scale, 0.37)), 42vw) !important;
 	padding: 4px 8px !important;
 }
 
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="naturli"] .project-node__title--image,
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title--image {
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"] .project-node__title--image,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] .project-node__title--image {
 	width: 100% !important;
 	display: block !important;
 }
 
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[href*="naturli"] .project-node__title-img--naturli,
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[href*="naturli"] .project-node__title-img--naturli,
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="naturli"] .project-node__title-img--naturli,
-html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="naturli"] .project-node__title-img--naturli {
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container a.project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[data-visual-key="naturli"] .project-node__title-img--naturli,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[data-visual-key="naturli"] .project-node__title-img--naturli {
 	width: 100% !important;
 	max-width: none !important;
 	height: auto !important;
-	/* Større i cirklen (p735) */
-	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.72) !important;
+	/* Tydeligt større i cirklen (p736 — p735 ramte ikke pga. href-case) */
+	transform: translateY(calc(8px * var(--phone-portrait-scale, 0.37))) scale(2.05) !important;
 	transform-origin: center center !important;
 }
 
