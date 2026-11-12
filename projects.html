@@ -120,6 +120,7 @@
     </script>
     <link rel="preload" as="image" href="assets/repop-by-depop-text.png">
     <link rel="preload" as="image" href="assets/Naturlig%20tekst.webp">
+    <link rel="preload" as="image" href="assets/Naturlig%20tekst-phone.webp" media="(max-width: 640px) and (orientation: portrait)">
     <link rel="preload" as="image" href="assets/Durex%20X%20Guess%20who%20tekst.webp">
     <link rel="preload" as="image" href="assets/Unge%20mod%20UV%20tekst.webp">
     <link rel="preload" as="image" href="assets/twister%20tekst.webp">
@@ -130,7 +131,7 @@
     <link rel="preload" as="image" href="assets/D&amp;AD%20VINDER.webp">
     <script>
     (function () {
-        var v = '20260924p737';
+        var v = '20260924p738';
         try {
             var q = new URLSearchParams(location.search || '');
             if (q.has('preview')) {
@@ -644,7 +645,11 @@
         
         <a href="Naturli'.html" class="project-node" data-visual-key="naturli" data-hover-key="naturli" style="top: 20%; right: 15%;" aria-label="NATURLI'">
             <span class="project-node__title project-node__title--image" aria-hidden="true">
-                <img class="project-node__title-img project-node__title-img--naturli" src="assets/Naturlig%20tekst.webp" alt="" decoding="sync" fetchpriority="high" loading="eager">
+                <picture>
+                    <!-- Telefon portræt: lidt mere kerning mellem N og A -->
+                    <source media="(max-width: 640px) and (orientation: portrait)" srcset="assets/Naturlig%20tekst-phone.webp">
+                    <img class="project-node__title-img project-node__title-img--naturli" src="assets/Naturlig%20tekst.webp" alt="" decoding="sync" fetchpriority="high" loading="eager" width="1536" height="1024">
+                </picture>
             </span>
         </a>
         
@@ -717,7 +722,7 @@
     <script>
     (function () {
         /* Preview skal loade script så mindmap/design matcher under navbar-bladre. */
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p737') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p738') + '.js"><\/script>');
     })();
     </script>
     <script>

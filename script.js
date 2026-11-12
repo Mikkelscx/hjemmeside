@@ -1033,6 +1033,25 @@ function mskClearPhonePortraitProfileDocument() {
 	} catch (_) {}
 }
 
+/** Telefon portræt: Naturli'-titel med lidt mere kerning mellem N og A. */
+function mskSyncNaturliPhonePortraitTitleAsset() {
+	try {
+		const img = document.querySelector(
+			'.brainstorm-container .project-node__title-img--naturli'
+		);
+		if (!img) return;
+		const phone = document.documentElement.classList.contains(
+			'msk-projects-phone-portrait'
+		);
+		const phoneSrc = 'assets/Naturlig%20tekst-phone.webp';
+		const deskSrc = 'assets/Naturlig%20tekst.webp';
+		const cur = img.getAttribute('src') || '';
+		const isPhoneAsset = /Naturlig(%20|[ ])tekst-phone/.test(cur);
+		if (phone && !isPhoneAsset) img.setAttribute('src', phoneSrc);
+		if (!phone && isPhoneAsset) img.setAttribute('src', deskSrc);
+	} catch (_) {}
+}
+
 /** Tving telefon-portræt-klasser (DevTools resize, file://). */
 function mskEnsureProjectsPhonePortraitCanvasMode() {
 	try {
@@ -1044,6 +1063,7 @@ function mskEnsureProjectsPhonePortraitCanvasMode() {
 		document.documentElement.classList.add('msk-projects-phone-portrait', 'msk-projects-phone-portrait-no-scroll');
 		const container = document.querySelector('.brainstorm-container');
 		if (container) container.classList.add('projects-mindmap--portrait');
+		mskSyncNaturliPhonePortraitTitleAsset();
 		return true;
 	} catch (_) {
 		return false;
@@ -1262,6 +1282,9 @@ function mskApplyProjectsIpadLandscapeDocumentMode() {
 				document.documentElement.classList.remove('phone-portrait-zoom-stable');
 			} catch (_) {}
 		}
+		try {
+			mskSyncNaturliPhonePortraitTitleAsset();
+		} catch (_) {}
 		const container = document.querySelector('.brainstorm-container');
 		if (container) {
 			if (tabletLandscape || phoneLandscape) {
@@ -19819,7 +19842,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 12 nov - klokken 13:54';
+		const stampText = 'update torsdag 12 nov - klokken 17:02';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
