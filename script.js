@@ -15637,17 +15637,17 @@ document.addEventListener('DOMContentLoaded', function() {
 								a.y -= svgScale(24);
 								b.y -= svgScale(24);
 							}
-							/* Forlæng ned mod Brainfarts (p731 så for kort). */
+							/* Forlæng ned mod Brainfarts (p732 stadig for kort). */
 							try {
 								const e0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-								const e1 = mskSvgPointFromClientPx(currentSvg, 0, 22);
-								b.y += Math.abs(e1.y - e0.y) || svgScale(20);
+								const e1 = mskSvgPointFromClientPx(currentSvg, 0, 42);
+								b.y += Math.abs(e1.y - e0.y) || svgScale(38);
 							} catch (_) {
-								b.y += svgScale(20);
+								b.y += svgScale(38);
 							}
 							twBrfGapA = 0;
 							twBrfGapB = 0;
-							twBrfLenMul = 1.28;
+							twBrfLenMul = 1.42;
 							try {
 								const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 								const t1 = mskSvgPointFromClientPx(currentSvg, 0, 96);
@@ -19819,7 +19819,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 11 nov - klokken 13:04';
+		const stampText = 'update torsdag 12 nov - klokken 12:23';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
