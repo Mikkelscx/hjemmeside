@@ -12850,9 +12850,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (p.row === 1) y += Math.round(4 * scale);
 						/* Repop: ekstra i portrait-grid (kun denne node, ikke Naturlig) */
 						if (p.key === 'repop' && !phonePortraitGrid) y += Math.round(10 * scale);
-						/* Telefon portræt: let nudge så tekst sidder i ovalen — undgå den gamle “krymp alt mod hjernen”-look */
+						/* Telefon portræt: Repop-cirkel + indhold lidt op (p742) */
 						if (phonePortraitGrid && p.key === 'repop') {
-							y -= Math.round(6 * scale);
+							y -= Math.round(16 * scale);
 						}
 						/* Telefon: øverste/nederste række lidt ind — men langt mindre end før (tablet-proportioner) */
 						if (phonePortraitGrid && p.row === 1) {
@@ -19842,7 +19842,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 12 nov - klokken 17:11';
+		const stampText = 'update torsdag 12 nov - klokken 17:18';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
