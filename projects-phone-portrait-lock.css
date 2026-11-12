@@ -396,8 +396,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	width: 100% !important;
 	max-width: none !important;
 	height: auto !important;
-	/* Fylder den bredere oval (p417) — billede 1 */
-	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.48) !important;
+	/* Større i cirklen (p735) */
+	transform: translateY(calc(10px * var(--phone-portrait-scale, 0.37))) scale(1.72) !important;
 	transform-origin: center center !important;
 }
 

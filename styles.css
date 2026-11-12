@@ -10968,10 +10968,13 @@ html.msk-projects-phone-portrait {
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="durex"] .project-node__title-img--durex,
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="durex"] .project-node__title-img--durex,
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
-    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv,
+    html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="unge-mod-uv"] .project-node__title-img--unge-mod-uv {
+        width: 88% !important;
+        max-width: 100% !important;
+    }
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="naturli"] .project-node__title-img--naturli,
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="naturli"] .project-node__title-img--naturli {
-        width: 88% !important;
+        width: 100% !important;
         max-width: 100% !important;
     }
     html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="twister"] .project-node__title-img--twister,
