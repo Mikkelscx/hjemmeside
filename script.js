@@ -15629,25 +15629,25 @@ document.addEventListener('DOMContentLoaded', function() {
 							/* Hele Twister→Brainfarts lidt mere op (telefon-portræt). */
 							try {
 								const p0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-								const p1 = mskSvgPointFromClientPx(currentSvg, 0, 26);
-								const liftUp = Math.abs(p1.y - p0.y) || svgScale(24);
+								const p1 = mskSvgPointFromClientPx(currentSvg, 0, 34);
+								const liftUp = Math.abs(p1.y - p0.y) || svgScale(30);
 								a.y -= liftUp;
 								b.y -= liftUp;
 							} catch (_) {
-								a.y -= svgScale(24);
-								b.y -= svgScale(24);
+								a.y -= svgScale(30);
+								b.y -= svgScale(30);
 							}
-							/* Forlæng ned mod Brainfarts (p732 stadig for kort). */
+							/* Forlæng ned mod Brainfarts (p733 + lidt mere). */
 							try {
 								const e0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
-								const e1 = mskSvgPointFromClientPx(currentSvg, 0, 42);
-								b.y += Math.abs(e1.y - e0.y) || svgScale(38);
+								const e1 = mskSvgPointFromClientPx(currentSvg, 0, 52);
+								b.y += Math.abs(e1.y - e0.y) || svgScale(48);
 							} catch (_) {
-								b.y += svgScale(38);
+								b.y += svgScale(48);
 							}
 							twBrfGapA = 0;
 							twBrfGapB = 0;
-							twBrfLenMul = 1.42;
+							twBrfLenMul = 1.48;
 							try {
 								const t0 = mskSvgPointFromClientPx(currentSvg, 0, 0);
 								const t1 = mskSvgPointFromClientPx(currentSvg, 0, 96);
@@ -19819,7 +19819,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update torsdag 12 nov - klokken 12:23';
+		const stampText = 'update torsdag 12 nov - klokken 12:27';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
