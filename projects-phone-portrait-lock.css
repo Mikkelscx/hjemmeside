@@ -307,8 +307,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
 	width: 100% !important;
 	max-width: 100% !important;
-	/* Overskrift — hele indholdet lidt ned (p743) */
-	transform: translateY(calc(44px * var(--phone-portrait-scale, 0.37))) scale(1.38) !important;
+	/* Overskrift — hele indholdet lidt mere ned (p744) */
+	transform: translateY(calc(54px * var(--phone-portrait-scale, 0.37))) scale(1.38) !important;
 	transform-origin: center center !important;
 	filter: none !important;
 	-webkit-filter: none !important;
@@ -325,8 +325,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	gap: 0 !important;
 	line-height: 0.82 !important;
 	margin-top: 0 !important;
-	/* Nominering: samme størrelse, lidt ned sammen med titel (p743) */
-	transform: translateY(calc(-54px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
+	/* Nominering: samme størrelse, lidt mere ned sammen med titel (p744) */
+	transform: translateY(calc(-44px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
 	transform-origin: center center !important;
 	flex-shrink: 0 !important;
 }
