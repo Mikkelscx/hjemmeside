@@ -525,10 +525,10 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait .project-node[href*="kobajer"] .project-node__title-img--kobajer,
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="kobajer"] .project-node__title-img--kobajer {
-	/* Midt mellem før og p370 (p371) */
-	width: 88% !important;
-	max-width: 88% !important;
-	transform: translateY(calc(-6px * var(--phone-portrait-scale, 0.37))) scale(1.22) !important;
+	/* Overskrift ift. Kravling (p747) — nominering uændret */
+	width: 96% !important;
+	max-width: 96% !important;
+	transform: translateY(calc(-6px * var(--phone-portrait-scale, 0.37))) scale(1.38) !important;
 	transform-origin: center center !important;
 }
 
