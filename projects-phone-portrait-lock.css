@@ -307,8 +307,8 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait a.project-node[href*="repop"] .project-node__title-img--repop {
 	width: 100% !important;
 	max-width: 100% !important;
-	/* Overskrift — hårsbredde smallere vandret (p745) */
-	transform: translateY(calc(54px * var(--phone-portrait-scale, 0.37))) scale(1.38) scaleX(0.985) !important;
+	/* Overskrift — lidt smallere endnu vandret (p746) */
+	transform: translateY(calc(54px * var(--phone-portrait-scale, 0.37))) scale(1.38) scaleX(0.97) !important;
 	transform-origin: center center !important;
 	filter: none !important;
 	-webkit-filter: none !important;
