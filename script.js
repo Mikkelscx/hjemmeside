@@ -11872,14 +11872,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				h = Math.max(Math.round(iw * 0.17), Math.min(fitH, Math.round(fitW * 0.41)));
 				dy = Math.round(dy - 4);
 			} else if (key === 'kobajer') {
-				/* Lidt op ift. p385 + bredere oval så KØ-BAJER (p748 scale) ligger indenfor (p749) */
+				/* Bred oval (p749) + lidt til venstre / mindre højre-udvidelse (p750) */
 				const iw = Math.max(1, window.innerWidth || 390);
 				w = Math.round(iw * 0.70);
 				h = Math.round(iw * 0.42);
 				dy = Math.round(dy + 24);
-				const growRight = Math.round(w * 0.06);
+				const growRight = Math.round(w * 0.02);
 				w += growRight;
-				dx = Math.round(dx + growRight * 0.5 + 6);
+				dx = Math.round(dx + growRight * 0.5 - 12);
 			} else if (key === 'brainfarts') {
 				w = Math.round(w * 1.26);
 				h = Math.round(h * 1.24);
@@ -19842,7 +19842,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 13 nov - klokken 12:07';
+		const stampText = 'update fredag 13 nov - klokken 12:30';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
