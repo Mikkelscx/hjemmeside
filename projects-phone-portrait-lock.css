@@ -262,7 +262,11 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-
 html.msk-projects-phone-pt-ref-canvas.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer {
 	left: auto !important;
 	top: auto !important;
+	z-index: 1 !important;
 	/* left/top/transform inline fra mskSyncProjectsPhonePortraitPaperFit */
+}
+html.msk-projects-phone-pt-ref-canvas.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container {
+	z-index: 3 !important;
 }
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-lines-layer__half {
 	display: block !important;
