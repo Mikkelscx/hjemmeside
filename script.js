@@ -15815,33 +15815,29 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p767 mid: fyld næsten hele hul under pink hjerne.
-						 * Endpunkt = nodeTop; gapB=+8 trimmer tip udenfor oval (asset har transparent padding).
-						 * startLift 64 når face-bottom ligger for lavt ift. pink hjerne.
+						 * p768 mid: start ved pink underside (55% af face-højde), slut nodeTop,
+						 * gapB=+8 → ~90% af synligt hul, ikke pierce / ikke stub.
 						 */
 						const twNodeTop = pt(twiRect, 'top');
 						const twNodeMid = pt(twiRect, 'center');
 						const clear = phoneOuterClearY(8);
+						const bh = Math.max(1, brainBottom.y - brainTop.y);
 						let inX = svgScale(12);
-						let startLift = svgScale(64);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const p2 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(64));
 							inX = Math.abs(p1.x - p0.x) || inX;
-							startLift = Math.abs(p2.y - p0.y) || startLift;
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
-						a.y = brainBottom.y - startLift;
+						a.y = brainTop.y + bh * 0.55;
 						b.x = twNodeMid.x;
 						b.y = twNodeTop.y;
-						if (!(b.y > a.y + phoneOuterClearY(24))) {
-							a.y = b.y - phoneOuterClearY(72);
+						if (!(b.y > a.y + phoneOuterClearY(28))) {
+							a.y = Math.min(a.y, b.y - phoneOuterClearY(90));
 						}
-						/* Trim ~4% i hver ende af span → ~92% synlig længde. */
 						const span = b.y - a.y;
-						if (span > 16) {
-							const pad = span * 0.04;
+						if (span > 12) {
+							const pad = span * 0.05;
 							a.y += pad;
 							b.y -= pad;
 						}
@@ -15853,10 +15849,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(110));
-							twBrainLineH = Math.max(110, Math.abs(t1.y - t0.y) || 110);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(120));
+							twBrainLineH = Math.max(120, Math.abs(t1.y - t0.y) || 120);
 						} catch (_) {
-							twBrainLineH = 110;
+							twBrainLineH = 120;
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -15903,7 +15899,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: Twister→Brainfarts — node-kanter, ~92% + gap trim 8 (p767). */
+					/* Telefon: Twister→Brainfarts — ~90% + gap 8 (p768). */
 					try {
 						if (phoneLinesOnly) {
 							const clear = phoneOuterClearY(8);
@@ -15913,7 +15909,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							b = { x: tb.x, y: tb.y };
 							const span = b.y - a.y;
 							if (span > 12) {
-								const pad = span * 0.04;
+								const pad = span * 0.05;
 								a.y += pad;
 								b.y -= pad;
 							} else {
@@ -16107,30 +16103,28 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p767 mid: samme som Twister — startLift 64, end=nodeTop, gapB=+8.
+						 * p768 mid: samme som Twister — pink underside 55%, end=nodeTop, gapB=+8.
 						 */
 						const kobNodeTop = pt(kobRect, 'top');
 						const kobNodeMid = pt(kobRect, 'center');
 						const clear = phoneOuterClearY(8);
+						const bh = Math.max(1, brainBottom.y - brainTop.y);
 						let inX = svgScale(12);
-						let startLift = svgScale(64);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const p2 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(64));
 							inX = Math.abs(p1.x - p0.x) || inX;
-							startLift = Math.abs(p2.y - p0.y) || startLift;
 						} catch (_) {}
 						a.x = brainRight.x - inX;
-						a.y = brainBottom.y - startLift;
+						a.y = brainTop.y + bh * 0.55;
 						b.x = kobNodeMid.x - inX * 0.2;
 						b.y = kobNodeTop.y;
-						if (!(b.y > a.y + phoneOuterClearY(24))) {
-							a.y = b.y - phoneOuterClearY(72);
+						if (!(b.y > a.y + phoneOuterClearY(28))) {
+							a.y = Math.min(a.y, b.y - phoneOuterClearY(90));
 						}
 						const span = b.y - a.y;
-						if (span > 16) {
-							const pad = span * 0.04;
+						if (span > 12) {
+							const pad = span * 0.05;
 							a.y += pad;
 							b.y -= pad;
 						}
@@ -16141,10 +16135,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(110));
-							kobBrainLineH = Math.max(110, Math.abs(t1.y - t0.y) || 110);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(120));
+							kobBrainLineH = Math.max(120, Math.abs(t1.y - t0.y) || 120);
 						} catch (_) {
-							kobBrainLineH = 110;
+							kobBrainLineH = 120;
 						}
 					}
 					lineImg(kobBrainAsset, a, b, kobBrainLineH, {
@@ -16227,7 +16221,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					if (phoneLinesOnly) {
 						/*
-						 * p767 mid: NODE-kanter, ~92% + gap trim 8.
+						 * p768 mid: NODE-kanter, ~90% + gap 8.
 						 */
 						const clear = phoneOuterClearY(8);
 						const ka = pt(kobRect, 'bottom');
@@ -16238,7 +16232,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						b.y = kb.y;
 						const span = b.y - a.y;
 						if (span > 12) {
-							const pad = span * 0.04;
+							const pad = span * 0.05;
 							a.y += pad;
 							b.y -= pad;
 						} else {
@@ -20012,7 +20006,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 22:48';
+		const stampText = 'update lørdag 14 nov - klokken 23:25';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
