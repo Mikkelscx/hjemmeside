@@ -131,7 +131,7 @@
     <link rel="preload" as="image" href="assets/D&amp;AD%20VINDER.webp">
     <script>
     (function () {
-        var v = '20260924p752';
+        var v = '20260924p753';
         try {
             var q = new URLSearchParams(location.search || '');
             if (q.has('preview')) {
@@ -244,6 +244,13 @@
         background: transparent !important;
         background-image: none !important;
         pointer-events: none;
+      }
+      /* Safari-chrome phone-PT ref-canvas: JS styrer left/top/size/transform */
+      html.msk-projects-phone-pt-ref-canvas.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container {
+        inset: unset !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: none !important;
       }
       html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container .brain,
       html.msk-projects-mindmap-painted body.projects-page.sketchbook-theme .brainstorm-container a.project-node,
@@ -722,7 +729,7 @@
     <script>
     (function () {
         /* Preview skal loade script så mindmap/design matcher under navbar-bladre. */
-        document.write('<script src="script-' + (window.mskAssetV || '20260924p752') + '.js"><\/script>');
+        document.write('<script src="script-' + (window.mskAssetV || '20260924p753') + '.js"><\/script>');
     })();
     </script>
     <script>
