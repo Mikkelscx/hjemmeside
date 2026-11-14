@@ -15458,8 +15458,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					const uy = dy / dist;
 					const sx = ax + ux * gapA;
 					const sy = ay + uy * gapA;
-					const ex = bx - ux * gapB;
-					const ey = by - uy * gapB;
+					let ex = bx - ux * gapB;
+					let ey = by - uy * gapB;
 					const baseLen = Math.max(0, Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2));
 					let len = baseLen * lenMul * mindmapLineLenMul;
 					/*
@@ -15467,7 +15467,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					 * må ikke stikke ind i ovalerne — Brainfarts m.m.).
 					 */
 					if (phoneLinesOnly) len = Math.min(len, baseLen);
-					if (len < 6) return;
+					/* Under-hjerne phone PT: aldrig skip (Twister kort span → len<6 = manglende eger). */
+					if (len < 6) {
+						const sid = String(opts.spokeId || '');
+						if (
+							phoneLinesOnly &&
+							(sid === 'brain-twister' || sid === 'brain-kobajer')
+						) {
+							const need = Math.max(48, svgScale(72));
+							ex = sx + ux * need;
+							ey = sy + uy * need;
+							len = need;
+						} else {
+							return;
+						}
+					}
 					/*
 					 * Telefon-portræt: alle streger samme tykkelse som Kø→Byens (ingen thin-cap).
 					 * Tablet/desktop beholder heightPx uændret.
@@ -15815,11 +15829,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p775b: EXACT mirror of working Købajer phone block.
-						 * p769 skipped left because tipPad+clear gapB > vertical span → len<6.
+						 * p777: D&AD-badge oppuster Twister-nodeTop ind i hjernen → tipPad/gap
+						 * eller nodeTop-end giver len<6 / streg skjult under .brain.
+						 * Brug RING-top (synlig oval) + samme mid-regler som Købajer.
 						 */
-						const twNodeTop = pt(twiRect, 'top');
-						const twNodeMid = pt(twiRect, 'center');
+						const twRingRect = phoneRingRectFor('twister', twiRect);
+						const twRingTop = pt(twRingRect, 'top');
+						const twRingMid = pt(twRingRect, 'center');
 						const clear = phoneOuterClearY(8);
 						let minSpan = phoneOuterClearY(80);
 						const bh = Math.max(1, brainBottom.y - brainTop.y);
@@ -15833,8 +15849,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
 						a.y = brainTop.y + bh * 0.5;
-						b.x = twNodeMid.x + inX * 0.2;
-						b.y = twNodeTop.y;
+						b.x = twRingMid.x + inX * 0.2;
+						b.y = twRingTop.y;
+						/* Synlig tip UNDER pink chin (linjer ligger bag .brain). */
+						if (b.y < brainBottom.y + clear) {
+							b.y = Math.max(
+								twRingMid.y - Math.max(8, (twRingRect.height || 0) * 0.18),
+								brainBottom.y + Math.max(clear * 2, minSpan * 0.35)
+							);
+						}
 						if (!(b.y > a.y + minSpan)) {
 							a.y = b.y - minSpan;
 						}
@@ -15867,13 +15890,28 @@ document.addEventListener('DOMContentLoaded', function() {
 						allowThickStroke: phoneLinesOnly,
 						spokeId: phoneLinesOnly ? 'brain-twister' : '',
 					});
-					/* p775b: if still missing (len skip), force a guaranteed left spoke */
+					/* p777: garanter venstre eger hvis primær sti stadig mangler */
 					if (phoneLinesOnly && !currentSvg.querySelector('[data-msk-spoke="brain-twister"]')) {
-						const twMid = pt(twiRect, 'center');
+						const twRingRect = phoneRingRectFor('twister', twiRect);
+						const twRingTop = pt(twRingRect, 'top');
+						const twRingCenter = pt(twRingRect, 'center');
 						const clear = phoneOuterClearY(8);
 						const minSpan = phoneOuterClearY(90);
-						const forceA = { x: brainLeft.x + svgScale(10), y: brainTop.y + (brainBottom.y - brainTop.y) * 0.48 };
-						const forceB = { x: twMid.x, y: Math.max(twMid.y - clear * 2, forceA.y + minSpan) };
+						const forceA = {
+							x: brainLeft.x + svgScale(10),
+							y: brainTop.y + (brainBottom.y - brainTop.y) * 0.5,
+						};
+						let forceBy = Math.max(twRingTop.y, brainBottom.y + clear * 2);
+						if (forceBy < brainBottom.y + clear) {
+							forceBy = Math.max(
+								twRingCenter.y - clear,
+								brainBottom.y + minSpan * 0.4
+							);
+						}
+						const forceB = {
+							x: twRingCenter.x,
+							y: Math.max(forceBy, forceA.y + minSpan),
+						};
 						lineImg('assets/linje 8.webp', forceA, forceB, phoneSpokeStrokeH(), {
 							gapA: 0,
 							gapB: clear,
@@ -20017,7 +20055,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:52';
+		const stampText = 'update lørdag 14 nov - klokken 23:48';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
