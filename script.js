@@ -15815,7 +15815,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p770: tipPad+clear som gapB åd Twister (kortere lodret span) → len<6 skip.
+						 * p771: tipPad+clear som gapB åd Twister (kortere lodret span) → len<6 skip.
 						 * Samme mid-regler som Købajer: start pink 50%, end=nodeTop, gapB=clear kun,
 						 * tving minSpan så venstre altid tegnes.
 						 */
@@ -16104,7 +16104,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p770: samme mid-regler som Twister (ingen tipPad der kan trigge len<6).
+						 * p771: samme mid-regler som Twister (ingen tipPad der kan trigge len<6).
 						 */
 						const kobNodeTop = pt(kobRect, 'top');
 						const kobNodeMid = pt(kobRect, 'center');
@@ -20004,7 +20004,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:32';
+		const stampText = 'update lørdag 14 nov - klokken 23:35';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
