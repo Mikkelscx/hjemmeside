@@ -15815,31 +15815,36 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p765 mid: NODE-kant + ~8px clear (ikke ring-bbox → stub, ikke nodeTop+20 → pierce).
-						 * Fyld ~86% af brainBottom↔nodeTop.
+						 * p765 mid: start nær pink hjerne (brainBottom−48), slut nodeTop−8.
+						 * Målt face-bottom ligger for lavt → brainBottom+clear gav stubs; ring-bbox
+						 * gav også stubs; nodeTop+20/−gapB piercede. Mid = høj start + klar end.
 						 */
 						const twNodeTop = pt(twiRect, 'top');
 						const twNodeMid = pt(twiRect, 'center');
 						const clear = phoneOuterClearY(8);
 						let inX = svgScale(12);
+						let startLift = svgScale(48);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
+							const p2 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(48));
 							inX = Math.abs(p1.x - p0.x) || inX;
+							startLift = Math.abs(p2.y - p0.y) || startLift;
 						} catch (_) {}
-						const gap0 = brainBottom.y + clear;
-						const gap1 = twNodeTop.y - clear;
-						const span = gap1 - gap0;
+						const endY = twNodeTop.y - clear;
 						a.x = brainLeft.x + inX;
+						a.y = brainBottom.y - startLift;
 						b.x = twNodeMid.x;
-						if (span > 12) {
-							const fill = span * 0.86;
-							const pad = (span - fill) * 0.5;
-							a.y = gap0 + pad;
-							b.y = gap1 - pad;
-						} else {
-							a.y = Math.min(brainBottom.y + svgScale(2), twNodeTop.y - clear);
-							b.y = twNodeTop.y - clear;
+						b.y = endY;
+						/* Hold ~86% af synligt hul: hvis start stadig for lav, løft mere — aldrig under end. */
+						const visSpan = endY - a.y;
+						if (visSpan > 16) {
+							const pad = visSpan * 0.07;
+							a.y = a.y + pad;
+							b.y = endY - pad;
+						} else if (!(b.y > a.y + 10)) {
+							a.y = endY - phoneOuterClearY(64);
+							b.y = endY;
 						}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
@@ -16104,30 +16109,33 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p765 mid: NODE-kant + ~8px clear, ~86% af brain↔Købajer (samme som Twister).
+						 * p765 mid: samme som Twister — startLift 48 + nodeTop−8, gap 0.
 						 */
 						const kobNodeTop = pt(kobRect, 'top');
 						const kobNodeMid = pt(kobRect, 'center');
 						const clear = phoneOuterClearY(8);
 						let inX = svgScale(12);
+						let startLift = svgScale(48);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
+							const p2 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(48));
 							inX = Math.abs(p1.x - p0.x) || inX;
+							startLift = Math.abs(p2.y - p0.y) || startLift;
 						} catch (_) {}
-						const gap0 = brainBottom.y + clear;
-						const gap1 = kobNodeTop.y - clear;
-						const span = gap1 - gap0;
+						const endY = kobNodeTop.y - clear;
 						a.x = brainRight.x - inX;
+						a.y = brainBottom.y - startLift;
 						b.x = kobNodeMid.x - inX * 0.2;
-						if (span > 12) {
-							const fill = span * 0.86;
-							const pad = (span - fill) * 0.5;
-							a.y = gap0 + pad;
-							b.y = gap1 - pad;
-						} else {
-							a.y = Math.min(brainBottom.y + svgScale(2), kobNodeTop.y - clear);
-							b.y = kobNodeTop.y - clear;
+						b.y = endY;
+						const visSpan = endY - a.y;
+						if (visSpan > 16) {
+							const pad = visSpan * 0.07;
+							a.y = a.y + pad;
+							b.y = endY - pad;
+						} else if (!(b.y > a.y + 10)) {
+							a.y = endY - phoneOuterClearY(64);
+							b.y = endY;
 						}
 						kobBrainGapA = 0;
 						kobBrainGapB = 0;
@@ -20008,7 +20016,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 22:32';
+		const stampText = 'update lørdag 14 nov - klokken 22:38';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
