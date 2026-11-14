@@ -35,50 +35,21 @@
 
 	/**
 	 * Layout-maal til phone-portræt profiler.
-	 * Safari-chrome må IKKE krympe højden her — ellers divergerer kompositionen fra
-	 * DevTools/fuld skærm (kortere hRatio → anden scale/rowSpan). Brug screen / ref-aspect.
+	 * Låst til iPhone 14 Pro Max DevTools (430×932) — samme komposition overalt (p754).
+	 * (w/h-args ignoreres bevidst, så Safari-chrome / andre modeller ikke divergerer.)
 	 */
-	function mskPhonePortraitLayoutPx(w, h) {
-		let iw = w != null ? w : global.innerWidth;
-		let ih = h != null ? h : global.innerHeight;
+	function mskPhonePortraitLayoutPx(/* w, h */) {
+		const REF_W = 430;
+		const REF_H = 932;
 		try {
-			const iw0 = Math.round(global.innerWidth || 0);
-			const ih0 = Math.round(global.innerHeight || 0);
-			if (iw0 >= 200) iw = Math.max(Number(iw) || 0, iw0);
-			if (ih0 >= 300) ih = Math.max(Number(ih) || 0, ih0);
-		} catch (_) {}
-		try {
-			const vv = global.visualViewport;
-			if (vv && vv.width >= 200 && vv.height >= 300) {
-				/* Bredde: VV er ok. Højde: må ikke erstatte med chrome-krympet VV. */
-				iw = Math.round(Math.max(Number(iw) || 0, vv.width));
+			if (global.MSK_PHONE_PT_REF_W > 0 && global.MSK_PHONE_PT_REF_H > 0) {
+				return {
+					w: Math.round(global.MSK_PHONE_PT_REF_W),
+					h: Math.round(global.MSK_PHONE_PT_REF_H),
+				};
 			}
 		} catch (_) {}
-		try {
-			if (global.screen && global.screen.width && global.screen.height) {
-				const sw = Math.min(global.screen.width, global.screen.height);
-				const sh = Math.max(global.screen.width, global.screen.height);
-				if (sw >= MSK_PHONE_LAYOUT.wMin && sw <= MSK_PHONE_LAYOUT.wMax && sh >= MSK_PHONE_LAYOUT.hMin) {
-					if ((!iw || iw < 200) || Math.abs((Number(iw) || sw) - sw) <= 48) {
-						iw = Math.round(Math.max(Number(iw) || 0, sw));
-					}
-					/* Chrome-krympet højde → løft til screen (DevTools-match på samme telefon). */
-					if (sh >= 500 && Number(ih) < sh * 0.92) {
-						ih = sh;
-					} else {
-						ih = Math.round(Math.max(Number(ih) || 0, sh * 0.98));
-					}
-				}
-			}
-		} catch (_) {}
-		/* Gulv: mindst ref-aspect-højde fra bredden (undgå “bred/lav” Safari-aspect). */
-		try {
-			const minH = Math.round((Number(iw) || MSK_PHONE_PORTRAIT_REF.w) / MSK_PHONE_REF_ASPECT);
-			if (Number(ih) < minH * 0.94) ih = minH;
-		} catch (_) {}
-		iw = Math.round(mskClamp(iw || MSK_PHONE_PORTRAIT_REF.w, MSK_PHONE_LAYOUT.wMin, MSK_PHONE_LAYOUT.wMax));
-		ih = Math.round(mskClamp(ih || MSK_PHONE_PORTRAIT_REF.h, MSK_PHONE_LAYOUT.hMin, MSK_PHONE_LAYOUT.hMax));
-		return { w: iw, h: ih };
+		return { w: REF_W, h: REF_H };
 	}
 
 	function mskComputePhonePortraitProfileFactors(w, h) {
