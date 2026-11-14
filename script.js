@@ -15495,6 +15495,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						img.setAttribute('transform', `rotate(${angle} ${sx} ${sy})`);
 					}
 					img.classList.add('mindmap-line', 'dynamic-mindmap-line', 'mobile-mindmap-line');
+					if (opts.spokeId) img.setAttribute('data-msk-spoke', String(opts.spokeId));
 					img.style.pointerEvents = 'none';
 					img.style.display = 'block';
 					img.style.visibility = 'visible';
@@ -15787,50 +15788,50 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p762: hjerne→Twister — NODE-top (ikke ring). Fuld span med lille gap.
-						 * Undgå soft-cap/overlap-stubs fra p761.
+						 * p763: start HØJT over brainBottom (som tablet −58), ellers lander egeret
+						 * ovenpå Twister når face-bbox næsten rører noden — hul under pink hjerne tomt.
 						 */
 						const twNodeTop = pt(twiRect, 'top');
 						const twNodeMid = pt(twiRect, 'center');
-						let inX = svgScale(14);
-						let clear = svgScale(5);
-						let minSpan = svgScale(56);
+						let inX = svgScale(12);
+						let minSpan = svgScale(80);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const q1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(5));
-							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(56));
+							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(80));
 							inX = Math.abs(p1.x - p0.x) || inX;
-							clear = Math.abs(q1.y - p0.y) || clear;
 							minSpan = Math.abs(m1.y - p0.y) || minSpan;
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
-						a.y = brainBottom.y - svgScale(2);
-						const endY = twNodeTop.y - clear;
+						a.y = brainBottom.y - svgScale(52);
 						b.x = twNodeMid.x;
-						b.y = endY;
-						/* Hvis hjerne-bbox overlapper node-top: start højere, behold minSpan. */
-						if (!(b.y > a.y + minSpan * 0.5)) {
-							a.y = Math.min(a.y, endY - minSpan);
-							b.y = a.y + minSpan;
-							b.x = twNodeMid.x;
+						b.y = twNodeTop.y + svgScale(20);
+						let dx = b.x - a.x;
+						let dy = b.y - a.y;
+						let dist = Math.hypot(dx, dy) || 1;
+						if (dy < minSpan * 0.45) {
+							a.y = twNodeMid.y - minSpan;
+							b.y = twNodeTop.y + svgScale(20);
+							dx = b.x - a.x;
+							dy = b.y - a.y;
+							dist = Math.hypot(dx, dy) || 1;
 						}
-						if (Math.hypot(b.x - a.x, b.y - a.y) < 12) {
-							b.x = twNodeMid.x;
-							b.y = a.y + minSpan;
+						if (dist < minSpan) {
+							b.x = a.x + (dx / dist) * minSpan;
+							b.y = a.y + (dy / dist) * minSpan;
 						}
-						twBrainAngleOffset = 4;
+						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
-						twBrainGapB = 0;
-						twBrainLenMul = 1.08;
+						twBrainGapB = -svgScale(18);
+						twBrainLenMul = 1.2;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(72));
-							twBrainLineH = Math.max(72, Math.abs(t1.y - t0.y) || 72);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(110));
+							twBrainLineH = Math.max(110, Math.abs(t1.y - t0.y) || 110);
 						} catch (_) {
-							twBrainLineH = 72;
+							twBrainLineH = 110;
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -15840,6 +15841,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						angleOffsetDeg: twBrainAngleOffset,
 						mirror: twBrainMirror,
 						allowThickStroke: phoneLinesOnly,
+						spokeId: phoneLinesOnly ? 'brain-twister' : '',
 					});
 				}
 				if (twiRect && brfRect) {
@@ -16091,46 +16093,49 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p762: hjerne→Købajer — NODE-top, fuld span (samme som Twister).
+						 * p763: samme som Twister — start højt over brainBottom så egeret
+						 * krydser det synlige hul (ikke lander ovenpå Købajer-noden).
 						 */
 						const kobNodeTop = pt(kobRect, 'top');
 						const kobNodeMid = pt(kobRect, 'center');
-						let inX = svgScale(14);
-						let clear = svgScale(5);
-						let minSpan = svgScale(56);
+						let inX = svgScale(12);
+						let minSpan = svgScale(80);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const q1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(5));
-							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(56));
+							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(80));
 							inX = Math.abs(p1.x - p0.x) || inX;
-							clear = Math.abs(q1.y - p0.y) || clear;
 							minSpan = Math.abs(m1.y - p0.y) || minSpan;
 						} catch (_) {}
 						a.x = brainRight.x - inX;
-						a.y = brainBottom.y - svgScale(2);
-						const endY = kobNodeTop.y - clear;
-						b.x = kobNodeMid.x - inX * 0.25;
-						b.y = endY;
-						if (!(b.y > a.y + minSpan * 0.5)) {
-							a.y = Math.min(a.y, endY - minSpan);
-							b.y = a.y + minSpan;
+						a.y = brainBottom.y - svgScale(52);
+						b.x = kobNodeMid.x - inX * 0.2;
+						b.y = kobNodeTop.y + svgScale(20);
+						let dx = b.x - a.x;
+						let dy = b.y - a.y;
+						let dist = Math.hypot(dx, dy) || 1;
+						if (dy < minSpan * 0.45) {
+							a.y = kobNodeMid.y - minSpan;
+							b.y = kobNodeTop.y + svgScale(20);
+							dx = b.x - a.x;
+							dy = b.y - a.y;
+							dist = Math.hypot(dx, dy) || 1;
 						}
-						if (Math.hypot(b.x - a.x, b.y - a.y) < 12) {
-							b.x = kobNodeMid.x;
-							b.y = a.y + minSpan;
+						if (dist < minSpan) {
+							b.x = a.x + (dx / dist) * minSpan;
+							b.y = a.y + (dy / dist) * minSpan;
 						}
 						kobBrainGapA = 0;
-						kobBrainGapB = 0;
-						kobBrainLenMul = 1.08;
+						kobBrainGapB = -svgScale(18);
+						kobBrainLenMul = 1.2;
 						kobBrainMirror = false;
 						kobBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(96));
-							kobBrainLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(110));
+							kobBrainLineH = Math.max(110, Math.abs(t1.y - t0.y) || 110);
 						} catch (_) {
-							kobBrainLineH = svgScale(120);
+							kobBrainLineH = 110;
 						}
 					}
 					lineImg(kobBrainAsset, a, b, kobBrainLineH, {
@@ -16138,6 +16143,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						gapB: kobBrainGapB,
 						lenMul: kobBrainLenMul,
 						mirror: kobBrainMirror,
+						spokeId: phoneLinesOnly ? 'brain-kobajer' : '',
 					});
 				}
 				if (kobRect && byeRect) {
@@ -20009,7 +20015,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 21:20';
+		const stampText = 'update lørdag 14 nov - klokken 21:55';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
