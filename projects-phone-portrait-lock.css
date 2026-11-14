@@ -253,9 +253,15 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .msk-paper-
 	height: var(--mskPaperCover, 100vmax) !important;
 	min-width: var(--mskPaperCover, 100vmax) !important;
 	min-height: var(--mskPaperCover, 100vmax) !important;
-	z-index: 2 !important;
+	z-index: 1 !important;
 	transform: translate3d(0, var(--mskPaperLineNudge, 0px), 0) !important;
 	-webkit-transform: translate3d(0, var(--mskPaperLineNudge, 0px), 0) !important;
+}
+
+/* Mindmap over papir — papirlinjer må ikke ligge ovenpå ovaler/hjerne */
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+	z-index: 3 !important;
 }
 
 /* PT ref-canvas: papir-transform sættes af JS (samme scale som mindmap) */
