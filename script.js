@@ -15815,32 +15815,40 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p769 mid: synlig kul ~90% af hul. Asset har transparent tip →
-						 * end dybere (nodeTop+18) + gapB 26 ⇒ tip lander ~nodeTop−8 (ikke pierce).
-						 * Start ved pink underside (~50% face).
+						 * p770: tipPad+clear som gapB åd Twister (kortere lodret span) → len<6 skip.
+						 * Samme mid-regler som Købajer: start pink 50%, end=nodeTop, gapB=clear kun,
+						 * tving minSpan så venstre altid tegnes.
 						 */
 						const twNodeTop = pt(twiRect, 'top');
 						const twNodeMid = pt(twiRect, 'center');
 						const clear = phoneOuterClearY(8);
-						const tipPad = phoneOuterClearY(18);
+						let minSpan = phoneOuterClearY(80);
 						const bh = Math.max(1, brainBottom.y - brainTop.y);
 						let inX = svgScale(12);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
+							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(80));
 							inX = Math.abs(p1.x - p0.x) || inX;
+							minSpan = Math.abs(m1.y - p0.y) || minSpan;
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
 						a.y = brainTop.y + bh * 0.5;
 						b.x = twNodeMid.x;
-						b.y = twNodeTop.y + tipPad;
-						if (!(b.y > a.y + phoneOuterClearY(36))) {
-							a.y = Math.min(a.y, twNodeTop.y - phoneOuterClearY(100));
-							b.y = twNodeTop.y + tipPad;
+						b.y = twNodeTop.y;
+						/* Sørg for synlig længde FØR gapB — aldrig len<6 skip på venstre. */
+						if (!(b.y > a.y + minSpan)) {
+							a.y = b.y - minSpan;
+						}
+						const span = b.y - a.y;
+						if (span > 12) {
+							const pad = span * 0.05;
+							a.y += pad;
+							b.y -= pad;
 						}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
-						twBrainGapB = tipPad + clear;
+						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.12));
 						twBrainLenMul = 1;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
@@ -16096,12 +16104,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p769 mid: samme som Twister — pink 50%, tipPad+clear så synlig tip ~nodeTop−8.
+						 * p770: samme mid-regler som Twister (ingen tipPad der kan trigge len<6).
 						 */
 						const kobNodeTop = pt(kobRect, 'top');
 						const kobNodeMid = pt(kobRect, 'center');
 						const clear = phoneOuterClearY(8);
-						const tipPad = phoneOuterClearY(18);
+						const minSpan = phoneOuterClearY(80);
 						const bh = Math.max(1, brainBottom.y - brainTop.y);
 						let inX = svgScale(12);
 						try {
@@ -16112,13 +16120,18 @@ document.addEventListener('DOMContentLoaded', function() {
 						a.x = brainRight.x - inX;
 						a.y = brainTop.y + bh * 0.5;
 						b.x = kobNodeMid.x - inX * 0.2;
-						b.y = kobNodeTop.y + tipPad;
-						if (!(b.y > a.y + phoneOuterClearY(36))) {
-							a.y = Math.min(a.y, kobNodeTop.y - phoneOuterClearY(100));
-							b.y = kobNodeTop.y + tipPad;
+						b.y = kobNodeTop.y;
+						if (!(b.y > a.y + minSpan)) {
+							a.y = b.y - minSpan;
+						}
+						const span = b.y - a.y;
+						if (span > 12) {
+							const pad = span * 0.05;
+							a.y += pad;
+							b.y -= pad;
 						}
 						kobBrainGapA = 0;
-						kobBrainGapB = tipPad + clear;
+						kobBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.12));
 						kobBrainLenMul = 1;
 						kobBrainMirror = false;
 						kobBrainAsset = 'assets/linje 8.webp';
@@ -19991,7 +20004,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:28';
+		const stampText = 'update lørdag 14 nov - klokken 23:32';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
