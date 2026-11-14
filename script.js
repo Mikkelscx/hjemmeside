@@ -914,34 +914,133 @@ function mskProjectsPortraitReferenceCanvasPx() {
 	return mskProjectsPortraitGridLayoutPx();
 }
 
-/** Telefon: fuld viewport, ingen canvas-transform — ryd evt. gammel inline styling. */
+/**
+ * Telefon portræt: synlig boks (Safari-chrome) vs. design-boks (screen/ref-aspect).
+ * Når chrome krymper højden, layoutes mindmap i design-rum og scales ned — samme
+ * komposition som DevTools/fuld skærm (p751).
+ */
+function mskProjectsPhonePortraitUsableBox() {
+	let w = Math.round(Math.max(1, window.innerWidth || 0));
+	let h = Math.round(Math.max(1, window.innerHeight || 0));
+	try {
+		const vv = window.visualViewport;
+		if (vv && vv.width > 40 && vv.height > 40) {
+			const zoomed =
+				(typeof vv.scale === 'number' && vv.scale > 1.015) ||
+				!!(document.documentElement && document.documentElement.classList.contains('msk-browser-zoom-active'));
+			if (!zoomed) {
+				w = Math.round(Math.max(1, vv.width));
+				h = Math.round(Math.max(1, vv.height));
+			}
+		}
+	} catch (_) {}
+	return { w: Math.max(1, w), h: Math.max(1, h) };
+}
+
+function mskProjectsPhonePortraitDesignBox() {
+	try {
+		if (typeof mskPhonePortraitLayoutPx === 'function') {
+			const px = mskPhonePortraitLayoutPx();
+			if (px && px.w >= 200 && px.h >= 300) return { w: Math.round(px.w), h: Math.round(px.h) };
+		}
+	} catch (_) {}
+	const u = mskProjectsPhonePortraitUsableBox();
+	const refAspect = 390 / 844;
+	const minH = Math.round(u.w / refAspect);
+	return { w: u.w, h: Math.max(u.h, minH) };
+}
+
+/** Telefon: fuld viewport når plads nok; ellers design-canvas × scale (Safari-chrome). */
 function mskApplyProjectsPortraitPhoneCanvasStyles() {
 	try {
+		const root = document.documentElement;
 		const container = document.querySelector('.brainstorm-container');
 		if (!container) return;
-		container.classList.remove('projects-mindmap--phone-canvas');
-		container.removeAttribute('data-msk-portrait-canvas');
-		if (!mskIsProjectsPhonePortraitViewport() && !document.documentElement.classList.contains('msk-projects-phone-portrait')) {
+		const phonePt =
+			mskIsProjectsPhonePortraitViewport() ||
+			!!(root && root.classList.contains('msk-projects-phone-portrait'));
+		if (!phonePt) {
+			try {
+				root.classList.remove('msk-projects-phone-pt-ref-canvas');
+			} catch (_) {}
 			return;
 		}
 		if (!container.classList.contains('projects-mindmap--portrait')) return;
-		container.style.setProperty('position', 'fixed', 'important');
-		container.style.setProperty('inset', '0', 'important');
-		container.style.setProperty('width', '100%', 'important');
-		container.style.setProperty('height', '100dvh', 'important');
+
+		const usable = mskProjectsPhonePortraitUsableBox();
+		const design = mskProjectsPhonePortraitDesignBox();
+		let fit = Math.min(usable.w / Math.max(1, design.w), usable.h / Math.max(1, design.h));
+		if (!Number.isFinite(fit) || fit <= 0) fit = 1;
+		fit = Math.max(0.72, Math.min(1, fit));
+		/* Lille nip under Safari-chrome, så bund ikke ligger under URL-bar */
+		if (fit < 0.985) fit = Math.max(0.72, fit * 0.985);
+
+		root.style.setProperty('--phone-pt-design-w', `${design.w}px`);
+		root.style.setProperty('--phone-pt-design-h', `${design.h}px`);
+		root.style.setProperty('--projectsPortraitFit', String(Math.round(fit * 1000) / 1000));
+
+		container.classList.remove('projects-mindmap--phone-canvas');
+		container.removeAttribute('data-msk-portrait-canvas');
 		container.style.setProperty('display', 'block', 'important');
 		container.style.setProperty('visibility', 'visible', 'important');
 		container.style.setProperty('opacity', '1', 'important');
-		/* clip X: ringe må ikke skubbe siden; Y synlig så bløde kanter ikke hard-cuttes unødigt */
 		container.style.setProperty('overflow-x', 'clip', 'important');
 		container.style.setProperty('overflow-y', 'visible', 'important');
 		container.style.setProperty('z-index', '3', 'important');
-		container.style.setProperty('transform', 'none', 'important');
-		container.style.removeProperty('left');
-		container.style.removeProperty('top');
-		container.style.removeProperty('max-width');
-		container.style.removeProperty('max-height');
-		container.style.removeProperty('overflow');
+
+		if (fit >= 0.985) {
+			/* DevTools / fuld skærm — uændret inset-fill (ingen transform). */
+			try {
+				root.classList.remove('msk-projects-phone-pt-ref-canvas');
+			} catch (_) {}
+			container.style.setProperty('position', 'fixed', 'important');
+			container.style.setProperty('inset', '0', 'important');
+			container.style.setProperty('width', '100%', 'important');
+			container.style.setProperty('height', '100dvh', 'important');
+			container.style.setProperty('transform', 'none', 'important');
+			container.style.removeProperty('left');
+			container.style.removeProperty('top');
+			container.style.removeProperty('right');
+			container.style.removeProperty('bottom');
+			container.style.removeProperty('max-width');
+			container.style.removeProperty('max-height');
+			container.style.removeProperty('min-height');
+			container.style.removeProperty('margin');
+			container.style.removeProperty('overflow');
+			return;
+		}
+
+		/* Safari-chrome: layout i design-rum, scale ned til synlig VV (p751). */
+		try {
+			root.classList.add('msk-projects-phone-pt-ref-canvas');
+		} catch (_) {}
+		let cx = usable.w / 2;
+		let cy = usable.h / 2;
+		try {
+			const vv = window.visualViewport;
+			if (vv && vv.width > 40 && vv.height > 40) {
+				cx = vv.offsetLeft + vv.width / 2;
+				cy = vv.offsetTop + vv.height / 2;
+			}
+		} catch (_) {}
+		const sFit = String(Math.round(fit * 1000) / 1000);
+		container.style.setProperty('position', 'fixed', 'important');
+		container.style.setProperty('width', `${design.w}px`, 'important');
+		container.style.setProperty('height', `${design.h}px`, 'important');
+		container.style.setProperty('min-height', `${design.h}px`, 'important');
+		container.style.setProperty('max-width', `${design.w}px`, 'important');
+		container.style.setProperty('max-height', `${design.h}px`, 'important');
+		container.style.setProperty('left', `${Math.round(cx)}px`, 'important');
+		container.style.setProperty('top', `${Math.round(cy)}px`, 'important');
+		container.style.setProperty('right', 'auto', 'important');
+		container.style.setProperty('bottom', 'auto', 'important');
+		container.style.setProperty('inset', 'auto', 'important');
+		container.style.setProperty('margin', '0', 'important');
+		container.style.setProperty('transform', `translate(-50%, -50%) scale(${sFit})`, 'important');
+		container.style.setProperty('transform-origin', 'center center', 'important');
+		container.style.setProperty('--projectsPortraitFit', sFit);
+		container.setAttribute('data-msk-portrait-canvas', '1');
+		container.classList.add('projects-mindmap--phone-canvas');
 	} catch (_) {}
 }
 
@@ -955,6 +1054,12 @@ function mskClearProjectsPortraitPhoneCanvasStyles() {
 			mskApplyProjectsPortraitPhoneCanvasStyles();
 			return;
 		}
+		try {
+			document.documentElement.classList.remove('msk-projects-phone-pt-ref-canvas');
+			document.documentElement.style.removeProperty('--phone-pt-design-w');
+			document.documentElement.style.removeProperty('--phone-pt-design-h');
+			document.documentElement.style.removeProperty('--projectsPortraitFit');
+		} catch (_) {}
 		const container = document.querySelector('.brainstorm-container');
 		if (!container) return;
 		[
@@ -973,6 +1078,8 @@ function mskClearProjectsPortraitPhoneCanvasStyles() {
 			'bottom',
 			'max-width',
 			'max-height',
+			'min-height',
+			'margin',
 			'overflow',
 			'overflow-x',
 			'overflow-y',
@@ -981,6 +1088,7 @@ function mskClearProjectsPortraitPhoneCanvasStyles() {
 				container.style.removeProperty(prop);
 			} catch (_) {}
 		});
+		container.style.removeProperty('--projectsPortraitFit');
 		container.classList.remove('projects-mindmap--phone-canvas');
 		container.removeAttribute('data-msk-portrait-canvas');
 	} catch (_) {}
@@ -12537,11 +12645,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					mskSyncProjectsPhoneLandscapeFit();
 				}
 			} catch (_) {}
-			/* Aldrig layout højere end viewport — undtagen telefon-canvas / phone-LS ref-canvas */
+			/* Aldrig layout højere end viewport — undtagen telefon-canvas / phone-LS / phone-PT ref-canvas */
+			const phonePtRefCanvas = document.documentElement.classList.contains(
+				'msk-projects-phone-pt-ref-canvas'
+			);
 			if (
 				document.body &&
 				document.body.classList.contains('projects-page') &&
-				!mskIsProjectsPhoneLandscapeViewport()
+				!mskIsProjectsPhoneLandscapeViewport() &&
+				!phonePtRefCanvas
 			) {
 				layoutW = Math.round(Math.max(1, Math.min(layoutW, iw)));
 				layoutH = Math.round(Math.max(1, Math.min(layoutH, ih)));
@@ -12648,15 +12760,42 @@ document.addEventListener('DOMContentLoaded', function() {
 				try { container.classList.add('projects-mindmap--portrait'); } catch {}
 					layoutW = Math.round(Math.max(1, window.innerWidth || layoutW || 375));
 					layoutH = Math.round(Math.max(1, window.innerHeight || layoutH || 667));
+					/*
+					 * Telefon portræt + Safari-chrome: layout i design-boks (screen/ref-aspect),
+					 * ikke den korte VV — ellers divergerer fra DevTools (p751).
+					 */
+					try {
+						if (
+							phonePortraitGrid ||
+							document.documentElement.classList.contains('msk-projects-phone-portrait')
+						) {
+							mskApplyProjectsPortraitPhoneCanvasStyles();
+							const design = mskProjectsPhonePortraitDesignBox();
+							if (design.w >= 200 && design.h >= 300) {
+								layoutW = design.w;
+								layoutH = design.h;
+							}
+						}
+					} catch (_) {}
 					const brainEl = brain || container.querySelector('.brain');
 					let NAV_H = 52;
 					try {
 						const nb = document.querySelector('.navbar');
 						if (nb && nb.getBoundingClientRect) NAV_H = Math.round(nb.getBoundingClientRect().bottom);
 					} catch {}
-					const pvBand = mskProjectsPortraitGridLayoutPx();
-					const capH = Math.min(pvBand.h || layoutH || ih, ih, layoutH || ih);
-					const portraitBandH = capH > 0 ? capH : Math.min(layoutH, ih);
+					let portraitBandH = layoutH;
+					try {
+						const phonePtRef = document.documentElement.classList.contains(
+							'msk-projects-phone-pt-ref-canvas'
+						);
+						if (!phonePtRef) {
+							const pvBand = mskProjectsPortraitGridLayoutPx();
+							const capH = Math.min(pvBand.h || layoutH || ih, ih, layoutH || ih);
+							portraitBandH = capH > 0 ? capH : Math.min(layoutH, ih);
+						}
+					} catch (_) {
+						portraitBandH = layoutH;
+					}
 					// Nodes use translate(-50%,-50%); row Y is the *center*. Margins + compressed band so the map fits portrait height.
 					const phoneGridLock = phonePortraitGrid ? mskGetProjectsIpadPortraitLock()?.grid : null;
 					/*
@@ -19842,7 +19981,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update fredag 13 nov - klokken 12:30';
+		const stampText = 'update lørdag 14 nov - klokken 15:40';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');

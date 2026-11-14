@@ -33,24 +33,48 @@
 		return a + (b - a) * t;
 	}
 
-	/** Bedste layout-maal: inner*, visualViewport, screen (i raekkefoelge). */
+	/**
+	 * Layout-maal til phone-portræt profiler.
+	 * Safari-chrome må IKKE krympe højden her — ellers divergerer kompositionen fra
+	 * DevTools/fuld skærm (kortere hRatio → anden scale/rowSpan). Brug screen / ref-aspect.
+	 */
 	function mskPhonePortraitLayoutPx(w, h) {
 		let iw = w != null ? w : global.innerWidth;
 		let ih = h != null ? h : global.innerHeight;
 		try {
+			const iw0 = Math.round(global.innerWidth || 0);
+			const ih0 = Math.round(global.innerHeight || 0);
+			if (iw0 >= 200) iw = Math.max(Number(iw) || 0, iw0);
+			if (ih0 >= 300) ih = Math.max(Number(ih) || 0, ih0);
+		} catch (_) {}
+		try {
 			const vv = global.visualViewport;
 			if (vv && vv.width >= 200 && vv.height >= 300) {
-				iw = vv.width;
-				ih = vv.height;
+				/* Bredde: VV er ok. Højde: må ikke erstatte med chrome-krympet VV. */
+				iw = Math.round(Math.max(Number(iw) || 0, vv.width));
 			}
 		} catch (_) {}
 		try {
-			if ((!iw || iw < 200) && global.screen && global.screen.width) {
-				const sw = global.screen.width;
-				const sh = global.screen.height;
-				iw = Math.min(sw, sh);
-				ih = Math.max(sw, sh);
+			if (global.screen && global.screen.width && global.screen.height) {
+				const sw = Math.min(global.screen.width, global.screen.height);
+				const sh = Math.max(global.screen.width, global.screen.height);
+				if (sw >= MSK_PHONE_LAYOUT.wMin && sw <= MSK_PHONE_LAYOUT.wMax && sh >= MSK_PHONE_LAYOUT.hMin) {
+					if ((!iw || iw < 200) || Math.abs((Number(iw) || sw) - sw) <= 48) {
+						iw = Math.round(Math.max(Number(iw) || 0, sw));
+					}
+					/* Chrome-krympet højde → løft til screen (DevTools-match på samme telefon). */
+					if (sh >= 500 && Number(ih) < sh * 0.92) {
+						ih = sh;
+					} else {
+						ih = Math.round(Math.max(Number(ih) || 0, sh * 0.98));
+					}
+				}
 			}
+		} catch (_) {}
+		/* Gulv: mindst ref-aspect-højde fra bredden (undgå “bred/lav” Safari-aspect). */
+		try {
+			const minH = Math.round((Number(iw) || MSK_PHONE_PORTRAIT_REF.w) / MSK_PHONE_REF_ASPECT);
+			if (Number(ih) < minH * 0.94) ih = minH;
 		} catch (_) {}
 		iw = Math.round(mskClamp(iw || MSK_PHONE_PORTRAIT_REF.w, MSK_PHONE_LAYOUT.wMin, MSK_PHONE_LAYOUT.wMax));
 		ih = Math.round(mskClamp(ih || MSK_PHONE_PORTRAIT_REF.h, MSK_PHONE_LAYOUT.hMin, MSK_PHONE_LAYOUT.hMax));
