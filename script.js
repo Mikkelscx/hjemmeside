@@ -15815,11 +15815,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p771: tipPad+clear som gapB åd Twister (kortere lodret span) → len<6 skip.
-						 * Samme mid-regler som Købajer: start pink 50%, end=nodeTop, gapB=clear kun,
-						 * tving minSpan så venstre altid tegnes.
+						 * p772: Twister-bbox top ligger for højt (D&AD-badge) → streg endte under/i hjernen
+						 * og sås ikke. Sigte ~28% ned i noden (oval-top), start pink underside, minSpan,
+						 * gapB kun clear (ingen tipPad der skipper).
 						 */
-						const twNodeTop = pt(twiRect, 'top');
 						const twNodeMid = pt(twiRect, 'center');
 						const clear = phoneOuterClearY(8);
 						let minSpan = phoneOuterClearY(80);
@@ -15832,11 +15831,20 @@ document.addEventListener('DOMContentLoaded', function() {
 							inX = Math.abs(p1.x - p0.x) || inX;
 							minSpan = Math.abs(m1.y - p0.y) || minSpan;
 						} catch (_) {}
+						/* Oval-top under badge — ikke raw getBoundingClientRect().top */
+						const twAim = mskSvgPointFromClientPx(
+							currentSvg,
+							twiRect.left + twiRect.width * 0.5,
+							twiRect.top + twiRect.height * 0.28
+						);
 						a.x = brainLeft.x + inX;
-						a.y = brainTop.y + bh * 0.5;
-						b.x = twNodeMid.x;
-						b.y = twNodeTop.y;
-						/* Sørg for synlig længde FØR gapB — aldrig len<6 skip på venstre. */
+						a.y = Math.min(brainTop.y + bh * 0.52, brainBottom.y - clear);
+						b.x = twAim.x;
+						b.y = twAim.y;
+						/* Hold end under hjernen så stregen er synlig i hullet */
+						if (!(b.y > brainBottom.y + clear)) {
+							b.y = brainBottom.y + Math.max(minSpan * 0.55, clear * 4);
+						}
 						if (!(b.y > a.y + minSpan)) {
 							a.y = b.y - minSpan;
 						}
@@ -15848,7 +15856,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
-						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.12));
+						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.1));
 						twBrainLenMul = 1;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
@@ -20004,7 +20012,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:35';
+		const stampText = 'update lørdag 14 nov - klokken 23:40';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
