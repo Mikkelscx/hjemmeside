@@ -15815,49 +15815,47 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p775: face-bbox bottom ligger UNDER Twister-top → start ved brainBottom
-						 * lagde stregen inde i ovalen (usynlig). Start ved pink underside (42% face),
-						 * slut oval@40% / mindst start+minSpan, gapB=clear. Spejl højre synlighed.
+						 * p776: EXACT mirror of working Købajer phone block.
+						 * p769 skipped left because tipPad+clear gapB > vertical span → len<6.
 						 */
+						const twNodeTop = pt(twiRect, 'top');
+						const twNodeMid = pt(twiRect, 'center');
 						const clear = phoneOuterClearY(8);
-						let minSpan = phoneOuterClearY(110);
+						let minSpan = phoneOuterClearY(80);
 						const bh = Math.max(1, brainBottom.y - brainTop.y);
-						let inX = svgScale(16);
+						let inX = svgScale(12);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const p1 = mskSvgPointFromClientPx(currentSvg, 16, 0);
-							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(110));
+							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
+							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(80));
 							inX = Math.abs(p1.x - p0.x) || inX;
 							minSpan = Math.abs(m1.y - p0.y) || minSpan;
 						} catch (_) {}
-						const twAim = mskSvgPointFromClientPx(
-							currentSvg,
-							twiRect.left + twiRect.width * 0.5,
-							twiRect.top + twiRect.height * 0.4
-						);
-						const twMid = pt(twiRect, 'center');
-						a.x = brainLeft.x + inX * 0.25;
-						a.y = brainTop.y + bh * 0.42;
-						let endY = Math.max(twAim.y, a.y + minSpan);
-						const maxEnd = twMid.y - clear;
-						if (maxEnd > a.y + minSpan * 0.55) endY = Math.min(endY, maxEnd);
-						b.x = twAim.x;
-						b.y = endY;
-						if (!(b.y > a.y + 20)) {
-							b.y = a.y + minSpan;
+						a.x = brainLeft.x + inX;
+						a.y = brainTop.y + bh * 0.5;
+						b.x = twNodeMid.x + inX * 0.2;
+						b.y = twNodeTop.y;
+						if (!(b.y > a.y + minSpan)) {
+							a.y = b.y - minSpan;
+						}
+						const span = b.y - a.y;
+						if (span > 12) {
+							const pad = span * 0.05;
+							a.y += pad;
+							b.y -= pad;
 						}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
-						twBrainGapB = clear;
+						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.12));
 						twBrainLenMul = 1;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(180));
-							twBrainLineH = Math.max(180, Math.abs(t1.y - t0.y) || 180);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(120));
+							twBrainLineH = Math.max(120, Math.abs(t1.y - t0.y) || 120);
 						} catch (_) {
-							twBrainLineH = 180;
+							twBrainLineH = 120;
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -15869,6 +15867,21 @@ document.addEventListener('DOMContentLoaded', function() {
 						allowThickStroke: phoneLinesOnly,
 						spokeId: phoneLinesOnly ? 'brain-twister' : '',
 					});
+					/* p776: if still missing (len skip), force a guaranteed left spoke */
+					if (phoneLinesOnly && !currentSvg.querySelector('[data-msk-spoke="brain-twister"]')) {
+						const twMid = pt(twiRect, 'center');
+						const clear = phoneOuterClearY(8);
+						const minSpan = phoneOuterClearY(90);
+						const forceA = { x: brainLeft.x + svgScale(10), y: brainTop.y + (brainBottom.y - brainTop.y) * 0.48 };
+						const forceB = { x: twMid.x, y: Math.max(twMid.y - clear * 2, forceA.y + minSpan) };
+						lineImg('assets/linje 8.webp', forceA, forceB, phoneSpokeStrokeH(), {
+							gapA: 0,
+							gapB: clear,
+							lenMul: 1,
+							allowThickStroke: true,
+							spokeId: 'brain-twister',
+						});
+					}
 				}
 				if (twiRect && brfRect) {
 					const twBrfDown = svgScale(8);
@@ -20004,7 +20017,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:48';
+		const stampText = 'update lørdag 14 nov - klokken 23:50';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
