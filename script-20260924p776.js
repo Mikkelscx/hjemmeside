@@ -15815,7 +15815,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p776: EXACT mirror of working Købajer phone block.
+						 * p775b: EXACT mirror of working Købajer phone block.
 						 * p769 skipped left because tipPad+clear gapB > vertical span → len<6.
 						 */
 						const twNodeTop = pt(twiRect, 'top');
@@ -15867,7 +15867,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						allowThickStroke: phoneLinesOnly,
 						spokeId: phoneLinesOnly ? 'brain-twister' : '',
 					});
-					/* p776: if still missing (len skip), force a guaranteed left spoke */
+					/* p775b: if still missing (len skip), force a guaranteed left spoke */
 					if (phoneLinesOnly && !currentSvg.querySelector('[data-msk-spoke="brain-twister"]')) {
 						const twMid = pt(twiRect, 'center');
 						const clear = phoneOuterClearY(8);
@@ -20017,7 +20017,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:50';
+		const stampText = 'update lørdag 14 nov - klokken 23:52';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
