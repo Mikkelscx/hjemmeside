@@ -15815,57 +15815,57 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p772: Twister-bbox top ligger for højt (D&AD-badge) → streg endte under/i hjernen
-						 * og sås ikke. Sigte ~28% ned i noden (oval-top), start pink underside, minSpan,
-						 * gapB kun clear (ingen tipPad der skipper).
+						 * p773: venstre streg SKAL krydse hullet under pink hjerne → Twister-oval.
+						 * Start lige under pink (brainBottom−clear); slut max(oval@35%, brainBottom+minSpan*0.9)
+						 * så badge-top ikke skjuler stregen. gapB=clear; aldrig tipPad-skip.
 						 */
-						const twNodeMid = pt(twiRect, 'center');
 						const clear = phoneOuterClearY(8);
-						let minSpan = phoneOuterClearY(80);
-						const bh = Math.max(1, brainBottom.y - brainTop.y);
-						let inX = svgScale(12);
+						let minSpan = phoneOuterClearY(90);
+						let inX = svgScale(14);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(80));
+							const p1 = mskSvgPointFromClientPx(currentSvg, 14, 0);
+							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(90));
 							inX = Math.abs(p1.x - p0.x) || inX;
 							minSpan = Math.abs(m1.y - p0.y) || minSpan;
 						} catch (_) {}
-						/* Oval-top under badge — ikke raw getBoundingClientRect().top */
 						const twAim = mskSvgPointFromClientPx(
 							currentSvg,
-							twiRect.left + twiRect.width * 0.5,
-							twiRect.top + twiRect.height * 0.28
+							twiRect.left + twiRect.width * 0.48,
+							twiRect.top + twiRect.height * 0.35
 						);
 						a.x = brainLeft.x + inX;
-						a.y = Math.min(brainTop.y + bh * 0.52, brainBottom.y - clear);
+						a.y = brainBottom.y - clear;
 						b.x = twAim.x;
-						b.y = twAim.y;
-						/* Hold end under hjernen så stregen er synlig i hullet */
-						if (!(b.y > brainBottom.y + clear)) {
-							b.y = brainBottom.y + Math.max(minSpan * 0.55, clear * 4);
-						}
-						if (!(b.y > a.y + minSpan)) {
-							a.y = b.y - minSpan;
+						b.y = Math.max(twAim.y, brainBottom.y + minSpan * 0.9);
+						/* Ikke dybere end lige over oval-mid (undgå pierce i fill) */
+						const twMidY = pt(twiRect, 'center').y;
+						if (b.y > twMidY - clear) b.y = Math.max(twMidY - clear, a.y + minSpan * 0.75);
+						if (!(b.y > a.y + minSpan * 0.7)) {
+							b.y = a.y + minSpan;
+							if (b.y > twMidY - clear) {
+								b.y = twMidY - clear;
+								a.y = b.y - minSpan;
+							}
 						}
 						const span = b.y - a.y;
 						if (span > 12) {
-							const pad = span * 0.05;
+							const pad = span * 0.04;
 							a.y += pad;
 							b.y -= pad;
 						}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
-						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.1));
+						twBrainGapB = clear;
 						twBrainLenMul = 1;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(120));
-							twBrainLineH = Math.max(120, Math.abs(t1.y - t0.y) || 120);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(130));
+							twBrainLineH = Math.max(130, Math.abs(t1.y - t0.y) || 130);
 						} catch (_) {
-							twBrainLineH = 120;
+							twBrainLineH = 130;
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -20012,7 +20012,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:40';
+		const stampText = 'update lørdag 14 nov - klokken 23:42';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
