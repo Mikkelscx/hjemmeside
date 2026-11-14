@@ -15815,29 +15815,31 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p764: synlig under-hjerne + STOP UDENFOR Twister-ring (ikke nodeTop+20 / −gapB).
+						 * p765 mid: NODE-kant + ~8px clear (ikke ring-bbox → stub, ikke nodeTop+20 → pierce).
+						 * Fyld ~86% af brainBottom↔nodeTop.
 						 */
-						const twEdge = phoneRingRectFor('twister', twiRect);
-						const twRingTop = pt(twEdge, 'top');
+						const twNodeTop = pt(twiRect, 'top');
 						const twNodeMid = pt(twiRect, 'center');
-						const clear = phoneOuterClearY(12);
+						const clear = phoneOuterClearY(8);
 						let inX = svgScale(12);
-						let minSpan = svgScale(72);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(72));
 							inX = Math.abs(p1.x - p0.x) || inX;
-							minSpan = Math.abs(m1.y - p0.y) || minSpan;
 						} catch (_) {}
-						const endY = twRingTop.y - clear;
+						const gap0 = brainBottom.y + clear;
+						const gap1 = twNodeTop.y - clear;
+						const span = gap1 - gap0;
 						a.x = brainLeft.x + inX;
-						a.y = brainBottom.y - svgScale(52);
 						b.x = twNodeMid.x;
-						b.y = endY;
-						if (!(b.y > a.y + minSpan * 0.35)) {
-							a.y = Math.min(a.y, endY - minSpan);
-							b.y = endY;
+						if (span > 12) {
+							const fill = span * 0.86;
+							const pad = (span - fill) * 0.5;
+							a.y = gap0 + pad;
+							b.y = gap1 - pad;
+						} else {
+							a.y = Math.min(brainBottom.y + svgScale(2), twNodeTop.y - clear);
+							b.y = twNodeTop.y - clear;
 						}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
@@ -15897,36 +15899,23 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: Twister→Brainfarts — udenfor begge ringe (p764). */
+					/* Telefon: Twister→Brainfarts — node-kanter, ~86% af hul (p765 mid). */
 					try {
 						if (phoneLinesOnly) {
-							let clear = phoneOuterClearY(12);
-							let minSpan = svgScale(40);
-							try {
-								const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(40));
-								const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-								minSpan = Math.abs(m1.y - p0.y) || minSpan;
-							} catch (_) {}
-							const twEdge = phoneRingRectFor('twister', twiRect);
-							const bfEdge = phoneRingRectFor('brainfarts', brfRect);
-							const ta = pt(twEdge, 'bottom');
-							const tb = pt(bfEdge, 'top');
-							const startY = ta.y + clear;
-							const endY = tb.y - clear;
-							a = { x: ta.x, y: startY };
-							b = { x: tb.x, y: endY };
-							if (!(b.y > a.y + 8)) {
-								/* Smalt hul mellem ringe: del resten, stadig udenfor. */
-								const midGap = (ta.y + tb.y) * 0.5;
-								const half = Math.max(svgScale(4), (tb.y - ta.y) * 0.28);
-								a = { x: ta.x, y: midGap - half };
-								b = { x: tb.x, y: midGap + half };
-								a.y = Math.max(a.y, ta.y + svgScale(2));
-								b.y = Math.min(b.y, tb.y - svgScale(2));
-							} else if (!(b.y > a.y + minSpan * 0.5)) {
-								/* Hold endY fast udenfor Brainfarts; løft start. */
-								a.y = Math.min(startY, endY - minSpan);
-								b.y = endY;
+							const clear = phoneOuterClearY(8);
+							const ta = pt(twiRect, 'bottom');
+							const tb = pt(brfRect, 'top');
+							const gap0 = ta.y + clear;
+							const gap1 = tb.y - clear;
+							const span = gap1 - gap0;
+							if (span > 12) {
+								const fill = span * 0.86;
+								const pad = (span - fill) * 0.5;
+								a = { x: ta.x, y: gap0 + pad };
+								b = { x: tb.x, y: gap1 - pad };
+							} else {
+								a = { x: ta.x, y: ta.y + Math.max(svgScale(2), clear * 0.5) };
+								b = { x: tb.x, y: tb.y - Math.max(svgScale(2), clear * 0.5) };
 							}
 							twBrfGapA = 0;
 							twBrfGapB = 0;
@@ -16115,29 +16104,30 @@ document.addEventListener('DOMContentLoaded', function() {
 					let kobBrainAsset = 'assets/Linje 4.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p764: samme som Twister — synlig under hjerne, stop UDENFOR Købajer-ring.
+						 * p765 mid: NODE-kant + ~8px clear, ~86% af brain↔Købajer (samme som Twister).
 						 */
-						const kobEdge = phoneRingRectFor('kobajer', kobRect);
-						const kobRingTop = pt(kobEdge, 'top');
+						const kobNodeTop = pt(kobRect, 'top');
 						const kobNodeMid = pt(kobRect, 'center');
-						const clear = phoneOuterClearY(12);
+						const clear = phoneOuterClearY(8);
 						let inX = svgScale(12);
-						let minSpan = svgScale(72);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(72));
 							inX = Math.abs(p1.x - p0.x) || inX;
-							minSpan = Math.abs(m1.y - p0.y) || minSpan;
 						} catch (_) {}
-						const endY = kobRingTop.y - clear;
+						const gap0 = brainBottom.y + clear;
+						const gap1 = kobNodeTop.y - clear;
+						const span = gap1 - gap0;
 						a.x = brainRight.x - inX;
-						a.y = brainBottom.y - svgScale(52);
 						b.x = kobNodeMid.x - inX * 0.2;
-						b.y = endY;
-						if (!(b.y > a.y + minSpan * 0.35)) {
-							a.y = Math.min(a.y, endY - minSpan);
-							b.y = endY;
+						if (span > 12) {
+							const fill = span * 0.86;
+							const pad = (span - fill) * 0.5;
+							a.y = gap0 + pad;
+							b.y = gap1 - pad;
+						} else {
+							a.y = Math.min(brainBottom.y + svgScale(2), kobNodeTop.y - clear);
+							b.y = kobNodeTop.y - clear;
 						}
 						kobBrainGapA = 0;
 						kobBrainGapB = 0;
@@ -16232,34 +16222,24 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					if (phoneLinesOnly) {
 						/*
-						 * p764: Kø→Byens — stop UDENFOR begge ringe (ikke mid+minSpan ind i fill).
+						 * p765 mid: NODE-kanter, ~86% af Kø↔Byens, ~8px clear.
 						 */
-						let clear = phoneOuterClearY(12);
-						let minSpan = svgScale(40);
-						try {
-							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(40));
-							minSpan = Math.abs(m1.y - p0.y) || minSpan;
-						} catch (_) {}
-						const kobEdge = phoneRingRectFor('kobajer', kobRect);
-						const byeEdge = phoneRingRectFor('byens', byeRect);
-						const ka = pt(kobEdge, 'bottom');
-						const kb = pt(byeEdge, 'top');
-						const startY = ka.y + clear;
-						const endY = kb.y - clear;
+						const clear = phoneOuterClearY(8);
+						const ka = pt(kobRect, 'bottom');
+						const kb = pt(byeRect, 'top');
+						const gap0 = ka.y + clear;
+						const gap1 = kb.y - clear;
+						const span = gap1 - gap0;
 						a.x = ka.x;
 						b.x = ka.x;
-						a.y = startY;
-						b.y = endY;
-						if (!(b.y > a.y + 8)) {
-							const midGap = (ka.y + kb.y) * 0.5;
-							const half = Math.max(svgScale(4), (kb.y - ka.y) * 0.28);
-							a.y = Math.max(midGap - half, ka.y + svgScale(2));
-							b.y = Math.min(midGap + half, kb.y - svgScale(2));
-							b.x = a.x;
-						} else if (!(b.y > a.y + minSpan * 0.5)) {
-							a.y = Math.min(startY, endY - minSpan);
-							b.y = endY;
+						if (span > 12) {
+							const fill = span * 0.86;
+							const pad = (span - fill) * 0.5;
+							a.y = gap0 + pad;
+							b.y = gap1 - pad;
+						} else {
+							a.y = ka.y + Math.max(svgScale(2), clear * 0.5);
+							b.y = kb.y - Math.max(svgScale(2), clear * 0.5);
 						}
 						kobByeLineGapA = 0;
 						kobByeLineGapB = 0;
@@ -20028,7 +20008,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 22:05';
+		const stampText = 'update lørdag 14 nov - klokken 22:32';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
