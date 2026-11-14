@@ -15829,56 +15829,67 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p777: D&AD-badge oppuster Twister-nodeTop ind i hjernen → tipPad/gap
-						 * eller nodeTop-end giver len<6 / streg skjult under .brain.
-						 * Brug RING-top (synlig oval) + samme mid-regler som Købajer.
+						 * p778: .brain-wreath bbox (bRect) dækker under pink chin — streg der
+						 * ender ved ringTop (~over wreath-bottom) er usynlig bag .brain.
+						 * Start ved pink chin; slut UNDER wreath (som Købajer mid-længde).
 						 */
 						const twRingRect = phoneRingRectFor('twister', twiRect);
-						const twRingTop = pt(twRingRect, 'top');
 						const twRingMid = pt(twRingRect, 'center');
+						const twAim = mskSvgPointFromClientPx(
+							currentSvg,
+							twiRect.left + twiRect.width * 0.5,
+							twiRect.top + twiRect.height * 0.28
+						);
 						const clear = phoneOuterClearY(8);
-						let minSpan = phoneOuterClearY(80);
-						const bh = Math.max(1, brainBottom.y - brainTop.y);
+						let minSpan = phoneOuterClearY(96);
 						let inX = svgScale(12);
+						let wreathBottomY = brainBottom.y;
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
 							const p1 = mskSvgPointFromClientPx(currentSvg, 12, 0);
-							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(80));
+							const m1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(96));
 							inX = Math.abs(p1.x - p0.x) || inX;
 							minSpan = Math.abs(m1.y - p0.y) || minSpan;
+							wreathBottomY = mskSvgPointFromClientPx(
+								currentSvg,
+								bRect.left + bRect.width * 0.5,
+								bRect.bottom
+							).y;
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
-						a.y = brainTop.y + bh * 0.5;
-						b.x = twRingMid.x + inX * 0.2;
-						b.y = twRingTop.y;
-						/* Synlig tip UNDER pink chin (linjer ligger bag .brain). */
-						if (b.y < brainBottom.y + clear) {
-							b.y = Math.max(
-								twRingMid.y - Math.max(8, (twRingRect.height || 0) * 0.18),
-								brainBottom.y + Math.max(clear * 2, minSpan * 0.35)
-							);
-						}
-						if (!(b.y > a.y + minSpan)) {
-							a.y = b.y - minSpan;
+						/* Pink underside — øvre del bag ansigt er OK; kul skal lande under wreath. */
+						a.y = brainBottom.y - clear;
+						b.x = twAim.x;
+						b.y = Math.max(
+							twAim.y,
+							twRingMid.y - Math.max(12, (twRingRect.height || 0) * 0.22),
+							wreathBottomY + clear * 2,
+							a.y + minSpan
+						);
+						/* Hold tip udenfor oval-midte */
+						const maxEnd = twRingMid.y - clear;
+						if (maxEnd > a.y + minSpan * 0.55 && b.y > maxEnd) b.y = maxEnd;
+						if (!(b.y > a.y + minSpan * 0.75)) {
+							b.y = a.y + minSpan;
 						}
 						const span = b.y - a.y;
-						if (span > 12) {
-							const pad = span * 0.05;
+						if (span > 16) {
+							const pad = span * 0.04;
 							a.y += pad;
 							b.y -= pad;
 						}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
-						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.12));
+						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.1));
 						twBrainLenMul = 1;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(120));
-							twBrainLineH = Math.max(120, Math.abs(t1.y - t0.y) || 120);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(140));
+							twBrainLineH = Math.max(140, Math.abs(t1.y - t0.y) || 140);
 						} catch (_) {
-							twBrainLineH = 120;
+							twBrainLineH = 140;
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -15890,27 +15901,30 @@ document.addEventListener('DOMContentLoaded', function() {
 						allowThickStroke: phoneLinesOnly,
 						spokeId: phoneLinesOnly ? 'brain-twister' : '',
 					});
-					/* p777: garanter venstre eger hvis primær sti stadig mangler */
+					/* p778: force synlig mid-eger under wreath hvis primær mangler */
 					if (phoneLinesOnly && !currentSvg.querySelector('[data-msk-spoke="brain-twister"]')) {
-						const twRingRect = phoneRingRectFor('twister', twiRect);
-						const twRingTop = pt(twRingRect, 'top');
-						const twRingCenter = pt(twRingRect, 'center');
 						const clear = phoneOuterClearY(8);
-						const minSpan = phoneOuterClearY(90);
+						const minSpan = phoneOuterClearY(100);
+						let wreathBottomY = brainBottom.y;
+						try {
+							wreathBottomY = mskSvgPointFromClientPx(
+								currentSvg,
+								bRect.left + bRect.width * 0.5,
+								bRect.bottom
+							).y;
+						} catch (_) {}
+						const twAim = mskSvgPointFromClientPx(
+							currentSvg,
+							twiRect.left + twiRect.width * 0.5,
+							twiRect.top + twiRect.height * 0.28
+						);
 						const forceA = {
 							x: brainLeft.x + svgScale(10),
-							y: brainTop.y + (brainBottom.y - brainTop.y) * 0.5,
+							y: brainBottom.y - clear,
 						};
-						let forceBy = Math.max(twRingTop.y, brainBottom.y + clear * 2);
-						if (forceBy < brainBottom.y + clear) {
-							forceBy = Math.max(
-								twRingCenter.y - clear,
-								brainBottom.y + minSpan * 0.4
-							);
-						}
 						const forceB = {
-							x: twRingCenter.x,
-							y: Math.max(forceBy, forceA.y + minSpan),
+							x: twAim.x,
+							y: Math.max(twAim.y, wreathBottomY + clear * 2, forceA.y + minSpan),
 						};
 						lineImg('assets/linje 8.webp', forceA, forceB, phoneSpokeStrokeH(), {
 							gapA: 0,
@@ -20055,7 +20069,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:55';
+		const stampText = 'update lørdag 14 nov - klokken 23:56';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
@@ -20067,4 +20081,3 @@ window.addEventListener('load', function () {
 	if (document.body) place();
 	else document.addEventListener('DOMContentLoaded', place);
 })();
-/* msk-p777-twister 1794696744 */
