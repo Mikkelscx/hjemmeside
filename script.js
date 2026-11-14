@@ -15822,33 +15822,20 @@ document.addEventListener('DOMContentLoaded', function() {
 						 * Store HTML-ringe når næsten ind i hjernen efter LS→PT — brug node
 						 * når ring-top er for tæt på hjernen (ellers stub under hjernen).
 						 */
-						const ringGap = Math.hypot(twRingTop.x - a.x, twRingTop.y - a.y);
-						const nodeGap = Math.hypot(twNodeTop.x - a.x, twNodeTop.y - a.y);
-						const useNode = ringGap < Math.max(svgScale(100), nodeGap * 0.55);
-						const aim = useNode ? twNodeMid : pt(twEdge, 'center');
-						const endTop = useNode ? twNodeTop : twRingTop;
-						/* p759: næsten til ringen (0.95) — 0.72 så ud som stub. Cap ved ring-top − clear. */
+						/*
+						 * p759: ALTID node-top/mid — store ring-overlays har centrum tæt på hjernen,
+						 * så aim=ring-center gav stubbe selv med høj fraction.
+						 */
+						const endTop = twNodeTop;
+						const aim = twNodeMid;
+						/* Fuld længde til lige over ovalen (lille clear), ikke 0.72/0.95 af centrum. */
 						const dx0 = aim.x - a.x;
-						const dy0 = aim.y - a.y;
+						const dy0 = (endTop.y - clear) - a.y;
 						const dist0 = Math.hypot(dx0, dy0) || 1;
-						const target = dist0 * 0.95;
 						b = {
-							x: a.x + (dx0 / dist0) * target,
-							y: a.y + (dy0 / dist0) * target,
+							x: a.x + (dx0 / dist0) * dist0,
+							y: a.y + (dy0 / dist0) * dist0,
 						};
-						const maxY = endTop.y - clear;
-						if (b.y > maxY && b.y !== a.y) {
-							const t = (maxY - a.y) / (b.y - a.y);
-							if (t > 0.15 && t < 1) {
-								b.x = a.x + (b.x - a.x) * t;
-								b.y = maxY;
-							} else if (t >= 1) {
-								/* Ring langt væk — behold 0.95 */
-							} else {
-								b.x = endTop.x;
-								b.y = maxY;
-							}
-						}
 						twBrainAngleOffset = 6;
 						twBrainGapA = 0;
 						twBrainGapB = 0;
@@ -16188,43 +16175,26 @@ document.addEventListener('DOMContentLoaded', function() {
 						} catch (_) {}
 						a.x = brainRight.x - inX;
 						a.y = brainBottom.y - svgScale(4);
-						const ringGap = Math.hypot(kobRingTop.x - a.x, kobRingTop.y - a.y);
-						const nodeGap = Math.hypot(kobNodeTop.x - a.x, kobNodeTop.y - a.y);
-						const useNode = ringGap < Math.max(svgScale(100), nodeGap * 0.55);
-						const endTop = useNode ? kobNodeTop : kobRingTop;
-						const endMid = useNode ? kobNodeMid : pt(kobEdge, 'center');
-						b.x = endMid.x - inX * 0.35;
-						b.y = endTop.y - clear;
-						/* p759: næsten til ringen (0.95) — 0.82 efterlod for stort hul. Cap ved ring-top. */
-						try {
-							const dx = kobNodeMid.x - a.x;
-							const dy = kobNodeMid.y - a.y;
-							const dist = Math.hypot(dx, dy) || 1;
-							const target = dist * 0.95;
-							b.x = a.x + (dx / dist) * target;
-							b.y = a.y + (dy / dist) * target;
-							const maxY = endTop.y - clear;
-							if (b.y > maxY && b.y !== a.y) {
-								const t = (maxY - a.y) / (b.y - a.y);
-								if (t > 0.15 && t < 1) {
-									b.x = a.x + (b.x - a.x) * t;
-									b.y = maxY;
-								} else if (t < 0.15) {
-									b.x = endTop.x - inX * 0.35;
-									b.y = maxY;
-								}
-							}
-						} catch (_) {}
-						/* Hele hjerne→Købajer lidt op (p712 — før “træk ned”) — mindre lift end p758. */
+						/* Samme som Twister: node-top, ikke ring-center (store overlays → stub). */
+						const endTop = kobNodeTop;
+						const aim = kobNodeMid;
+						const dx = (aim.x - inX * 0.35) - a.x;
+						const dy = (endTop.y - clear) - a.y;
+						const dist = Math.hypot(dx, dy) || 1;
+						b = {
+							x: a.x + (dx / dist) * dist,
+							y: a.y + (dy / dist) * dist,
+						};
+						/* Hele hjerne→Købajer lidt op — lille lift. */
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(10));
-							const liftUp = Math.abs(p1.y - p0.y) || svgScale(8);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(8));
+							const liftUp = Math.abs(p1.y - p0.y) || svgScale(6);
 							a.y -= liftUp;
 							b.y -= liftUp;
 						} catch (_) {
-							a.y -= svgScale(8);
-							b.y -= svgScale(8);
+							a.y -= svgScale(6);
+							b.y -= svgScale(6);
 						}
 						kobBrainGapA = 0;
 						kobBrainGapB = 0;
@@ -20150,7 +20120,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 18:22';
+		const stampText = 'update lørdag 14 nov - klokken 18:26';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
