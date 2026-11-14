@@ -15829,19 +15829,17 @@ document.addEventListener('DOMContentLoaded', function() {
 					let twBrainAsset = 'assets/linje 8.webp';
 					if (phoneLinesOnly) {
 						/*
-						 * p778: .brain-wreath bbox (bRect) dækker under pink chin — streg der
-						 * ender ved ringTop (~over wreath-bottom) er usynlig bag .brain.
-						 * Start ved pink chin; slut UNDER wreath (som Købajer mid-længde).
+						 * p779: EXACT Købajer mid-regler + slut UNDER .brain-wreath (ellers usynlig).
+						 * clear=8, ingen tipPad/pierce. Badge-nodeTop ignoreres.
 						 */
-						const twRingRect = phoneRingRectFor('twister', twiRect);
-						const twRingMid = pt(twRingRect, 'center');
 						const twAim = mskSvgPointFromClientPx(
 							currentSvg,
 							twiRect.left + twiRect.width * 0.5,
-							twiRect.top + twiRect.height * 0.28
+							twiRect.top + twiRect.height * 0.22
 						);
 						const clear = phoneOuterClearY(8);
 						let minSpan = phoneOuterClearY(96);
+						const bh = Math.max(1, brainBottom.y - brainTop.y);
 						let inX = svgScale(12);
 						let wreathBottomY = brainBottom.y;
 						try {
@@ -15857,39 +15855,30 @@ document.addEventListener('DOMContentLoaded', function() {
 							).y;
 						} catch (_) {}
 						a.x = brainLeft.x + inX;
-						/* Pink underside — øvre del bag ansigt er OK; kul skal lande under wreath. */
-						a.y = brainBottom.y - clear;
-						b.x = twAim.x;
-						b.y = Math.max(
-							twAim.y,
-							twRingMid.y - Math.max(12, (twRingRect.height || 0) * 0.22),
-							wreathBottomY + clear * 2,
-							a.y + minSpan
-						);
-						/* Hold tip udenfor oval-midte */
-						const maxEnd = twRingMid.y - clear;
-						if (maxEnd > a.y + minSpan * 0.55 && b.y > maxEnd) b.y = maxEnd;
-						if (!(b.y > a.y + minSpan * 0.75)) {
-							b.y = a.y + minSpan;
+						a.y = brainTop.y + bh * 0.5;
+						b.x = twAim.x + inX * 0.2;
+						b.y = Math.max(twAim.y, wreathBottomY + clear * 2);
+						if (!(b.y > a.y + minSpan)) {
+							a.y = b.y - minSpan;
 						}
 						const span = b.y - a.y;
-						if (span > 16) {
-							const pad = span * 0.04;
+						if (span > 12) {
+							const pad = span * 0.05;
 							a.y += pad;
 							b.y -= pad;
 						}
 						twBrainAngleOffset = 0;
 						twBrainGapA = 0;
-						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.1));
+						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.12));
 						twBrainLenMul = 1;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(140));
-							twBrainLineH = Math.max(140, Math.abs(t1.y - t0.y) || 140);
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(120));
+							twBrainLineH = Math.max(120, Math.abs(t1.y - t0.y) || 120);
 						} catch (_) {
-							twBrainLineH = 140;
+							twBrainLineH = 120;
 						}
 					}
 					lineImg(twBrainAsset, a, b, twBrainLineH, {
@@ -15901,7 +15890,6 @@ document.addEventListener('DOMContentLoaded', function() {
 						allowThickStroke: phoneLinesOnly,
 						spokeId: phoneLinesOnly ? 'brain-twister' : '',
 					});
-					/* p778: force synlig mid-eger under wreath hvis primær mangler */
 					if (phoneLinesOnly && !currentSvg.querySelector('[data-msk-spoke="brain-twister"]')) {
 						const clear = phoneOuterClearY(8);
 						const minSpan = phoneOuterClearY(100);
@@ -15916,12 +15904,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						const twAim = mskSvgPointFromClientPx(
 							currentSvg,
 							twiRect.left + twiRect.width * 0.5,
-							twiRect.top + twiRect.height * 0.28
+							twiRect.top + twiRect.height * 0.22
 						);
-						const forceA = {
-							x: brainLeft.x + svgScale(10),
-							y: brainBottom.y - clear,
-						};
+						const forceA = { x: brainLeft.x + svgScale(10), y: brainTop.y + (brainBottom.y - brainTop.y) * 0.5 };
 						const forceB = {
 							x: twAim.x,
 							y: Math.max(twAim.y, wreathBottomY + clear * 2, forceA.y + minSpan),
@@ -20069,7 +20054,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:56';
+		const stampText = 'update lørdag 14 nov - klokken 23:59';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
