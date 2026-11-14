@@ -15824,19 +15824,20 @@ document.addEventListener('DOMContentLoaded', function() {
 						const ringGap = Math.hypot(twRingTop.x - a.x, twRingTop.y - a.y);
 						const nodeGap = Math.hypot(twNodeTop.x - a.x, twNodeTop.y - a.y);
 						const useNode = ringGap < Math.max(svgScale(100), nodeGap * 0.55);
-						/* Sigte mod ring/node-top − clear (ikke 72% ind i centrum). */
-						const aimTop = useNode ? twNodeTop : twRingTop;
-						const dx0 = aimTop.x - a.x;
-						const dy0 = aimTop.y - clear - a.y;
+						const aim = useNode ? twNodeMid : pt(twEdge, 'center');
+						/* Kortere sigte mod centrum — fuld længde under hjernen (ikke ring-top stub). */
+						const dx0 = aim.x - a.x;
+						const dy0 = aim.y - a.y;
 						const dist0 = Math.hypot(dx0, dy0) || 1;
+						const target = dist0 * 0.72;
 						b = {
-							x: a.x + (dx0 / dist0) * dist0,
-							y: a.y + (dy0 / dist0) * dist0,
+							x: a.x + (dx0 / dist0) * target,
+							y: a.y + (dy0 / dist0) * target,
 						};
 						twBrainAngleOffset = 6;
 						twBrainGapA = 0;
 						twBrainGapB = clear;
-						twBrainLenMul = 1.0;
+						twBrainLenMul = 0.94;
 						/* Spejlvend ift. tidligere phone-mirror (stregerne vendte forkert). */
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
@@ -16186,15 +16187,16 @@ document.addEventListener('DOMContentLoaded', function() {
 						const endMid = useNode ? kobNodeMid : pt(kobEdge, 'center');
 						b.x = endMid.x - inX * 0.35;
 						b.y = endTop.y - clear;
-						/* Max til ring-top − clear — ikke 82% ind i oval-centrum (pierce). */
+						/* Altid stræk til ~82% af node-centrum (fuld længde under hjernen). */
 						try {
-							const dx = endTop.x - a.x;
-							const dy = endTop.y - clear - a.y;
+							const dx = kobNodeMid.x - a.x;
+							const dy = kobNodeMid.y - a.y;
 							const dist = Math.hypot(dx, dy) || 1;
+							const target = dist * 0.82;
 							const cur = Math.hypot(b.x - a.x, b.y - a.y) || 0;
-							if (cur < dist * 0.85) {
-								b.x = a.x + (dx / dist) * dist;
-								b.y = a.y + (dy / dist) * dist;
+							if (cur < target * 0.92) {
+								b.x = a.x + (dx / dist) * target;
+								b.y = a.y + (dy / dist) * target;
 							}
 						} catch (_) {}
 						/* Hele hjerne→Købajer lidt op (p712 — før “træk ned”). */
@@ -16212,12 +16214,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						/* Kun kortere nedefra (Købajer-ende) — telefon-portræt. */
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(22));
-							kobBrainGapB = Math.abs(p1.y - p0.y) || svgScale(20);
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(20));
+							kobBrainGapB = Math.abs(p1.y - p0.y) || svgScale(18);
 						} catch (_) {
-							kobBrainGapB = svgScale(20);
+							kobBrainGapB = svgScale(18);
 						}
-						kobBrainLenMul = 1.0;
+						kobBrainLenMul = 1.12;
 						/* Spejlvend ift. tidligere phone-mirror (stregerne vendte forkert). */
 						kobBrainMirror = false;
 						kobBrainAsset = 'assets/linje 8.webp';
@@ -20145,7 +20147,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 17:46';
+		const stampText = 'update lørdag 14 nov - klokken 18:14';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
