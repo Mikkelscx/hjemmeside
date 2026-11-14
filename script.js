@@ -15643,46 +15643,30 @@ document.addEventListener('DOMContentLoaded', function() {
 					};
 					if (phoneLinesOnly) {
 						/*
-						 * p436/p782: øvre kæde — ring-webp har padding; inset trækker tip
-						 * ind mod synlig oval (p782: 12→20, lidt længere, stadig udenfor chalk).
+						 * p783: Rep↔Dur — tipPad+clear på NODE (ikke kæmpe ring-bbox).
+						 * clear 6 ≈ samme “lidt længere / udenfor chalk” som p781-bund.
 						 */
-						let repEdge = repRect;
-						let durEdge = durRect;
+						const clear = phoneOuterClearY(6);
+						const tipPad = phoneOuterClearY(14);
+						const ra = pt(repRect, 'bottom');
+						const rb = pt(durRect, 'top');
+						repDurexA = { x: ra.x, y: ra.y - tipPad };
+						repDurexB = { x: rb.x, y: rb.y + tipPad };
+						if (!(repDurexB.y > repDurexA.y + phoneOuterClearY(20))) {
+							repDurexA.y = ra.y;
+							repDurexB.y = rb.y;
+						}
+						/* Ingen liftY her — tipPad+clear skal lande clear px udenfor begge noder. */
+						repDurexGapA = tipPad + clear;
+						repDurexGapB = tipPad + clear;
+						repDurexLenMul = 1;
 						try {
-							const rings = container.querySelectorAll('.msk-portrait-ring-overlay');
-							for (let ri = 0; ri < rings.length; ri++) {
-								const href = rings[ri].dataset.nodeHref || '';
-								const rr = rings[ri].getBoundingClientRect();
-								if (rr.width < 8 || rr.height < 8) continue;
-								if (href.includes('repop')) repEdge = rr;
-								if (href.includes('durex')) durEdge = rr;
-							}
-						} catch (_) {}
-						const ra = pt(repEdge, 'bottom');
-						const rb = pt(durEdge, 'top');
-						let inset = svgScale(10);
-						try {
-							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(20));
-							inset = Math.abs(p1.y - p0.y) || inset;
-						} catch (_) {}
-						repDurexA = { x: ra.x, y: ra.y - inset };
-						repDurexB = { x: rb.x, y: rb.y + inset };
-						const liftY = phoneUpperChainLiftY() + phoneTopTwoSpokesExtraLiftY();
-						repDurexA.y -= liftY;
-						repDurexB.y -= liftY;
-						/* Kun Rep↔Dur: lidt ned ift. den fælles top-lift. */
-						let dropY = svgScale(5);
-						try {
-							const d0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const d1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(5));
-							dropY = Math.abs(d1.y - d0.y) || dropY;
-						} catch (_) {}
-						repDurexA.y += dropY;
-						repDurexB.y += dropY;
-						repDurexGapA = 0;
-						repDurexGapB = 0;
-						repDurexLenMul = 1.48;
+							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(120));
+							repDurexLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
+						} catch (_) {
+							repDurexLineH = svgScale(120);
+						}
 					}
 					lineImg(
 						'assets/Linje 2.webp',
@@ -15996,35 +15980,28 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						/* p436/p782: øvre højre kæde — samme inset som Rep↔Dur (12→20). */
-						let natEdge = natRect;
-						let ungEdge = ungRect;
+						/* p783: Nat↔Ung — samme tipPad+clear på NODE som Rep↔Dur. */
+						const clear = phoneOuterClearY(6);
+						const tipPad = phoneOuterClearY(14);
+						const na = pt(natRect, 'bottom');
+						const nb = pt(ungRect, 'top');
+						natUngA = { x: na.x, y: na.y - tipPad };
+						natUngB = { x: nb.x, y: nb.y + tipPad };
+						if (!(natUngB.y > natUngA.y + phoneOuterClearY(20))) {
+							natUngA.y = na.y;
+							natUngB.y = nb.y;
+						}
+						/* Ingen liftY her — tipPad+clear skal lande clear px udenfor begge noder. */
+						natUngGapA = tipPad + clear;
+						natUngGapB = tipPad + clear;
+						natUngLenMul = 1;
 						try {
-							const rings = container.querySelectorAll('.msk-portrait-ring-overlay');
-							for (let ri = 0; ri < rings.length; ri++) {
-								const href = rings[ri].dataset.nodeHref || '';
-								const rr = rings[ri].getBoundingClientRect();
-								if (rr.width < 8 || rr.height < 8) continue;
-								if (href.includes('naturli')) natEdge = rr;
-								if (href.includes('unge-mod-uv')) ungEdge = rr;
-							}
-						} catch (_) {}
-						const na = pt(natEdge, 'bottom');
-						const nb = pt(ungEdge, 'top');
-						let inset = svgScale(10);
-						try {
-							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(20));
-							inset = Math.abs(p1.y - p0.y) || inset;
-						} catch (_) {}
-						natUngA = { x: na.x, y: na.y - inset };
-						natUngB = { x: nb.x, y: nb.y + inset };
-						const liftY = phoneUpperChainLiftY() + phoneTopTwoSpokesExtraLiftY();
-						natUngA.y -= liftY;
-						natUngB.y -= liftY;
-						natUngGapA = 0;
-						natUngGapB = 0;
-						natUngLenMul = 1.48;
+							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
+							const t1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(120));
+							natUngLineH = Math.max(svgScale(120), Math.abs(t1.y - t0.y) || svgScale(120));
+						} catch (_) {
+							natUngLineH = svgScale(120);
+						}
 					}
 					lineImg('assets/linje 7.webp', natUngA, natUngB, natUngLineH, {
 						gapA: natUngGapA,
@@ -20012,7 +19989,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 15 nov - klokken 00:41';
+		const stampText = 'update søndag 15 nov - klokken 00:48';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
