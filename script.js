@@ -15644,9 +15644,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (phoneLinesOnly) {
 						/*
 						 * p783: Rep↔Dur — tipPad+clear på NODE (ikke kæmpe ring-bbox).
-						 * clear 6 ≈ samme “lidt længere / udenfor chalk” som p781-bund.
+						 * clear 2 (ikke 6): charcoal-tip fades, så geometrisk clear skal være strammere.
 						 */
-						const clear = phoneOuterClearY(6);
+						const clear = phoneOuterClearY(2);
 						const tipPad = phoneOuterClearY(14);
 						const ra = pt(repRect, 'bottom');
 						const rb = pt(durRect, 'top');
@@ -15980,8 +15980,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						/* p783: Nat↔Ung — samme tipPad+clear på NODE som Rep↔Dur. */
-						const clear = phoneOuterClearY(6);
+						/* p783: Nat↔Ung — samme tipPad+clear på NODE som Rep↔Dur (clear 2). */
+						const clear = phoneOuterClearY(2);
 						const tipPad = phoneOuterClearY(14);
 						const na = pt(natRect, 'bottom');
 						const nb = pt(ungRect, 'top');
@@ -19989,7 +19989,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 15 nov - klokken 00:48';
+		const stampText = 'update søndag 15 nov - klokken 00:50';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
