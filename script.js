@@ -15643,8 +15643,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					};
 					if (phoneLinesOnly) {
 						/*
-						 * p436: længere øvre kæde — ring-webp har padding, så træk ind til synlig oval
-						 * (uden p412-lift der skød den skæv på Safari).
+						 * p436/p782: øvre kæde — ring-webp har padding; inset trækker tip
+						 * ind mod synlig oval (p782: 12→20, lidt længere, stadig udenfor chalk).
 						 */
 						let repEdge = repRect;
 						let durEdge = durRect;
@@ -15663,7 +15663,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						let inset = svgScale(10);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(12));
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(20));
 							inset = Math.abs(p1.y - p0.y) || inset;
 						} catch (_) {}
 						repDurexA = { x: ra.x, y: ra.y - inset };
@@ -15996,7 +15996,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						/* p436: længere øvre højre kæde — samme inset som Rep↔Dur */
+						/* p436/p782: øvre højre kæde — samme inset som Rep↔Dur (12→20). */
 						let natEdge = natRect;
 						let ungEdge = ungRect;
 						try {
@@ -16014,7 +16014,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						let inset = svgScale(10);
 						try {
 							const p0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
-							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(12));
+							const p1 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(20));
 							inset = Math.abs(p1.y - p0.y) || inset;
 						} catch (_) {}
 						natUngA = { x: na.x, y: na.y - inset };
@@ -20012,7 +20012,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 15 nov - klokken 00:24';
+		const stampText = 'update søndag 15 nov - klokken 00:41';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
