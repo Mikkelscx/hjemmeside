@@ -20055,7 +20055,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 23:48';
+		const stampText = 'update lørdag 14 nov - klokken 23:55';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
@@ -20067,3 +20067,4 @@ window.addEventListener('load', function () {
 	if (document.body) place();
 	else document.addEventListener('DOMContentLoaded', place);
 })();
+/* msk-p777-twister 1794696744 */
