@@ -197,6 +197,12 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	overflow-x: clip !important; /* ringe må ikke skubbe siden sidelæns */
 }
 
+/* Safari-chrome ref-canvas: left/top/transform styres inline — ingen inset:0-lås */
+html.msk-projects-phone-pt-ref-canvas.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container,
+html.msk-projects-phone-pt-ref-canvas.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container.projects-mindmap--portrait {
+	inset: unset !important;
+}
+
 html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm-container .brain svg {
 	width: var(--projectsBrainSize) !important;
 	height: var(--projectsBrainSize) !important;

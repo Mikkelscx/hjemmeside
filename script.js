@@ -1010,7 +1010,7 @@ function mskApplyProjectsPortraitPhoneCanvasStyles() {
 			return;
 		}
 
-		/* Safari-chrome: layout i design-rum, scale ned til synlig VV (p751). */
+		/* Safari-chrome: layout i design-rum, scale ned til synlig VV (p751/p752). */
 		try {
 			root.classList.add('msk-projects-phone-pt-ref-canvas');
 		} catch (_) {}
@@ -1024,6 +1024,10 @@ function mskApplyProjectsPortraitPhoneCanvasStyles() {
 			}
 		} catch (_) {}
 		const sFit = String(Math.round(fit * 1000) / 1000);
+		/* Vigtigt: sæt IKKE inset (shorthand nulstiller left/top). */
+		try {
+			container.style.removeProperty('inset');
+		} catch (_) {}
 		container.style.setProperty('position', 'fixed', 'important');
 		container.style.setProperty('width', `${design.w}px`, 'important');
 		container.style.setProperty('height', `${design.h}px`, 'important');
@@ -1034,7 +1038,6 @@ function mskApplyProjectsPortraitPhoneCanvasStyles() {
 		container.style.setProperty('top', `${Math.round(cy)}px`, 'important');
 		container.style.setProperty('right', 'auto', 'important');
 		container.style.setProperty('bottom', 'auto', 'important');
-		container.style.setProperty('inset', 'auto', 'important');
 		container.style.setProperty('margin', '0', 'important');
 		container.style.setProperty('transform', `translate(-50%, -50%) scale(${sFit})`, 'important');
 		container.style.setProperty('transform-origin', 'center center', 'important');
@@ -19981,7 +19984,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update lørdag 14 nov - klokken 15:40';
+		const stampText = 'update lørdag 14 nov - klokken 15:48';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
