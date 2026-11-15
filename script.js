@@ -15980,9 +15980,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} catch (_) {}
 					if (phoneLinesOnly) {
-						/* p784: Nat↔Ung — tipPad+clear på NODE; clear 2→1 (lidt længere end Rep↔Dur, tip udenfor). */
-						const clear = phoneOuterClearY(1);
-						const tipPad = phoneOuterClearY(14);
+						/*
+						 * p785: Nat↔Ung — tipPad 14→10, clear 1→0 (længere mod NATURLI'/Ung;
+						 * tip i node-kant = lige udenfor chalk, ingen pierce).
+						 */
+						const clear = phoneOuterClearY(0);
+						const tipPad = phoneOuterClearY(10);
 						const na = pt(natRect, 'bottom');
 						const nb = pt(ungRect, 'top');
 						natUngA = { x: na.x, y: na.y - tipPad };
@@ -19989,7 +19992,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update søndag 15 nov - klokken 01:02';
+		const stampText = 'update søndag 15 nov - klokken 01:16';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
