@@ -15981,12 +15981,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					if (phoneLinesOnly) {
 						/*
-						 * p786: Nat↔Ung — tipPad 10→7; clearNat/Ung −2/−3 (ind i node-kant
-						 * mod chalk-streg; Ung-enden lidt længere; ingen dyb pierce).
+						 * p787: Nat↔Ung — tipPad 7→4; clearNat/Ung −24/−26 (stort hop:
+						 * charcoal-fade + gap til chalk; tip til/lige ved chalk-streg).
 						 */
-						const tipPad = phoneOuterClearY(7);
-						const clearNat = -phoneOuterClearY(2);
-						const clearUng = -phoneOuterClearY(3);
+						const tipPad = phoneOuterClearY(4);
+						const clearNat = -phoneOuterClearY(24);
+						const clearUng = -phoneOuterClearY(26);
 						const na = pt(natRect, 'bottom');
 						const nb = pt(ungRect, 'top');
 						natUngA = { x: na.x, y: na.y - tipPad };
@@ -15995,7 +15995,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							natUngA.y = na.y;
 							natUngB.y = nb.y;
 						}
-						/* tipPad+clear: negativ clear = tip lige inden for node-kant (chalk). */
+						/* tipPad+clear: negativ clear = tip ind mod chalk (fade kompenseret). */
 						natUngGapA = tipPad + clearNat;
 						natUngGapB = tipPad + clearUng;
 						natUngLenMul = 1;
@@ -19993,7 +19993,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 16 nov - klokken 13:43';
+		const stampText = 'update mandag 16 nov - klokken 13:49';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
