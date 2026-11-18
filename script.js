@@ -15645,18 +15645,20 @@ document.addEventListener('DOMContentLoaded', function() {
 						/*
 						 * p783: Rep↔Dur — tipPad+clear på NODE (ikke kæmpe ring-bbox).
 						 * clear 2 (ikke 6): charcoal-tip fades, så geometrisk clear skal være strammere.
+						 * p788: hele segmentet +7 design-px ned (kun phone PT / Rep↔Dur).
 						 */
 						const clear = phoneOuterClearY(2);
 						const tipPad = phoneOuterClearY(14);
+						const nudgeDown = phoneOuterClearY(7);
 						const ra = pt(repRect, 'bottom');
 						const rb = pt(durRect, 'top');
-						repDurexA = { x: ra.x, y: ra.y - tipPad };
-						repDurexB = { x: rb.x, y: rb.y + tipPad };
+						repDurexA = { x: ra.x, y: ra.y - tipPad + nudgeDown };
+						repDurexB = { x: rb.x, y: rb.y + tipPad + nudgeDown };
 						if (!(repDurexB.y > repDurexA.y + phoneOuterClearY(20))) {
-							repDurexA.y = ra.y;
-							repDurexB.y = rb.y;
+							repDurexA.y = ra.y + nudgeDown;
+							repDurexB.y = rb.y + nudgeDown;
 						}
-						/* Ingen liftY her — tipPad+clear skal lande clear px udenfor begge noder. */
+						/* tipPad+clear udenfor noder; nudgeDown trækker stregen lidt ned. */
 						repDurexGapA = tipPad + clear;
 						repDurexGapB = tipPad + clear;
 						repDurexLenMul = 1;
@@ -19993,7 +19995,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 16 nov - klokken 13:49';
+		const stampText = 'update onsdag 18 nov - klokken 14:28';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
