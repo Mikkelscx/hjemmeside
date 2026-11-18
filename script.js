@@ -15841,13 +15841,15 @@ document.addEventListener('DOMContentLoaded', function() {
 							a.y += pad;
 							b.y -= pad;
 						}
-						/* p794: +10; p795: yderligere +10 → total +20 (Twister + Købajer under hjerne). */
+						/* p794–p795: Y +20. p796: forkort begge ender (tipPad 4 + clear 2 = 6/tip). */
 						const nudgeDown = phoneOuterClearY(20);
 						a.y += nudgeDown;
 						b.y += nudgeDown;
+						const tipPad = phoneOuterClearY(4);
+						const tipClear = phoneOuterClearY(2);
 						twBrainAngleOffset = 0;
-						twBrainGapA = 0;
-						twBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.1));
+						twBrainGapA = tipPad + tipClear;
+						twBrainGapB = tipPad + tipClear;
 						twBrainLenMul = 1;
 						twBrainMirror = false;
 						twBrainAsset = 'assets/linje 8.webp';
@@ -16128,12 +16130,14 @@ document.addEventListener('DOMContentLoaded', function() {
 							a.y += pad;
 							b.y -= pad;
 						}
-						/* p795: samme Y +20 som brain→Twister. */
+						/* p795: Y +20. p796: samme tipPad+clear forkortelse som brain→Twister. */
 						const nudgeDown = phoneOuterClearY(20);
 						a.y += nudgeDown;
 						b.y += nudgeDown;
-						kobBrainGapA = 0;
-						kobBrainGapB = Math.min(clear, Math.max(0, (b.y - a.y) * 0.12));
+						const tipPad = phoneOuterClearY(4);
+						const tipClear = phoneOuterClearY(2);
+						kobBrainGapA = tipPad + tipClear;
+						kobBrainGapB = tipPad + tipClear;
 						kobBrainLenMul = 1;
 						kobBrainMirror = false;
 						kobBrainAsset = 'assets/linje 8.webp';
@@ -20006,7 +20010,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 18 nov - klokken 18:42';
+		const stampText = 'update onsdag 18 nov - klokken 18:46';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
