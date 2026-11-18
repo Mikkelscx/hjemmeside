@@ -15644,13 +15644,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (phoneLinesOnly) {
 						/*
 						 * p783: Rep↔Dur — tipPad+clear på NODE (ikke kæmpe ring-bbox).
-						 * p788–p790: Y-nudge → +21. p791: længere charcoal (som Nat↔Ung):
-						 * tipPad 14→7, clear 2→−10 (tips nær chalk, ikke dybt pierce); Y uændret +21.
+						 * p788–p790: Y → +21. p791: længere (tipPad 7, clear −10).
+						 * p792: Y yderligere +7 → total +28 (længde uændret).
 						 */
 						const tipPad = phoneOuterClearY(7);
 						const clearRep = -phoneOuterClearY(10);
 						const clearDur = -phoneOuterClearY(10);
-						const nudgeDown = phoneOuterClearY(21);
+						const nudgeDown = phoneOuterClearY(28);
 						const ra = pt(repRect, 'bottom');
 						const rb = pt(durRect, 'top');
 						repDurexA = { x: ra.x, y: ra.y - tipPad + nudgeDown };
@@ -19996,7 +19996,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 18 nov - klokken 17:30';
+		const stampText = 'update onsdag 18 nov - klokken 17:43';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
