@@ -15841,8 +15841,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							a.y += pad;
 							b.y -= pad;
 						}
-						/* p794: begge under-hjerne-streger lidt ned (Twister + Købajer). */
-						const nudgeDown = phoneOuterClearY(10);
+						/* p794: +10; p795: yderligere +10 → total +20 (Twister + Købajer under hjerne). */
+						const nudgeDown = phoneOuterClearY(20);
 						a.y += nudgeDown;
 						b.y += nudgeDown;
 						twBrainAngleOffset = 0;
@@ -16128,8 +16128,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							a.y += pad;
 							b.y -= pad;
 						}
-						/* p794: samme modest Y-nudge som brain→Twister. */
-						const nudgeDown = phoneOuterClearY(10);
+						/* p795: samme Y +20 som brain→Twister. */
+						const nudgeDown = phoneOuterClearY(20);
 						a.y += nudgeDown;
 						b.y += nudgeDown;
 						kobBrainGapA = 0;
@@ -20006,7 +20006,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 18 nov - klokken 17:54';
+		const stampText = 'update onsdag 18 nov - klokken 18:42';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
