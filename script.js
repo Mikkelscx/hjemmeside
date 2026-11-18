@@ -15644,11 +15644,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (phoneLinesOnly) {
 						/*
 						 * p783: Rep↔Dur — tipPad+clear på NODE (ikke kæmpe ring-bbox).
-						 * clear 2 (ikke 6): charcoal-tip fades, så geometrisk clear skal være strammere.
-						 * p788: +7; p789: +14; p790: yderligere +7 → total +21 (kun phone PT / Rep↔Dur).
+						 * p788–p790: Y-nudge → +21. p791: længere charcoal (som Nat↔Ung):
+						 * tipPad 14→7, clear 2→−10 (tips nær chalk, ikke dybt pierce); Y uændret +21.
 						 */
-						const clear = phoneOuterClearY(2);
-						const tipPad = phoneOuterClearY(14);
+						const tipPad = phoneOuterClearY(7);
+						const clearRep = -phoneOuterClearY(10);
+						const clearDur = -phoneOuterClearY(10);
 						const nudgeDown = phoneOuterClearY(21);
 						const ra = pt(repRect, 'bottom');
 						const rb = pt(durRect, 'top');
@@ -15658,9 +15659,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							repDurexA.y = ra.y + nudgeDown;
 							repDurexB.y = rb.y + nudgeDown;
 						}
-						/* tipPad+clear udenfor noder; nudgeDown trækker stregen lidt ned. */
-						repDurexGapA = tipPad + clear;
-						repDurexGapB = tipPad + clear;
+						/* tipPad+clear: negativ clear = tip ind mod chalk; nudgeDown holder stregen nede. */
+						repDurexGapA = tipPad + clearRep;
+						repDurexGapB = tipPad + clearDur;
 						repDurexLenMul = 1;
 						try {
 							const t0 = mskSvgPointFromClientPx(currentSvg, 0, phonePtClientDelta(0));
@@ -19995,7 +19996,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 18 nov - klokken 17:23';
+		const stampText = 'update onsdag 18 nov - klokken 17:30';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
