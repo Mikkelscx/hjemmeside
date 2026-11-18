@@ -15841,12 +15841,12 @@ document.addEventListener('DOMContentLoaded', function() {
 							a.y += pad;
 							b.y -= pad;
 						}
-						/* p794–p795: Y +20. p796: tipPad4+clear2=6; p797: tipPad8+clear4=12/tip. */
+						/* p794–p795: Y +20. p797: 12/tip; p798: tipPad12+clear6=18/tip. */
 						const nudgeDown = phoneOuterClearY(20);
 						a.y += nudgeDown;
 						b.y += nudgeDown;
-						const tipPad = phoneOuterClearY(8);
-						const tipClear = phoneOuterClearY(4);
+						const tipPad = phoneOuterClearY(12);
+						const tipClear = phoneOuterClearY(6);
 						twBrainAngleOffset = 0;
 						twBrainGapA = tipPad + tipClear;
 						twBrainGapB = tipPad + tipClear;
@@ -16130,12 +16130,12 @@ document.addEventListener('DOMContentLoaded', function() {
 							a.y += pad;
 							b.y -= pad;
 						}
-						/* p795: Y +20. p797: samme tipPad8+clear4=12/tip som brain→Twister. */
+						/* p795: Y +20. p798: samme tipPad12+clear6=18/tip som brain→Twister. */
 						const nudgeDown = phoneOuterClearY(20);
 						a.y += nudgeDown;
 						b.y += nudgeDown;
-						const tipPad = phoneOuterClearY(8);
-						const tipClear = phoneOuterClearY(4);
+						const tipPad = phoneOuterClearY(12);
+						const tipClear = phoneOuterClearY(6);
 						kobBrainGapA = tipPad + tipClear;
 						kobBrainGapB = tipPad + tipClear;
 						kobBrainLenMul = 1;
@@ -20010,7 +20010,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 18 nov - klokken 18:53';
+		const stampText = 'update onsdag 18 nov - klokken 19:08';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
