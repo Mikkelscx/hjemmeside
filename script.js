@@ -15905,11 +15905,11 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: Twister→Brainfarts — tipPad + clear (p781: clear 8→6, lidt længere). */
+					/* Telefon: Twister→Brainfarts — tipPad + clear (p781: 14/6; p799: 10/4 længere). */
 					try {
 						if (phoneLinesOnly) {
-							const clear = phoneOuterClearY(6);
-							const tipPad = phoneOuterClearY(14);
+							const clear = phoneOuterClearY(4);
+							const tipPad = phoneOuterClearY(10);
 							const ta = pt(twiRect, 'bottom');
 							const tb = pt(brfRect, 'top');
 							a = { x: ta.x, y: ta.y - tipPad };
@@ -16229,10 +16229,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					} catch (_) {}
 					if (phoneLinesOnly) {
 						/*
-						 * p781: tipPad + clear (clear 8→6 — lidt længere, stadig udenfor ringe).
+						 * p781: tipPad 14 / clear 6. p799: tipPad 10 / clear 4 — længere,
+						 * tip stadig lige udenfor chalk (Twister→Brainfarts samme).
 						 */
-						const clear = phoneOuterClearY(6);
-						const tipPad = phoneOuterClearY(14);
+						const clear = phoneOuterClearY(4);
+						const tipPad = phoneOuterClearY(10);
 						const ka = pt(kobRect, 'bottom');
 						const kb = pt(byeRect, 'top');
 						a.x = ka.x;
@@ -20010,7 +20011,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update onsdag 18 nov - klokken 19:08';
+		const stampText = 'update mandag 23 nov - klokken 15:49';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
