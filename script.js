@@ -15905,19 +15905,20 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: Twister→Brainfarts — tipPad + clear (p803: 6/−16; p804: 4/−22 længere). */
+					/* Telefon: Twister→Brainfarts — tipPad + clear (p804: 4/−22; p805: Y −10 op). */
 					try {
 						if (phoneLinesOnly) {
 							/* Negativ clear: webp-fade → synlig tip lige udenfor chalk. */
 							const clear = -phoneOuterClearY(22);
 							const tipPad = phoneOuterClearY(4);
+							const nudgeUp = phoneOuterClearY(10);
 							const ta = pt(twiRect, 'bottom');
 							const tb = pt(brfRect, 'top');
-							a = { x: ta.x, y: ta.y - tipPad };
-							b = { x: tb.x, y: tb.y + tipPad };
+							a = { x: ta.x, y: ta.y - tipPad - nudgeUp };
+							b = { x: tb.x, y: tb.y + tipPad - nudgeUp };
 							if (!(b.y > a.y + phoneOuterClearY(20))) {
-								a.y = ta.y;
-								b.y = tb.y;
+								a.y = ta.y - nudgeUp;
+								b.y = tb.y - nudgeUp;
 							}
 							twBrfGapA = tipPad + clear;
 							twBrfGapB = tipPad + clear;
@@ -20013,7 +20014,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 23 nov - klokken 16:27';
+		const stampText = 'update mandag 23 nov - klokken 23:30';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
