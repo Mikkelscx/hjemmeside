@@ -42,6 +42,9 @@ jobs:
             --exclude 'hjemmesiden' \
             --exclude 'auto-commit.log' \
             --exclude '_debug' \
+            --exclude '_debug-*' \
+            --exclude '_pages-*' \
+            --exclude '_p8*' \
             --exclude 'script-20260924p*.js' \
             --exclude 'styles-20260924p*.css' \
             ./ publish/
@@ -76,6 +79,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'publish'
+      # deploy-pages can race artifact metadata right after upload
+      - name: Wait for artifact metadata
+        run: sleep 20
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: false
