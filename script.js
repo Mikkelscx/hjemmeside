@@ -15845,6 +15845,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						const nudgeDown = phoneOuterClearY(20);
 						a.y += nudgeDown;
 						b.y += nudgeDown;
+						/*
+						 * p807: drej mere mod venstre — hjerne-ende lidt, Twister-ende mere
+						 * til venstre (større hældning); tipPad/clear uændret.
+						 */
+						a.x -= inX * 0.4;
+						b.x -= inX;
 						const tipPad = phoneOuterClearY(12);
 						const tipClear = phoneOuterClearY(6);
 						twBrainAngleOffset = 0;
@@ -20014,7 +20020,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 23 nov - klokken 23:33';
+		const stampText = 'update mandag 23 nov - klokken 23:43';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
