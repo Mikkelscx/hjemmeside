@@ -15905,11 +15905,11 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} catch (_) {}
-					/* Telefon: Twister→Brainfarts — tipPad + clear (p781: 14/6; p801: 8/−6 længere). */
+					/* Telefon: Twister→Brainfarts — tipPad + clear (p801: 8/−6; p802: clear −10 lidt længere). */
 					try {
 						if (phoneLinesOnly) {
 							/* Negativ clear: webp-fade → synlig tip lige udenfor chalk. */
-							const clear = -phoneOuterClearY(6);
+							const clear = -phoneOuterClearY(10);
 							const tipPad = phoneOuterClearY(8);
 							const ta = pt(twiRect, 'bottom');
 							const tb = pt(brfRect, 'top');
@@ -20013,7 +20013,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-		const stampText = 'update mandag 23 nov - klokken 15:54';
+		const stampText = 'update mandag 23 nov - klokken 16:07';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
