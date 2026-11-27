@@ -16142,6 +16142,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						const nudgeDown = phoneOuterClearY(20);
 						a.y += nudgeDown;
 						b.y += nudgeDown;
+						/* p812: brain→Købajer begge ender lidt op (−8 design-px); Twister urørt */
+						const nudgeUp = phoneOuterClearY(8);
+						a.y -= nudgeUp;
+						b.y -= nudgeUp;
 						const tipPad = phoneOuterClearY(12);
 						const tipClear = phoneOuterClearY(6);
 						kobBrainGapA = tipPad + tipClear;
@@ -20020,7 +20024,7 @@ window.addEventListener('load', function () {
 			if (params.has('preview')) return;
 			if (document.documentElement.classList.contains('transition-preview')) return;
 		} catch { return; }
-			const stampText = 'update fredag 27 nov - klokken 15:54';
+			const stampText = 'update fredag 27 nov - klokken 16:00';
 		let el = document.querySelector('.msk-build-stamp');
 		if (!el) {
 			el = document.createElement('p');
