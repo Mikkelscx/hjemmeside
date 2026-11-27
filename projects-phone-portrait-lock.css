@@ -475,7 +475,11 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	max-width: 100% !important;
 	height: auto !important;
 	/* Titel + D&AD samlet lidt ned i ovalen (p369) */
-	transform: translateY(calc(48px * var(--phone-portrait-scale, 0.37))) scale(1.22) scaleX(1) !important;
+	/* p813: kun indhold lidt venstre — ring uændret (~−11px ved ref-scale) */
+	transform: translate(
+		calc(-30px * var(--phone-portrait-scale, 0.37)),
+		calc(48px * var(--phone-portrait-scale, 0.37))
+	) scale(1.22) scaleX(1) !important;
 	transform-origin: center center !important;
 }
 
@@ -494,7 +498,11 @@ html.msk-projects-phone-portrait body.projects-page.sketchbook-theme .brainstorm
 	margin-top: calc(-56px * var(--phone-portrait-scale, 0.37)) !important;
 	min-width: 0 !important;
 	min-height: 0 !important;
-	transform: translateY(calc(-22px * var(--phone-portrait-scale, 0.37))) scale(1.06) !important;
+	/* p813: følg titel — kun D&AD-indhold venstre, ikke ringen */
+	transform: translate(
+		calc(-30px * var(--phone-portrait-scale, 0.37)),
+		calc(-22px * var(--phone-portrait-scale, 0.37))
+	) scale(1.06) !important;
 	transform-origin: center center !important;
 	gap: 0 !important;
 }
